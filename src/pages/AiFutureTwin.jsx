@@ -129,7 +129,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
   }, [simStudyHours, simRevisionRate, simAttendance, simPyqRatio, predictions]);
 
   // Real-time Action Loggers to Firestore
-  const logStudySession = async (minutes) => {
+  const logStudySession = async (minutes, source = 'Manual Session') => {
     if (!user?.id) return;
     try {
       const sub = history?.subjects[Math.floor(Math.random() * history.subjects.length)] || { id: 'ds101', name: 'DSA' };
@@ -141,10 +141,10 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         duration: minutes,
         date: new Date().toISOString().split('T')[0],
         focusScore: Math.floor(Math.random() * 20) + 80,
-        topic: randomTopic
+        topic: source === 'Extension' ? `Tracked via Chrome Extension: ${randomTopic}` : randomTopic
       });
 
-      addToast({ message: `Logged ${minutes}m study session in ${sub.name}!`, type: 'success' });
+      addToast({ message: source === 'Extension' ? `Synced ${minutes}m session from Lumixora Chrome Extension!` : `Logged ${minutes}m study session in ${sub.name}!`, type: 'success' });
       awardXP('COMPLETE_STUDY_SESSION');
     } catch (e) {
       console.error(e);
@@ -319,28 +319,28 @@ export default function AiFutureTwin({ user, setActiveTab }) {
           </div>
           <div className="flex flex-wrap gap-2">
             <button 
-              onClick={() => {
-                localStorage.setItem('study_session_duration', 45);
-                setActiveTab('study-with-me');
-              }} 
+              onClick={() => logStudySession(45)} 
               className="text-[10px] bg-brand-teal/10 hover:bg-brand-teal border border-brand-teal/20 text-brand-teal hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" /> Study Session (45m)
             </button>
             <button 
-              onClick={() => {
-                localStorage.setItem('mentor_action', 'generate_quiz');
-                setActiveTab('mentor');
-              }} 
+              onClick={() => logQuizAttempt()} 
               className="text-[10px] bg-brand-pink/10 hover:bg-brand-pink border border-brand-pink/20 text-brand-pink hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Award className="w-3.5 h-3.5" /> Take Quiz (9/10)
             </button>
             <button 
-              onClick={() => setActiveTab('notes')} 
+              onClick={() => logNotesRead()} 
               className="text-[10px] bg-brand-blue/10 hover:bg-brand-blue border border-brand-blue/20 text-brand-blue hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" /> Read Notes
+            </button>
+            <button 
+              onClick={() => logStudySession(60, 'Extension')} 
+              className="text-[10px] bg-[#9333ea]/15 hover:bg-[#9333ea] border border-[#9333ea]/35 text-[#c084fc] hover:text-white font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer relative overflow-hidden group shadow-[0_0_15px_rgba(147,51,234,0.15)]"
+            >
+              <Zap className="w-3.5 h-3.5 animate-pulse" /> Sync Extension (60m)
             </button>
           </div>
         </div>
