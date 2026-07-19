@@ -473,11 +473,16 @@ Note: Generate exactly 3 highly relevant and interesting questions. The "correct
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
         messages: [
-          { role: "system", content: systemPrompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate 3 multiple choice questions about "${topic}" in the subject "${subject}".` }
         ],
         temperature: 0.5
       })
     });
+
+    if (!response.ok) {
+      throw new Error(`Groq API Error (${response.status})`);
+    }
 
     const data = await response.json();
     let textResponse = data.choices[0].message.content;
@@ -487,13 +492,30 @@ Note: Generate exactly 3 highly relevant and interesting questions. The "correct
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       textResponse = textResponse.substring(jsonStart, jsonEnd + 1);
     }
-    return JSON.parse(textResponse);
+    
+    const parsed = JSON.parse(textResponse);
+    const questions = parsed.questions || parsed.quiz || parsed.test;
+    if (!Array.isArray(questions)) {
+      throw new Error("Invalid quiz structure: questions list is missing or not an array");
+    }
+
+    // Normalize keys
+    const normalizedQuestions = questions.map(q => {
+      return {
+        q: q.q || q.question || q.text || "Question Details",
+        options: Array.isArray(q.options) ? q.options : (Array.isArray(q.choices) ? q.choices : ["A", "B", "C", "D"]),
+        correct: typeof q.correct === 'number' ? q.correct : 0,
+        explanation: q.explanation || q.reason || "No explanation provided."
+      };
+    });
+
+    return { questions: normalizedQuestions.slice(0, 5) };
   } catch (error) {
     console.error("Error generating quiz:", error);
     return {
       questions: [
         {
-          q: `What is the core concept of ${topic}?`,
+          q: `What is the core concept of ${topic || 'this topic'}?`,
           options: ["Theoretical foundations", "Practical applications", "Syllabus details", "All of the above"],
           correct: 3,
           explanation: "In general academic context, mastering a subject involves theoretical foundation, practice, and details."
@@ -514,8 +536,8 @@ Format:
 {
   "flashcards": [
     {
-      "front": "Term or Question",
-      "back": "Short explanation or definition (1-2 sentences)"
+       front: "Term or Question",
+       back: "Short explanation or definition (1-2 sentences)"
     }
   ]
 }
@@ -530,11 +552,16 @@ Note: Generate exactly 4 useful flashcards.`;
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
         messages: [
-          { role: "system", content: systemPrompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate 4 flashcards about "${topic}" in the subject "${subject}".` }
         ],
         temperature: 0.6
       })
     });
+
+    if (!response.ok) {
+      throw new Error(`Groq API Error (${response.status})`);
+    }
 
     const data = await response.json();
     let textResponse = data.choices[0].message.content;
@@ -544,12 +571,26 @@ Note: Generate exactly 4 useful flashcards.`;
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       textResponse = textResponse.substring(jsonStart, jsonEnd + 1);
     }
-    return JSON.parse(textResponse);
+    
+    const parsed = JSON.parse(textResponse);
+    const flashcards = parsed.flashcards || parsed.cards;
+    if (!Array.isArray(flashcards)) {
+      throw new Error("Invalid flashcard structure from AI");
+    }
+
+    const normalizedCards = flashcards.map(c => {
+      return {
+        front: c.front || c.term || c.question || "Term",
+        back: c.back || c.definition || c.answer || "Definition not provided."
+      };
+    });
+
+    return { flashcards: normalizedCards };
   } catch (error) {
     console.error("Error generating flashcards:", error);
     return {
       flashcards: [
-        { front: `Core Term in ${topic}`, back: "The central concept that defines the primary behavior or utility of the system." },
+        { front: `Core Term in ${topic || 'this topic'}`, back: "The central concept that defines the primary behavior or utility of the system." },
         { front: "Key Objective", back: "To simplify explanation, organize logic, and increase understanding of complex topics." }
       ]
     };
@@ -592,11 +633,16 @@ Note: Generate exactly 4 sequential phases.`;
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
         messages: [
-          { role: "system", content: systemPrompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate a career preparation roadmap for a ${profile.year || '3rd year'} student in ${profile.department || 'CSE'} pursuing ${profile.careerGoal || 'placement'}.` }
         ],
         temperature: 0.6
       })
     });
+
+    if (!response.ok) {
+      throw new Error(`Groq API Error (${response.status})`);
+    }
 
     const data = await response.json();
     let textResponse = data.choices[0].message.content;
@@ -606,7 +652,22 @@ Note: Generate exactly 4 sequential phases.`;
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       textResponse = textResponse.substring(jsonStart, jsonEnd + 1);
     }
-    return JSON.parse(textResponse);
+    
+    const parsed = JSON.parse(textResponse);
+    const milestones = parsed.milestones || parsed.phases;
+    if (!Array.isArray(milestones)) {
+      throw new Error("Invalid milestones structure from AI");
+    }
+
+    const normalizedMilestones = milestones.map(m => {
+      return {
+        phase: m.phase || m.title || "Phase Outline",
+        tasks: Array.isArray(m.tasks) ? m.tasks : ["Complete study guidelines", "Work on problem sets"],
+        resource: m.resource || m.resources || "Standard department textbooks."
+      };
+    });
+
+    return { milestones: normalizedMilestones };
   } catch (error) {
     console.error("Error generating roadmap:", error);
     return {

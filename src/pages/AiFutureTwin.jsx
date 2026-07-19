@@ -325,7 +325,10 @@ export default function AiFutureTwin({ user, setActiveTab }) {
               <PlusCircle className="w-3.5 h-3.5" /> Study Session (45m)
             </button>
             <button 
-              onClick={() => logQuizAttempt()} 
+              onClick={() => {
+                localStorage.setItem('mentor_action', 'generate_quiz');
+                setActiveTab('mentor');
+              }} 
               className="text-[10px] bg-brand-pink/10 hover:bg-brand-pink border border-brand-pink/20 text-brand-pink hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Award className="w-3.5 h-3.5" /> Take Quiz (9/10)

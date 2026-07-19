@@ -285,6 +285,7 @@ export default function PersonalMentor({ user }) {
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcardFlipped, setFlashcardFlipped] = useState(false);
   const [flashcardsLoading, setFlashcardsLoading] = useState(false);
+  const [customQuizTopic, setCustomQuizTopic] = useState('');
 
   // Monitor action auto-trigger for quiz
   useEffect(() => {
@@ -982,7 +983,7 @@ export default function PersonalMentor({ user }) {
               ))}
 
               {/* Embed Interactive Quiz */}
-              {activeQuiz && (
+              {activeQuiz && Array.isArray(activeQuiz.questions) && (
                 <div className="p-4 rounded-2xl bg-brand-purple/10 border border-brand-purple/20 space-y-4 my-2">
                   <div className="flex items-center justify-between border-b border-white/5 pb-2">
                     <span className="text-xs font-bold text-brand-pink uppercase tracking-widest flex items-center gap-1">
@@ -991,39 +992,42 @@ export default function PersonalMentor({ user }) {
                     <button onClick={() => setActiveQuiz(null)} className="text-[10px] text-gray-500 hover:text-white">Clear</button>
                   </div>
 
-                  {activeQuiz.questions.map((q, qIdx) => (
-                    <div key={qIdx} className="space-y-2">
-                      <p className="text-xs font-semibold text-gray-100">{qIdx + 1}. {q.q}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {q.options.map((opt, oIdx) => {
-                          const isSel = quizAnswers[qIdx] === oIdx;
-                          return (
-                            <button
-                              key={oIdx}
-                              disabled={quizSubmitted}
-                              onClick={() => setQuizAnswers({ ...quizAnswers, [qIdx]: oIdx })}
-                              className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                                isSel 
-                                  ? 'bg-brand-pink/20 border-brand-pink text-white' 
-                                  : 'bg-black/30 border-white/5 text-gray-400 hover:border-white/15'
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {quizSubmitted && (
-                        <div className={`p-2 rounded-lg text-[11px] font-medium mt-1 ${
-                          quizAnswers[qIdx] === q.correct ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        }`}>
-                          <span className="font-extrabold block mb-0.5">{quizAnswers[qIdx] === q.correct ? 'Correct! ✓' : `Incorrect (Correct: ${q.options[q.correct]})`}</span>
-                          {q.explanation}
+                  {activeQuiz.questions.map((q, qIdx) => {
+                    if (!q || !q.q || !Array.isArray(q.options)) return null;
+                    return (
+                      <div key={qIdx} className="space-y-2">
+                        <p className="text-xs font-semibold text-gray-100">{qIdx + 1}. {q.q}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {q.options.map((opt, oIdx) => {
+                            const isSel = quizAnswers[qIdx] === oIdx;
+                            return (
+                              <button
+                                key={oIdx}
+                                disabled={quizSubmitted}
+                                onClick={() => setQuizAnswers({ ...quizAnswers, [qIdx]: oIdx })}
+                                className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                                  isSel 
+                                    ? 'bg-brand-pink/20 border-brand-pink text-white' 
+                                    : 'bg-black/30 border-white/5 text-gray-400 hover:border-white/15'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            );
+                          })}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {quizSubmitted && (
+                          <div className={`p-2 rounded-lg text-[11px] font-medium mt-1 ${
+                            quizAnswers[qIdx] === q.correct ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                          }`}>
+                            <span className="font-extrabold block mb-0.5">{quizAnswers[qIdx] === q.correct ? 'Correct! ✓' : `Incorrect (Correct: ${q.options[q.correct] || 'Option ' + (q.correct + 1)})`}</span>
+                            {q.explanation}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {!quizSubmitted ? (
                     <button
@@ -1151,26 +1155,33 @@ export default function PersonalMentor({ user }) {
                 <Sparkles className="w-4 h-4 text-brand-pink" /> AI Twin Generators
               </h3>
               
-              <p className="text-[11px] text-gray-400 leading-relaxed">
-                Generate dynamic material based on your weak subject:
-                <span className="text-brand-pink font-semibold"> {profile.weakSubjects}</span>.
-              </p>
+              <div className="space-y-1">
+                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Topic of Interest</label>
+                <input
+                  type="text"
+                  value={customQuizTopic}
+                  onChange={(e) => setCustomQuizTopic(e.target.value)}
+                  placeholder={`e.g. ${profile.weakSubjects || 'Data Structures'}`}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-brand-pink outline-none transition-colors"
+                />
+                <p className="text-[9px] text-gray-500 mt-1 leading-relaxed">Leave blank to default to your weak subject: <span className="text-brand-pink font-semibold">{profile.weakSubjects}</span></p>
+              </div>
 
               <div className="space-y-2">
                 <button
                   disabled={quizLoading || chatLoading}
-                  onClick={() => handleGenerateQuiz(profile.weakSubjects)}
+                  onClick={() => handleGenerateQuiz(customQuizTopic.trim() || profile.weakSubjects)}
                   className="w-full py-2.5 bg-brand-purple/20 hover:bg-brand-purple/35 border border-brand-purple/30 rounded-xl text-xs font-bold text-brand-pink transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                 >
-                  Generate Practice Quiz
+                  {quizLoading ? 'Generating Quiz...' : 'Generate Practice Quiz'}
                 </button>
 
                 <button
                   disabled={flashcardsLoading || chatLoading}
-                  onClick={() => handleGenerateFlashcards(profile.weakSubjects)}
+                  onClick={() => handleGenerateFlashcards(customQuizTopic.trim() || profile.weakSubjects)}
                   className="w-full py-2.5 bg-brand-blue/20 hover:bg-brand-blue/35 border border-brand-blue/30 rounded-xl text-xs font-bold text-brand-blue transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                 >
-                  Generate Flashcards
+                  {flashcardsLoading ? 'Generating Flashcards...' : 'Generate Flashcards'}
                 </button>
               </div>
             </div>
