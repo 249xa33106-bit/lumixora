@@ -1,0 +1,118 @@
+{
+  "tasks": [],
+  "notes": [
+    {
+      "id": "1",
+      "title": "Physics Lab - Thermodynamics",
+      "content": "Key takeaways from the lab session: 1. Entropy always increases... 2. Ideal gas law PV=nRT.",
+      "category": "Physics",
+      "lastEdited": "2026-06-28T10:00:00Z"
+    },
+    {
+      "id": "V6rMEFAVPqE",
+      "title": "UNIT - 2 DLCO",
+      "subject": "Computer Science",
+      "size": "18.6 MB",
+      "downloads": 0,
+      "date": "Today",
+      "type": "Uploaded File",
+      "aiEnhancement": {
+        "summary": "Newly uploaded file. Summary is being generated automatically by Nexora AI. Check back in 1 minute.",
+        "concepts": [
+          "Analyzing text content...",
+          "Extracting core key terms..."
+        ],
+        "questions": [
+          {
+            "q": "What is the main topic?",
+            "a": "The document outlines key details."
+          }
+        ]
+      },
+      "lastEdited": "2026-06-29T15:30:38.268Z"
+    },
+    {
+      "title": "P&S UNIT 2 NOTES",
+      "subject": "Computer Science",
+      "size": "18.8 MB",
+      "downloads": 0,
+      "date": "Jun 29, 2026",
+      "type": "Uploaded File",
+      "aiEnhancement": {
+        "status": "generating",
+        "summary": "Newly uploaded file. Summary is being generated automatically by Nexora AI. Please wait a moment...",
+        "concepts": [
+          "Analyzing text content...",
+          "Extracting core key terms..."
+        ],
+        "questions": [
+          {
+            "q": "AI is thinking...",
+            "a": "Generating practice material."
+          }
+        ]
+      },
+      "id": "uDRN-VPtE-g",
+      "lastEdited": "2026-06-29T15:41:22.359Z"
+    },
+    {
+      "title": "yagna.....",
+      "subject": "Computer Science",
+      "size": "0.2 MB",
+      "downloads": 0,
+      "date": "Jun 29, 2026",
+      "type": "Uploaded File",
+      "aiEnhancement": {
+        "status": "generating",
+        "summary": "Newly uploaded file. Summary is being generated automatically by Nexora AI. Please wait a moment...",
+        "concepts": [
+          "Analyzing text content...",
+          "Extracting core key terms..."
+        ],
+        "questions": [
+          {
+            "q": "AI is thinking...",
+            "a": "Generating practice material."
+          }
+        ]
+      },
+      "id": "tPe-O_WVMjM",
+      "lastEdited": "2026-06-29T15:54:22.538Z"
+    },
+    {
+      "title": "OT UNIT 5 NOTES",
+      "subject": "Computer Science",
+      "size": "5.4 MB",
+      "downloads": 0,
+      "date": "Jun 29, 2026",
+      "type": "Uploaded File",
+      "aiEnhancement": {
+        "status": "generating",
+        "summary": "Newly uploaded file. Summary is being generated automatically by Nexora AI. Please wait a moment...",
+        "concepts": [
+          "Analyzing text content...",
+          "Extracting core key terms..."
+        ],
+        "questions": [
+          {
+            "q": "AI is thinking...",
+            "a": "Generating practice material."
+          }
+        ]
+      },
+      "id": "pJSaMQ-7D_Y",
+      "lastEdited": "2026-06-29T16:25:23.022Z"
+    }
+  ],
+  "users": [
+    {
+      "name": "SHAIK SOWBAN",
+      "email": "249XA33106@gprec.ac.in",
+      "password": "SHAIK@2006",
+      "createdAt": "2026-06-29T16:02:32.156Z",
+      "id": "9dsYypgYIig"
+    }
+  ],
+  "doubts": [],
+  "$schema": "./node_modules/json-server/schema.json"
+}

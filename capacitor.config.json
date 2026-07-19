@@ -1,0 +1,26 @@
+{
+  "appId": "com.lumixora.app",
+  "appName": "Lumixora",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "CapacitorUpdater": {
+      "autoUpdate": true,
+      "defaultChannel": "production"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#06060a",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}
