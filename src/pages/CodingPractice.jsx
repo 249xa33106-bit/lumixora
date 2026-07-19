@@ -345,16 +345,14 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Add Problem Button for Founder */}
-          {isFounder && (
-            <button 
-              onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-[0_0_15px_rgba(0,245,212,0.25)] transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-black" />
-              <span>Add Problem</span>
-            </button>
-          )}
+          {/* Add Problem Button for All Users */}
+          <button 
+            onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-[0_0_15px_rgba(0,245,212,0.25)] transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-black" />
+            <span>Add Custom Problem</span>
+          </button>
 
           {/* Free Sandbox Button */}
           <button 
@@ -589,13 +587,13 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                 <th className="p-4 hidden sm:table-cell">Category</th>
                 <th className="p-4 hidden md:table-cell">Companies</th>
                 <th className="p-4 text-right pr-6">Acceptance</th>
-                {isFounder && <th className="p-4 text-center w-24">Actions</th>}
+                <th className="p-4 text-center w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredProblems.length === 0 ? (
                 <tr>
-                  <td colSpan={isFounder ? 7 : 6} className="p-12 text-center text-xs text-gray-500 italic">
+                  <td colSpan={7} className="p-12 text-center text-xs text-gray-500 italic">
                     No coding problems found matching your filters.
                   </td>
                 </tr>
@@ -662,30 +660,28 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                       {problem.acceptanceRate}
                     </td>
 
-                    {isFounder && (
-                      <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
-                        {problem.type === 'code_arena_problem' ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <button 
-                              onClick={(e) => handleEditProblem(problem, e)}
-                              className="p-1.5 rounded bg-white/5 hover:bg-brand-blue/20 text-gray-400 hover:text-brand-blue transition-colors cursor-pointer"
-                              title="Edit Problem"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-                            <button 
-                              onClick={(e) => handleDeleteProblem(problem.id, e)}
-                              className="p-1.5 rounded bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
-                              title="Delete Problem"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[9px] text-gray-600 font-bold uppercase tracking-wider">System</span>
-                        )}
-                      </td>
-                    )}
+                    <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
+                      {problem.type === 'code_arena_problem' ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <button 
+                            onClick={(e) => handleEditProblem(problem, e)}
+                            className="p-1.5 rounded bg-white/5 hover:bg-brand-blue/20 text-gray-400 hover:text-brand-blue transition-colors cursor-pointer"
+                            title="Edit Problem"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeleteProblem(problem.id, e)}
+                            className="p-1.5 rounded bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
+                            title="Delete Problem"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[9px] text-gray-600 font-bold uppercase tracking-wider">System</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
