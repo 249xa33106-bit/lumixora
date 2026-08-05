@@ -81,7 +81,7 @@ export default function NexoraNetwork({ user }) {
       {/* Social Hub Top Navigation Bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Users className="w-8 h-8 text-brand-pink" />
             <span>Nexora Network</span>
           </h1>
@@ -106,7 +106,7 @@ export default function NexoraNetwork({ user }) {
                 onClick={() => setActiveSubTab(tab.id)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeSubTab === tab.id 
-                    ? 'bg-gradient-to-r from-brand-pink to-brand-purple text-white shadow-[0_0_12px_rgba(247,37,133,0.3)] font-black' 
+                    ? 'bg-gradient-to-r from-brand-pink to-brand-purple text-white shadow-sm font-semibold' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -134,7 +134,7 @@ export default function NexoraNetwork({ user }) {
         <div className="xl:col-span-4 space-y-6">
           
           <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5 border-b border-white/5 pb-3">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5 border-b border-white/5 pb-3">
               <UserCheck className="w-4 h-4 text-brand-purple" />
               <span>Smart Connect</span>
             </h3>
@@ -143,7 +143,7 @@ export default function NexoraNetwork({ user }) {
             <div className="flex gap-1.5 bg-black/25 p-1 rounded-xl border border-white/5">
               <button
                 onClick={() => setConnectTab('explore')}
-                className={`flex-1 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                className={`flex-1 py-1 rounded-lg text-[9px] font-semibold tracking-wide transition-all cursor-pointer ${
                   connectTab === 'explore' ? 'bg-white/5 text-white' : 'text-gray-500'
                 }`}
               >
@@ -151,13 +151,13 @@ export default function NexoraNetwork({ user }) {
               </button>
               <button
                 onClick={() => setConnectTab('pending')}
-                className={`flex-1 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all relative cursor-pointer ${
+                className={`flex-1 py-1 rounded-lg text-[9px] font-semibold tracking-wide transition-all relative cursor-pointer ${
                   connectTab === 'pending' ? 'bg-white/5 text-white' : 'text-gray-500'
                 }`}
               >
                 <span>Pending Invites</span>
                 {pendingRequests.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-pink text-white flex items-center justify-center text-[8px] font-black">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-pink text-white flex items-center justify-center text-[8px] font-semibold">
                     {pendingRequests.length}
                   </span>
                 )}
@@ -181,7 +181,7 @@ export default function NexoraNetwork({ user }) {
                         </div>
                         <button 
                           onClick={() => handleSendConnect(student.id, student.name)}
-                          className="px-3 py-1.5 rounded-xl bg-brand-purple hover:brightness-110 text-white font-extrabold text-[9px] uppercase tracking-wider cursor-pointer shrink-0"
+                          className="px-3 py-1.5 rounded-xl bg-brand-purple hover:brightness-110 text-white font-extrabold text-[9px] tracking-wide cursor-pointer shrink-0"
                         >
                           Connect
                         </button>
@@ -206,13 +206,13 @@ export default function NexoraNetwork({ user }) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => handleAcceptConnect(req.id, req.name)}
-                            className="flex-1 py-1.5 rounded-xl bg-brand-teal text-black font-extrabold text-[9px] uppercase tracking-wider cursor-pointer"
+                            className="flex-1 py-1.5 rounded-xl bg-brand-teal text-black font-extrabold text-[9px] tracking-wide cursor-pointer"
                           >
                             Accept
                           </button>
                           <button 
                             onClick={() => { setPendingRequests(pendingRequests.filter(r => r.id !== req.id)); addToast({ message: 'Request declined', type: 'info' }); }}
-                            className="flex-1 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white font-extrabold text-[9px] uppercase tracking-wider cursor-pointer"
+                            className="flex-1 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white font-extrabold text-[9px] tracking-wide cursor-pointer"
                           >
                             Decline
                           </button>

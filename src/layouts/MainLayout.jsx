@@ -199,10 +199,10 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             </button>
 
             <div className="hidden sm:block">
-              <h2 className="text-sm font-black text-white flex items-center gap-1.5 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-1.5 tracking-wide">
                 Welcome back, {profile.name ? profile.name.split(' ')[0].charAt(0).toUpperCase() + profile.name.split(' ')[0].slice(1).toLowerCase() : 'Student'} <span className="animate-bounce">👋</span>
               </h2>
-              <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest mt-0.5">Explore your personalized academic portal</p>
+              <p className="text-[10px] text-gray-400 font-semibold tracking-wide mt-0.5">Explore your personalized academic portal</p>
             </div>
           </div>
 
@@ -230,7 +230,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               >
                 <Bell className="w-4 h-4" />
                 {notifications.some(n => n.unread) && (
-                  <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-brand-pink shadow-[0_0_8px_rgba(247,37,133,0.5)]"></span>
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-brand-pink shadow-sm"></span>
                 )}
               </button>
 
@@ -322,7 +322,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               
               {/* Profile Image Upload Box */}
               <div className="flex flex-col items-center justify-center gap-3 mb-4">
-                <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-teal/40 group bg-white/5">
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 group bg-white/5">
                   <img src={avatarSrc} alt="Avatar Preview" className="w-full h-full object-cover" />
                   <label htmlFor="profile-avatar-upload" className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white cursor-pointer transition-opacity">
                     <Camera className="w-5 h-5" />
@@ -335,7 +335,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                     className="hidden" 
                   />
                 </div>
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Click photo to update</span>
+                <span className="text-[10px] text-gray-500 font-bold tracking-wide">Click photo to update</span>
               </div>
 
               <div className="space-y-1.5">
@@ -392,7 +392,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                   value={editYear}
                   onChange={(e) => setEditYear(e.target.value)}
                   required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-brand-teal/50 transition-all appearance-none"
+                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-gray-300 focus:outline-none focus:border-white/10 transition-all appearance-none"
                 >
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
@@ -406,7 +406,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-brand-teal to-brand-blue text-black hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,245,212,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-brand-teal to-brand-blue text-black hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? (
                   <span>Saving Profile...</span>

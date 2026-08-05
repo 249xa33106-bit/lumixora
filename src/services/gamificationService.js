@@ -18,32 +18,35 @@ import {
 
 // XP Reward Constants
 export const XP_REWARDS = {
-  DAILY_LOGIN: { xp: 10, label: "Daily Login" },
-  STUDY_20_MIN: { xp: 20, label: "Study 20 Minutes" },
-  COMPLETE_AI_TASK: { xp: 30, label: "Complete AI Study Plan Task" },
-  FINISH_QUIZ: { xp: 50, label: "Finish a Quiz" },
-  SCORE_ABOVE_90: { xp: 75, label: "Score Above 90%" },
-  UPLOAD_NOTES: { xp: 40, label: "Upload Notes" },
-  HELP_STUDENT: { xp: 25, label: "Help Another Student" },
-  MAINTAIN_STREAK: { xp: 15, label: "Maintain Daily Streak" },
-  COMPLETE_WEEKLY_GOAL: { xp: 150, label: "Complete Weekly Goal" }
+  DAILY_LOGIN: { xp: 10, label: "Daily Login Resonance" },
+  STUDY_20_MIN: { xp: 20, label: "Deep Study Flow Activation" },
+  COMPLETE_AI_TASK: { xp: 30, label: "AI Target Milestone Resolution" },
+  FINISH_QUIZ: { xp: 50, label: "Focus Sprint Assessment" },
+  SCORE_ABOVE_90: { xp: 75, label: "High Cognitive Synergy" },
+  UPLOAD_NOTES: { xp: 40, label: "Resource Constellation Contribution" },
+  HELP_STUDENT: { xp: 25, label: "Peer Mind Synchronization" },
+  MAINTAIN_STREAK: { xp: 15, label: "Focus Rhythm Maintenance" },
+  COMPLETE_WEEKLY_GOAL: { xp: 150, label: "Weekly Mastery Alignment" },
+  SYNC_AI_TWIN: { xp: 15, label: "Twin Neural Synchronization" },
+  COMPLETE_STUDY_SESSION: { xp: 30, label: "Twin Simulated Study Session" },
+  READ_NOTE: { xp: 10, label: "Lecture Note Consultation" }
 };
 
 // Available Badges & Achievements Definitions
 export const ALL_ACHIEVEMENTS = [
-  { id: 'first_login', name: 'First Steps', desc: 'Log in for the first time', icon: '🚀', xpReward: 50 },
-  { id: 'streak_3', name: 'Consistent Learner', desc: 'Reach a 3-day learning streak', icon: '🔥', xpReward: 50 },
-  { id: 'streak_7', name: 'Weekly Warrior', desc: 'Reach a 7-day learning streak', icon: '⚡', xpReward: 100 },
-  { id: 'streak_30', name: 'Dedicated Scholar', desc: 'Reach a 30-day learning streak', icon: '🏆', xpReward: 250 },
-  { id: 'streak_100', name: 'Centurion', desc: 'Reach a 100-day learning streak', icon: '👑', xpReward: 500 },
-  { id: 'quiz_master', name: 'Quiz Master', desc: 'Finish 10 quizzes with a score > 90%', icon: '🎓', xpReward: 150 },
-  { id: 'ai_explorer', name: 'AI Explorer', desc: 'Complete 5 AI-generated study tasks', icon: '🤖', xpReward: 100 },
-  { id: 'early_bird', name: 'Early Bird', desc: 'Complete a study task before 7 AM', icon: '🌅', xpReward: 50 },
-  { id: 'night_owl', name: 'Night Owl', desc: 'Study for 20+ minutes after midnight', icon: '🦉', xpReward: 50 },
-  { id: 'top_contributor', name: 'Top Contributor', desc: 'Upload 5 approved study materials/notes', icon: '✍️', xpReward: 150 },
-  { id: 'top_10_leaderboard', name: 'Elite Ranker', desc: 'Reach the Top 10 on the Global Leaderboard', icon: '🌠', xpReward: 200 },
-  { id: 'study_champion', name: 'Study Champion', desc: 'Accumulate 10 total hours of study time', icon: '⏳', xpReward: 200 },
-  { id: 'fast_learner', name: 'Fast Learner', desc: 'Complete 3 tasks in a single day', icon: '🏎️', xpReward: 100 }
+  { id: 'first_login', name: 'First Steps', desc: 'Activate your study constellation', icon: '🚀', xpReward: 50 },
+  { id: 'streak_3', name: 'Consistent Learner', desc: 'Reach a 3-day focus flow streak', icon: '🔥', xpReward: 50 },
+  { id: 'streak_7', name: 'Weekly Warrior', desc: 'Reach a 7-day focus flow streak', icon: '⚡', xpReward: 100 },
+  { id: 'streak_30', name: 'Dedicated Scholar', desc: 'Reach a 30-day focus flow streak', icon: '🏆', xpReward: 250 },
+  { id: 'streak_100', name: 'Centurion', desc: 'Reach a 100-day focus flow streak', icon: '👑', xpReward: 500 },
+  { id: 'quiz_master', name: 'Quiz Master', desc: 'Complete 10 focus sprint assessments with score > 90%', icon: '🎓', xpReward: 150 },
+  { id: 'ai_explorer', name: 'AI Explorer', desc: 'Resolve 5 AI-generated target milestones', icon: '🤖', xpReward: 100 },
+  { id: 'early_bird', name: 'Early Bird', desc: 'Activate a focus sprint before 7 AM', icon: '🌅', xpReward: 50 },
+  { id: 'night_owl', name: 'Night Owl', desc: 'Maintain study flow for 20+ minutes after midnight', icon: '🦉', xpReward: 50 },
+  { id: 'top_contributor', name: 'Top Contributor', desc: 'Contribute 5 resource constellations', icon: '✍️', xpReward: 150 },
+  { id: 'top_10_leaderboard', name: 'Elite Ranker', desc: 'Reach the Top 10 in Global Resonance', icon: '🌠', xpReward: 200 },
+  { id: 'study_champion', name: 'Study Champion', desc: 'Accumulate 10 total hours of focus flow', icon: '⏳', xpReward: 200 },
+  { id: 'fast_learner', name: 'Fast Learner', desc: 'Resolve 3 focus tasks in a single day', icon: '🏎️', xpReward: 100 }
 ];
 
 // Custom Themes Available for Purchase
@@ -56,9 +59,9 @@ export const THEMES = [
 
 // Profile Frames Available for Purchase
 export const FRAMES = [
-  { id: 'none', name: 'No Frame', cost: 0, style: 'border-transparent' },
-  { id: 'glow_teal', name: 'Teal Aura', cost: 150, style: 'border-2 border-[#00f5d4] shadow-[0_0_10px_rgba(0,245,212,0.6)] animate-pulse' },
-  { id: 'glow_purple', name: 'Void Ring', cost: 250, style: 'border-2 border-[#7209b7] shadow-[0_0_10px_rgba(114,9,183,0.6)]' },
+  { id: 'none', name: 'No Aura Border', cost: 0, style: 'border-transparent' },
+  { id: 'glow_teal', name: 'Teal Aura Ring', cost: 150, style: 'border-2 border-[#00f5d4] shadow-sm animate-pulse' },
+  { id: 'glow_purple', name: 'Void Aura Ring', cost: 250, style: 'border-2 border-[#7209b7] shadow-sm' },
   { id: 'rainbow_gradient', name: 'Spectrum Shield', cost: 500, style: 'border-2 border-transparent bg-gradient-to-r from-[#00f5d4] via-[#7209b7] to-[#f72585] bg-clip-border' }
 ];
 
@@ -78,6 +81,20 @@ export function getLevelFromXP(xp) {
     xpNeededForNextLevel: nextLevelXP - currentLevelXP,
     totalXpNeededForNextLevel: nextLevelXP
   };
+}
+
+// Generate unique Aura State names based on academic resonance levels
+export function getAuraStateName(level) {
+  if (level <= 1) return 'Dormant Spark';
+  if (level === 2) return 'Awakened Glow';
+  if (level === 3) return 'Focus Stream';
+  if (level === 4) return 'Cognitive Cascade';
+  if (level === 5) return 'Intellect Beacon';
+  if (level === 6) return 'Resonant Mind';
+  if (level === 7) return 'Scholarly Aura';
+  if (level === 8) return 'Synergetic Core';
+  if (level === 9) return 'Luminescent Sage';
+  return 'Cosmic Transcendent';
 }
 
 // Check if Firebase is actually running/unblocked
@@ -102,15 +119,8 @@ const LOCAL_DB = {
   }
 };
 
-// Seed Mock Leaderboard Students
-const MOCK_LEADERBOARD_USERS = [
-  { id: 'mock1', name: 'Rohan Sharma', college: 'GPREC', department: 'CSE', year: '3rd Year', city: 'Kurnool', state: 'Andhra Pradesh', country: 'India', xp: 2450, streak: 12, badgesCount: 6, level: 7, avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80', quizScore: 92, studyHours: 24, notesShared: 8 },
-  { id: 'mock2', name: 'Ananya Goel', college: 'IIT Bombay', department: 'Data Science', year: '2nd Year', city: 'Mumbai', state: 'Maharashtra', country: 'India', xp: 3820, streak: 35, badgesCount: 9, level: 10, avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80', quizScore: 96, studyHours: 42, notesShared: 14 },
-  { id: 'mock3', name: 'Sai Teja', college: 'GPREC', department: 'ECE', year: '4th Year', city: 'Kurnool', state: 'Andhra Pradesh', country: 'India', xp: 1950, streak: 8, badgesCount: 4, level: 6, avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80', quizScore: 88, studyHours: 19, notesShared: 5 },
-  { id: 'mock4', name: 'Kavya Nair', college: 'VIT Vellore', department: 'AI & ML', year: '1st Year', city: 'Vellore', state: 'Tamil Nadu', country: 'India', xp: 950, streak: 5, badgesCount: 3, level: 4, avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=80', quizScore: 94, studyHours: 12, notesShared: 2 },
-  { id: 'mock5', name: 'Vikram Singh', college: 'DTU', department: 'Mechanical', year: '3rd Year', city: 'Delhi', state: 'Delhi', country: 'India', xp: 1420, streak: 18, badgesCount: 5, level: 5, avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80', quizScore: 82, studyHours: 16, notesShared: 6 },
-  { id: 'mock6', name: 'Shruti Iyer', college: 'PES University', department: 'CSE', year: '2nd Year', city: 'Bengaluru', state: 'Karnataka', country: 'India', xp: 2150, streak: 22, badgesCount: 7, level: 6, avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80', quizScore: 90, studyHours: 28, notesShared: 9 }
-];
+// Mock leaderboard users removed as per requirements
+const MOCK_LEADERBOARD_USERS = [];
 
 // Helper to seed localStorage if empty
 function initializeLocalStorageDB(currentUser = null) {
@@ -131,7 +141,11 @@ export async function getUserProfile(uid, authUser = null) {
       const userRef = doc(db, 'users', uid);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
-        return userSnap.data();
+        const data = userSnap.data();
+        if (!data.completedDays || data.completedDays.length === 0) {
+          data.streak = 0;
+        }
+        return data;
       } else {
         // Create new user profile in Firestore
         const cleanProfile = parseProfileName(authUser?.displayName || authUser?.name || 'Academic Student');
@@ -195,7 +209,11 @@ export async function getUserProfile(uid, authUser = null) {
   // LocalStorage Fallback
   const cachedUsers = LOCAL_DB.get('users', {});
   if (cachedUsers[uid]) {
-    return cachedUsers[uid];
+    const data = cachedUsers[uid];
+    if (!data.completedDays || data.completedDays.length === 0) {
+      data.streak = 0;
+    }
+    return data;
   } else {
     const cleanProfile = parseProfileName(authUser?.displayName || authUser?.name || 'Academic Student');
     const defaultProfile = {
@@ -344,7 +362,8 @@ export async function awardXP(uid, actionKey, customVal = null) {
   const label = rewardConfig ? rewardConfig.label : "Custom Event Accomplishment";
 
   // Double check: Validate that action values match exact configuration rules to prevent cheating
-  if (actionKey in XP_REWARDS) {
+  const DYNAMIC_REWARDS = ['COMPLETE_STUDY_SESSION', 'FINISH_QUIZ', 'COMPLETE_AI_TASK'];
+  if (actionKey in XP_REWARDS && !DYNAMIC_REWARDS.includes(actionKey)) {
     const expected = XP_REWARDS[actionKey].xp;
     if (xpAmount !== expected) {
       console.warn("Security Alert: XP mismatch detected! Overriding with default rule.");
@@ -763,20 +782,6 @@ export async function getLeaderboardData(scope = 'Global', sortBy = 'xp', curren
         // Parse metadata packed in name field
         const parsed = parseProfileName(dbUser.name);
         
-        // Calculate dynamic deterministic stats based on user record to make them feel "real"
-        const registerDate = new Date(dbUser.created_at || Date.now());
-        const daysSinceRegistration = Math.max(1, Math.floor((Date.now() - registerDate.getTime()) / (1000 * 60 * 60 * 24)));
-        
-        // Seed realistic dynamic stats derived from database values
-        const studyHours = Math.min(100, Math.floor(daysSinceRegistration * 1.5 + (dbUser.id.charCodeAt(0) % 10)));
-        const notesShared = Math.min(25, Math.floor(studyHours / 6));
-        const quizScore = 80 + (dbUser.id.charCodeAt(1) % 18);
-        const streak = Math.min(45, Math.floor(daysSinceRegistration * 0.4 + (dbUser.id.charCodeAt(2) % 7)));
-        
-        // Total XP formula: studyHours * 20 + notesShared * 40 + streak * 15
-        const xp = studyHours * 20 + notesShared * 40 + streak * 15 + 100;
-        const levelDetails = getLevelFromXP(xp);
-        
         mergedList.push({
           id: dbUser.id,
           name: parsed.name,
@@ -786,14 +791,14 @@ export async function getLeaderboardData(scope = 'Global', sortBy = 'xp', curren
           city: parsed.place || 'Kurnool',
           state: parsed.place || 'Andhra Pradesh',
           country: 'India',
-          xp,
-          streak,
-          badgesCount: Math.min(12, Math.floor(levelDetails.level * 1.2)),
-          level: levelDetails.level,
+          xp: dbUser.xp !== undefined && dbUser.xp !== null ? dbUser.xp : 0,
+          streak: dbUser.streak !== undefined && dbUser.streak !== null ? dbUser.streak : 0,
+          badgesCount: dbUser.badges ? dbUser.badges.length : 0,
+          level: dbUser.level !== undefined && dbUser.level !== null ? dbUser.level : 1,
           avatarUrl: dbUser.avatarUrl || '',
-          quizScore,
-          studyHours,
-          notesShared
+          quizScore: dbUser.quizScore !== undefined && dbUser.quizScore !== null ? dbUser.quizScore : 0,
+          studyHours: dbUser.studyHours !== undefined && dbUser.studyHours !== null ? dbUser.studyHours : 0,
+          notesShared: dbUser.notesShared !== undefined && dbUser.notesShared !== null ? dbUser.notesShared : 0
         });
       }
       
@@ -810,8 +815,11 @@ export async function getLeaderboardData(scope = 'Global', sortBy = 'xp', curren
     list = LOCAL_DB.get('leaderboards', []);
   }
 
+  // Ensure list only contains users who have submitted a test
+  list = list.filter(u => u.quizScore && u.quizScore > 0);
+
   // If current logged-in user is not in the list, dynamically append/sync them
-  if (currentUser && !list.some(u => u.id === currentUser.uid)) {
+  if (currentUser && !list.some(u => u.id === currentUser.uid) && currentUser.quizScore > 0) {
     list.push({
       id: currentUser.uid,
       name: currentUser.name,

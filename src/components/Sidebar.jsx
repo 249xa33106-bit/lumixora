@@ -1,11 +1,19 @@
 import React from 'react';
-import { LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, Mail, Trophy, Code, Clock, AlertTriangle, Users, Film } from 'lucide-react';
+import { LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, Mail, Trophy, Code, Clock, AlertTriangle, Users, Film, Shield, Target, ClipboardList } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout }) {
+  const isFounder = user?.role === 'founder' || 
+                   user?.email?.toLowerCase().includes('founder') || 
+                   user?.email?.toLowerCase().includes('admin') || 
+                   user?.email?.toLowerCase() === 'admin@lumixora.com';
+
   const menuItems = [
+    ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield, badge: 'Secure' }] : []),
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'future-twin', label: 'AI Future Twin™', icon: Sparkles, badge: 'PRO' },
     { id: 'coding-practice', label: 'Code Arena', icon: Code, badge: 'Beta' },
+    { id: 'test-portal', label: 'Test Portal', icon: Target, badge: 'Hot' },
+    { id: 'assigned-tasks', label: 'Assigned Tasks', icon: ClipboardList, badge: 'New' },
     { id: 'life-replay', label: 'Life Replay', icon: Film, badge: 'New' },
     { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle, badge: 'AI 24/7' },
     { id: 'learning-hub', label: 'Learning Hub', icon: BookOpen },
@@ -87,7 +95,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                 onClick={() => handleTabClick(item.id)}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group ${
                   isActive 
-                    ? 'bg-gradient-to-r from-brand-teal/20 to-brand-purple/10 border border-brand-teal/30 text-brand-teal shadow-[0_0_15px_rgba(0,245,212,0.1)]' 
+                    ? 'bg-gradient-to-r from-brand-teal/20 to-brand-purple/10 border border-white/10 text-brand-teal shadow-sm' 
                     : 'text-gray-400 hover:text-gray-100 hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -96,9 +104,9 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                   <span className="font-medium text-sm">{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold tracking-wide ${
                     isActive 
-                      ? 'bg-brand-teal text-black shadow-[0_0_8px_rgba(0,245,212,0.4)]' 
+                      ? 'bg-brand-teal text-black shadow-sm' 
                       : 'bg-white/10 text-brand-teal group-hover:bg-brand-teal group-hover:text-black transition-colors duration-300'
                   }`}>
                     {item.badge}
@@ -110,10 +118,10 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         </nav>
 
         {/* Quick AI Widget */}
-        <div className="p-4 m-4 rounded-2xl bg-gradient-to-br from-brand-pink/20 to-brand-purple/20 border border-brand-pink/30 relative overflow-hidden group shadow-[0_0_20px_rgba(247,37,133,0.15)] hover:shadow-[0_0_30px_rgba(247,37,133,0.3)] transition-shadow duration-500">
+        <div className="p-4 m-4 rounded-2xl bg-gradient-to-br from-brand-pink/20 to-brand-purple/20 border border-white/10 relative overflow-hidden group shadow-sm hover:shadow-sm transition-shadow duration-500">
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-pink/30 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 animate-pulse-glow"></div>
           <div className="relative z-10">
-            <div className="flex items-center gap-2 text-brand-pink text-xs font-black uppercase tracking-widest mb-1.5 drop-shadow-[0_0_5px_rgba(247,37,133,0.5)]">
+            <div className="flex items-center gap-2 text-brand-pink text-xs font-semibold tracking-wide mb-1.5 drop-shadow-sm">
               <Sparkles className="w-4 h-4 animate-pulse" />
               <span>Lumixora AI Plus</span>
             </div>

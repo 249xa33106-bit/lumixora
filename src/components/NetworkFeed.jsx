@@ -186,7 +186,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
       
       {/* Top Section: Student Stories & Interactive Poll */}
       <div className="glass-panel p-4 rounded-3xl space-y-4">
-        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">24h Student Stories</span>
+        <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">24h Student Stories</span>
         
         <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
           {/* Add Story Button */}
@@ -198,9 +198,9 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
           </div>
 
           {/* Interactive Poll Story */}
-          <div className="w-56 h-14 shrink-0 rounded-2xl bg-gradient-to-r from-brand-pink/15 to-brand-purple/15 border border-brand-pink/25 p-2 flex items-center justify-between gap-3 text-left">
+          <div className="w-56 h-14 shrink-0 rounded-2xl bg-gradient-to-r from-brand-pink/15 to-brand-purple/15 border border-white/10 p-2 flex items-center justify-between gap-3 text-left">
             <div className="space-y-0.5">
-              <span className="text-[9px] font-black text-brand-pink uppercase tracking-wider block">Campus Poll</span>
+              <span className="text-[9px] font-semibold text-brand-pink tracking-wide block">Campus Poll</span>
               <span className="text-[10px] font-bold text-gray-200 block truncate max-w-[120px]">React vs Flutter?</span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
@@ -208,7 +208,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 onClick={() => handleVotePoll('optionA')}
                 disabled={hasVoted}
                 className={`px-2 py-1 rounded-lg text-[9px] font-extrabold transition-all border ${
-                  hasVoted ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-brand-pink/20 border-brand-pink/30 text-brand-pink hover:bg-brand-pink/30'
+                  hasVoted ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-brand-pink/20 border-white/10 text-brand-pink hover:bg-brand-pink/30'
                 }`}
               >
                 React ({hasVoted ? Math.round((pollVotes.optionA / (pollVotes.optionA + pollVotes.optionB)) * 100) + '%' : pollVotes.optionA})
@@ -217,7 +217,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 onClick={() => handleVotePoll('optionB')}
                 disabled={hasVoted}
                 className={`px-2 py-1 rounded-lg text-[9px] font-extrabold transition-all border ${
-                  hasVoted ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-brand-purple/20 border-brand-purple/30 text-brand-purple hover:bg-brand-purple/30'
+                  hasVoted ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-brand-purple/20 border-white/10 text-brand-purple hover:bg-brand-purple/30'
                 }`}
               >
                 Flutter ({hasVoted ? Math.round((pollVotes.optionB / (pollVotes.optionA + pollVotes.optionB)) * 100) + '%' : pollVotes.optionB})
@@ -231,7 +231,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
       <div className="glass-panel p-5 rounded-3xl bg-black/25">
         <form onSubmit={handleCreatePost} className="space-y-4 text-left">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-teal/10 border border-brand-teal/20 flex items-center justify-center text-brand-teal font-extrabold text-xs">
+            <div className="w-9 h-9 rounded-xl bg-brand-teal/10 border border-white/10 flex items-center justify-center text-brand-teal font-extrabold text-xs">
               {(user?.name || 'S').charAt(0).toUpperCase()}
             </div>
             <textarea
@@ -267,7 +267,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 type="button"
                 onClick={() => { setAttachmentType('image'); setNewPostAttachment('IMG_HackathonMemory.png'); }}
                 className={`p-2 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                  attachmentType === 'image' ? 'bg-brand-pink/15 border-brand-pink/20 text-brand-pink' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white'
+                  attachmentType === 'image' ? 'bg-brand-pink/15 border-white/10 text-brand-pink' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white'
                 }`}
               >
                 <Image className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 type="button"
                 onClick={() => { setAttachmentType('pdf'); setNewPostAttachment('DSA_Notes_Sem3.pdf'); }}
                 className={`p-2 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                  attachmentType === 'pdf' ? 'bg-brand-blue/15 border-brand-blue/20 text-brand-blue' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white'
+                  attachmentType === 'pdf' ? 'bg-brand-blue/15 border-white/10 text-brand-blue' : 'bg-white/5 border-white/5 text-gray-400 hover:text-white'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -310,7 +310,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 </div>
                 <div>
                   <h4 className="text-xs font-extrabold text-white">{post.name}</h4>
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">{post.college}</span>
+                  <span className="text-[10px] text-gray-500 font-bold block tracking-wide">{post.college}</span>
                 </div>
               </div>
               <span className="text-[10px] text-gray-500 font-semibold">{post.timestamp}</span>
@@ -323,7 +323,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
             {post.attachmentName && (
               <div className="p-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between gap-4 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center text-brand-blue">
+                  <div className="w-8 h-8 rounded-lg bg-brand-blue/10 border border-white/10 flex items-center justify-center text-brand-blue">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
@@ -334,7 +334,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
                 <a 
                   href={post.attachmentUrl}
                   onClick={(e) => { e.preventDefault(); addToast({ message: 'File download initiated.', type: 'info' }); }}
-                  className="text-[10px] font-black uppercase text-brand-blue hover:underline"
+                  className="text-[10px] font-semibold uppercase text-brand-blue hover:underline"
                 >
                   Download
                 </a>

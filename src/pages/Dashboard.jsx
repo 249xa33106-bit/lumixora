@@ -45,9 +45,8 @@ export default function Dashboard({ setActiveTab, user }) {
   const metrics = liveMentorData.metrics;
 
   const synergyScore = metrics.compositeReadiness;
-  const consistencyScore = Math.min(100, (metrics.streak * 12) + (liveMentorData.analytics.totalSessions * 5));
+  const consistencyScore = Math.min(100, (liveMentorData.analytics.totalSessions * 10));
   const focusScore = liveMentorData.analytics.totalSessions > 0 ? (liveMentorData.analytics.avgFocusScore || 0) : 0;
-  const currentStreak = metrics.streak;
   const productivityScore = Math.round(
     Math.min(100, ((liveMentorData.analytics.totalMinutes || 0) / ((Number(profile.dailyHours) || 4) * 60)) * 100)
   ) || 0;
@@ -120,7 +119,7 @@ export default function Dashboard({ setActiveTab, user }) {
 
   // ─── Mini AI Twin Chat Console ─────────────────────────────────────────────
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hi ${studentProfile.name}! I am your AI Academic Twin™. Your study streak is currently ${twinData.studyAnalytics.currentStreak} days. How can I help you today?` }
+    { role: 'assistant', content: `Hi ${studentProfile.name}! I am your AI Academic Twin™. How can I help you today?` }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -226,9 +225,9 @@ export default function Dashboard({ setActiveTab, user }) {
       {/* ─── Welcome Quick Stats Row ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Welcome Actions Card */}
-        <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between border border-border-glass md:col-span-2">
+        <div className="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between border border-border-glass md:col-span-2 animate-fade-in-up animate-stagger-1 opacity-0">
           <div className="space-y-2 text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-[10px] font-bold text-brand-teal uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-white/10 text-[10px] font-bold text-brand-teal tracking-wide">
               <Zap className="w-3 h-3 animate-bounce" />
               <span>Academic Twin Connected</span>
             </div>
@@ -245,7 +244,7 @@ export default function Dashboard({ setActiveTab, user }) {
                 localStorage.setItem('mentor_subtab', 'profile');
                 setActiveTab('mentor');
               }}
-              className="px-4 py-2.5 rounded-xl bg-brand-pink hover:opacity-95 text-white font-bold text-xs shadow-[0_0_15px_rgba(247,37,133,0.35)] transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-brand-pink hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
             >
               Access Twin Profile
             </button>
@@ -259,7 +258,7 @@ export default function Dashboard({ setActiveTab, user }) {
         </div>
 
         {/* Real-Time Synergy Indicator Widget */}
-        <div className="glass-panel p-6 rounded-2xl border border-border-glass flex flex-col items-center justify-center text-center">
+        <div className="glass-panel glass-panel-hover p-6 rounded-2xl border border-border-glass flex flex-col items-center justify-center text-center animate-fade-in-up animate-stagger-2 opacity-0">
           <div className="relative w-20 h-20 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="transparent" />
@@ -291,8 +290,8 @@ export default function Dashboard({ setActiveTab, user }) {
           
           {/* AI Weakness & Patterns Warning Alerts */}
           {warnings.length > 0 && (
-            <div className="glass-panel p-5 rounded-2xl space-y-3">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-1.5">
+            <div className="glass-panel glass-panel-hover p-5 rounded-2xl space-y-3 animate-fade-in-up animate-stagger-3 opacity-0">
+              <h3 className="text-xs font-extrabold tracking-wide text-gray-100 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-brand-orange animate-pulse" /> Real-Time Cognitive Alerts
               </h3>
               
@@ -307,7 +306,7 @@ export default function Dashboard({ setActiveTab, user }) {
 
                     <button 
                       onClick={() => handleQuizSubmit(new Event('submit'))}
-                      className="text-[9px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded bg-brand-orange/20 border border-brand-orange/30 text-brand-orange hover:bg-brand-orange hover:text-black transition-all cursor-pointer shrink-0"
+                      className="text-[9px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded bg-brand-orange/20 border border-white/10 text-brand-orange hover:bg-brand-orange hover:text-black transition-all cursor-pointer shrink-0"
                     >
                       Remediate
                     </button>
@@ -318,10 +317,10 @@ export default function Dashboard({ setActiveTab, user }) {
           )}
 
           {/* AI Recommended Study Plan Generator */}
-          <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+          <div className="glass-panel glass-panel-hover p-6 rounded-2xl relative overflow-hidden animate-fade-in-up animate-stagger-1 opacity-0">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-4 h-4 text-brand-pink animate-spin" />
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-100">AI Target Roadmap Builder</h3>
+              <h3 className="text-xs font-extrabold tracking-wide text-gray-100">AI Target Roadmap Builder</h3>
             </div>
 
             {quizState === 'start' && (
@@ -329,7 +328,7 @@ export default function Dashboard({ setActiveTab, user }) {
                 <p className="text-xs text-gray-400 mb-4">Assemble an immediate review strategy based on your target weakness.</p>
                 <button 
                   onClick={() => setQuizState('quiz')}
-                  className="px-5 py-2 rounded-xl bg-brand-pink text-white font-bold text-xs uppercase tracking-wide cursor-pointer shadow-[0_0_15px_rgba(247,37,133,0.25)]"
+                  className="px-5 py-2 rounded-xl bg-brand-pink text-white font-bold text-xs uppercase tracking-wide cursor-pointer shadow-sm hover:scale-105 transition-transform"
                 >
                   Configure Study Plan
                 </button>
@@ -380,13 +379,13 @@ export default function Dashboard({ setActiveTab, user }) {
             {quizState === 'result' && (
               <div className="space-y-3">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[9px] bg-brand-pink/20 text-brand-pink border border-brand-pink/30 px-2 py-0.5 rounded font-extrabold uppercase">Generated Pathway</span>
+                  <span className="text-[9px] bg-brand-pink/20 text-brand-pink border border-white/10 px-2 py-0.5 rounded font-extrabold uppercase">Generated Pathway</span>
                   <button onClick={() => setQuizState('start')} className="text-[10px] text-gray-400 hover:underline">Configure New</button>
                 </div>
 
                 <div className="space-y-2">
                   {aiRoadmap.map((task, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-brand-pink/35 transition-colors flex items-start gap-3">
+                    <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-brand-pink/20 text-brand-pink flex items-center justify-center text-[10px] font-bold shrink-0">{i + 1}</div>
                       <div>
                         <h4 className="text-xs font-bold text-gray-200">{task.title}</h4>
@@ -400,8 +399,8 @@ export default function Dashboard({ setActiveTab, user }) {
           </div>
 
           {/* SVG Weekly Productivity Graphs */}
-          <div className="glass-panel p-6 rounded-2xl">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-2 mb-4">
+          <div className="glass-panel glass-panel-hover p-6 rounded-2xl animate-fade-in-up animate-stagger-2 opacity-0">
+            <h3 className="text-xs font-extrabold tracking-wide text-gray-100 flex items-center gap-2 mb-4">
               <BarChart2 className="w-4 h-4 text-brand-teal" /> Weekly Study Allocation (Minutes per Subject)
             </h3>
             
@@ -436,22 +435,13 @@ export default function Dashboard({ setActiveTab, user }) {
         {/* Right 4-Column Sidebar Block */}
         <div className="lg:col-span-4 space-y-6">
           
-          {/* Streak Indicator */}
-          <div className="glass-panel p-6 rounded-2xl bg-gradient-to-br from-brand-pink/10 to-brand-purple/10 text-center relative overflow-hidden border border-brand-pink/20">
-            <div className="absolute -top-10 -left-10 w-24 h-24 bg-brand-pink/10 rounded-full blur-xl"></div>
-            <div className="w-12 h-12 rounded-full bg-brand-pink/20 flex items-center justify-center mx-auto text-brand-pink text-xl font-bold mb-2 shadow-[0_0_15px_rgba(247,37,133,0.2)]">
-              🔥
-            </div>
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-400">Current Streak</h3>
-            <p className="text-2xl font-black text-white mt-0.5">{twinData.studyAnalytics.currentStreak} Days</p>
-            <p className="text-[9px] text-gray-500 mt-2 font-semibold">Keep studying daily to maintain momentum multipliers.</p>
-          </div>
+
 
           {/* Mini Interactive AI Twin Chat Widget */}
-          <div className="glass-panel rounded-2xl overflow-hidden flex flex-col h-[280px]">
+          <div className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col h-[280px] animate-fade-in-up animate-stagger-3 opacity-0">
             <div className="p-3 bg-white/5 border-b border-white/5 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-brand-teal animate-ping"></span>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-300">Quick Twin Synchronizer</span>
+              <span className="text-[10px] font-extrabold tracking-wide text-gray-300">Quick Twin Synchronizer</span>
             </div>
             
             <div className="flex-1 p-3 overflow-y-auto space-y-2">
@@ -478,7 +468,7 @@ export default function Dashboard({ setActiveTab, user }) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask your Twin..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] text-white focus:outline-none"
+                className="flex-1 glass-input rounded-lg px-2.5 py-1.5 text-[11px] text-white focus:outline-none"
               />
               <button 
                 type="submit" 
@@ -491,8 +481,8 @@ export default function Dashboard({ setActiveTab, user }) {
           </div>
 
           {/* Exam Deadlines / Countdowns */}
-          <div className="glass-panel p-6 rounded-2xl">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-2 mb-4">
+          <div className="glass-panel glass-panel-hover p-6 rounded-2xl animate-fade-in-up animate-stagger-1 opacity-0">
+            <h3 className="text-xs font-extrabold tracking-wide text-gray-100 flex items-center gap-2 mb-4">
               <Clock className="w-4 h-4 text-brand-pink" /> Critical Timelines
             </h3>
             

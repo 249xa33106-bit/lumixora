@@ -108,9 +108,6 @@ export default function NotesPlatform({ user }) {
     if (url.includes('drive.google.com/file/d/')) {
       return url.replace(/\/(view|edit).*/, '/preview');
     }
-    if (url.toLowerCase().includes('.pdf')) {
-      return `${url}#toolbar=0`;
-    }
     return url;
   };
 
@@ -307,6 +304,40 @@ export default function NotesPlatform({ user }) {
     addToast({ message: 'Study set downloaded successfully!', type: 'success' });
   };
 
+  const handleDownloadClick = async (note) => {
+    let downloadedSomething = false;
+    
+    if (note.fileUrl) {
+      const link = document.createElement('a');
+      link.href = note.fileUrl;
+      link.target = '_blank';
+      link.download = note.title;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      addToast({ message: 'Original note download started!', type: 'success' });
+      downloadedSomething = true;
+    }
+    
+    if (note.aiEnhancement && note.aiEnhancement.status === 'complete') {
+      setTimeout(() => {
+        handleDownloadStudySet(note);
+      }, note.fileUrl ? 500 : 0);
+      downloadedSomething = true;
+    }
+    
+    if (downloadedSomething) {
+      try {
+        const currentDownloads = parseInt(note.downloads || 0, 10);
+        await updateNote(note.id, { downloads: currentDownloads + 1 });
+      } catch (err) {
+        console.error("Error updating download count:", err);
+      }
+    } else {
+      addToast({ message: 'No downloadable content available for this note.', type: 'error' });
+    }
+  };
+
   const handleDeleteClick = async (note) => {
     if (viewMode === 'library') {
       if (window.confirm(`Move "${note.title}" to Recycle Bin?`)) {
@@ -409,9 +440,9 @@ export default function NotesPlatform({ user }) {
                 <button
                   key={sub}
                   onClick={() => setFilterBranch(sub)}
-                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
                     filterBranch === sub 
-                      ? 'bg-brand-blue text-black font-bold shadow-[0_0_10px_rgba(0,180,216,0.25)]' 
+                      ? 'bg-brand-blue text-black font-bold shadow-sm' 
                       : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
                   }`}
                 >
@@ -424,9 +455,9 @@ export default function NotesPlatform({ user }) {
                 <button
                   key={sem}
                   onClick={() => setFilterSem(sem)}
-                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
                     filterSem === sem 
-                      ? 'bg-brand-orange text-black font-bold shadow-[0_0_10px_rgba(255,159,28,0.25)]' 
+                      ? 'bg-brand-orange text-black font-bold shadow-sm' 
                       : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
                   }`}
                 >
@@ -455,10 +486,10 @@ export default function NotesPlatform({ user }) {
         
         {/* Upload Notes Drag & Drop Box - Only show in Library mode for Founders */}
         {viewMode === 'library' && user?.role === 'founder' && (
-          <div className="glass-panel p-6 rounded-2xl flex flex-col justify-center items-center border border-brand-teal/30 hover:border-brand-teal/60 bg-brand-teal/5 transition-all duration-300 h-64 relative overflow-hidden gap-4">
+          <div className="glass-panel p-6 rounded-2xl flex flex-col justify-center items-center border border-white/10 hover:border-white/10 bg-brand-teal/5 transition-all duration-300 h-64 relative overflow-hidden gap-4">
             
             {/* File Upload Section */}
-            <div className="w-full flex-1 flex flex-col justify-center items-center relative group border-2 border-dashed border-brand-teal/30 rounded-xl">
+            <div className="w-full flex-1 flex flex-col justify-center items-center relative group border-2 border-dashed border-white/10 rounded-xl">
               <input
                 type="file"
                 id="notes-file-upload"
@@ -543,7 +574,7 @@ export default function NotesPlatform({ user }) {
             {/* Note Content Header */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] bg-brand-blue/15 text-brand-blue border border-brand-blue/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                <span className="text-[9px] bg-brand-blue/15 text-brand-blue border border-white/10 px-2 py-0.5 rounded font-bold tracking-wide">
                   {note.subject}
                 </span>
                 <span className="text-[10px] text-gray-500 font-semibold">{note.size || '-- MB'}</span>
@@ -564,7 +595,7 @@ export default function NotesPlatform({ user }) {
               <div className="flex items-center gap-1.5">
                 <button 
                   onClick={() => handleEnhanceClick(note)}
-                  className="p-2 rounded-lg bg-brand-purple/10 border border-brand-purple/20 text-brand-pink hover:bg-brand-purple hover:text-white transition-all duration-300 flex items-center justify-center cursor-pointer relative group/btn"
+                  className="p-2 rounded-lg bg-brand-purple/10 border border-white/10 text-brand-pink hover:bg-brand-purple hover:text-white transition-all duration-300 flex items-center justify-center cursor-pointer relative group/btn"
                   title="Enhance notes with Lumixora AI"
                 >
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
@@ -574,7 +605,7 @@ export default function NotesPlatform({ user }) {
                 {note.fileUrl && (
                   <button 
                     onClick={() => setPreviewUrl(getEmbedUrl(note.fileUrl))}
-                    className="p-2 rounded-lg bg-brand-blue/10 border border-brand-blue/20 text-brand-blue hover:bg-brand-blue hover:text-black transition-all duration-300 flex items-center justify-center cursor-pointer"
+                    className="p-2 rounded-lg bg-brand-blue/10 border border-white/10 text-brand-blue hover:bg-brand-blue hover:text-black transition-all duration-300 flex items-center justify-center cursor-pointer"
                     title="View Original Document"
                   >
                     <Eye className="w-3.5 h-3.5" />
@@ -586,7 +617,7 @@ export default function NotesPlatform({ user }) {
                   <button 
                     onClick={() => handleEditClick(note)}
                     title="Edit Note"
-                    className="p-2 rounded-lg bg-white/5 border border-white/5 hover:border-brand-teal/40 text-gray-400 hover:text-brand-teal transition-all duration-300 flex items-center justify-center cursor-pointer"
+                    className="p-2 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 text-gray-400 hover:text-brand-teal transition-all duration-300 flex items-center justify-center cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
@@ -615,18 +646,32 @@ export default function NotesPlatform({ user }) {
                 )}
 
                 {/* Download Button */}
-                <button 
-                  onClick={() => handleDownloadStudySet(note)}
-                  disabled={!note.aiEnhancement || note.aiEnhancement.status !== 'complete'}
-                  title={note.aiEnhancement?.status === 'complete' ? "Download Study Set" : "AI Enhancement not ready"}
-                  className={`p-2 rounded-lg border transition-all duration-300 flex items-center justify-center ${
-                    note.aiEnhancement?.status === 'complete'
-                      ? 'bg-white/5 border-white/5 hover:border-brand-blue/40 text-gray-400 hover:text-brand-blue cursor-pointer'
-                      : 'bg-black/10 border-transparent text-gray-600 cursor-not-allowed'
-                  }`}
-                >
-                  <Download className="w-3.5 h-3.5" />
-                </button>
+                {(() => {
+                  const hasFile = !!note.fileUrl;
+                  const hasStudySet = note.aiEnhancement?.status === 'complete';
+                  const canDownload = hasFile || hasStudySet;
+                  const titleText = (hasFile && hasStudySet) 
+                    ? "Download Note & Study Set" 
+                    : hasFile 
+                      ? "Download Note" 
+                      : hasStudySet 
+                        ? "Download Study Set" 
+                        : "No downloadable file available";
+                  return (
+                    <button 
+                      onClick={() => handleDownloadClick(note)}
+                      disabled={!canDownload}
+                      title={titleText}
+                      className={`p-2 rounded-lg border transition-all duration-300 flex items-center justify-center ${
+                        canDownload
+                          ? 'bg-white/5 border-white/5 hover:border-white/10 text-gray-400 hover:text-brand-blue cursor-pointer'
+                          : 'bg-black/10 border-transparent text-gray-600 cursor-not-allowed'
+                      }`}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })()}
               </div>
             </div>
 
@@ -671,11 +716,11 @@ export default function NotesPlatform({ user }) {
                     {activeNoteForEnhance.aiEnhancement.summary || "There was a problem generating the AI enhancement. Please check your API key and try uploading the file again."}
                   </p>
                   {activeNoteForEnhance.type === 'Drive Link' ? (
-                    <p className="text-xs text-brand-blue mt-4 font-semibold px-4 py-2 bg-brand-blue/10 rounded-lg border border-brand-blue/20">
+                    <p className="text-xs text-brand-blue mt-4 font-semibold px-4 py-2 bg-brand-blue/10 rounded-lg border border-white/10">
                       Tip: If you want AI summaries and practice questions, upload the document as a PDF or Text file instead of a Drive Link.
                     </p>
                   ) : (
-                    <p className="text-xs text-brand-pink mt-4 font-semibold px-4 py-2 bg-brand-pink/10 rounded-lg border border-brand-pink/20">
+                    <p className="text-xs text-brand-pink mt-4 font-semibold px-4 py-2 bg-brand-pink/10 rounded-lg border border-white/10">
                       Tip: Re-upload the file to retry now that the API is fixed!
                     </p>
                   )}
@@ -695,7 +740,7 @@ export default function NotesPlatform({ user }) {
                 <>
                   {/* Outline / Summary Section */}
                   <div className="space-y-2 text-left animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                    <h4 className="text-xs font-bold text-brand-teal uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="text-xs font-bold text-brand-teal tracking-wide flex items-center gap-2">
                       <BookOpen className="w-4 h-4" />
                       <span>Structured Summary Outline</span>
                     </h4>
@@ -706,7 +751,7 @@ export default function NotesPlatform({ user }) {
 
                   {/* Core Concepts */}
                   <div className="space-y-2 text-left animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    <h4 className="text-xs font-bold text-brand-blue uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="text-xs font-bold text-brand-blue tracking-wide flex items-center gap-2">
                       <Brain className="w-4 h-4" />
                       <span>Core Academic Concepts</span>
                     </h4>
@@ -725,7 +770,7 @@ export default function NotesPlatform({ user }) {
 
                   {/* Practice Q&A */}
                   <div className="space-y-2 text-left animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                    <h4 className="text-xs font-bold text-brand-purple uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="text-xs font-bold text-brand-purple tracking-wide flex items-center gap-2">
                       <ListCollapse className="w-4 h-4" />
                       <span>AI-Generated Practice Questions</span>
                     </h4>
@@ -838,7 +883,7 @@ export default function NotesPlatform({ user }) {
               </button>
               <button 
                 onClick={handleSaveEdit}
-                className="px-6 py-2 rounded-xl text-sm font-bold bg-brand-teal text-black hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,245,212,0.3)]"
+                className="px-6 py-2 rounded-xl text-sm font-bold bg-brand-teal text-black hover:brightness-110 transition-all shadow-sm"
               >
                 Save Changes
               </button>
@@ -850,15 +895,34 @@ export default function NotesPlatform({ user }) {
       {/* Document Preview Modal */}
       {previewUrl && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8">
-          <div className="relative w-full max-w-6xl h-full max-h-[90vh] glass-panel rounded-2xl flex flex-col border border-brand-teal/30">
+          <div className="relative w-full max-w-6xl h-full max-h-[90vh] glass-panel rounded-2xl flex flex-col border border-white/10">
             <div className="flex justify-between items-center p-4 border-b border-white/10 bg-black/40">
               <h3 className="text-brand-teal font-bold tracking-wider">Document Preview</h3>
-              <button 
-                onClick={handleCloseModal}
-                className="px-4 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm font-bold"
-              >
-                Close Preview
-              </button>
+              <div className="flex items-center gap-2">
+                {previewUrl && (
+                  <button 
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = previewUrl;
+                      link.target = '_blank';
+                      link.download = '';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="px-4 py-1.5 bg-brand-blue/20 text-brand-blue rounded-lg hover:bg-brand-blue hover:text-black transition-all text-sm font-bold flex items-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Note
+                  </button>
+                )}
+                <button 
+                  onClick={handleCloseModal}
+                  className="px-4 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm font-bold"
+                >
+                  Close Preview
+                </button>
+              </div>
             </div>
             <div 
               className="flex-1 w-full bg-[#f8f9fa] rounded-b-2xl overflow-hidden relative"

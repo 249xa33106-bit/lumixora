@@ -182,7 +182,7 @@ export default function LearningHub({ user }) {
               {user?.role === 'founder' && (
                 <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shrink-0">
                   <Shield className={`w-4 h-4 ${isFounderMode ? 'text-brand-teal' : 'text-gray-500'}`} />
-                  <span className="text-xs uppercase tracking-wider font-bold hidden sm:block">Founder Mode</span>
+                  <span className="text-xs tracking-wide font-bold hidden sm:block">Founder Mode</span>
                   <button 
                     onClick={() => setIsFounderMode(!isFounderMode)}
                     className={`w-10 h-5 rounded-full relative transition-colors ${isFounderMode ? 'bg-brand-teal' : 'bg-gray-600'}`}
@@ -205,7 +205,7 @@ export default function LearningHub({ user }) {
               placeholder="Search subjects..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-blue/50 transition-colors"
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/10 transition-colors"
             />
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function LearningHub({ user }) {
       {/* Selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">1. Select Branch</label>
+          <label className="text-xs font-bold text-gray-400 tracking-wide pl-1">1. Select Branch</label>
           <div className="flex flex-wrap gap-2">
             {branches.map(branch => (
               <button
@@ -222,7 +222,7 @@ export default function LearningHub({ user }) {
                 onClick={() => setSelectedBranch(branch)}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
                   selectedBranch === branch 
-                    ? 'bg-brand-blue text-black shadow-[0_0_15px_rgba(0,180,216,0.3)]' 
+                    ? 'bg-brand-blue text-black shadow-sm' 
                     : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
                 }`}
               >
@@ -233,7 +233,7 @@ export default function LearningHub({ user }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">2. Select Semester</label>
+          <label className="text-xs font-bold text-gray-400 tracking-wide pl-1">2. Select Semester</label>
           <div className="flex flex-wrap gap-2">
             {semesters.map(sem => (
               <button
@@ -241,7 +241,7 @@ export default function LearningHub({ user }) {
                 onClick={() => setSelectedSem(sem)}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
                   selectedSem === sem 
-                    ? 'bg-brand-orange text-black shadow-[0_0_15px_rgba(255,159,28,0.3)]' 
+                    ? 'bg-brand-orange text-black shadow-sm' 
                     : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
                 }`}
               >
@@ -283,7 +283,7 @@ export default function LearningHub({ user }) {
             {isFounderMode && (
               <button 
                 onClick={handleOpenAddModal}
-                className="px-6 py-2.5 bg-brand-teal text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,210,211,0.3)] hover:scale-105"
+                className="px-6 py-2.5 bg-brand-teal text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm hover:scale-105"
               >
                 <Plus className="w-4 h-4" /> Add the First Subject
               </button>
@@ -295,7 +295,7 @@ export default function LearningHub({ user }) {
               <div 
                 key={subject.id}
                 onClick={() => handleSelectSubject(subject)}
-                className="glass-panel p-5 rounded-2xl hover:border-brand-blue/30 transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
+                className="glass-panel p-5 rounded-2xl hover:border-white/10 transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
               >
                 {/* Admin Controls (Founder Mode) */}
                 {isFounderMode && (
@@ -335,7 +335,7 @@ export default function LearningHub({ user }) {
                 {isFounderMode && (
                   <button
                     onClick={(e) => handleQuickUploadOpen(e, subject)}
-                    className="mt-2 mb-4 text-[10px] bg-brand-teal/20 text-brand-teal hover:bg-brand-teal/35 border border-brand-teal/30 px-2.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors font-bold z-10 relative"
+                    className="mt-2 mb-4 text-[10px] bg-brand-teal/20 text-brand-teal hover:bg-brand-teal/35 border border-white/10 px-2.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors font-bold z-10 relative"
                   >
                     <Plus className="w-3.5 h-3.5" /> Upload PDF/Notes
                   </button>
@@ -370,7 +370,7 @@ export default function LearningHub({ user }) {
             </div>
             <form onSubmit={handleSaveSubject} className="p-5 space-y-4">
               {!isEditing && (
-                <div className="bg-brand-blue/10 border border-brand-blue/20 rounded-lg p-3 mb-4">
+                <div className="bg-brand-blue/10 border border-white/10 rounded-lg p-3 mb-4">
                   <p className="text-xs text-brand-blue/80 font-semibold">
                     Adding subject to: <strong className="text-brand-blue">{selectedBranch} - {selectedSem}</strong>
                   </p>
@@ -378,7 +378,7 @@ export default function LearningHub({ user }) {
               )}
 
               <div>
-                <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Subject Name</label>
+                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Subject Name</label>
                 <input 
                   type="text" 
                   value={subjectForm.name} 
@@ -390,7 +390,7 @@ export default function LearningHub({ user }) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Subject Code</label>
+                  <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Subject Code</label>
                   <input 
                     type="text" 
                     value={subjectForm.code} 
@@ -401,7 +401,7 @@ export default function LearningHub({ user }) {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Credits</label>
+                  <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Credits</label>
                   <input 
                     type="number" 
                     min="1" max="10"
@@ -413,7 +413,7 @@ export default function LearningHub({ user }) {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Difficulty</label>
+                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Difficulty</label>
                 <select 
                   value={subjectForm.difficulty} 
                   onChange={e => setSubjectForm({...subjectForm, difficulty: e.target.value})} 
@@ -426,7 +426,7 @@ export default function LearningHub({ user }) {
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-[#222]">
-                <button type="submit" className="flex-1 bg-brand-teal text-black font-bold py-2 rounded-lg text-xs hover:bg-brand-teal/90 transition-colors shadow-[0_0_15px_rgba(0,210,211,0.3)]">
+                <button type="submit" className="flex-1 bg-brand-teal text-black font-bold py-2 rounded-lg text-xs hover:bg-brand-teal/90 transition-colors shadow-sm">
                   {isEditing ? 'Save Changes' : 'Add Subject'}
                 </button>
               </div>
@@ -448,13 +448,13 @@ export default function LearningHub({ user }) {
               </button>
             </div>
             <form onSubmit={handleQuickUploadSubmit} className="p-5 space-y-4">
-              <div className="bg-brand-teal/10 border border-brand-teal/20 rounded-lg p-3">
+              <div className="bg-brand-teal/10 border border-white/10 rounded-lg p-3">
                 <p className="text-xs text-brand-teal/90 font-semibold">
                   Uploading to: <strong className="text-white">{quickUploadSubject.name}</strong>
                 </p>
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">File Label / Title</label>
+                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">File Label / Title</label>
                 <input
                   type="text"
                   value={quickLabel}
@@ -465,7 +465,7 @@ export default function LearningHub({ user }) {
                 />
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Choose PDF or Image File</label>
+                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Choose PDF or Image File</label>
                 <input
                   type="file"
                   accept=".pdf,image/*"
@@ -484,7 +484,7 @@ export default function LearningHub({ user }) {
                 <div className="absolute w-full h-[1px] bg-white/5"></div>
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Paste Document Link (Google Drive / OneDrive)</label>
+                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Paste Document Link (Google Drive / OneDrive)</label>
                 <input
                   type="url"
                   value={quickUrl}

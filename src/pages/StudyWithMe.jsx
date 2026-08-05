@@ -62,7 +62,7 @@ function MiniBarChart({ data, label, color = '#00f5d4' }) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div className="space-y-2">
-      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
+      <span className="text-[10px] font-semibold text-gray-500 tracking-wide">{label}</span>
       <div className="flex items-end gap-1 h-16">
         {data.map((d, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -80,7 +80,7 @@ function MiniBarChart({ data, label, color = '#00f5d4' }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function StudyWithMe({ user }) {
-  const { awardXP } = useGamification();
+  const { awardXP, trackActivity } = useGamification();
   const { addToast } = useToast();
 
   // Phase: 'setup' | 'session' | 'summary' | 'analytics'
@@ -346,9 +346,13 @@ export default function StudyWithMe({ user }) {
       }
     }
 
-    // Award XP via Gamification system
+    // Award XP and track activity via Gamification system
+    if (trackActivity && activeMinutes > 0) {
+      await trackActivity('study_minutes', activeMinutes);
+    }
+
     if (awardXP) {
-      await awardXP('FINISH_QUIZ', xp);
+      await awardXP('COMPLETE_STUDY_SESSION', xp);
     }
 
     addToast({ message: `✅ Session complete! +${xp} XP earned!`, type: 'success' });
@@ -361,7 +365,7 @@ export default function StudyWithMe({ user }) {
     } finally {
       setFeedbackLoading(false);
     }
-  }, [elapsedActive, breakTime, distractions, breaks, subject, goal, isCustom, customDuration, selectedDuration, user, awardXP]);
+  }, [elapsedActive, breakTime, distractions, breaks, subject, goal, isCustom, customDuration, selectedDuration, user, awardXP, trackActivity]);
 
   const handleEndEarly = () => {
     if (window.confirm('End this study session early? Progress will be saved.')) {
@@ -414,7 +418,7 @@ export default function StudyWithMe({ user }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-teal to-brand-blue bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Brain className="w-8 h-8 text-brand-teal" />
             Study With Me
           </h1>
@@ -445,8 +449,8 @@ export default function StudyWithMe({ user }) {
                   <Icon className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">{stat.label}</span>
-                  <span className="text-sm font-black text-white block mt-0.5">{stat.value}</span>
+                  <span className="text-[9px] font-semibold text-gray-500 tracking-wide block">{stat.label}</span>
+                  <span className="text-sm font-semibold text-white block mt-0.5">{stat.value}</span>
                 </div>
               </div>
             );
@@ -457,14 +461,14 @@ export default function StudyWithMe({ user }) {
       {/* Session Setup Card */}
       <div className="glass-panel rounded-3xl p-8 max-w-2xl mx-auto">
         <h2 className="text-lg font-extrabold text-white mb-6 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-brand-teal/10 border border-brand-teal/20 flex items-center justify-center text-brand-teal text-sm font-black">1</span>
+          <span className="w-8 h-8 rounded-xl bg-brand-teal/10 border border-white/10 flex items-center justify-center text-brand-teal text-sm font-semibold">1</span>
           Setup Your Focus Session
         </h2>
 
         <div className="space-y-6">
           {/* Subject */}
           <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-gray-400 tracking-wide flex items-center gap-1.5">
               <BookOpen className="w-3.5 h-3.5 text-brand-teal" /> Subject
             </label>
             <select
@@ -478,7 +482,7 @@ export default function StudyWithMe({ user }) {
 
           {/* Goal */}
           <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-gray-400 tracking-wide flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5 text-brand-pink" /> Study Goal
             </label>
             <input
@@ -492,7 +496,7 @@ export default function StudyWithMe({ user }) {
 
           {/* Duration */}
           <div className="space-y-3">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-gray-400 tracking-wide flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-brand-blue" /> Duration
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -505,7 +509,7 @@ export default function StudyWithMe({ user }) {
                   }}
                   className={`p-3 rounded-2xl border text-center transition-all duration-300 cursor-pointer ${
                     (d.value === 0 ? isCustom : !isCustom && selectedDuration === d.value)
-                      ? 'border-brand-teal bg-brand-teal/10 shadow-[0_0_15px_rgba(0,245,212,0.15)]'
+                      ? 'border-brand-teal bg-brand-teal/10 shadow-sm'
                       : 'border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/10'
                   }`}
                 >
@@ -522,7 +526,7 @@ export default function StudyWithMe({ user }) {
                   min={5} max={240}
                   value={customDuration}
                   onChange={e => setCustomDuration(Number(e.target.value))}
-                  className="w-28 bg-black/30 border border-brand-teal/30 rounded-xl px-3 py-2 text-sm text-white outline-none text-center font-bold"
+                  className="w-28 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none text-center font-bold"
                 />
                 <span className="text-xs text-gray-400 font-bold">minutes (5–240)</span>
               </div>
@@ -533,7 +537,7 @@ export default function StudyWithMe({ user }) {
           <button
             onClick={handleStart}
             disabled={!goal.trim()}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-base uppercase tracking-widest shadow-[0_0_25px_rgba(0,245,212,0.3)] hover:shadow-[0_0_35px_rgba(0,245,212,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-2"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-semibold text-base tracking-wide shadow-sm hover:shadow-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-2"
           >
             <Play className="w-5 h-5 fill-current" />
             Start Focus Session
@@ -544,7 +548,7 @@ export default function StudyWithMe({ user }) {
       {/* Recent Sessions */}
       {sessions.length > 0 && (
         <div className="max-w-2xl mx-auto">
-          <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">Recent Sessions</h3>
+          <h3 className="text-xs font-semibold text-gray-500 tracking-wide mb-3">Recent Sessions</h3>
           <div className="space-y-2">
             {sessions.slice(0, 4).map(s => {
               const fl = getFocusLabel(s.focusScore || 0);
@@ -555,7 +559,7 @@ export default function StudyWithMe({ user }) {
                     <span className="text-[10px] text-gray-500 truncate max-w-[160px] block">{s.goal}</span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${fl.bg} ${fl.color}`}>{s.focusScore}/100</span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${fl.bg} ${fl.color}`}>{s.focusScore}/100</span>
                     <span className="text-[10px] text-gray-500 font-bold">{s.activeMinutes || s.totalMinutes}m</span>
                     <span className="text-[10px] text-brand-teal font-extrabold">+{s.xpEarned} XP</span>
                   </div>
@@ -587,7 +591,7 @@ export default function StudyWithMe({ user }) {
             </p>
             <button
               onClick={handleResume}
-              className="w-full py-3 rounded-xl bg-brand-teal text-black font-black text-sm uppercase tracking-wider cursor-pointer shadow-[0_0_15px_rgba(0,245,212,0.3)]"
+              className="w-full py-3 rounded-xl bg-brand-teal text-black font-semibold text-sm tracking-wide cursor-pointer shadow-sm"
             >
               ✅ Resume Session
             </button>
@@ -598,7 +602,7 @@ export default function StudyWithMe({ user }) {
       {/* Top Controls */}
       <div className="w-full max-w-2xl flex items-center justify-between mb-8">
         <div>
-          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Studying</span>
+          <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Studying</span>
           <h2 className="text-xl font-extrabold text-white">{subject}</h2>
         </div>
         <div className="flex items-center gap-2">
@@ -620,8 +624,8 @@ export default function StudyWithMe({ user }) {
           color={isPaused ? '#f72585' : '#00f5d4'}
         >
           <div className="text-center">
-            <div className="text-5xl font-black text-white font-mono tracking-tighter">{formatTime(timeLeft)}</div>
-            <div className="text-[10px] font-black uppercase text-gray-500 tracking-widest mt-1">{isPaused ? '⏸ Paused' : '▶ Focusing'}</div>
+            <div className="text-5xl font-semibold text-white font-mono tracking-tighter">{formatTime(timeLeft)}</div>
+            <div className="text-[10px] font-semibold uppercase text-gray-500 tracking-widest mt-1">{isPaused ? '⏸ Paused' : '▶ Focusing'}</div>
           </div>
         </CircularProgress>
         {/* Glow backdrop */}
@@ -630,7 +634,7 @@ export default function StudyWithMe({ user }) {
 
       {/* Goal display */}
       <div className="text-center mb-6 max-w-md px-4">
-        <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Goal</p>
+        <p className="text-xs text-gray-500 font-bold tracking-wide mb-1">Goal</p>
         <p className="text-sm text-gray-300 font-medium leading-relaxed">{goal}</p>
       </div>
 
@@ -643,8 +647,8 @@ export default function StudyWithMe({ user }) {
         ].map((m, i) => (
           <div key={i} className="glass-panel p-3 rounded-2xl text-center">
             <div className="text-xl">{m.icon}</div>
-            <div className={`text-lg font-black ${m.color}`}>{m.value}</div>
-            <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">{m.label}</div>
+            <div className={`text-lg font-semibold ${m.color}`}>{m.value}</div>
+            <div className="text-[9px] text-gray-500 font-bold tracking-wide">{m.label}</div>
           </div>
         ))}
       </div>
@@ -656,7 +660,7 @@ export default function StudyWithMe({ user }) {
             <Pause className="w-4 h-4" /> Pause
           </button>
         ) : (
-          <button onClick={handleResume} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-teal text-black text-sm font-black transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,212,0.3)]">
+          <button onClick={handleResume} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-teal text-black text-sm font-semibold transition-all cursor-pointer shadow-sm">
             <Play className="w-4 h-4 fill-current" /> Resume
           </button>
         )}
@@ -668,12 +672,12 @@ export default function StudyWithMe({ user }) {
       {/* AI Coach floating message */}
       {showCoach && coachMessage && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 max-w-sm w-full px-4 z-40 animate-fade-in">
-          <div className="glass-panel rounded-2xl p-4 flex items-start gap-3 border border-brand-pink/20 shadow-xl">
+          <div className="glass-panel rounded-2xl p-4 flex items-start gap-3 border border-white/10 shadow-xl">
             <div className="w-8 h-8 rounded-xl bg-brand-pink/10 flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4 text-brand-pink" />
             </div>
             <div>
-              <span className="text-[9px] font-black text-brand-pink uppercase tracking-widest block mb-0.5">AI Study Coach</span>
+              <span className="text-[9px] font-semibold text-brand-pink tracking-wide block mb-0.5">AI Study Coach</span>
               <p className="text-xs text-gray-300 leading-relaxed">{coachMessage}</p>
             </div>
           </div>
@@ -690,25 +694,25 @@ export default function StudyWithMe({ user }) {
         {/* Header */}
         <div className="text-center pt-4">
           <div className="text-6xl mb-3">{sessionResult.completed ? '🏆' : '📊'}</div>
-          <h2 className="text-2xl font-black text-white">{sessionResult.completed ? 'Session Complete!' : 'Session Saved'}</h2>
+          <h2 className="text-2xl font-semibold text-white">{sessionResult.completed ? 'Session Complete!' : 'Session Saved'}</h2>
           <p className="text-xs text-gray-400 mt-1">{sessionResult.subject} — {sessionResult.goal}</p>
         </div>
 
         {/* XP Banner */}
-        <div className="glass-panel rounded-3xl p-6 border border-brand-teal/20 bg-brand-teal/5 text-center">
-          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">XP Earned This Session</span>
-          <div className="text-5xl font-black text-brand-teal">+{sessionResult.xpEarned}</div>
-          <div className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-wider">Experience Points</div>
+        <div className="glass-panel rounded-3xl p-6 border border-white/10 bg-brand-teal/5 text-center">
+          <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-2">XP Earned This Session</span>
+          <div className="text-5xl font-semibold text-brand-teal">+{sessionResult.xpEarned}</div>
+          <div className="text-xs text-gray-500 font-bold mt-1 tracking-wide">Experience Points</div>
         </div>
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="glass-panel p-5 rounded-2xl text-center">
             <CircularProgress percent={sessionResult.focusScore} size={100} strokeWidth={8} color={sessionResult.focusScore >= 70 ? '#00f5d4' : sessionResult.focusScore >= 50 ? '#ffd700' : '#f72585'}>
-              <span className="text-xl font-black text-white">{sessionResult.focusScore}</span>
+              <span className="text-xl font-semibold text-white">{sessionResult.focusScore}</span>
             </CircularProgress>
             <div className={`mt-2 text-xs font-extrabold ${fl.color}`}>{fl.label}</div>
-            <div className="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">Focus Score</div>
+            <div className="text-[9px] text-gray-500 font-bold tracking-wide mt-0.5">Focus Score</div>
           </div>
 
           <div className="space-y-3">
@@ -730,14 +734,14 @@ export default function StudyWithMe({ user }) {
         </div>
 
         {/* AI Feedback */}
-        <div className="glass-panel rounded-3xl p-6 border border-brand-pink/10">
+        <div className="glass-panel rounded-3xl p-6 border border-white/10">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-xl bg-brand-pink/10 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-brand-pink" />
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-white">AI Coach Feedback</h3>
-              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Personalized analysis</span>
+              <span className="text-[9px] text-gray-500 font-bold tracking-wide">Personalized analysis</span>
             </div>
           </div>
 
@@ -751,16 +755,16 @@ export default function StudyWithMe({ user }) {
               <p className="text-sm text-gray-300 leading-relaxed">{aiFeedback.feedback}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-green-500/5 border border-green-500/10 p-3 rounded-xl">
-                  <span className="text-[9px] font-black text-green-400 uppercase tracking-widest block mb-1">✨ Strength</span>
+                  <span className="text-[9px] font-semibold text-green-400 tracking-wide block mb-1">✨ Strength</span>
                   <p className="text-xs text-gray-300 leading-relaxed">{aiFeedback.strength}</p>
                 </div>
                 <div className="bg-yellow-500/5 border border-yellow-500/10 p-3 rounded-xl">
-                  <span className="text-[9px] font-black text-yellow-400 uppercase tracking-widest block mb-1">🚀 Improvement</span>
+                  <span className="text-[9px] font-semibold text-yellow-400 tracking-wide block mb-1">🚀 Improvement</span>
                   <p className="text-xs text-gray-300 leading-relaxed">{aiFeedback.improvement}</p>
                 </div>
               </div>
-              <div className="bg-brand-blue/5 border border-brand-blue/15 p-3 rounded-xl">
-                <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest block mb-1">💡 Next Session Tip</span>
+              <div className="bg-brand-blue/5 border border-white/10 p-3 rounded-xl">
+                <span className="text-[9px] font-semibold text-brand-blue tracking-wide block mb-1">💡 Next Session Tip</span>
                 <p className="text-xs text-gray-300 leading-relaxed">{aiFeedback.nextSessionTip}</p>
               </div>
             </div>
@@ -786,7 +790,7 @@ export default function StudyWithMe({ user }) {
           </button>
           <button
             onClick={() => setPhase('analytics')}
-            className="flex-1 py-3 rounded-2xl bg-brand-teal text-black text-sm font-black transition-all cursor-pointer shadow-[0_0_15px_rgba(0,245,212,0.2)] flex items-center justify-center gap-2 hover:brightness-110"
+            className="flex-1 py-3 rounded-2xl bg-brand-teal text-black text-sm font-semibold transition-all cursor-pointer shadow-sm flex items-center justify-center gap-2 hover:brightness-110"
           >
             <BarChart2 className="w-4 h-4" /> View Analytics
           </button>
@@ -806,7 +810,7 @@ export default function StudyWithMe({ user }) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black bg-gradient-to-r from-brand-blue to-brand-pink bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
               <BarChart2 className="w-7 h-7 text-brand-blue" />
               Study Analytics
             </h1>
@@ -814,26 +818,25 @@ export default function StudyWithMe({ user }) {
           </div>
           <button
             onClick={() => setPhase('setup')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-teal text-black text-xs font-black transition-all cursor-pointer shadow-[0_0_12px_rgba(0,245,212,0.2)]"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-teal text-black text-xs font-semibold transition-all cursor-pointer shadow-sm"
           >
             <Play className="w-3.5 h-3.5 fill-current" /> Start Session
           </button>
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: "Today's Study", value: `${todayMin} min`, icon: Clock, color: 'text-brand-teal', glow: 'from-brand-teal/10' },
             { label: 'Total Hours', value: `${totalHours}h`, icon: Activity, color: 'text-brand-blue', glow: 'from-brand-blue/10' },
-            { label: 'Current Streak', value: `${analytics.currentStreak || 0}d 🔥`, icon: Flame, color: 'text-brand-orange', glow: 'from-brand-orange/10' },
             { label: 'Avg Focus', value: `${analytics.avgFocusScore || 0}/100`, icon: Target, color: 'text-brand-pink', glow: 'from-brand-pink/10' },
           ].map((stat, i) => {
             const Icon = stat.icon;
             return (
               <div key={i} className={`glass-panel p-5 rounded-2xl bg-gradient-to-br ${stat.glow} to-transparent`}>
                 <Icon className={`w-5 h-5 ${stat.color} mb-2`} />
-                <div className="text-xl font-black text-white">{stat.value}</div>
-                <div className="text-[9px] text-gray-500 font-black uppercase tracking-widest mt-0.5">{stat.label}</div>
+                <div className="text-xl font-semibold text-white">{stat.value}</div>
+                <div className="text-[9px] text-gray-500 font-semibold tracking-wide mt-0.5">{stat.label}</div>
               </div>
             );
           })}
@@ -856,31 +859,26 @@ export default function StudyWithMe({ user }) {
         </div>
 
         {/* Level & XP */}
-        <div className="glass-panel p-6 rounded-3xl flex flex-col sm:flex-row gap-6 items-center justify-between">
+        <div className="glass-panel p-6 rounded-3xl flex flex-col sm:flex-row gap-6 items-center justify-around">
           <div className="text-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">Total XP Earned</span>
-            <span className="text-4xl font-black text-brand-teal">{analytics.totalXP || 0}</span>
+            <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-1">Total XP Earned</span>
+            <span className="text-4xl font-semibold text-brand-teal">{analytics.totalXP || 0}</span>
             <span className="text-xs text-gray-500 font-bold block mt-0.5">XP Points</span>
           </div>
           <div className="text-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">Sessions Completed</span>
-            <span className="text-4xl font-black text-brand-blue">{analytics.totalSessions || 0}</span>
+            <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-1">Sessions Completed</span>
+            <span className="text-4xl font-semibold text-brand-blue">{analytics.totalSessions || 0}</span>
           </div>
           <div className="text-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">Longest Streak</span>
-            <span className="text-4xl font-black text-brand-orange">{analytics.longestStreak || 0}</span>
-            <span className="text-xs text-gray-500 font-bold block mt-0.5">days</span>
-          </div>
-          <div className="text-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">Top Subject</span>
-            <span className="text-lg font-black text-brand-pink">{topSubject}</span>
+            <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-1">Top Subject</span>
+            <span className="text-lg font-semibold text-brand-pink">{topSubject}</span>
           </div>
         </div>
 
         {/* Session History */}
         {sessions.length > 0 && (
           <div>
-            <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">Session History</h3>
+            <h3 className="text-xs font-semibold text-gray-500 tracking-wide mb-3">Session History</h3>
             <div className="space-y-2">
               {sessions.slice(0, 10).map(s => {
                 const fl = getFocusLabel(s.focusScore || 0);
@@ -891,10 +889,10 @@ export default function StudyWithMe({ user }) {
                       <span className="text-[10px] text-gray-500 truncate block">{s.goal}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 flex-wrap">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${fl.bg} ${fl.color}`}>{s.focusScore}/100</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${fl.bg} ${fl.color}`}>{s.focusScore}/100</span>
                       <span className="text-[10px] text-gray-500">{s.activeMinutes || s.totalMinutes}min</span>
                       <span className="text-[10px] text-brand-teal font-extrabold">+{s.xpEarned} XP</span>
-                      <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${s.completed ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
+                      <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase ${s.completed ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
                         {s.completed ? '✓ Done' : 'Early'}
                       </span>
                     </div>
@@ -910,7 +908,7 @@ export default function StudyWithMe({ user }) {
             <div className="text-5xl mb-4">📚</div>
             <h3 className="text-base font-extrabold text-white mb-2">No Sessions Yet</h3>
             <p className="text-xs text-gray-500">Start your first study session to see analytics here.</p>
-            <button onClick={() => setPhase('setup')} className="mt-5 px-6 py-2.5 rounded-xl bg-brand-teal text-black text-xs font-black cursor-pointer">
+            <button onClick={() => setPhase('setup')} className="mt-5 px-6 py-2.5 rounded-xl bg-brand-teal text-black text-xs font-semibold cursor-pointer">
               Start Now
             </button>
           </div>

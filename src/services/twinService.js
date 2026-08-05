@@ -54,13 +54,12 @@ export function harvestStudentIntelligence(userId, tasks = [], timetable = []) {
   const attendanceRate = totalClasses > 0 ? Math.round(((totalClasses - missedClasses) / totalClasses) * 100) : 100;
 
   // 5. Composite Student Intelligence / Synergy Score
-  // Weighted: Streak (15%), Task Rate (35%), Avg Focus Score (35%), Attendance (15%)
-  const streakWeight = Math.min((studyAnalytics.currentStreak || 0) * 10, 15); // max 15% for 1.5 week streak
-  const taskWeight = taskCompletionRate * 0.35;
-  const focusWeight = (studyAnalytics.avgFocusScore || 70) * 0.35;
+  // Weighted: Task Rate (45%), Avg Focus Score (40%), Attendance (15%)
+  const taskWeight = taskCompletionRate * 0.45;
+  const focusWeight = (studyAnalytics.avgFocusScore || 70) * 0.40;
   const attendanceWeight = attendanceRate * 0.15;
   
-  const synergyScore = Math.max(10, Math.min(100, Math.round(streakWeight + taskWeight + focusWeight + attendanceWeight)));
+  const synergyScore = Math.max(10, Math.min(100, Math.round(taskWeight + focusWeight + attendanceWeight)));
 
   // Calculate learning productivity metrics
   const productivityScore = Math.round(
@@ -83,7 +82,7 @@ export function harvestStudentIntelligence(userId, tasks = [], timetable = []) {
     metrics: {
       synergyScore,
       productivityScore,
-      consistencyScore: Math.round(Math.min(100, ((studyAnalytics.totalSessions || 0) > 0 ? 60 : 0) + ((studyAnalytics.currentStreak || 0) * 8))),
+      consistencyScore: Math.round(Math.min(100, (studyAnalytics.totalSessions || 0) * 10)),
       focusScore: studyAnalytics.avgFocusScore || 75
     }
   };

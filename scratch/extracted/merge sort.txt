@@ -1,0 +1,6 @@
+--- Page 1 ---
+AIM:Implement Quick sort and Merge sort using Divide and conquer technique and observe the execution time for various input sizes (Average, Worst and Best cases) Program : C program to implement Merge Sort Algorithm#include<stdio.h> #include<stdlib.h> void mergesort(int arr[],int low,int high); void merge(int arr[],int low,int mid,int high); void mergesort(int arr[],int low,int high){ if(low>=high) return; int mid = (low+high)/2; mergesort(arr,low,mid); mergesort(arr,mid+1,high); merge(arr,low,mid,high); } void merge(int arr[],int low,int mid,int high){ int size = high-low+1; int *temp = (int*)malloc(size*sizeof(int)); int counter=0; int left=low; int right=mid+1; while(left<=mid && right<=high){ if(arr[left]<=arr[right]) temp[counter++] = arr[left++]; else temp[counter++] = arr[right++]; } while(left<=mid) temp[counter++] = arr[left++]; while(right<=high) temp[counter++] = arr[right++]; for(int i=0;i<size;i++) arr[i+low] = temp[i]; free(temp); } 
+
+--- Page 2 ---
+void main(){ int n; scanf("%d",&n);int arr[n]; for(int i=0;i<n;i++){ scanf("%d",&arr[i]); } printf("Array before sorting : "); for(int i=0;i<n;i++) printf("%d ",arr[i]); printf("\n"); mergesort(arr,0,n-1); printf("Array after Mergesort : "); for(int i=0;i<n;i++) printf("%d ",arr[i]); } 
+

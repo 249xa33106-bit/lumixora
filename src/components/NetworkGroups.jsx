@@ -110,7 +110,7 @@ export default function NetworkGroups({ user }) {
         {/* Header Search & Create */}
         <div className="glass-panel p-4 rounded-3xl space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">My Groups</span>
+            <span className="text-[10px] font-semibold text-gray-500 tracking-wide">My Groups</span>
             <button 
               onClick={() => addToast({ message: 'Create Group functionality coming soon!', type: 'info' })}
               className="p-1 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white"
@@ -138,7 +138,7 @@ export default function NetworkGroups({ user }) {
               key={group.id}
               onClick={() => setSelectedGroupId(group.id)}
               className={`glass-panel p-4 rounded-2xl cursor-pointer transition-all border text-left space-y-2 ${
-                selectedGroupId === group.id ? 'border-brand-teal/40 bg-brand-teal/[0.02]' : 'border-white/5 hover:border-white/10'
+                selectedGroupId === group.id ? 'border-white/10 bg-brand-teal/[0.02]' : 'border-white/5 hover:border-white/10'
               }`}
             >
               <div className="flex justify-between items-start gap-3">
@@ -149,7 +149,7 @@ export default function NetworkGroups({ user }) {
               <p className="text-[10px] text-gray-400 line-clamp-2 leading-relaxed font-normal">{group.description}</p>
               
               <div className="flex justify-between items-center pt-1">
-                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">{group.category}</span>
+                <span className="text-[9px] font-bold text-gray-500 tracking-wide">{group.category}</span>
                 <span className="text-[9px] font-extrabold text-brand-teal">{group.membersCount} Members</span>
               </div>
             </div>
@@ -164,10 +164,10 @@ export default function NetworkGroups({ user }) {
         <div className="glass-panel p-6 rounded-3xl space-y-4">
           <div className="flex justify-between items-start gap-4">
             <div>
-              <h2 className="text-lg font-black text-white">{activeGroup.name}</h2>
+              <h2 className="text-lg font-semibold text-white">{activeGroup.name}</h2>
               <span className="text-[10px] font-bold text-brand-teal block mt-0.5">{activeGroup.category}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-brand-teal/10 border border-brand-teal/20 px-3 py-1 rounded-full text-[9px] text-brand-teal font-extrabold uppercase">
+            <div className="flex items-center gap-1.5 bg-brand-teal/10 border border-white/10 px-3 py-1 rounded-full text-[9px] text-brand-teal font-extrabold uppercase">
               <Shield className="w-3.5 h-3.5" />
               <span>Admin: {activeGroup.admin}</span>
             </div>
@@ -178,7 +178,7 @@ export default function NetworkGroups({ user }) {
         {/* Announcements List */}
         <div className="glass-panel p-6 rounded-3xl space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
               <Volume2 className="w-4 h-4 text-brand-pink animate-pulse" />
               <span>Admin Announcements</span>
             </h3>
@@ -202,7 +202,7 @@ export default function NetworkGroups({ user }) {
                 required
               />
               <div className="flex justify-end">
-                <button type="submit" className="px-4 py-1.5 rounded-lg bg-brand-pink text-white font-extrabold text-[10px] uppercase tracking-wider">
+                <button type="submit" className="px-4 py-1.5 rounded-lg bg-brand-pink text-white font-extrabold text-[10px] tracking-wide">
                   Publish
                 </button>
               </div>
@@ -214,7 +214,7 @@ export default function NetworkGroups({ user }) {
           ) : (
             <div className="space-y-3">
               {activeGroup.announcements.map(ann => (
-                <div key={ann.id} className="p-4 bg-brand-pink/5 border border-brand-pink/10 rounded-2xl flex justify-between items-start gap-4">
+                <div key={ann.id} className="p-4 bg-brand-pink/5 border border-white/10 rounded-2xl flex justify-between items-start gap-4">
                   <p className="text-xs text-gray-300 font-normal leading-relaxed">{ann.text}</p>
                   <span className="text-[9px] text-gray-500 font-semibold shrink-0">{ann.date}</span>
                 </div>
@@ -226,7 +226,7 @@ export default function NetworkGroups({ user }) {
         {/* Group Chat Room */}
         <div className="glass-panel rounded-3xl overflow-hidden flex flex-col min-h-[300px]">
           <div className="p-4 border-b border-white/5 bg-black/25 flex items-center justify-between">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+            <span className="text-[10px] font-semibold text-gray-400 tracking-wide flex items-center gap-1.5">
               <MessageSquare className="w-4 h-4 text-brand-teal" />
               <span>Group Chat Discussion</span>
             </span>
@@ -238,7 +238,7 @@ export default function NetworkGroups({ user }) {
               {activeGroup.messages.map(msg => (
                 <div key={msg.id} className="text-left space-y-1 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-[10px] font-black text-brand-teal">{msg.sender}</span>
+                    <span className="text-[10px] font-semibold text-brand-teal">{msg.sender}</span>
                     <span className="text-[8px] text-gray-500 font-semibold">{msg.time}</span>
                   </div>
                   <p className="text-xs text-gray-300 leading-normal font-normal">{msg.text}</p>

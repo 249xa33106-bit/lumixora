@@ -12,7 +12,6 @@ async function test() {
     console.error("Error:", error.message);
   } else {
     console.log(`Success! Found ${data.length} users in the database.`);
-    console.log(`Success! Found ${data.length} users in the database.`);
     if (data.length > 0) {
       console.log("Full sample user object:", JSON.stringify(data[0], null, 2));
     }

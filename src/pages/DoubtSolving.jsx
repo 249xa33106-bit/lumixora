@@ -9,6 +9,7 @@ export default function DoubtSolving() {
   const [subject, setSubject] = useState('All Subjects');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [imageBase64, setImageBase64] = useState('');
   
   const { doubts: feed, addDoubt, updateDoubt } = useData();
   const { awardXP } = useGamification();
@@ -23,11 +24,18 @@ export default function DoubtSolving() {
     if (file) {
       setUploadedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageBase64(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const clearFile = () => {
     setUploadedFile(null);
+    setImageBase64('');
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl('');
@@ -52,15 +60,15 @@ export default function DoubtSolving() {
     setIsSubmitting(true);
     
     try {
-      const aiResponse = await generateDoubtResolution(doubtText, subject);
+      const aiResponse = await generateDoubtResolution(doubtText, subject, false, imageBase64);
       
       const newDoubt = {
         topic: doubtText,
         tag: subject,
         status: 'Resolved',
         date: 'Just now',
-        hasImage: !!previewUrl,
-        imageUrl: previewUrl,
+        hasImage: !!imageBase64,
+        imageUrl: imageBase64,
         thread: [
           {
             author: 'Lumixora AI Assistant',
@@ -119,9 +127,20 @@ export default function DoubtSolving() {
         content: msg.content
       }));
       // Add the original question as the very first context message
-      chatContext.unshift({ role: "user", content: activeDoubt.topic || activeDoubt.question });
+      const hasBase64Image = activeDoubt.hasImage && activeDoubt.imageUrl && activeDoubt.imageUrl.startsWith('data:image');
+      if (hasBase64Image) {
+        chatContext.unshift({
+          role: "user",
+          content: [
+            { type: "text", text: activeDoubt.topic || activeDoubt.question || "Explain this image" },
+            { type: "image_url", image_url: { url: activeDoubt.imageUrl } }
+          ]
+        });
+      } else {
+        chatContext.unshift({ role: "user", content: activeDoubt.topic || activeDoubt.question });
+      }
 
-      const aiResponse = await generateDoubtResolution(chatContext, activeDoubt.subject || activeDoubt.tag, true);
+      const aiResponse = await generateDoubtResolution(chatContext, activeDoubt.subject || activeDoubt.tag, true, hasBase64Image ? activeDoubt.imageUrl : null);
       
       const aiMessage = {
         author: 'Lumixora AI Assistant',
@@ -154,7 +173,7 @@ export default function DoubtSolving() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-teal/5 rounded-full blur-xl"></div>
           <div className="flex items-center gap-2 mb-4">
             <HelpCircle className="w-5 h-5 text-brand-teal" />
-            <h2 className="text-base font-bold text-gray-100 uppercase tracking-wider">Submit Academic Doubt</h2>
+            <h2 className="text-base font-bold text-gray-100 tracking-wide">Submit Academic Doubt</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,9 +184,9 @@ export default function DoubtSolving() {
                   type="button"
                   key={sub}
                   onClick={() => setSubject(sub)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
                     subject === sub 
-                      ? 'bg-brand-teal text-black font-bold shadow-[0_0_10px_rgba(0,245,212,0.25)]' 
+                      ? 'bg-brand-teal text-black font-bold shadow-sm' 
                       : 'bg-white/10 border border-white/10 hover:bg-white/20 text-gray-300'
                   }`}
                 >
@@ -229,10 +248,10 @@ export default function DoubtSolving() {
               <button
                 type="submit"
                 disabled={isSubmitting || !doubtText.trim()}
-                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
+                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs tracking-wide flex items-center justify-center gap-2 cursor-pointer ${
                   isSubmitting || !doubtText.trim()
                     ? 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
-                    : 'bg-gradient-to-r from-brand-teal to-brand-blue text-black shadow-[0_0_15px_rgba(0,245,212,0.2)] hover:opacity-90 transition-opacity'
+                    : 'bg-gradient-to-r from-brand-teal to-brand-blue text-black shadow-sm hover:opacity-90 transition-opacity'
                 }`}
               >
                 {isSubmitting ? (
@@ -263,10 +282,10 @@ export default function DoubtSolving() {
             {/* Header */}
             <div className="p-5 border-b border-border-glass flex items-center justify-between">
               <div className="space-y-1">
-                <span className="text-[9px] bg-brand-teal/20 text-brand-teal px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                <span className="text-[9px] bg-brand-teal/20 text-brand-teal px-2.5 py-0.5 rounded-full font-bold tracking-wide">
                   {activeDoubt.subject}
                 </span>
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest block">Active Resolution Thread</h4>
+                <h4 className="text-xs font-bold text-gray-400 tracking-wide block">Active Resolution Thread</h4>
               </div>
             </div>
 
@@ -313,8 +332,8 @@ export default function DoubtSolving() {
                   key={idx} 
                   className={`p-4 rounded-xl border space-y-3 ${
                     msg.isAI 
-                      ? 'bg-brand-teal/5 border-brand-teal/20 shadow-[0_0_15px_rgba(0,245,212,0.05)]' 
-                      : 'bg-brand-purple/5 border-brand-purple/20'
+                      ? 'bg-brand-teal/5 border-white/10 shadow-sm' 
+                      : 'bg-brand-purple/5 border-white/10'
                   }`}
                 >
                   <div className="flex items-center justify-between">

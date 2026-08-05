@@ -42,6 +42,23 @@ export function GamificationProvider({ children, user, activeTab }) {
     };
   }, []);
 
+  const pushNotification = (text) => {
+    try {
+      const saved = localStorage.getItem('lumixora_notifications');
+      const list = saved ? JSON.parse(saved) : [];
+      list.unshift({
+        id: Date.now() + Math.random(),
+        text,
+        unread: true,
+        time: 'Just now'
+      });
+      localStorage.setItem('lumixora_notifications', JSON.stringify(list.slice(0, 30)));
+      window.dispatchEvent(new Event('lumixora_notifications_updated'));
+    } catch (e) {
+      console.error("Failed to save notification:", e);
+    }
+  };
+
   // Load profile when user logs in
   useEffect(() => {
     if (!user) {
@@ -61,14 +78,11 @@ export function GamificationProvider({ children, user, activeTab }) {
         const ch = getDailyAndWeeklyChallenges(user.id);
         setChallenges(ch);
         
-        // Award daily login XP once per day
         const todayStr = new Date().toDateString();
+        // Removed daily login XP as per request
         if (prof.lastActiveDate !== todayStr) {
-          addToast({ message: "Daily Login! +10 XP 🔥", type: "success" });
-          const res = await awardXP(user.id, 'DAILY_LOGIN');
-          if (res) {
-            setProfile(prev => ({ ...prev, ...res }));
-          }
+          // Simply update the last active date without awarding XP, if needed, or leave it blank
+          // For now, we just skip the XP award.
         }
       } catch (e) {
         console.error("Error loading gamification profile:", e);
@@ -96,11 +110,7 @@ export function GamificationProvider({ children, user, activeTab }) {
           ...res
         }));
 
-        // Award toast
-        addToast({ 
-          message: `+${res.xpEarned} XP Earned! (${actionKey.toLowerCase().replace(/_/g, ' ')})`, 
-          type: 'info' 
-        });
+        pushNotification(`+${res.xpEarned} AP Aura Resonance Expanded! (${actionKey.toLowerCase().replace(/_/g, ' ')})`);
 
         // Trigger challenge update if related to tasks, notes, doubts
         if (actionKey === 'COMPLETE_AI_TASK') {
@@ -120,7 +130,7 @@ export function GamificationProvider({ children, user, activeTab }) {
         await checkAchievements(res.level, res.xp);
       }
     } catch (e) {
-      console.error("XP Award failed:", e);
+      console.error("Resonance update failed:", e);
     }
   };
 
@@ -145,7 +155,7 @@ export function GamificationProvider({ children, user, activeTab }) {
           coins: res.coins || prev.coins
         }));
 
-        addToast({ message: `Daily Streak Secured! ${res.streak} Days 🔥`, type: 'success' });
+        pushNotification(`Daily Focus Flow Secured! ${res.streak} Days 🔥`);
         
         if (res.milestoneUnlocked) {
           setStreakMilestone(res.milestoneUnlocked);
@@ -169,11 +179,7 @@ export function GamificationProvider({ children, user, activeTab }) {
       setChallenges(res.challenges);
       
       if (res.xpGained > 0) {
-        addToast({ 
-          message: `Challenge Completed! +${res.xpGained} XP & +${res.coinsGained} Coins 🪙`, 
-          type: 'success' 
-        });
-        
+        pushNotification(`Challenge Aligned! +${res.xpGained} AP Aura & +${res.coinsGained} SC Synaptic Energy 🧠`);
         setProfile(prev => ({
           ...prev,
           xp: prev.xp + res.xpGained,
@@ -254,9 +260,9 @@ export function GamificationProvider({ children, user, activeTab }) {
     }
 
     setUnlockedBadge(badgeInfo);
-    addToast({ message: `Achievement Unlocked: ${badgeInfo.name}! 🏆`, type: 'success' });
+    pushNotification(`Focus Constellation Unlocked: ${badgeInfo.name}! 🏆`);
     
-    // Award achievement XP
+    // Award achievement Aura Resonance
     await handleAwardXP('COMPLETE_AI_TASK', badgeInfo.xpReward);
   };
 
@@ -288,7 +294,7 @@ export function GamificationProvider({ children, user, activeTab }) {
     const todayStr = new Date().toDateString();
     if (profile && !profile.completedDays?.includes(todayStr)) {
       addToast({ 
-        message: "Warning: Your daily learning streak is at risk! Complete a task or study now to protect it 🔥", 
+        message: "Warning: Your daily focus rhythm is at risk! Complete a task or study now to protect it 🔥", 
         type: 'error',
         duration: 8000
       });
@@ -336,11 +342,9 @@ export function GamificationProvider({ children, user, activeTab }) {
         
         // Once user achieves 20 minutes study target (20 ticks = 200 seconds of active page view)
         if (currentSeconds === 200) {
-          addToast({ 
-            message: "20 Minutes Study Threshold Achieved! Daily streak secured automatically! 🎓🔥", 
-            type: 'success' 
-          });
+          pushNotification("20 Minutes Study Flow Threshold Achieved! Focus rhythm secured automatically! 🎓🔥");
           await handleAwardXP('STUDY_20_MIN');
+          await handleTrackActivity('study_minutes', 20); // SECURE STREAK AUTOMATICALLY!
         }
       } catch (err) {
         console.error("Background study tracker error:", err);

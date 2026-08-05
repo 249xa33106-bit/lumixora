@@ -19,13 +19,28 @@ import PersonalMentor from './pages/PersonalMentor';
 import { signOut } from 'firebase/auth';
 import { auth } from './config/firebase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
-import FaceVerificationPortal from './pages/FaceVerificationPortal';
 import StudyWithMe from './pages/StudyWithMe';
 import ReportBug from './pages/ReportBug';
 import LifeReplay from './pages/LifeReplay';
+import FounderPortal from './pages/FounderPortal';
+import TestPortal from './pages/TestPortal';
+import AssignedTasksPortal from './pages/AssignedTasksPortal';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedUser = localStorage.getItem('lumixora_user');
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        const isF = u?.role === 'founder' || 
+                    u?.email?.toLowerCase().includes('founder') || 
+                    u?.email?.toLowerCase().includes('admin') || 
+                    u?.email?.toLowerCase() === 'admin@lumixora.com';
+        if (isF) return 'founder-portal';
+      } catch (e) {}
+    }
+    return 'dashboard';
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('lumixora_isAuthenticated') === 'true';
   });
@@ -35,9 +50,6 @@ function App() {
   });
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
-  const [isVerified, setIsVerified] = useState(() => {
-    return sessionStorage.getItem('lumixora_isVerified') === 'true';
-  });
 
   // Self-healing Capgo default channel configuration on native platforms
   useEffect(() => {
@@ -46,8 +58,9 @@ function App() {
         const { Capacitor } = await import('@capacitor/core');
         if (Capacitor.isNativePlatform()) {
           const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
+          await CapacitorUpdater.notifyAppReady();
           await CapacitorUpdater.setChannel({ name: 'production' });
-          console.log("Capgo default channel set to production programmatically.");
+          console.log("Capgo default channel set to production programmatically and notified ready.");
         }
       } catch (e) {
         console.warn("Failed to set Capgo channel programmatically:", e);
@@ -60,16 +73,21 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    const isF = user?.role === 'founder' || 
+                user?.email?.toLowerCase().includes('founder') || 
+                user?.email?.toLowerCase().includes('admin') || 
+                user?.email?.toLowerCase() === 'admin@lumixora.com';
+
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1); // remove '#'
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay'].includes(tab)) {
+        if (['dashboard', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'test-portal'].includes(tab)) {
           setActiveTab(tab);
         }
       } else {
-        setActiveTab('dashboard');
+        setActiveTab(isF ? 'founder-portal' : 'dashboard');
       }
     };
 
@@ -77,13 +95,13 @@ function App() {
     
     // Initial check on load
     if (!window.location.hash) {
-      window.location.hash = 'dashboard';
+      window.location.hash = isF ? 'founder-portal' : 'dashboard';
     } else {
       handleHashChange();
     }
 
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
@@ -112,12 +130,12 @@ function App() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-pink/5 rounded-full blur-xl animate-pulse"></div>
           
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center text-brand-pink text-3xl animate-bounce">
+            <div className="w-16 h-16 rounded-full bg-brand-pink/10 border border-white/10 flex items-center justify-center text-brand-pink text-3xl animate-bounce">
               🚀
             </div>
             
             <div>
-              <h2 className="text-lg font-bold text-gray-100 uppercase tracking-wider animate-pulse">New Update Available!</h2>
+              <h2 className="text-lg font-bold text-gray-100 tracking-wide animate-pulse">New Update Available!</h2>
               <p className="text-xs text-gray-400 mt-1">
                 A new version <span className="text-brand-teal font-extrabold">{updateInfo.latestVersion}</span> is ready for download.<br/>
                 Currently running v{CURRENT_VERSION}.
@@ -151,7 +169,7 @@ function App() {
                     setUpdateInfo(prev => ({ ...prev, show: false }));
                   }
                 }}
-                className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-[0_0_15px_rgba(0,245,212,0.3)] cursor-pointer"
+                className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
               >
                 Update Now
               </a>
@@ -175,17 +193,23 @@ function App() {
   }, [isAuthenticated]);
 
   const handleLogin = (userData) => {
+    const isF = userData?.role === 'founder' || 
+                userData?.email?.toLowerCase().includes('founder') || 
+                userData?.email?.toLowerCase().includes('admin') || 
+                userData?.email?.toLowerCase() === 'admin@lumixora.com';
+                
     setUser(userData);
     setIsAuthenticated(true);
-    setIsVerified(false);
-    sessionStorage.removeItem('lumixora_isVerified');
+    
+    // Set default tab hash on login
+    const defaultTab = isF ? 'founder-portal' : 'dashboard';
+    setActiveTab(defaultTab);
+    window.location.hash = defaultTab;
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    setIsVerified(false);
-    sessionStorage.removeItem('lumixora_isVerified');
     signOut(auth).catch((err) => console.warn("Firebase signout error:", err));
   };
 
@@ -219,6 +243,19 @@ function App() {
         return <ReportBug user={user} />;
       case 'life-replay':
         return <LifeReplay user={user} />;
+      case 'test-portal':
+        return <TestPortal user={user} setActiveTab={handleTabChange} />;
+      case 'assigned-tasks':
+        return <AssignedTasksPortal user={user} setActiveTab={handleTabChange} />;
+      case 'founder-portal':
+        const isF = user?.role === 'founder' || 
+                    user?.email?.toLowerCase().includes('founder') || 
+                    user?.email?.toLowerCase().includes('admin') || 
+                    user?.email?.toLowerCase() === 'admin@lumixora.com';
+        if (isF) {
+          return <FounderPortal user={user} />;
+        }
+        return <Dashboard setActiveTab={setActiveTab} user={user} />;
       default:
         return <Dashboard setActiveTab={handleTabChange} user={user} />;
     }
@@ -232,25 +269,6 @@ function App() {
       </>
     );
   }
-
-  if (!isVerified) {
-    return (
-      <>
-        <FaceVerificationPortal 
-          user={user} 
-          onUpdateUser={setUser}
-          onVerified={() => {
-            setIsVerified(true);
-            sessionStorage.setItem('lumixora_isVerified', 'true');
-          }} 
-          onLogout={handleLogout} 
-        />
-        {renderUpdateModal()}
-      </>
-    );
-  }
-
-
 
   return (
     <ThemeProvider>
@@ -269,3 +287,4 @@ function App() {
 }
 
 export default App;
+

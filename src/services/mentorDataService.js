@@ -290,8 +290,7 @@ export function getLiveMentorData(userId, supabaseTasks = [], supabaseNotes = []
   // Real-time composite readiness score
   // syllabusCoverage (30%), papersSolved (20%), quizScore (20%), tasksProgress (15%), studyConsistency (15%)
   const papersSolvedCount = (supabaseNotes || []).filter(n => n.title && (n.title.toLowerCase().includes('pyq') || n.title.toLowerCase().includes('paper') || n.title.toLowerCase().includes('previous'))).length;
-  const streak = analytics.currentStreak || userDoc?.streak || 0;
-  const consistencyScore = Math.min(100, (streak * 12) + (analytics.totalSessions * 5));
+  const consistencyScore = Math.min(100, (analytics.totalSessions * 10));
   const compositeReadiness = Math.round(
     (avgSyllabusProgress * 0.3) +
     (Math.min(papersSolvedCount * 15, 100) * 0.2) +
@@ -328,8 +327,7 @@ export function getLiveMentorData(userId, supabaseTasks = [], supabaseNotes = []
       avgSyllabusProgress,
       avgQuizScore,
       papersSolvedCount,
-      compositeReadiness,
-      streak: analytics.currentStreak || userDoc?.streak || 0
+      compositeReadiness
     }
   };
 }

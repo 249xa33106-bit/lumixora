@@ -3,12 +3,13 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyA4Q-fake-key-for-lumixora-dev-123",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "luminora-27653.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "luminora-27653",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "luminora-27653.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "568798547213",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:568798547213:web:7a8b9c0d1e2f3a4b"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBYFPH24xVwnIi5r4iHcIYgpsqqXQNUUf0",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "lumixora-6497b.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "lumixora-6497b",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "lumixora-6497b.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "61963945420",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:61963945420:web:a832c79f4b2790fd224969",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-B9VZD839L5"
 };
 
 // Initialize Firebase

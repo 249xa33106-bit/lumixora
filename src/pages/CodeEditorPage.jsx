@@ -210,9 +210,9 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
             <ArrowLeft className="w-4 h-4 text-gray-300" />
           </button>
           <div>
-            <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>{problem.title}</span>
-              <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded leading-none ${
+              <span className={`text-[9px] uppercase font-semibold px-2 py-0.5 rounded leading-none ${
                 problem.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
                 problem.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
                 'bg-red-500/10 text-red-400 border border-red-500/20'
@@ -290,7 +290,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 <button
                   key={tab.id}
                   onClick={() => setLeftTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-6 py-4.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-6 py-4.5 text-xs font-bold tracking-wide border-b-2 transition-all cursor-pointer ${
                     leftTab === tab.id 
                       ? 'border-brand-teal text-brand-teal bg-white/[0.01]' 
                       : 'border-transparent text-gray-500 hover:text-white'
@@ -318,7 +318,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
 
                 {/* Constraints */}
                 <div className="bg-[#030712]/40 rounded-2xl border border-white/5 p-4 space-y-2">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Constraints</span>
+                  <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Constraints</span>
                   <ul className="list-disc pl-4 space-y-1 text-gray-400">
                     {problem.constraints?.map((c, i) => (
                       <li key={i}>{c}</li>
@@ -330,7 +330,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
 
                 {/* Examples */}
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Examples</span>
+                  <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Examples</span>
                   {problem.examples?.map((ex, idx) => (
                     <div key={idx} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-2">
                       <span className="text-[10px] font-bold text-brand-teal uppercase">Example {idx + 1}:</span>
@@ -350,7 +350,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 {/* Hints dropdown */}
                 {problem.hints && problem.hints.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Need a nudge? (Hints)</span>
+                    <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Need a nudge? (Hints)</span>
                     <div className="space-y-2">
                       {problem.hints.map((hint, idx) => (
                         <details key={idx} className="bg-white/5 border border-white/5 rounded-xl p-3 text-xs cursor-pointer group">
@@ -368,10 +368,10 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 {/* Companies list */}
                 {problem.companies && (
                   <div>
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-2">Company Tags</span>
+                    <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-2">Company Tags</span>
                     <div className="flex flex-wrap gap-1.5">
                       {problem.companies.map((c, i) => (
-                        <span key={i} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">{c}</span>
+                        <span key={i} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[9px] font-semibold text-gray-400 tracking-wide">{c}</span>
                       ))}
                     </div>
                   </div>
@@ -402,11 +402,11 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                       <div 
                         key={sub.id}
                         onClick={() => restoreSubmission(sub)}
-                        className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-brand-teal/20 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all"
+                        className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${
                               sub.status === 'Accepted' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
                             }`}>
                               {sub.status}
@@ -485,7 +485,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
             <div className="flex border-b border-white/5 bg-black/25 shrink-0">
               <button
                 onClick={() => setRightTab('console')}
-                className={`flex items-center gap-1.5 px-5 py-3 text-[10px] font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-5 py-3 text-[10px] font-semibold tracking-wide border-b-2 transition-all cursor-pointer ${
                   rightTab === 'console' 
                     ? 'border-brand-teal text-brand-teal bg-white/[0.01]' 
                     : 'border-transparent text-gray-500 hover:text-white'
@@ -497,7 +497,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
               
               <button
                 onClick={() => setRightTab('ai-feedback')}
-                className={`flex items-center gap-1.5 px-5 py-3 text-[10px] font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-5 py-3 text-[10px] font-semibold tracking-wide border-b-2 transition-all cursor-pointer ${
                   rightTab === 'ai-feedback' 
                     ? 'border-brand-pink text-brand-pink bg-white/[0.01]' 
                     : 'border-transparent text-gray-500 hover:text-white'
@@ -536,7 +536,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                           : 'bg-red-500/10 border-red-500/20 text-red-400'
                       }`}>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs uppercase tracking-wider">{runResult.status}</span>
+                          <span className="font-bold text-xs tracking-wide">{runResult.status}</span>
                           <span className="text-[10px] text-gray-400">
                             ({runResult.passedCount}/{runResult.totalCount} Test Cases Passed)
                           </span>
@@ -559,7 +559,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                       {/* Individual Test Cases Results */}
                       {runResult.results && runResult.results.length > 0 && (
                         <div className="space-y-2">
-                          <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Execution Log details</span>
+                          <span className="text-[9px] font-semibold text-gray-500 tracking-wide block">Execution Log details</span>
                           {runResult.results.map((r, i) => (
                             <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl p-3 space-y-1">
                               <div className="flex justify-between items-center text-[10px] font-semibold">
@@ -601,25 +601,25 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                       {/* Metric Scores Row */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-[#f72585]/5 border border-[#f72585]/10 p-3 rounded-xl text-center">
-                          <span className="text-[10px] text-gray-500 uppercase font-black tracking-wider block">Quality Grade</span>
-                          <span className="text-xl font-black text-brand-pink block mt-1">{submissionFeedback.qualityScore}/100</span>
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider block">Quality Grade</span>
+                          <span className="text-xl font-semibold text-brand-pink block mt-1">{submissionFeedback.qualityScore}/100</span>
                         </div>
-                        <div className="bg-brand-teal/5 border border-brand-teal/10 p-3 rounded-xl text-center">
-                          <span className="text-[10px] text-gray-500 uppercase font-black tracking-wider block">Readability Grade</span>
-                          <span className="text-xl font-black text-brand-teal block mt-1">{submissionFeedback.readabilityScore}/100</span>
+                        <div className="bg-brand-teal/5 border border-white/10 p-3 rounded-xl text-center">
+                          <span className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider block">Readability Grade</span>
+                          <span className="text-xl font-semibold text-brand-teal block mt-1">{submissionFeedback.readabilityScore}/100</span>
                         </div>
                       </div>
 
                       {/* Correctness Analysis */}
                       <div className="space-y-1">
-                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Semantic Analysis</span>
+                        <span className="text-[9px] font-semibold text-gray-500 tracking-wide block">Semantic Analysis</span>
                         <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5 font-normal">{submissionFeedback.correctnessAnalysis}</p>
                       </div>
 
                       {/* Refactoring suggestions */}
                       {submissionFeedback.suggestions && submissionFeedback.suggestions.length > 0 && (
                         <div className="space-y-1.5">
-                          <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Refactoring Tips</span>
+                          <span className="text-[9px] font-semibold text-gray-500 tracking-wide block">Refactoring Tips</span>
                           <ul className="list-disc pl-4 space-y-1 text-gray-400 leading-relaxed font-normal">
                             {submissionFeedback.suggestions.map((s, idx) => (
                               <li key={idx}>{s}</li>
@@ -631,15 +631,15 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                       {/* Better algorithms */}
                       {submissionFeedback.betterAlgorithms && (
                         <div className="space-y-1">
-                          <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest block">Algorithmic Optimizations</span>
+                          <span className="text-[9px] font-semibold text-gray-500 tracking-wide block">Algorithmic Optimizations</span>
                           <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5 font-normal">{submissionFeedback.betterAlgorithms}</p>
                         </div>
                       )}
 
                       {/* Personalized Learning Tip */}
                       {submissionFeedback.learningTip && (
-                        <div className="bg-brand-teal/10 border border-brand-teal/20 p-3 rounded-xl text-brand-teal">
-                          <span className="text-[9px] font-black uppercase block mb-1">Personalized Learning Tip:</span>
+                        <div className="bg-brand-teal/10 border border-white/10 p-3 rounded-xl text-brand-teal">
+                          <span className="text-[9px] font-semibold uppercase block mb-1">Personalized Learning Tip:</span>
                           <p className="font-normal font-sans leading-relaxed text-xs">{submissionFeedback.learningTip}</p>
                         </div>
                       )}
@@ -657,19 +657,19 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
             <div className="flex flex-wrap items-center gap-2">
               <button 
                 onClick={() => triggerAICopilot('explain')} 
-                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-brand-teal/30 hover:text-brand-teal text-xs font-semibold text-gray-300 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:text-brand-teal text-xs font-semibold text-gray-300 transition-all cursor-pointer"
               >
                 <span>Explain Code</span>
               </button>
               <button 
                 onClick={() => triggerAICopilot('optimize')} 
-                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-brand-pink/30 hover:text-brand-pink text-xs font-semibold text-gray-300 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:text-brand-pink text-xs font-semibold text-gray-300 transition-all cursor-pointer"
               >
                 <span>Optimize Code</span>
               </button>
               <button 
                 onClick={() => triggerAICopilot('dry-run')} 
-                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-brand-blue/30 hover:text-brand-blue text-xs font-semibold text-gray-300 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 hover:text-brand-blue text-xs font-semibold text-gray-300 transition-all cursor-pointer"
               >
                 <span>Dry Run Trace</span>
               </button>
@@ -689,7 +689,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
               {problem.id === 'sandbox' ? (
                 <button
                   onClick={() => triggerAICopilot('explain')}
-                  className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-pink to-brand-purple hover:brightness-110 text-white text-xs font-black transition-all shadow-[0_0_15px_rgba(247,37,133,0.3)] cursor-pointer"
+                  className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-pink to-brand-purple hover:brightness-110 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                   <span>AI Code Review</span>
@@ -698,7 +698,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 <button
                   onClick={handleSubmitSolution}
                   disabled={running || submitting}
-                  className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-brand-teal hover:brightness-115 text-black text-xs font-black transition-all shadow-[0_0_15px_rgba(0,245,212,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-brand-teal hover:brightness-115 text-black text-xs font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Submit Solution</span>
@@ -721,7 +721,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
               </div>
               <div>
                 <h3 className="font-extrabold text-sm text-gray-200">AI Coding Assistant</h3>
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Interactive Learning Mode</span>
+                <span className="text-[10px] text-gray-500 tracking-wide font-bold">Interactive Learning Mode</span>
               </div>
             </div>
             <button 

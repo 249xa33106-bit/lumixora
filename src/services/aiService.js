@@ -1,3 +1,5 @@
+
+
 export async function generateNoteEnhancement(textContent) {
   try {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
@@ -69,7 +71,7 @@ Format:
   }
 }
 
-export async function generateDoubtResolution(questionOrContext, subject, isContext = false) {
+export async function generateDoubtResolution(questionOrContext, subject, isContext = false, imageBase64 = null) {
   try {
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     if (!apiKey) throw new Error("Groq API Key is missing!");
@@ -83,8 +85,20 @@ Do not use generic boilerplate text. Be direct, helpful, and concise.`;
     if (isContext && Array.isArray(questionOrContext)) {
       messages = messages.concat(questionOrContext);
     } else {
-      messages.push({ role: "user", content: questionOrContext });
+      if (imageBase64) {
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: questionOrContext || "Can you explain this image?" },
+            { type: "image_url", image_url: { url: imageBase64 } }
+          ]
+        });
+      } else {
+        messages.push({ role: "user", content: questionOrContext });
+      }
     }
+
+    const modelToUse = imageBase64 ? "llama-3.2-90b-vision-preview" : "llama-3.1-8b-instant";
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -93,7 +107,7 @@ Do not use generic boilerplate text. Be direct, helpful, and concise.`;
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: modelToUse,
         messages: messages,
         temperature: 0.5
       })
@@ -304,7 +318,6 @@ export async function generateMentorChatResponse(messages, liveData, complexityL
 - Live Attendance Average: ${metrics.avgAttendanceRate}% (Minimum required: 75%)
 - Syllabus Coverage Progress: ${metrics.avgSyllabusProgress}% complete
 - Estimated Exam Readiness: ${metrics.compositeReadiness}% (calculated from syllabus coverage, quiz performance, and paper solutions)
-- Focus Consistency Streak: ${metrics.streak} consecutive days active
 - Cumulative Study Hours (this week): ${analytics.totalMinutes ? Math.round(analytics.totalMinutes / 60) : 0} hours
 - Average Focus Score: ${analytics.avgFocusScore || 75}/100
 - Average Quiz/Test Score: ${metrics.avgQuizScore}%
@@ -698,7 +711,6 @@ STUDENT INTEL SUMMARY:
 - Productivity Score: ${twinData.metrics.productivityScore}%
 - Consistency Rating: ${twinData.metrics.consistencyScore}%
 - Avg Focus Rating: ${twinData.metrics.focusScore}/100
-- Study Streak: ${twinData.studyAnalytics.currentStreak} Days
 - Completed Tasks Rate: ${twinData.tasksStats.completed}/${twinData.tasksStats.total} (${twinData.tasksStats.completionRate}%)
 - Weak Subjects: ${twinData.profile.weakSubjects}
 - Strong Subjects: ${twinData.profile.strongSubjects}
@@ -710,7 +722,7 @@ ${studentSummary}
 
 Guidelines:
 1. Speak in a warm, direct, and mentoring voice (address the student as a coach would).
-2. Proactively note anomalies in their stats if appropriate (e.g. if they have low task completion, encourage them; if they have a good streak, praise them; if they ask about their weak subject, provide extra guidance).
+2. Proactively note anomalies in their stats if appropriate (e.g. if they have low task completion, encourage them; if they ask about their weak subject, provide extra guidance).
 3. Explain concepts at the requested complexity level: **${complexityLevel}**.
    - Beginner: Use everyday analogies, extremely simple terms, and step-by-step guides.
    - Intermediate: Explain academic principles, formulas, and practical use cases.
@@ -747,3 +759,4 @@ Guidelines:
     return `Hi! My cognitive link is running on backup cells right now. However, looking at your profile, your Synergy score is sitting at ${twinData.metrics.synergyScore}%. Let's get to work! What concept should we review?`;
   }
 }
+

@@ -58,19 +58,9 @@ export default function SubjectPage({ subject, onBack, user }) {
     };
   }, [viewerOpen, setIsStudying]);
 
-  // Keyboard shortcut blocking (Saves/Prints/DevTools)
+  // Keyboard shortcut blocking (DevTools)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ctrl+S / Cmd+S
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        alert("Downloading/Saving is disabled for security reasons.");
-      }
-      // Ctrl+P / Cmd+P
-      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-        e.preventDefault();
-        alert("Printing is disabled for security reasons.");
-      }
       // F12 / DevTools
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
         e.preventDefault();
@@ -232,7 +222,7 @@ export default function SubjectPage({ subject, onBack, user }) {
         {user?.role === 'founder' && (
           <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
             <Shield className={`w-4 h-4 ${isFounderMode ? 'text-brand-teal' : 'text-gray-500'}`} />
-            <span className="text-xs uppercase tracking-wider">Founder Mode</span>
+            <span className="text-xs tracking-wide">Founder Mode</span>
             <button 
               onClick={() => setIsFounderMode(!isFounderMode)}
               className={`w-10 h-5 rounded-full relative transition-colors ${isFounderMode ? 'bg-brand-teal' : 'bg-gray-600'}`}
@@ -275,7 +265,7 @@ export default function SubjectPage({ subject, onBack, user }) {
             <button 
               onClick={() => setSaved(!saved)}
               className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${
-                saved ? 'bg-brand-pink/20 border-brand-pink/40 text-brand-pink' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                saved ? 'bg-brand-pink/20 border-white/10 text-brand-pink' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
               }`}
             >
               <Heart className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
@@ -327,7 +317,7 @@ export default function SubjectPage({ subject, onBack, user }) {
              <p className="text-sm text-gray-500">No featured playlist has been added for this path yet.</p>
            </div>
         ) : (
-          <div className="glass-panel rounded-3xl p-6 border border-white/10 flex flex-col lg:flex-row gap-6 group hover:border-brand-blue/30 transition-colors">
+          <div className="glass-panel rounded-3xl p-6 border border-white/10 flex flex-col lg:flex-row gap-6 group hover:border-white/10 transition-colors">
             <div className="relative w-full lg:w-[400px] h-[220px] rounded-2xl overflow-hidden shrink-0 bg-black/50">
               <img 
                 src={(currentData.featured.thumbnail && !currentData.featured.thumbnail.includes('unsplash')) ? currentData.featured.thumbnail : '/lumixora_logo.jpg'} 
@@ -338,7 +328,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                 onClick={handleWatchFeatured}
                 className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
-                <div className="w-16 h-16 rounded-full bg-brand-pink/90 flex items-center justify-center shadow-[0_0_30px_rgba(247,37,133,0.6)] cursor-pointer hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-full bg-brand-pink/90 flex items-center justify-center shadow-sm cursor-pointer hover:scale-110 transition-transform">
                   <PlayCircle className="w-8 h-8 text-white fill-current" />
                 </div>
               </div>
@@ -363,7 +353,7 @@ export default function SubjectPage({ subject, onBack, user }) {
               <div className="mt-auto flex items-center gap-3">
                 <button 
                   onClick={handleWatchFeatured}
-                  className="px-6 py-2.5 bg-brand-blue hover:bg-brand-blue/90 text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(0,180,216,0.3)]"
+                  className="px-6 py-2.5 bg-brand-blue hover:bg-brand-blue/90 text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm"
                 >
                   <PlayCircle className="w-5 h-5" /> Start Watching
                 </button>
@@ -412,7 +402,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                   </div>
                 )}
                 
-                <div className="w-32 h-20 bg-black/40 rounded-xl relative overflow-hidden shrink-0 border border-white/5 group-hover/alt:border-brand-blue/50">
+                <div className="w-32 h-20 bg-black/40 rounded-xl relative overflow-hidden shrink-0 border border-white/5 group-hover/alt:border-white/10">
                   <div className="absolute inset-0 flex items-center justify-center bg-white/5">
                     <PlayCircle className="w-6 h-6 text-gray-500 group-hover/alt:text-brand-blue transition-colors" />
                   </div>
@@ -441,7 +431,7 @@ export default function SubjectPage({ subject, onBack, user }) {
             <h2 className="text-lg font-bold text-white">Academic Resources</h2>
             <button 
               onClick={() => handleOpenModal('resource')} 
-              className="text-xs bg-brand-teal/20 hover:bg-brand-teal/30 text-brand-teal font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors uppercase tracking-wider shadow-[0_0_10px_rgba(0,245,212,0.2)]"
+              className="text-xs bg-brand-teal/20 hover:bg-brand-teal/30 text-brand-teal font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors tracking-wide shadow-sm"
             >
               <Plus className="w-3 h-3" /> Contribute PDF
             </button>
@@ -531,31 +521,31 @@ export default function SubjectPage({ subject, onBack, user }) {
               {(modalType === 'featured' || modalType === 'alternative') && (
                 <>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Title</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Title</label>
                     <input type="text" value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Link (URL)</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Link (URL)</label>
                     <input type="url" value={formData.playlistUrl || ''} onChange={e => setFormData({...formData, playlistUrl: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Channel</label>
+                      <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Channel</label>
                       <input type="text" value={formData.channel || ''} onChange={e => setFormData({...formData, channel: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Duration</label>
+                      <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Duration</label>
                       <input type="text" value={formData.duration || ''} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="e.g. 5h 30m" className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                     </div>
                   </div>
                   {modalType === 'featured' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Level</label>
+                        <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Level</label>
                         <input type="text" value={formData.level || ''} onChange={e => setFormData({...formData, level: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Videos Count</label>
+                        <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Videos Count</label>
                         <input type="number" value={formData.videos || ''} onChange={e => setFormData({...formData, videos: parseInt(e.target.value)})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                       </div>
                     </div>
@@ -563,11 +553,11 @@ export default function SubjectPage({ subject, onBack, user }) {
                   {modalType === 'alternative' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Rating</label>
+                        <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Rating</label>
                         <input type="text" value={formData.rating || ''} onChange={e => setFormData({...formData, rating: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                       </div>
                       <div>
-                        <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Best For</label>
+                        <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Best For</label>
                         <input type="text" value={formData.bestFor || ''} onChange={e => setFormData({...formData, bestFor: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                       </div>
                     </div>
@@ -578,11 +568,11 @@ export default function SubjectPage({ subject, onBack, user }) {
               {modalType === 'resource' && (
                 <>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Resource Label</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Resource Label</label>
                     <input type="text" value={formData.label || ''} onChange={e => setFormData({...formData, label: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" required />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Upload PDF or Image File</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Upload PDF or Image File</label>
                     <input 
                       type="file" 
                       accept=".pdf,image/*" 
@@ -601,7 +591,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                     <div className="absolute w-full h-[1px] bg-white/5"></div>
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Paste Document Link (Google Drive / OneDrive)</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Paste Document Link (Google Drive / OneDrive)</label>
                     <input 
                       type="url" 
                       value={formData.fileUrl || ''} 
@@ -616,7 +606,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                     )}
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Icon Type</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Icon Type</label>
                     <select value={formData.type || 'FileText'} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none">
                       <option value="FileText">Document</option>
                       <option value="Download">Download</option>
@@ -625,7 +615,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Color Theme</label>
+                    <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Color Theme</label>
                     <select 
                       value={`${formData.color},${formData.bg}`} 
                       onChange={e => {
@@ -669,17 +659,37 @@ export default function SubjectPage({ subject, onBack, user }) {
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/60">
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-brand-pink animate-pulse" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Secure Document Viewer</span>
+                <span className="text-xs font-bold text-white tracking-wide">Secure Document Viewer</span>
               </div>
-              <button 
-                onClick={() => {
-                  setViewerOpen(false);
-                  setViewingUrl('');
-                }} 
-                className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {viewingUrl && (
+                  <button 
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = viewingUrl;
+                      link.target = '_blank';
+                      // Force download if possible
+                      link.download = '';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="text-gray-300 hover:text-brand-blue bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-bold mr-1 border border-white/5 hover:border-white/10"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download File
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    setViewerOpen(false);
+                    setViewingUrl('');
+                  }} 
+                  className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Viewer body */}
@@ -710,10 +720,10 @@ export default function SubjectPage({ subject, onBack, user }) {
                 />
               ) : (
                 <iframe 
-                  src={`${viewingUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                  src={viewingUrl}
                   className="w-full h-full border-none z-10"
                   title="Document Viewer"
-                  sandbox="allow-scripts allow-same-origin"
+                  sandbox="allow-scripts allow-same-origin allow-downloads"
                 />
               )}
             </div>

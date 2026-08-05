@@ -67,7 +67,7 @@ export default function ReportBug({ user }) {
       <div className="relative rounded-3xl p-8 overflow-hidden glass-panel border border-border-glass bg-gradient-to-br from-red-500/10 via-slate-900/40 to-brand-purple/5">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-red-500/10 to-brand-purple/10 rounded-full blur-3xl animate-pulse-glow"></div>
         <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] font-bold text-red-400 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] font-bold text-red-400 tracking-wide">
             <AlertTriangle className="w-3 h-3 animate-pulse" />
             <span>Bug & Issue Tracker</span>
           </div>
@@ -156,7 +156,7 @@ export default function ReportBug({ user }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-red-500 to-brand-purple text-white hover:opacity-90 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-red-500 to-brand-purple text-white hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <span>Submitting Bug...</span>

@@ -170,7 +170,7 @@ export default function TaskManager() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-brand-pink/5 rounded-full blur-xl"></div>
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-brand-pink" />
-            <h2 className="text-base font-bold text-gray-100 uppercase tracking-wider">Exam Countdown Ticker</h2>
+            <h2 className="text-base font-bold text-gray-100 tracking-wide">Exam Countdown Ticker</h2>
           </div>
 
           <div className="grid grid-cols-4 gap-3 text-center">
@@ -185,7 +185,7 @@ export default function TaskManager() {
                   <span className={`text-2xl sm:text-3xl font-extrabold block tracking-tight ${block.color}`}>
                     {String(block.val).padStart(2, '0')}
                   </span>
-                  <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider mt-1 block">
+                  <span className="text-[9px] text-gray-500 font-bold tracking-wide mt-1 block">
                     {block.label}
                   </span>
                 </div>
@@ -216,7 +216,7 @@ export default function TaskManager() {
         <div className="glass-panel p-6 rounded-2xl flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-bold text-gray-100 uppercase tracking-wider">Milestones & Todos</h2>
+              <h2 className="text-base font-bold text-gray-100 tracking-wide">Milestones & Todos</h2>
               <p className="text-[10px] text-gray-400 mt-0.5">Track your assignment deadlines and reviews.</p>
             </div>
             {/* Progress Bar */}
@@ -329,7 +329,7 @@ export default function TaskManager() {
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-brand-blue" />
-              <h2 className="text-base font-bold text-gray-100 uppercase tracking-wider">Weekly Class Schedule</h2>
+              <h2 className="text-base font-bold text-gray-100 tracking-wide">Weekly Class Schedule</h2>
             </div>
             <button 
               onClick={() => {
@@ -337,7 +337,7 @@ export default function TaskManager() {
                 setEditingClassIndex(null);
                 setIsClassModalOpen(true);
               }}
-              className="text-[10px] bg-brand-blue/15 hover:bg-brand-blue text-brand-blue hover:text-black border border-brand-blue/20 px-3 py-1 rounded-lg font-bold uppercase transition-colors duration-300 flex items-center gap-1 cursor-pointer"
+              className="text-[10px] bg-brand-blue/15 hover:bg-brand-blue text-brand-blue hover:text-black border border-white/10 px-3 py-1 rounded-lg font-bold uppercase transition-colors duration-300 flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3 h-3 stroke-[3]" /> Add Class
             </button>
@@ -355,7 +355,7 @@ export default function TaskManager() {
                 className="group p-3.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-brand-blue/10 flex flex-col items-center justify-center shrink-0 border border-brand-blue/20">
+                  <div className="w-10 h-10 rounded-lg bg-brand-blue/10 flex flex-col items-center justify-center shrink-0 border border-white/10">
                     <span className="text-[10px] font-extrabold text-brand-blue uppercase">{slot.day}</span>
                   </div>
                   <div>
@@ -411,7 +411,7 @@ export default function TaskManager() {
                   type="date" 
                   value={examDateInput}
                   onChange={(e) => setExamDateInput(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10"
                   required
                 />
               </div>
@@ -449,7 +449,7 @@ export default function TaskManager() {
                   <select 
                     value={classForm.day}
                     onChange={(e) => setClassForm({...classForm, day: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-blue/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                   >
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
                       <option key={d} value={d} className="bg-slate-900">{d}</option>
@@ -462,7 +462,7 @@ export default function TaskManager() {
                     type="time" 
                     value={classForm.time}
                     onChange={(e) => setClassForm({...classForm, time: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-blue/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                     required
                   />
                 </div>
@@ -474,7 +474,7 @@ export default function TaskManager() {
                   type="text" 
                   value={classForm.subject}
                   onChange={(e) => setClassForm({...classForm, subject: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-blue/50"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                   placeholder="e.g. Data Structures"
                   required
                 />
@@ -486,7 +486,7 @@ export default function TaskManager() {
                   <select 
                     value={classForm.type}
                     onChange={(e) => setClassForm({...classForm, type: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-blue/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                   >
                     <option value="Lecture" className="bg-slate-900">Lecture</option>
                     <option value="Lab Class" className="bg-slate-900">Lab Class</option>
@@ -499,7 +499,7 @@ export default function TaskManager() {
                     type="text" 
                     value={classForm.duration}
                     onChange={(e) => setClassForm({...classForm, duration: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-blue/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                     placeholder="e.g. 1.5h"
                     required
                   />

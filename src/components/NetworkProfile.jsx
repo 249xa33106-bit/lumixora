@@ -87,7 +87,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
           {/* Edit / Save triggers */}
           <button 
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 border border-white/10 cursor-pointer"
+            className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white font-bold text-[10px] tracking-wide flex items-center gap-1.5 border border-white/10 cursor-pointer"
           >
             {isEditing ? <Check className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
             <span>{isEditing ? 'Save Profile' : 'Edit Profile'}</span>
@@ -98,7 +98,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
         <div className="px-6 pb-6 pt-16 relative flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           {/* Avatar Picture (Absolutely Positioned Over Cover boundary) */}
           <div className="absolute -top-12 left-6 w-24 h-24 rounded-2xl bg-[#0b0b14] border-4 border-[#0b0b14] overflow-hidden shadow-2xl">
-            <div className="w-full h-full bg-gradient-to-br from-brand-teal to-brand-blue flex items-center justify-center text-white text-3xl font-black">
+            <div className="w-full h-full bg-gradient-to-br from-brand-teal to-brand-blue flex items-center justify-center text-white text-3xl font-semibold">
               {name.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -106,10 +106,10 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
           <div className="space-y-1">
             <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
               <span>{name}</span>
-              <span className="text-[9px] font-black uppercase bg-brand-teal/10 text-brand-teal px-2 py-0.5 rounded border border-brand-teal/20">Active Student</span>
+              <span className="text-[9px] font-semibold uppercase icon-3d-teal Student</span>
             </h2>
             <p className="text-xs text-gray-400 font-semibold">{dept} • {year}</p>
-            <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">{college}</p>
+            <p className="text-[11px] text-gray-500 font-bold tracking-wide">{college}</p>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
           
           {/* Bio Box */}
           <div className="glass-panel p-6 rounded-3xl space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
               <User className="w-4 h-4 text-brand-teal" />
               <span>Bio Description</span>
             </h3>
@@ -141,7 +141,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
             
             {/* Skills */}
             <div className="glass-panel p-6 rounded-3xl space-y-3">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Skills & Expertise</span>
+              <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Skills & Expertise</span>
               {isEditing ? (
                 <input 
                   type="text"
@@ -153,7 +153,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {skills.split(',').map((s, idx) => (
-                    <span key={idx} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{s.trim()}</span>
+                    <span key={idx} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[10px] font-semibold text-gray-400 tracking-wide">{s.trim()}</span>
                   ))}
                 </div>
               )}
@@ -161,7 +161,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
             {/* Interests */}
             <div className="glass-panel p-6 rounded-3xl space-y-3">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Core Interests</span>
+              <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Core Interests</span>
               {isEditing ? (
                 <input 
                   type="text"
@@ -173,7 +173,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {interests.split(',').map((i, idx) => (
-                    <span key={idx} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{i.trim()}</span>
+                    <span key={idx} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[10px] font-semibold text-gray-400 tracking-wide">{i.trim()}</span>
                   ))}
                 </div>
               )}
@@ -183,7 +183,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
           {/* Portfolio & Credentials links */}
           <div className="glass-panel p-6 rounded-3xl space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
               <Link2 className="w-4 h-4 text-brand-blue" />
               <span>External Portfolios</span>
             </h3>
@@ -227,13 +227,13 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
         <div className="space-y-6">
           
           {/* AI Grader Widget */}
-          <div className="glass-panel p-6 rounded-3xl bg-gradient-to-br from-brand-pink/5 to-brand-purple/5 border border-brand-pink/15 space-y-4">
+          <div className="glass-panel p-6 rounded-3xl bg-gradient-to-br from-brand-pink/5 to-brand-purple/5 border border-white/10 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
                 <Cpu className="w-4 h-4 text-brand-pink" />
                 <span>AI Profile Grader</span>
               </h3>
-              <span className="text-[10px] font-black uppercase text-brand-pink tracking-widest">CO-PILOT</span>
+              <span className="text-[10px] font-semibold uppercase text-brand-pink tracking-widest">CO-PILOT</span>
             </div>
 
             {!aiScore ? (
@@ -253,15 +253,15 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
               <div className="space-y-4 animate-fade-in text-left">
                 <div className="flex items-baseline justify-between border-b border-white/5 pb-2">
                   <span className="text-[11px] text-gray-400 font-bold block uppercase tracking-wide">Readiness Grade</span>
-                  <span className="text-2xl font-black text-brand-pink">{aiScore.score}%</span>
+                  <span className="text-2xl font-semibold text-brand-pink">{aiScore.score}%</span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-brand-purple font-black block uppercase tracking-widest">{aiScore.grade}</span>
+                  <span className="text-[10px] text-brand-purple font-semibold block tracking-wide">{aiScore.grade}</span>
                   <p className="text-[11px] text-gray-400 font-normal leading-relaxed leading-normal bg-white/[0.01] p-3 rounded-xl border border-white/5">{aiScore.feedback}</p>
                 </div>
                 <button 
                   onClick={() => setAiScore(null)}
-                  className="w-full bg-white/5 border border-white/5 hover:bg-white/10 text-gray-400 font-semibold py-2 rounded-xl text-[10px] uppercase tracking-wider"
+                  className="w-full bg-white/5 border border-white/5 hover:bg-white/10 text-gray-400 font-semibold py-2 rounded-xl text-[10px] tracking-wide"
                 >
                   Re-evaluate
                 </button>
@@ -271,7 +271,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
           {/* Badges Box */}
           <div className="glass-panel p-6 rounded-3xl space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
               <Award className="w-4 h-4 text-brand-teal" />
               <span>LUMIXORA Achievements</span>
             </h3>
@@ -279,22 +279,22 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
             <div className="grid grid-cols-2 gap-3">
               {/* Badge 1 */}
               <div className="p-3 bg-white/5 border border-white/5 rounded-2xl text-center space-y-2 flex flex-col items-center">
-                <div className="w-9 h-9 rounded-full bg-brand-teal/10 border border-brand-teal/20 flex items-center justify-center text-brand-teal">
+                <div className="w-9 h-9 rounded-full bg-brand-teal/10 border border-white/10 flex items-center justify-center text-brand-teal">
                   <Sparkles className="w-4.5 h-4.5" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-gray-200 block truncate max-w-full">Loop Master</span>
+                  <span className="text-[10px] font-semibold text-gray-200 block truncate max-w-full">Loop Master</span>
                   <span className="text-[8px] text-gray-500 font-bold block uppercase mt-0.5">Code Arena</span>
                 </div>
               </div>
 
               {/* Badge 2 */}
               <div className="p-3 bg-white/5 border border-white/5 rounded-2xl text-center space-y-2 flex flex-col items-center">
-                <div className="w-9 h-9 rounded-full bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center text-brand-pink">
+                <div className="w-9 h-9 rounded-full bg-brand-pink/10 border border-white/10 flex items-center justify-center text-brand-pink">
                   <Heart className="w-4.5 h-4.5 fill-current" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-gray-200 block truncate max-w-full">Guru Contributor</span>
+                  <span className="text-[10px] font-semibold text-gray-200 block truncate max-w-full">Guru Contributor</span>
                   <span className="text-[8px] text-gray-500 font-bold block uppercase mt-0.5">Note Share</span>
                 </div>
               </div>

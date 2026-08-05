@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Brain, TrendingUp, AlertTriangle, Play, RefreshCw, Zap, Award, Calendar, BookOpen, CheckSquare, PlusCircle } from 'lucide-react';
 import { db } from '../config/firebase';
 import { collection, addDoc, doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { checkAndSeedTwinData, fetchFullStudentHistory, generateAIPredictions, calculateDeterministicTwinPredictions } from '../services/aiFutureTwinService';
+import { checkAndSeedTwinData, fetchFullStudentHistory, generateAIPredictions, calculateDeterministicTwinPredictions, saveAcademicBaseline } from '../services/aiFutureTwinService';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 
@@ -13,6 +13,16 @@ export default function AiFutureTwin({ user, setActiveTab }) {
   const [predictions, setPredictions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Setup Modal State
+  const [showSetup, setShowSetup] = useState(false);
+  const [setupData, setSetupData] = useState({
+    cgpa: 8.0,
+    target_cgpa: 9.0,
+    attendance: 85,
+    semester: 'Sem 3'
+  });
+  const [savingSetup, setSavingSetup] = useState(false);
 
   // Simulator parameters state
   const [simStudyHours, setSimStudyHours] = useState(2);
@@ -38,6 +48,26 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         setHistory(data);
         const initialPreds = await generateAIPredictions(user.id, data);
         setPredictions(initialPreds);
+        
+        // Auto-save default baseline if none exists, instead of asking user
+        if (!data.goals?.previousCGPA) {
+          const defaultBaseline = {
+            cgpa: 8.0,
+            target_cgpa: 9.0,
+            attendance: 85,
+            semester: 'Sem 3'
+          };
+          // Save in background
+          saveAcademicBaseline(user.id, defaultBaseline);
+          setSetupData(defaultBaseline);
+        } else {
+          setSetupData({
+            cgpa: data.goals.previousCGPA || 8.0,
+            target_cgpa: data.goals.targetCGPA || 9.0,
+            attendance: data.goals.overallAttendance || 85,
+            semester: data.goals.semester || 'Sem 3'
+          });
+        }
       }
       setLoading(false);
     };
@@ -77,6 +107,39 @@ export default function AiFutureTwin({ user, setActiveTab }) {
       addToast({ message: 'Neural sync offline. Kept local intelligence.', type: 'warning' });
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  // Handle saving the baseline data to Supabase
+  const handleSaveSetup = async () => {
+    if (!user?.id) return;
+    setSavingSetup(true);
+    try {
+      const success = await saveAcademicBaseline(user.id, setupData);
+      if (success) {
+        addToast({ message: 'Baseline data saved to database!', type: 'success' });
+        setShowSetup(false);
+        // Refresh history to apply baseline
+        const data = await fetchFullStudentHistory(user.id);
+        if (data) {
+          setHistory(data);
+          const updatedPreds = calculateDeterministicTwinPredictions(data);
+          setPredictions(prev => ({
+            ...prev,
+            metrics: updatedPreds.metrics,
+            subjectPassingProbabilities: updatedPreds.subjectPassingProbabilities,
+            lastUpdated: new Date().toISOString()
+          }));
+        }
+      } else {
+        addToast({ message: 'Saved baseline locally (Supabase unavailable).', type: 'info' });
+        setShowSetup(false);
+      }
+    } catch (err) {
+      console.error(err);
+      addToast({ message: 'Failed to save baseline.', type: 'error' });
+    } finally {
+      setSavingSetup(false);
     }
   };
 
@@ -193,7 +256,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-12 h-12 rounded-full border-4 border-brand-teal/20 border-t-brand-teal animate-spin"></div>
+        <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-brand-teal animate-spin"></div>
         <p className="text-sm text-gray-400 font-medium animate-pulse">Synchronizing Academic Digital Twin...</p>
       </div>
     );
@@ -214,7 +277,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-pink/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-pink/20 border border-brand-pink/30 text-brand-pink text-xs font-black uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-pink/20 border border-white/10 text-brand-pink text-xs font-semibold tracking-wide">
               <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
               <span>AI Future Twin™ Live</span>
             </div>
@@ -226,30 +289,105 @@ export default function AiFutureTwin({ user, setActiveTab }) {
             </p>
           </div>
           
-          <button
-            onClick={handleFullAIAnalysis}
-            disabled={refreshing}
-            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-purple text-black font-extrabold text-xs tracking-wider uppercase border-none hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,245,212,0.3)] disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>Neural Recalculate</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowSetup(true)}
+              className="px-4 py-2 rounded-xl bg-white/10 text-white font-bold text-xs tracking-wider uppercase border-none hover:bg-white/20 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              Update Baseline
+            </button>
+            <button
+              onClick={handleFullAIAnalysis}
+              disabled={refreshing}
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-purple text-black font-extrabold text-xs tracking-wider uppercase border-none hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span>Neural Recalculate</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Baseline Setup Modal */}
+      {showSetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1a1a24] border border-white/10 p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-2xl relative">
+            <h2 className="text-2xl font-bold text-white mb-2">Setup Your Baseline</h2>
+            <p className="text-sm text-gray-400 mb-6">Enter your actual previous data to generate accurate AI predictions and store it in your profile.</p>
+            
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Previous CGPA</label>
+                <input 
+                  type="number" step="0.01" min="0" max="10"
+                  value={setupData.cgpa}
+                  onChange={e => setSetupData({...setupData, cgpa: parseFloat(e.target.value) || 0})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-teal"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Goal Target CGPA</label>
+                <input 
+                  type="number" step="0.01" min="0" max="10"
+                  value={setupData.target_cgpa}
+                  onChange={e => setSetupData({...setupData, target_cgpa: parseFloat(e.target.value) || 0})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Current Semester</label>
+                <select 
+                  value={setupData.semester}
+                  onChange={e => setSetupData({...setupData, semester: e.target.value})}
+                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-blue"
+                >
+                  <option>Sem 1</option><option>Sem 2</option><option>Sem 3</option><option>Sem 4</option>
+                  <option>Sem 5</option><option>Sem 6</option><option>Sem 7</option><option>Sem 8</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Overall Past Attendance (%)</label>
+                <input 
+                  type="number" min="0" max="100"
+                  value={setupData.attendance}
+                  onChange={e => setSetupData({...setupData, attendance: parseInt(e.target.value) || 0})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-purple"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-8">
+              <button 
+                onClick={() => setShowSetup(false)}
+                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveSetup}
+                disabled={savingSetup}
+                className="flex-1 py-3 rounded-xl bg-brand-teal text-black font-bold hover:opacity-90 transition-all disabled:opacity-50"
+              >
+                {savingSetup ? 'Saving...' : 'Save & Predict'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grid of Key Projections & Real-Time Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Expected CGPA */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-brand-teal/20 transition-all duration-300">
+        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-teal font-extrabold uppercase tracking-wider">Expected CGPA</span>
+            <span className="text-[10px] text-brand-teal font-extrabold tracking-wide">Expected CGPA</span>
             <div className="w-8 h-8 rounded-lg bg-brand-teal/10 flex items-center justify-center text-brand-teal">
               <Brain className="w-4 h-4" />
             </div>
           </div>
           <div className="my-4">
-            <h3 className="text-4xl font-black text-gray-100 tracking-tight">{activeCGPA.toFixed(2)}</h3>
+            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activeCGPA.toFixed(2)}</h3>
             <p className="text-[10px] text-gray-400 mt-1 font-semibold">Projected based on current study trajectory</p>
           </div>
           <div className="h-1 bg-white/5 rounded-full overflow-hidden">
@@ -258,15 +396,15 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         </div>
 
         {/* Semester Pass Percentage */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-brand-pink/20 transition-all duration-300">
+        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wider">Projected Semester %</span>
+            <span className="text-[10px] text-brand-pink font-extrabold tracking-wide">Projected Semester %</span>
             <div className="w-8 h-8 rounded-lg bg-brand-pink/10 flex items-center justify-center text-brand-pink">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           <div className="my-4">
-            <h3 className="text-4xl font-black text-gray-100 tracking-tight">{activePercentage}%</h3>
+            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activePercentage}%</h3>
             <p className="text-[10px] text-gray-400 mt-1 font-semibold">Equates to estimated internal scores</p>
           </div>
           <div className="h-1 bg-white/5 rounded-full overflow-hidden">
@@ -275,15 +413,15 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         </div>
 
         {/* Placement Readiness */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-brand-blue/20 transition-all duration-300">
+        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-blue font-extrabold uppercase tracking-wider">Placement Readiness</span>
+            <span className="text-[10px] text-brand-blue font-extrabold tracking-wide">Placement Readiness</span>
             <div className="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center text-brand-blue">
               <Zap className="w-4 h-4 animate-pulse" />
             </div>
           </div>
           <div className="my-4">
-            <h3 className="text-4xl font-black text-gray-100 tracking-tight">{activePlacement}%</h3>
+            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activePlacement}%</h3>
             <p className="text-[10px] text-gray-400 mt-1 font-semibold">Calculated from DSA + coding practice</p>
           </div>
           <div className="h-1 bg-white/5 rounded-full overflow-hidden">
@@ -292,15 +430,15 @@ export default function AiFutureTwin({ user, setActiveTab }) {
         </div>
 
         {/* Burnout Risk */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-brand-purple/20 transition-all duration-300">
+        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-purple font-extrabold uppercase tracking-wider">Burnout Risk</span>
+            <span className="text-[10px] text-brand-purple font-extrabold tracking-wide">Burnout Risk</span>
             <div className="w-8 h-8 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="my-4">
-            <h3 className="text-4xl font-black text-gray-100 tracking-tight">{activeBurnout}%</h3>
+            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activeBurnout}%</h3>
             <p className="text-[10px] text-gray-400 mt-1 font-semibold">Risk score relative to target consistency</p>
           </div>
           <div className="h-1 bg-white/5 rounded-full overflow-hidden">
@@ -314,13 +452,13 @@ export default function AiFutureTwin({ user, setActiveTab }) {
       <div className="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-base font-bold text-gray-100 uppercase tracking-wider">Real-Time Action Center</h2>
+            <h2 className="text-base font-bold text-gray-100 tracking-wide">Real-Time Action Center</h2>
             <p className="text-[10px] text-gray-400 mt-0.5">Perform study actions instantly to recalculate the twin forecasts.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => logStudySession(45)} 
-              className="text-[10px] bg-brand-teal/10 hover:bg-brand-teal border border-brand-teal/20 text-brand-teal hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+              className="text-[10px] bg-brand-teal/10 hover:bg-brand-teal border border-white/10 text-brand-teal hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" /> Study Session (45m)
             </button>
@@ -329,19 +467,19 @@ export default function AiFutureTwin({ user, setActiveTab }) {
                 localStorage.setItem('mentor_action', 'generate_quiz');
                 setActiveTab('mentor');
               }} 
-              className="text-[10px] bg-brand-pink/10 hover:bg-brand-pink border border-brand-pink/20 text-brand-pink hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+              className="text-[10px] bg-brand-pink/10 hover:bg-brand-pink border border-white/10 text-brand-pink hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Award className="w-3.5 h-3.5" /> Take Quiz (9/10)
             </button>
             <button 
               onClick={() => logNotesRead()} 
-              className="text-[10px] bg-brand-blue/10 hover:bg-brand-blue border border-brand-blue/20 text-brand-blue hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+              className="text-[10px] bg-brand-blue/10 hover:bg-brand-blue border border-white/10 text-brand-blue hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" /> Read Notes
             </button>
             <button 
               onClick={() => logStudySession(60, 'Extension')} 
-              className="text-[10px] bg-[#9333ea]/15 hover:bg-[#9333ea] border border-[#9333ea]/35 text-[#c084fc] hover:text-white font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer relative overflow-hidden group shadow-[0_0_15px_rgba(147,51,234,0.15)]"
+              className="text-[10px] bg-[#9333ea]/15 hover:bg-[#9333ea] border border-[#9333ea]/35 text-[#c084fc] hover:text-white font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer relative overflow-hidden group shadow-sm"
             >
               <Zap className="w-3.5 h-3.5 animate-pulse" /> Sync Extension (60m)
             </button>
@@ -359,10 +497,10 @@ export default function AiFutureTwin({ user, setActiveTab }) {
           <div className="glass-panel p-6 rounded-2xl flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">CGPA Growth Timeline</h3>
+                <h3 className="text-sm font-bold text-gray-100 tracking-wide">CGPA Growth Timeline</h3>
                 <p className="text-[10px] text-gray-400 mt-0.5">Projections mapping study hours to semester outcomes.</p>
               </div>
-              <span className="text-[10px] bg-brand-teal/20 text-brand-teal font-extrabold uppercase py-1 px-3 rounded-full border border-brand-teal/20">
+              <span className="text-[10px] bg-brand-teal/20 text-brand-teal font-extrabold uppercase py-1 px-3 rounded-full border border-white/10">
                 Predicted: {activeCGPA.toFixed(2)} CGPA
               </span>
             </div>
@@ -409,7 +547,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
               </svg>
               
               {/* Timeline labels */}
-              <div className="flex justify-between mt-2 text-[9px] text-gray-500 font-bold uppercase tracking-wider px-1">
+              <div className="flex justify-between mt-2 text-[9px] text-gray-500 font-bold tracking-wide px-1">
                 <span>Month 1</span>
                 <span>Month 2</span>
                 <span>Month 3</span>
@@ -421,7 +559,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
 
           {/* Subject passing probabilities */}
           <div className="glass-panel p-6 rounded-2xl flex flex-col">
-            <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider mb-4">Subject-wise Passing Probabilities</h3>
+            <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-4">Subject-wise Passing Probabilities</h3>
             
             <div className="space-y-4">
               {predictions?.subjectPassingProbabilities?.map((sub, idx) => (
@@ -455,7 +593,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
           <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden bg-gradient-to-br from-brand-purple/10 to-transparent">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-brand-teal" />
-              <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">Future Simulator</h3>
+              <h3 className="text-sm font-bold text-gray-100 tracking-wide">Future Simulator</h3>
             </div>
             <p className="text-[10px] text-gray-400 leading-relaxed mb-6">
               Simulate actions to test how modifying study habits affects predictions instantly.
@@ -515,29 +653,56 @@ export default function AiFutureTwin({ user, setActiveTab }) {
             </div>
 
             {/* Sim outcomes details overlay card */}
-            <div className="mt-6 p-4 rounded-xl border border-brand-teal/20 bg-brand-teal/5 space-y-3">
-              <span className="text-[9px] text-brand-teal font-extrabold uppercase tracking-widest block">Simulated Outcome projection</span>
+            <div className="mt-6 p-4 rounded-xl border border-white/10 bg-brand-teal/5 space-y-3">
+              <span className="text-[9px] text-brand-teal font-extrabold tracking-wide block">Simulated Outcome projection</span>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-[10px] text-gray-500 block font-bold">Projected CGPA</span>
-                  <span className="text-lg font-black text-gray-200 mt-0.5 block">{activeCGPA.toFixed(2)}</span>
+                  <span className="text-lg font-semibold text-gray-200 mt-0.5 block">{activeCGPA.toFixed(2)}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-gray-500 block font-bold">Burnout Risk</span>
-                  <span className="text-lg font-black text-gray-200 mt-0.5 block">{activeBurnout}%</span>
+                  <span className="text-lg font-semibold text-gray-200 mt-0.5 block">{activeBurnout}%</span>
                 </div>
               </div>
+              <button 
+                onClick={async () => {
+                  const newGoals = {
+                    ...setupData,
+                    target_cgpa: activeCGPA,
+                    attendance: simAttendance
+                  };
+                  setSetupData(newGoals);
+                  addToast({ message: 'Saving new target baseline...', type: 'info' });
+                  const success = await saveAcademicBaseline(user.id, newGoals);
+                  if (success) {
+                    addToast({ message: 'New goal target automatically saved!', type: 'success' });
+                    // Refresh predictions silently
+                    const data = await fetchFullStudentHistory(user.id);
+                    if (data) {
+                      setHistory(data);
+                      const updatedPreds = calculateDeterministicTwinPredictions(data);
+                      setPredictions(prev => ({ ...prev, metrics: updatedPreds.metrics, subjectPassingProbabilities: updatedPreds.subjectPassingProbabilities }));
+                    }
+                  } else {
+                    addToast({ message: 'Failed to auto-save goals.', type: 'error' });
+                  }
+                }}
+                className="w-full mt-2 py-2 rounded-lg bg-brand-teal/10 hover:bg-brand-teal border border-white/10 text-brand-teal hover:text-black font-bold text-xs transition-all tracking-wide cursor-pointer"
+              >
+                Save as New Goal Target
+              </button>
             </div>
 
           </div>
 
           {/* Risk Alerts Engine */}
           <div className="glass-panel p-6 rounded-2xl flex flex-col border border-white/5">
-            <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider mb-4">Risk Engine Monitoring</h3>
+            <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-4">Risk Engine Monitoring</h3>
             
             <div className="space-y-3">
               {activeBacklog > 20 && (
-                <div className="p-3 bg-brand-pink/10 border border-brand-pink/20 rounded-xl flex gap-3">
+                <div className="p-3 bg-brand-pink/10 border border-white/10 rounded-xl flex gap-3">
                   <AlertTriangle className="w-5 h-5 text-brand-pink shrink-0" />
                   <div>
                     <h5 className="text-[10px] text-brand-pink font-extrabold uppercase">Backlog warning</h5>
@@ -546,7 +711,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
                 </div>
               )}
               {activeBurnout > 40 && (
-                <div className="p-3 bg-brand-purple/10 border border-brand-purple/20 rounded-xl flex gap-3">
+                <div className="p-3 bg-brand-purple/10 border border-white/10 rounded-xl flex gap-3">
                   <AlertTriangle className="w-5 h-5 text-brand-purple shrink-0" />
                   <div>
                     <h5 className="text-[10px] text-brand-purple font-extrabold uppercase">Burnout warning</h5>
@@ -555,7 +720,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
                 </div>
               )}
               {activeBacklog <= 20 && activeBurnout <= 40 && (
-                <div className="p-3 bg-brand-teal/10 border border-brand-teal/20 rounded-xl flex gap-3">
+                <div className="p-3 bg-brand-teal/10 border border-white/10 rounded-xl flex gap-3">
                   <CheckSquare className="w-5 h-5 text-brand-teal shrink-0" />
                   <div>
                     <h5 className="text-[10px] text-brand-teal font-extrabold uppercase">All Trajectories Stable</h5>
@@ -572,7 +737,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
 
       {/* AI Recommendations */}
       <div className="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden">
-        <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider mb-5">AI Recommendation Feed</h3>
+        <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-5">AI Recommendation Feed</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {predictions?.recommendations?.map((rec, idx) => (
             <div key={idx} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-start gap-4">

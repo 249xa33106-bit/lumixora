@@ -3,6 +3,8 @@ import { Film, Award, Sparkles, Folder, Calendar, Share2, Shield, Play, ChevronR
 import { useToast } from '../context/ToastContext';
 import codeArenaFiles from '../data/codeArenaFiles.json';
 import { useData } from '../context/DataContext';
+import { useGamification } from '../context/GamificationContext';
+
 
 const parseUserProfile = (fullName) => {
   let name = fullName || '';
@@ -251,7 +253,7 @@ export default function LifeReplay({ user }) {
   };
 
   const generateShareLink = () => {
-    const url = `https://luminora-27653.web.app/share/life-replay-${user?.id || 'guest'}`;
+    const url = `https://lumixora-6497b.web.app/share/life-replay-${user?.id || 'guest'}`;
     setShareLink(url);
     addToast({ message: 'Public share link generated!', type: 'success' });
   };
@@ -262,7 +264,7 @@ export default function LifeReplay({ user }) {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-pink via-brand-purple to-brand-blue bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Film className="w-8 h-8 text-brand-pink animate-pulse" />
             <span>LUMIXORA Life Replay™</span>
           </h1>
@@ -291,9 +293,9 @@ export default function LifeReplay({ user }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold tracking-wide transition-all cursor-pointer ${
                 activeTab === tab.id 
-                  ? 'bg-gradient-to-r from-brand-pink to-brand-purple text-white shadow-[0_0_10px_rgba(247,37,133,0.25)]' 
+                  ? 'bg-gradient-to-r from-brand-pink to-brand-purple text-white shadow-sm' 
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -328,10 +330,10 @@ export default function LifeReplay({ user }) {
               <div className="space-y-6">
                 
                 {/* Journey progress card */}
-                <div className="glass-panel p-6 rounded-3xl bg-gradient-to-r from-brand-pink/5 via-brand-purple/5 to-transparent border border-brand-pink/10 text-left relative overflow-hidden">
+                <div className="glass-panel p-6 rounded-3xl bg-gradient-to-r from-brand-pink/5 via-brand-purple/5 to-transparent border border-white/10 text-left relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-brand-pink/5 rounded-full blur-3xl"></div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-brand-pink/15 text-brand-pink border border-brand-pink/20 px-3 py-1 rounded-full flex items-center gap-1">
+                    <span className="text-[10px] font-semibold tracking-wide bg-brand-pink/15 text-brand-pink border border-white/10 px-3 py-1 rounded-full flex items-center gap-1">
                       <Zap className="w-3.5 h-3.5 fill-current" />
                       <span>Graduation Readiness</span>
                     </span>
@@ -343,15 +345,15 @@ export default function LifeReplay({ user }) {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                       <div className="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
                         <span className="text-[10px] text-gray-500 font-bold uppercase block">Note uploads</span>
-                        <span className="text-base font-black text-gray-200 mt-1 block">{realNotes} Notes</span>
+                        <span className="text-base font-semibold text-gray-200 mt-1 block">{realNotes} Notes</span>
                       </div>
                       <div className="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
                         <span className="text-[10px] text-gray-500 font-bold uppercase block">Solved Code</span>
-                        <span className="text-base font-black text-gray-200 mt-1 block">{realTasks} Tasks</span>
+                        <span className="text-base font-semibold text-gray-200 mt-1 block">{realTasks} Tasks</span>
                       </div>
                       <div className="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
                         <span className="text-[10px] text-gray-500 font-bold uppercase block">Readiness</span>
-                        <span className="text-base font-black text-brand-pink mt-1 block">{realReadiness}% Score</span>
+                        <span className="text-base font-semibold text-brand-pink mt-1 block">{realReadiness}% Score</span>
                       </div>
                     </div>
                   </div>
@@ -362,7 +364,7 @@ export default function LifeReplay({ user }) {
 
                   {/* AI Reflection summary */}
                   <div className="glass-panel p-6 rounded-3xl text-left space-y-4">
-                    <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-brand-pink" />
                       <span>AI Reflection Summary</span>
                     </h3>
@@ -384,10 +386,10 @@ export default function LifeReplay({ user }) {
           {activeTab === 'roadmap' && (
             <div className="glass-panel p-6 sm:p-8 rounded-3xl text-left space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">Interactive Journey Roadmap</h3>
+                <h3 className="text-xs font-bold text-gray-200 tracking-wide">Interactive Journey Roadmap</h3>
                 <button
                   onClick={() => { setEditingMilestoneId(null); setMilestoneForm({ year: 'Year 1', semester: 'Semester 1', title: '', desc: '', date: '', relatedSubjects: '', achievements: '' }); setIsMilestoneModalOpen(true); }}
-                  className="text-[10px] bg-brand-teal/15 hover:bg-brand-teal text-brand-teal hover:text-black border border-brand-teal/20 px-3 py-1.5 rounded-xl font-black uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                  className="text-[10px] bg-brand-teal/15 hover:bg-brand-teal text-brand-teal hover:text-black border border-white/10 px-3 py-1.5 rounded-xl font-semibold tracking-wide transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Zap className="w-3 h-3 stroke-[3]" /> Add Milestone
                 </button>
@@ -409,12 +411,12 @@ export default function LifeReplay({ user }) {
                         className="relative pl-6 group transition-all"
                       >
                         {/* Checkpoint Node indicator */}
-                        <div className="absolute -left-3.5 top-0 w-7 h-7 rounded-full bg-[#090910] border-2 border-brand-teal flex items-center justify-center text-brand-teal group-hover:bg-brand-teal group-hover:text-black transition-colors shadow-[0_0_10px_rgba(0,245,212,0.2)]">
+                        <div className="absolute -left-3.5 top-0 w-7 h-7 rounded-full bg-[#090910] border-2 border-brand-teal flex items-center justify-center text-brand-teal group-hover:bg-brand-teal group-hover:text-black transition-colors shadow-sm">
                           <IconComp className="w-3.5 h-3.5 fill-current" />
                         </div>
 
                         <div className="space-y-1">
-                          <span className="text-[9px] font-black uppercase text-brand-teal tracking-widest">{cp.year} • {cp.semester} ({cp.date})</span>
+                          <span className="text-[9px] font-semibold uppercase text-brand-teal tracking-widest">{cp.year} • {cp.semester} ({cp.date})</span>
                           <h4 className="text-xs font-extrabold text-white group-hover:text-brand-teal transition-colors">{cp.title}</h4>
                           <p className="text-[11px] text-gray-400 font-normal leading-relaxed">{cp.desc}</p>
                         </div>
@@ -425,7 +427,7 @@ export default function LifeReplay({ user }) {
                             className="mt-3 p-4 bg-white/5 border border-white/5 rounded-2xl space-y-2 font-normal text-xs text-gray-300 leading-normal cursor-pointer"
                             onClick={() => setSelectedMilestone(selectedMilestone === cp.id ? null : cp.id)}
                           >
-                            <span className="text-[10px] text-gray-500 font-black uppercase block">Milestone Details</span>
+                            <span className="text-[10px] text-gray-500 font-semibold uppercase block">Milestone Details</span>
                             {cp.relatedSubjects && <div><span className="text-gray-500">Related Subjects:</span> {cp.relatedSubjects}</div>}
                             {cp.achievements && <div><span className="text-gray-500">Achievements:</span> {cp.achievements}</div>}
                           </div>
@@ -475,7 +477,7 @@ export default function LifeReplay({ user }) {
                       <select 
                         value={milestoneForm.year}
                         onChange={(e) => setMilestoneForm({...milestoneForm, year: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                       >
                         {['Year 1', 'Year 2', 'Year 3', 'Year 4'].map(y => (
                           <option key={y} value={y} className="bg-slate-900">{y}</option>
@@ -487,7 +489,7 @@ export default function LifeReplay({ user }) {
                       <select 
                         value={milestoneForm.semester}
                         onChange={(e) => setMilestoneForm({...milestoneForm, semester: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                       >
                         {['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'].map(s => (
                           <option key={s} value={s} className="bg-slate-900">{s}</option>
@@ -502,7 +504,7 @@ export default function LifeReplay({ user }) {
                       type="text" 
                       value={milestoneForm.title}
                       onChange={(e) => setMilestoneForm({...milestoneForm, title: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10"
                       placeholder="e.g. Hackathon Win, Internship Offer, Certification"
                       required
                     />
@@ -513,7 +515,7 @@ export default function LifeReplay({ user }) {
                     <textarea
                       value={milestoneForm.desc}
                       onChange={(e) => setMilestoneForm({...milestoneForm, desc: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50 resize-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10 resize-none"
                       placeholder="Describe what happened..."
                       rows="2"
                     />
@@ -526,7 +528,7 @@ export default function LifeReplay({ user }) {
                         type="text" 
                         value={milestoneForm.date}
                         onChange={(e) => setMilestoneForm({...milestoneForm, date: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                         placeholder="e.g. Aug 2024"
                       />
                     </div>
@@ -536,7 +538,7 @@ export default function LifeReplay({ user }) {
                         type="text" 
                         value={milestoneForm.relatedSubjects}
                         onChange={(e) => setMilestoneForm({...milestoneForm, relatedSubjects: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                         placeholder="e.g. DSA, Python"
                       />
                     </div>
@@ -548,7 +550,7 @@ export default function LifeReplay({ user }) {
                       type="text" 
                       value={milestoneForm.achievements}
                       onChange={(e) => setMilestoneForm({...milestoneForm, achievements: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10"
                       placeholder="e.g. Won 1st place, Got offer letter"
                     />
                   </div>
@@ -566,14 +568,14 @@ export default function LifeReplay({ user }) {
             <div className="space-y-6">
               {/* Header with Add button */}
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">Memory Gallery</h3>
+                <h3 className="text-xs font-bold text-gray-200 tracking-wide">Memory Gallery</h3>
                 <button
                   onClick={() => {
                     setEditingGalleryId(null);
                     setGalleryForm({ title: '', type: 'Photo', sem: 'All', fileUrl: '' });
                     setIsGalleryModalOpen(true);
                   }}
-                  className="text-[10px] bg-brand-teal/15 hover:bg-brand-teal text-brand-teal hover:text-black border border-brand-teal/20 px-3 py-1.5 rounded-xl font-black uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                  className="text-[10px] bg-brand-teal/15 hover:bg-brand-teal text-brand-teal hover:text-black border border-white/10 px-3 py-1.5 rounded-xl font-semibold tracking-wide transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Zap className="w-3 h-3 stroke-[3]" /> Add Photo
                 </button>
@@ -593,7 +595,7 @@ export default function LifeReplay({ user }) {
                       <div className="flex-1 overflow-hidden relative group">
                         <img src={item.fileUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <span className="absolute bottom-3 left-4 text-[9px] font-black uppercase bg-brand-blue/20 text-brand-blue border border-brand-blue/30 px-2 py-0.5 rounded leading-none">
+                        <span className="absolute bottom-3 left-4 text-[9px] font-semibold uppercase bg-brand-blue/20 text-brand-blue border border-white/10 px-2 py-0.5 rounded leading-none">
                           {item.sem}
                         </span>
                       </div>
@@ -641,7 +643,7 @@ export default function LifeReplay({ user }) {
                           type="text"
                           value={galleryForm.title}
                           onChange={e => setGalleryForm({ ...galleryForm, title: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10"
                           required
                         />
                       </div>
@@ -650,7 +652,7 @@ export default function LifeReplay({ user }) {
                         <select
                           value={galleryForm.type}
                           onChange={e => setGalleryForm({ ...galleryForm, type: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                         >
                           <option value="Photo">Photo</option>
                           <option value="Certificate">Certificate</option>
@@ -662,7 +664,7 @@ export default function LifeReplay({ user }) {
                         <select
                           value={galleryForm.sem}
                           onChange={e => setGalleryForm({ ...galleryForm, sem: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/10"
                         >
                           {['All', 'Sem 1-2', 'Sem 3-4', 'Sem 5-6', 'Sem 7-8'].map(s => (
                             <option key={s} value={s} className="bg-slate-900">{s}</option>
@@ -675,7 +677,7 @@ export default function LifeReplay({ user }) {
                           type="text"
                           value={galleryForm.fileUrl}
                           onChange={e => setGalleryForm({ ...galleryForm, fileUrl: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-brand-teal/50"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/10"
                           placeholder="https://..."
                         />
                         <input
@@ -730,7 +732,7 @@ export default function LifeReplay({ user }) {
             <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5 text-left space-y-6">
               
               <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-brand-pink" />
                   <span>AI Graduation Story</span>
                 </h3>
@@ -743,7 +745,7 @@ export default function LifeReplay({ user }) {
                         setEditingStory(true);
                       }
                     }}
-                    className="text-[10px] font-black uppercase text-brand-pink hover:underline"
+                    className="text-[10px] font-semibold uppercase text-brand-pink hover:underline"
                   >
                     {editingStory ? 'Save Changes' : 'Edit Draft'}
                   </button>
@@ -824,7 +826,7 @@ export default function LifeReplay({ user }) {
             <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5 text-left space-y-6">
               
               <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
                   <Film className="w-4 h-4 text-brand-purple" />
                   <span>Graduation Movie Script</span>
                 </h3>
@@ -846,10 +848,10 @@ export default function LifeReplay({ user }) {
               ) : (
                 <div className="space-y-5">
                   <div className="flex justify-between items-baseline border-b border-white/5 pb-3">
-                    <h4 className="text-xs font-extrabold text-white uppercase tracking-wider">Title: {movieScript.title}</h4>
+                    <h4 className="text-xs font-extrabold text-white tracking-wide">Title: {movieScript.title}</h4>
                     <button 
                       onClick={() => addToast({ message: 'Script exported as PDF!', type: 'success' })}
-                      className="text-[9px] font-black uppercase text-brand-teal hover:underline"
+                      className="text-[9px] font-semibold uppercase text-brand-teal hover:underline"
                     >
                       Export PDF
                     </button>
@@ -858,7 +860,7 @@ export default function LifeReplay({ user }) {
                   <div className="space-y-4">
                     {movieScript.scenes.map((sc, i) => (
                       <div key={i} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-2">
-                        <span className="text-[10px] text-brand-teal font-black block uppercase tracking-wide">{sc.scene}</span>
+                        <span className="text-[10px] text-brand-teal font-semibold block uppercase tracking-wide">{sc.scene}</span>
                         <p className="text-xs text-gray-300 font-mono leading-relaxed leading-normal whitespace-pre-wrap">{sc.script}</p>
                       </div>
                     ))}
@@ -875,7 +877,7 @@ export default function LifeReplay({ user }) {
           
           {/* Share & Privacy panel */}
           <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4 text-left">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-1.5 border-b border-white/5 pb-3">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5 border-b border-white/5 pb-3">
               <Shield className="w-4 h-4 text-brand-purple" />
               <span>Sharing & Privacy</span>
             </h3>
@@ -908,7 +910,7 @@ export default function LifeReplay({ user }) {
               </button>
 
               {shareLink && (
-                <div className="p-3 bg-brand-purple/5 border border-brand-purple/10 rounded-2xl text-center space-y-2 animate-fade-in">
+                <div className="p-3 bg-brand-purple/5 border border-white/10 rounded-2xl text-center space-y-2 animate-fade-in">
                   <span className="text-[9px] text-gray-500 font-bold block">Shareable URL</span>
                   <input 
                     type="text" 
@@ -921,7 +923,7 @@ export default function LifeReplay({ user }) {
                       navigator.clipboard.writeText(shareLink);
                       addToast({ message: 'Share link copied to clipboard!', type: 'success' });
                     }}
-                    className="text-[9px] font-black uppercase text-brand-purple hover:underline block mx-auto mt-1"
+                    className="text-[9px] font-semibold uppercase text-brand-purple hover:underline block mx-auto mt-1"
                   >
                     Copy Link
                   </button>

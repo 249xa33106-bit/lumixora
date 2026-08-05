@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, Filter, Briefcase, RefreshCw, Star, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2 } from 'lucide-react';
+import { Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, Filter, Briefcase, RefreshCw, Star, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { PROBLEMS, CATEGORIES } from '../config/problemsData';
 import { useData } from '../context/DataContext';
 import { generateProblemFromCode } from '../services/aiCodingService';
@@ -47,6 +47,8 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All'); // 'All', 'Solved', 'Unsolved'
   const [selectedCompany, setSelectedCompany] = useState('All');
+  const [sortBy, setSortBy] = useState('none'); // 'none', 'difficulty', 'category', 'acceptance', 'title'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
 
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -134,9 +136,9 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
     return ['All', ...Array.from(companies)];
   }, [allProblemsList]);
 
-  // Filter problems list dynamically
+  // Filter and Sort problems list dynamically
   const filteredProblems = useMemo(() => {
-    return allProblemsList.filter(p => {
+    const list = allProblemsList.filter(p => {
       const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             p.companies?.some(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -153,7 +155,41 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
       return matchesSearch && matchesCategory && matchesDifficulty && matchesStatus && matchesCompany;
     });
-  }, [allProblemsList, searchTerm, selectedCategory, selectedDifficulty, selectedStatus, selectedCompany, solvedProblemIds]);
+
+    if (sortBy === 'none') return list;
+
+    return [...list].sort((a, b) => {
+      let valA, valB;
+
+      if (sortBy === 'difficulty') {
+        const difficultyRank = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+        valA = difficultyRank[a.difficulty] || 0;
+        valB = difficultyRank[b.difficulty] || 0;
+      } else if (sortBy === 'category') {
+        valA = (a.category || '').toLowerCase();
+        valB = (b.category || '').toLowerCase();
+      } else if (sortBy === 'title') {
+        valA = (a.title || '').toLowerCase();
+        valB = (b.title || '').toLowerCase();
+      } else if (sortBy === 'acceptance') {
+        valA = parseFloat(a.acceptanceRate) || 0;
+        valB = parseFloat(b.acceptanceRate) || 0;
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [allProblemsList, searchTerm, selectedCategory, selectedDifficulty, selectedStatus, selectedCompany, solvedProblemIds, sortBy, sortOrder]);
+
+  const handleToggleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
 
   const dailyProblem = useMemo(() => {
     // Find Two Sum as default daily challenge, or any unsolved problem
@@ -166,6 +202,10 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
   };
 
   const handleFileUpload = async (e) => {
+    if (!isFounder) {
+      addToast({ message: 'Unauthorized: Only founders can upload code files.', type: 'error' });
+      return;
+    }
     const file = e.target.files[0];
     if (!file) return;
 
@@ -220,6 +260,10 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
   const handleSaveProblem = async (e) => {
     e.preventDefault();
+    if (!isFounder) {
+      addToast({ message: 'Unauthorized: Only founders can save/create problems.', type: 'error' });
+      return;
+    }
     if (!formState.title.trim()) {
       addToast({ message: 'Title is required', type: 'error' });
       return;
@@ -276,6 +320,10 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
   const handleDeleteProblem = async (problemId, e) => {
     e.stopPropagation();
+    if (!isFounder) {
+      addToast({ message: 'Unauthorized: Only founders can delete problems.', type: 'error' });
+      return;
+    }
     if (window.confirm('Are you sure you want to delete this problem?')) {
       await deleteNote(problemId);
       addToast({ message: 'Problem deleted successfully.', type: 'success' });
@@ -284,6 +332,10 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
   const handleEditProblem = (p, e) => {
     e.stopPropagation();
+    if (!isFounder) {
+      addToast({ message: 'Unauthorized: Only founders can edit problems.', type: 'error' });
+      return;
+    }
     setEditingProblemId(p.id);
     setFormState({
       title: p.title || '',
@@ -335,7 +387,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-brand-teal to-brand-blue bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Code className="w-8 h-8 text-brand-teal" />
             <span>Lumixora Code Arena</span>
           </h1>
@@ -345,19 +397,21 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Add Problem Button for All Users */}
-          <button 
-            onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-[0_0_15px_rgba(0,245,212,0.25)] transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-black" />
-            <span>Add Custom Problem</span>
-          </button>
+          {/* Add Problem Button only for Founder */}
+          {isFounder && (
+            <button 
+              onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-sm transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-black" />
+              <span>Add Custom Problem</span>
+            </button>
+          )}
 
           {/* Free Sandbox Button */}
           <button 
             onClick={() => handleStartProblem(sandboxProblem)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-95 text-white font-bold text-xs shadow-[0_0_15px_rgba(247,37,133,0.25)] transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-white" />
             <span>Free Code Sandbox</span>
@@ -365,12 +419,12 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
           {/* Level Stats Pill */}
           <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl p-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-brand-teal/10 flex items-center justify-center text-brand-teal border border-brand-teal/20">
-              <GraduationCap className="w-5.5 h-5.5" />
+            <div className="w-10 h-10 rounded-xl icon-3d-teal flex items-center justify-center">
+<GraduationCap className="w-5.5 h-5.5" />
             </div>
             <div>
               <span className="text-[10px] text-gray-500 font-bold uppercase block leading-none">Solving Stats</span>
-              <span className="text-xs font-black text-gray-200 mt-1 block">
+              <span className="text-xs font-semibold text-gray-200 mt-1 block">
                 {statistics.solved}/{statistics.total} Solved ({statistics.rate}%)
               </span>
             </div>
@@ -382,16 +436,16 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Daily Challenge Card */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-3xl relative overflow-hidden bg-gradient-to-r from-brand-teal/5 via-transparent to-transparent border border-brand-teal/10">
+        <div className="lg:col-span-2 glass-panel p-6 rounded-3xl relative overflow-hidden bg-gradient-to-r from-brand-teal/5 via-transparent to-transparent border border-white/10">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-teal/5 rounded-full blur-3xl"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest bg-brand-teal/15 text-brand-teal border border-brand-teal/20 px-3 py-1 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-semibold tracking-wide bg-brand-teal/15 text-brand-teal border border-white/10 px-3 py-1 rounded-full flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 fill-current animate-pulse" />
               <span>Daily Challenge</span>
             </span>
             <span className="text-[10px] text-brand-orange font-bold flex items-center gap-0.5">
               <Flame className="w-3.5 h-3.5 fill-current animate-bounce" />
-              <span>Double XP Reward</span>
+              <span>Double Resonance (2x AP)</span>
             </span>
           </div>
 
@@ -399,7 +453,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
             <div>
               <h3 className="text-xl font-extrabold text-white flex items-center gap-2">
                 {dailyProblem.title}
-                <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded ${
+                <span className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded ${
                   dailyProblem.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400 border border-green-500/25' :
                   dailyProblem.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/25' :
                   'bg-red-500/10 text-red-400 border border-red-500/25'
@@ -421,7 +475,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               </span>
               <button 
                 onClick={() => handleStartProblem(dailyProblem)}
-                className="ml-auto flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-brand-teal hover:bg-brand-teal/95 text-black text-xs font-bold transition-all shadow-[0_0_15px_rgba(0,245,212,0.35)] cursor-pointer"
+                className="ml-auto flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-brand-teal hover:bg-brand-teal/95 text-black text-xs font-bold transition-all shadow-sm cursor-pointer"
               >
                 <span>Code Now</span>
                 <ArrowRight className="w-4 h-4" />
@@ -432,7 +486,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
         {/* Progress Breakdown Card */}
         <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-white tracking-wide mb-4 flex items-center gap-2">
             <Award className="w-5 h-5 text-brand-blue" />
             <span>Difficulty Breakdown</span>
           </h3>
@@ -506,7 +560,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               <select 
                 value={selectedDifficulty} 
                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="bg-transparent outline-none cursor-pointer font-semibold uppercase tracking-wider text-[10px]"
+                className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px]"
               >
                 <option value="All" className="bg-[#0b0b14] text-white">All Difficulties</option>
                 <option value="Easy" className="bg-[#0b0b14] text-green-400">Easy</option>
@@ -521,7 +575,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               <select 
                 value={selectedStatus} 
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="bg-transparent outline-none cursor-pointer font-semibold uppercase tracking-wider text-[10px]"
+                className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px]"
               >
                 <option value="All" className="bg-[#0b0b14] text-white">All Statuses</option>
                 <option value="Solved" className="bg-[#0b0b14] text-white">Solved</option>
@@ -535,7 +589,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               <select 
                 value={selectedCompany} 
                 onChange={(e) => setSelectedCompany(e.target.value)}
-                className="bg-transparent outline-none cursor-pointer font-semibold uppercase tracking-wider text-[10px]"
+                className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px]"
               >
                 <option value="All" className="bg-[#0b0b14] text-white">All Companies</option>
                 {companyTags.filter(c => c !== 'All').map(c => (
@@ -543,6 +597,40 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                 ))}
               </select>
             </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5 bg-black/35 px-3 py-1.5 rounded-xl border border-white/5 text-xs text-gray-300">
+              <ArrowUpDown className="w-3.5 h-3.5 text-brand-teal" />
+              <select 
+                value={sortBy} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSortBy(val);
+                  if (val !== 'none' && sortOrder === 'none') {
+                    setSortOrder('asc');
+                  }
+                }}
+                className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px]"
+              >
+                <option value="none" className="bg-[#0b0b14] text-white">Sort By (Default)</option>
+                <option value="title" className="bg-[#0b0b14] text-white">Title</option>
+                <option value="difficulty" className="bg-[#0b0b14] text-white">Difficulty</option>
+                <option value="category" className="bg-[#0b0b14] text-white">Category</option>
+                <option value="acceptance" className="bg-[#0b0b14] text-white">Acceptance Rate</option>
+              </select>
+            </div>
+
+            {/* Sort Order Toggle */}
+            {sortBy !== 'none' && (
+              <button
+                type="button"
+                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="flex items-center justify-center p-2 rounded-xl bg-black/35 border border-white/5 text-brand-teal hover:bg-white/5 transition-colors cursor-pointer"
+                title={`Sort Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+              >
+                {sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+              </button>
+            )}
           </div>
         </div>
 
@@ -550,9 +638,9 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar max-w-full">
           <button
             onClick={() => setSelectedCategory('All')}
-            className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${
+            className={`px-3.5 py-1.5 rounded-xl text-[10px] font-semibold tracking-wide transition-all duration-300 ${
               selectedCategory === 'All'
-                ? 'bg-brand-teal text-black font-bold shadow-[0_0_10px_rgba(0,245,212,0.25)]'
+                ? 'bg-brand-teal text-black font-bold shadow-sm'
                 : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
             }`}
           >
@@ -562,9 +650,9 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 shrink-0 ${
+              className={`px-3.5 py-1.5 rounded-xl text-[10px] font-semibold tracking-wide transition-all duration-300 shrink-0 ${
                 selectedCategory === cat
-                  ? 'bg-brand-blue text-black font-bold shadow-[0_0_10px_rgba(0,180,216,0.25)]'
+                  ? 'bg-brand-blue text-black font-bold shadow-sm'
                   : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
               }`}
             >
@@ -580,13 +668,33 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-white/5 border-b border-white/10 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+              <tr className="bg-white/5 border-b border-white/10 text-[10px] text-gray-400 font-bold tracking-wide select-none">
                 <th className="p-4 pl-6 text-center w-16">Status</th>
-                <th className="p-4">Title</th>
-                <th className="p-4 text-center">Difficulty</th>
-                <th className="p-4 hidden sm:table-cell">Category</th>
+                <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleToggleSort('title')}>
+                  <div className="flex items-center gap-1 justify-start">
+                    <span>Title</span>
+                    {sortBy === 'title' && <span className="text-brand-teal ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </div>
+                </th>
+                <th className="p-4 text-center cursor-pointer hover:text-white" onClick={() => handleToggleSort('difficulty')}>
+                  <div className="flex items-center gap-1 justify-center">
+                    <span>Difficulty</span>
+                    {sortBy === 'difficulty' && <span className="text-brand-teal ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </div>
+                </th>
+                <th className="p-4 hidden sm:table-cell cursor-pointer hover:text-white" onClick={() => handleToggleSort('category')}>
+                  <div className="flex items-center gap-1 justify-start">
+                    <span>Category</span>
+                    {sortBy === 'category' && <span className="text-brand-teal ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </div>
+                </th>
                 <th className="p-4 hidden md:table-cell">Companies</th>
-                <th className="p-4 text-right pr-6">Acceptance</th>
+                <th className="p-4 text-right pr-6 cursor-pointer hover:text-white" onClick={() => handleToggleSort('acceptance')}>
+                  <div className="flex items-center gap-1 justify-end">
+                    <span>Acceptance</span>
+                    {sortBy === 'acceptance' && <span className="text-brand-teal ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </div>
+                </th>
                 <th className="p-4 text-center w-24">Actions</th>
               </tr>
             </thead>
@@ -618,14 +726,14 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                         <span className="text-xs font-bold text-gray-100 hover:text-brand-teal transition-colors block">
                           {problem.title}
                         </span>
-                        <span className="text-[9px] text-gray-500 uppercase tracking-widest font-semibold sm:hidden block mt-1">
+                        <span className="text-[9px] text-gray-500 tracking-wide font-semibold sm:hidden block mt-1">
                           {problem.category}
                         </span>
                       </div>
                     </td>
  
                     <td className="p-4 text-center">
-                      <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded leading-none ${
+                      <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded leading-none ${
                         problem.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
                         problem.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
                         'bg-red-500/10 text-red-400 border border-red-500/20'
@@ -643,7 +751,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                         {problem.companies?.slice(0, 3).map((comp, idx) => (
                           <span 
                             key={idx}
-                            className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-gray-400 font-bold uppercase tracking-wider"
+                            className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-gray-400 font-bold tracking-wide"
                           >
                             {comp}
                           </span>
@@ -661,7 +769,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                     </td>
 
                     <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
-                      {problem.type === 'code_arena_problem' ? (
+                      {problem.type === 'code_arena_problem' && isFounder ? (
                         <div className="flex items-center justify-center gap-2">
                           <button 
                             onClick={(e) => handleEditProblem(problem, e)}
@@ -679,7 +787,9 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                           </button>
                         </div>
                       ) : (
-                        <span className="text-[9px] text-gray-600 font-bold uppercase tracking-wider">System</span>
+                        <span className="text-[9px] text-gray-600 font-bold tracking-wide">
+                          {problem.type === 'code_arena_problem' ? 'Custom' : 'System'}
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -702,15 +812,15 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-black bg-gradient-to-r from-brand-teal to-brand-blue bg-clip-text text-transparent uppercase tracking-tight flex items-center gap-2 mb-6">
+            <h2 className="text-xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2 mb-6">
               <Code className="w-6 h-6 text-brand-teal" />
               <span>{editingProblemId ? 'Edit Program Question' : 'Add New Program Question'}</span>
             </h2>
 
             {/* Quick Upload Section */}
-            <div className="bg-brand-purple/5 border border-brand-purple/10 rounded-2xl p-5 mb-6 space-y-3 relative overflow-hidden">
+            <div className="bg-brand-purple/5 border border-white/10 rounded-2xl p-5 mb-6 space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-brand-purple/5 rounded-full blur-xl"></div>
-              <h3 className="text-xs font-black text-gray-200 uppercase tracking-widest flex items-center gap-1.5">
+              <h3 className="text-xs font-semibold text-gray-200 tracking-wide flex items-center gap-1.5">
                 <Upload className="w-4 h-4 text-brand-purple" />
                 <span>Upload Program File to Auto-Generate Question</span>
               </h3>
@@ -719,7 +829,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               </p>
               
               <div className="flex items-center gap-4 pt-1">
-                <label className="flex items-center gap-2 px-4 py-2 bg-brand-purple/20 hover:bg-brand-purple/35 text-brand-purple font-extrabold text-[10px] tracking-wider uppercase rounded-xl border border-brand-purple/30 cursor-pointer transition-all">
+                <label className="flex items-center gap-2 px-4 py-2 bg-brand-purple/20 hover:bg-brand-purple/35 text-brand-purple font-extrabold text-[10px] tracking-wider uppercase rounded-xl border border-white/10 cursor-pointer transition-all">
                   {uploadingFile ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -750,24 +860,24 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               {/* Basic Fields Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Problem Title *</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Problem Title *</label>
                   <input 
                     type="text" 
                     required
                     value={formState.title}
                     onChange={e => setFormState({ ...formState, title: e.target.value })}
                     placeholder="e.g. Two Sum"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-brand-teal/50"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-white/10"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Difficulty *</label>
+                    <label className="text-[10px] text-gray-400 font-bold tracking-wide">Difficulty *</label>
                     <select 
                       value={formState.difficulty}
                       onChange={e => setFormState({ ...formState, difficulty: e.target.value })}
-                      className="w-full bg-[#10101b] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none focus:border-brand-teal/50"
+                      className="w-full bg-[#10101b] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none focus:border-white/10"
                     >
                       <option value="Easy">Easy</option>
                       <option value="Medium">Medium</option>
@@ -776,11 +886,11 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Category Topic *</label>
+                    <label className="text-[10px] text-gray-400 font-bold tracking-wide">Category Topic *</label>
                     <select 
                       value={formState.category}
                       onChange={e => setFormState({ ...formState, category: e.target.value })}
-                      className="w-full bg-[#10101b] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none focus:border-brand-teal/50"
+                      className="w-full bg-[#10101b] border border-white/10 rounded-xl px-3 py-2.5 text-white text-xs focus:outline-none focus:border-white/10"
                     >
                       {CATEGORIES.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -792,7 +902,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Acceptance Rate</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Acceptance Rate</label>
                   <input 
                     type="text" 
                     value={formState.acceptanceRate}
@@ -802,7 +912,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Time Limit</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Time Limit</label>
                   <input 
                     type="text" 
                     value={formState.timeLimit}
@@ -812,7 +922,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Memory Limit</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Memory Limit</label>
                   <input 
                     type="text" 
                     value={formState.memoryLimit}
@@ -822,7 +932,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Target Function Name *</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Target Function Name *</label>
                   <input 
                     type="text" 
                     required
@@ -836,20 +946,20 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
               {/* Textareas */}
               <div className="space-y-1">
-                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Problem Statement *</label>
+                <label className="text-[10px] text-gray-400 font-bold tracking-wide">Problem Statement *</label>
                 <textarea 
                   required
                   rows="4"
                   value={formState.statement}
                   onChange={e => setFormState({ ...formState, statement: e.target.value })}
                   placeholder="Describe the coding challenge here..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-brand-teal/50"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-white/10"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Input Format</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Input Format</label>
                   <textarea 
                     rows="2"
                     value={formState.inputFormat}
@@ -859,7 +969,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Output Format</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Output Format</label>
                   <textarea 
                     rows="2"
                     value={formState.outputFormat}
@@ -872,7 +982,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Constraints (One per line)</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Constraints (One per line)</label>
                   <textarea 
                     rows="3"
                     value={formState.constraints}
@@ -882,7 +992,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hints (One per line)</label>
+                  <label className="text-[10px] text-gray-400 font-bold tracking-wide">Hints (One per line)</label>
                   <textarea 
                     rows="3"
                     value={formState.hints}
@@ -895,42 +1005,42 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
               {/* JSON Arrays */}
               <div className="space-y-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
-                <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest border-b border-white/5 pb-2">Structured Examples & Test Cases (JSON format)</h3>
+                <h3 className="text-xs font-bold text-gray-300 tracking-wide border-b border-white/5 pb-2">Structured Examples & Test Cases (JSON format)</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] text-brand-teal font-bold uppercase tracking-wider">Examples JSON Array *</label>
+                    <label className="text-[10px] text-brand-teal font-bold tracking-wide">Examples JSON Array *</label>
                     <textarea 
                       required
                       rows="4"
                       value={formState.examples}
                       onChange={e => setFormState({ ...formState, examples: e.target.value })}
                       placeholder='[\n  {\n    "input": "nums = [2,7], target = 9",\n    "output": "[0,1]",\n    "explanation": "..." \n  }\n]'
-                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-brand-teal/50"
+                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-white/10"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] text-brand-blue font-bold uppercase tracking-wider">Sample Test Cases JSON Array *</label>
+                    <label className="text-[10px] text-brand-blue font-bold tracking-wide">Sample Test Cases JSON Array *</label>
                     <textarea 
                       required
                       rows="4"
                       value={formState.testCases}
                       onChange={e => setFormState({ ...formState, testCases: e.target.value })}
                       placeholder='[\n  { "input": "[2,7]\\n9", "output": "[0,1]" }\n]'
-                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-brand-blue/50"
+                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-white/10"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] text-brand-pink font-bold uppercase tracking-wider">Hidden Test Cases JSON Array *</label>
+                    <label className="text-[10px] text-brand-pink font-bold tracking-wide">Hidden Test Cases JSON Array *</label>
                     <textarea 
                       required
                       rows="4"
                       value={formState.hiddenTestCases}
                       onChange={e => setFormState({ ...formState, hiddenTestCases: e.target.value })}
                       placeholder='[\n  { "input": "[3,3]\\n6", "output": "[0,1]" }\n]'
-                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-brand-pink/50"
+                      className="w-full bg-[#10101b] border border-white/10 rounded-xl p-3 text-white text-[11px] font-mono focus:outline-none focus:border-white/10"
                     />
                   </div>
                 </div>
@@ -942,14 +1052,14 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               {/* Starter Templates */}
               <div className="space-y-3 bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                  <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Starter Code Templates</h3>
+                  <h3 className="text-xs font-bold text-gray-300 tracking-wide">Starter Code Templates</h3>
                   <div className="flex gap-1">
                     {['javascript', 'python', 'cpp', 'java', 'go'].map(lang => (
                       <button
                         key={lang}
                         type="button"
                         onClick={() => setActiveStarterTab(lang)}
-                        className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition-all ${activeStarterTab === lang ? 'bg-brand-blue text-black font-bold' : 'text-gray-400 hover:text-white bg-white/5'}`}
+                        className={`px-2 py-1 rounded text-[9px] font-semibold tracking-wide transition-all ${activeStarterTab === lang ? 'bg-brand-blue text-black font-bold' : 'text-gray-400 hover:text-white bg-white/5'}`}
                       >
                         {lang}
                       </button>
@@ -973,7 +1083,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Editorial & Solution Explainers</label>
+                <label className="text-[10px] text-gray-400 font-bold tracking-wide">Editorial & Solution Explainers</label>
                 <textarea 
                   rows="3"
                   value={formState.editorial}
@@ -987,13 +1097,13 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                 <button 
                   type="button"
                   onClick={() => { setIsModalOpen(false); setEditingProblemId(null); }}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl border border-white/10 transition-colors cursor-pointer"
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs tracking-wide rounded-2xl border border-white/10 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3 bg-brand-teal hover:opacity-95 text-black font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_0_15px_rgba(0,245,212,0.3)] transition-all cursor-pointer"
+                  className="flex-1 py-3 bg-brand-teal hover:opacity-95 text-black font-semibold text-xs tracking-wide rounded-2xl shadow-sm transition-all cursor-pointer"
                 >
                   {editingProblemId ? 'Save Changes' : 'Create Question'}
                 </button>

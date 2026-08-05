@@ -9,8 +9,13 @@ export default function ContributeNotes({ user, setActiveTab }) {
   const { addNote, uploadFile } = useData();
   const { addToast } = useToast();
   const { awardXP } = useGamification();
+  const getCleanName = (n) => {
+    if (!n) return '';
+    const idx = n.indexOf('{');
+    return idx !== -1 ? n.substring(0, idx).trim() : n.trim();
+  };
 
-  const [userName, setUserName] = useState(user?.name || '');
+  const [userName, setUserName] = useState(getCleanName(user?.name) || '');
   const [notesName, setNotesName] = useState('');
   const [subject, setSubject] = useState('CSE');
   const [semester, setSemester] = useState('Sem 1');
@@ -131,7 +136,7 @@ export default function ContributeNotes({ user, setActiveTab }) {
       <div className="relative rounded-3xl p-8 overflow-hidden glass-panel border border-border-glass bg-gradient-to-br from-brand-teal/10 via-slate-900/40 to-brand-purple/5">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-brand-teal/10 to-brand-purple/10 rounded-full blur-3xl animate-pulse-glow"></div>
         <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-[10px] font-bold text-brand-teal uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-white/10 text-[10px] font-bold text-brand-teal tracking-wide">
             <Sparkles className="w-3 h-3 animate-spin" />
             <span>Community Knowledge Sharing</span>
           </div>
@@ -254,12 +259,12 @@ export default function ContributeNotes({ user, setActiveTab }) {
 
           {/* Document Upload Area */}
           <div className="space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">Attach Notes Document</h3>
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide">Attach Notes Document</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               
               {/* File Upload Box */}
-              <div className="md:col-span-5 relative group border-2 border-dashed border-white/10 hover:border-brand-teal/40 rounded-2xl p-6 text-center transition-all bg-white/5">
+              <div className="md:col-span-5 relative group border-2 border-dashed border-white/10 hover:border-white/10 rounded-2xl p-6 text-center transition-all bg-white/5">
                 <input 
                   type="file" 
                   id="contribute-file-upload" 
@@ -273,14 +278,14 @@ export default function ContributeNotes({ user, setActiveTab }) {
                   <span className="text-[10px] text-gray-500">Max size 25MB</span>
                 </label>
                 {file && (
-                  <div className="mt-3 p-2 bg-brand-teal/15 rounded-xl border border-brand-teal/20 text-left text-[11px] text-brand-teal font-semibold truncate">
+                  <div className="mt-3 p-2 bg-brand-teal/15 rounded-xl border border-white/10 text-left text-[11px] text-brand-teal font-semibold truncate">
                     Attached: {file.name}
                   </div>
                 )}
               </div>
 
               {/* Or separator */}
-              <div className="md:col-span-2 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <div className="md:col-span-2 text-center text-[10px] font-semibold text-gray-500 tracking-wide">
                 — OR —
               </div>
 
@@ -312,7 +317,7 @@ export default function ContributeNotes({ user, setActiveTab }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-brand-teal to-brand-blue text-black hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,245,212,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-brand-teal to-brand-blue text-black hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

@@ -168,7 +168,7 @@ export default function NetworkMessages({ user }) {
             </div>
             <div>
               <h4 className="text-xs font-extrabold text-white">{activeChat.name}</h4>
-              <span className="text-[9px] text-gray-500 font-bold block uppercase tracking-wider">
+              <span className="text-[9px] text-gray-500 font-bold block tracking-wide">
                 {activeChat.online ? 'Online' : 'Offline'}
               </span>
             </div>

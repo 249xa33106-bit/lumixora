@@ -10,6 +10,28 @@ const INITIAL_SUBJECTS = [
   { id: 'cn104', name: 'Computer Networks', code: 'CS303', credits: 3, targetMarks: 80 }
 ];
 
+// Save the user's past academic baseline to Supabase
+export async function saveAcademicBaseline(userId, data) {
+  try {
+    const { error } = await supabase.from('student_baselines').upsert({
+      user_id: userId,
+      cgpa: data.cgpa || 8.0,
+      target_cgpa: data.target_cgpa || 9.0,
+      attendance: data.attendance || 85,
+      semester: data.semester || 'Sem 3',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error('Error saving baseline to Supabase:', err);
+    // Fallback to local storage
+    localStorage.setItem(`lumixora_baseline_${userId}`, JSON.stringify(data));
+    return false;
+  }
+}
+
 export async function checkAndSeedTwinData(userId) {
   try {
     const userDocRef = doc(db, 'Users', userId);
@@ -244,13 +266,38 @@ export async function fetchFullStudentHistory(userId) {
       console.warn("Failed to merge local syllabus completion:", e);
     }
 
-    // 9. Merge real profile settings and goals from localStorage
+    // 9. Merge real profile settings and goals from localStorage & Supabase Baseline
     let mergedGoals = { ...goals };
+    try {
+      const { data: baselineData, error: baseErr } = await supabase
+        .from('student_baselines')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+        
+      if (!baseErr && baselineData) {
+        mergedGoals.targetCGPA = Number(baselineData.target_cgpa) || 9.0;
+        mergedGoals.previousCGPA = Number(baselineData.cgpa) || 8.0;
+        mergedGoals.overallAttendance = Number(baselineData.attendance) || 85;
+      } else {
+        // Fallback to local storage baseline
+        const rawLocalBaseline = localStorage.getItem(`lumixora_baseline_${userId}`);
+        if (rawLocalBaseline) {
+          const parsed = JSON.parse(rawLocalBaseline);
+          mergedGoals.targetCGPA = Number(parsed.target_cgpa) || 9.0;
+          mergedGoals.previousCGPA = Number(parsed.cgpa) || 8.0;
+          mergedGoals.overallAttendance = Number(parsed.attendance) || 85;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch Supabase baseline:", e);
+    }
+
     try {
       const rawLocalProfile = localStorage.getItem(`lumixora_mentor_profile_${userId}`);
       if (rawLocalProfile) {
         const parsedProfile = JSON.parse(rawLocalProfile);
-        if (parsedProfile.targetCGPA) mergedGoals.targetCGPA = Number(parsedProfile.targetCGPA) || 9.0;
+        if (parsedProfile.targetCGPA && !mergedGoals.targetCGPA) mergedGoals.targetCGPA = Number(parsedProfile.targetCGPA) || 9.0;
         if (parsedProfile.dailyHours) mergedGoals.studyHoursGoal = Number(parsedProfile.dailyHours) || 4;
       }
     } catch (e) {
@@ -375,12 +422,15 @@ export function calculateDeterministicTwinPredictions(history) {
   });
 
   // Expected CGPA and Semester Percentage
-  // CGPA baseline 8.1, moves up based on accuracy, attendance, consistency, and syllabus coverage
+  // CGPA baseline uses dynamic user baseline if available, otherwise 8.1
+  const baseCGPA = goals.previousCGPA || 8.1;
+  const attDiff = goals.overallAttendance ? (overallAttendance - goals.overallAttendance) : (overallAttendance - 75);
+  
   const accuracyMod = (quizAccuracy - 70) * 0.03; // max +0.9
-  const attMod = (overallAttendance - 75) * 0.02; // max +0.5
+  const attMod = attDiff * 0.02; // max +0.5
   const consistencyMod = (consistencyScore - 60) * 0.015; // max +0.6
   const syllabusMod = (syllabusCoverage - 50) * 0.01; // max +0.5
-  const predictedCGPA = Math.min(10.0, Math.max(5.0, Number((8.1 + accuracyMod + attMod + consistencyMod + syllabusMod).toFixed(2))));
+  const predictedCGPA = Math.min(10.0, Math.max(5.0, Number((baseCGPA + accuracyMod + attMod + consistencyMod + syllabusMod).toFixed(2))));
   
   const predictedSemesterPercentage = Math.min(100, Math.max(45, Math.round(predictedCGPA * 9.5)));
 

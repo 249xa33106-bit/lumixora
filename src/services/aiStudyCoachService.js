@@ -107,7 +107,7 @@ export function calculateFocusScore({ totalMinutes, activeMinutes, distractions,
 
 export function getFocusLabel(score) {
   if (score >= 90) return { label: 'Excellent 🏆', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' };
-  if (score >= 70) return { label: 'Good 🎯', color: 'text-brand-teal', bg: 'bg-brand-teal/10 border-brand-teal/20' };
+  if (score >= 70) return { label: 'Good 🎯', color: 'text-brand-teal', bg: 'bg-brand-teal/10 border-white/10' };
   if (score >= 50) return { label: 'Average 📚', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' };
   return { label: 'Needs Improvement 💪', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' };
 }

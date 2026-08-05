@@ -21,7 +21,14 @@ const InstagramIcon = (props) => (
 
 export default function ContactUs({ user }) {
   const { addToast } = useToast();
-  const [name, setName] = useState(user?.name || '');
+  
+  const getCleanName = (n) => {
+    if (!n) return '';
+    const idx = n.indexOf('{');
+    return idx !== -1 ? n.substring(0, idx).trim() : n.trim();
+  };
+
+  const [name, setName] = useState(getCleanName(user?.name) || '');
   const [email, setEmail] = useState(user?.email || '');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,7 +80,7 @@ export default function ContactUs({ user }) {
       <div className="relative rounded-3xl p-8 overflow-hidden glass-panel border border-border-glass bg-gradient-to-br from-brand-purple/10 via-slate-900/40 to-brand-teal/5">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-brand-teal/10 to-brand-purple/10 rounded-full blur-3xl animate-pulse-glow"></div>
         <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-purple/20 border border-brand-purple/35 text-[10px] font-bold text-brand-pink uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-purple/20 border border-white/10 text-[10px] font-bold text-brand-pink tracking-wide">
             <Sparkles className="w-3 h-3" />
             <span>Lumixora Portal Desk</span>
           </div>
@@ -92,15 +99,15 @@ export default function ContactUs({ user }) {
         <div className="md:col-span-5 space-y-6">
           
           <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-black/10 text-left space-y-4">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">Office Contacts</h3>
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide">Office Contacts</h3>
             
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-pink/15 border border-brand-pink/20 flex items-center justify-center text-brand-pink shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-pink/15 border border-white/10 flex items-center justify-center text-brand-pink shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">Email Address</span>
+                  <span className="text-[10px] text-gray-500 font-bold block tracking-wide">Email Address</span>
                   <a href="mailto:249xa33106@gmail.com" className="text-xs text-gray-200 hover:text-brand-pink font-semibold transition-colors">
                     249xa33106@gmail.com
                   </a>
@@ -108,11 +115,11 @@ export default function ContactUs({ user }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-blue/15 border border-brand-blue/20 flex items-center justify-center text-brand-blue shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-blue/15 border border-white/10 flex items-center justify-center text-brand-blue shrink-0">
                   <LinkedinIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">LinkedIn</span>
+                  <span className="text-[10px] text-gray-500 font-bold block tracking-wide">LinkedIn</span>
                   <a href="https://www.linkedin.com/in/kumarkalava-mohammed-sowban-2b7327327?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-200 hover:text-brand-blue font-semibold transition-colors">
                     Mohammed Sowban
                   </a>
@@ -120,11 +127,11 @@ export default function ContactUs({ user }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-purple/15 border border-brand-purple/20 flex items-center justify-center text-brand-pink shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-purple/15 border border-white/10 flex items-center justify-center text-brand-pink shrink-0">
                   <InstagramIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">Instagram</span>
+                  <span className="text-[10px] text-gray-500 font-bold block tracking-wide">Instagram</span>
                   <a href="https://www.instagram.com/lumixora_official?igsh=MW05ZGxnYWt0bzZtMQ==" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-200 hover:text-brand-pink font-semibold transition-colors">
                     lumixora
                   </a>
@@ -132,11 +139,11 @@ export default function ContactUs({ user }) {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-teal/15 border border-brand-teal/20 flex items-center justify-center text-brand-teal shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-brand-teal/15 border border-white/10 flex items-center justify-center text-brand-teal shrink-0">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">Office Address</span>
+                  <span className="text-[10px] text-gray-500 font-bold block tracking-wide">Office Address</span>
                   <span className="text-xs text-gray-200 font-semibold block leading-relaxed">
                     Kurnool
                   </span>
@@ -146,7 +153,7 @@ export default function ContactUs({ user }) {
           </div>
 
           <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-brand-teal/5 text-left space-y-3">
-            <h4 className="text-xs font-bold text-brand-teal uppercase tracking-widest flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-brand-teal tracking-wide flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>Response Ticker</span>
             </h4>
@@ -160,7 +167,7 @@ export default function ContactUs({ user }) {
         {/* Right Side: Message Submission Form */}
         <div className="md:col-span-7">
           <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/5 bg-black/25 text-left">
-            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <h3 className="text-xs font-bold text-gray-200 tracking-wide mb-6 flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-brand-pink" />
               <span>Send An Instant Message</span>
             </h3>
@@ -206,7 +213,7 @@ export default function ContactUs({ user }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-brand-pink to-brand-purple text-white hover:opacity-90 transition-all shadow-[0_0_15px_rgba(247,37,133,0.2)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-brand-pink to-brand-purple text-white hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <span>Sending Message...</span>

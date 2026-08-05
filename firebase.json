@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "luminora-27653",
+    "site": "lumixora-6497b",
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -33,9 +33,6 @@
         ]
       }
     ]
-  },
-  "storage": {
-    "rules": "storage.rules"
   },
   "firestore": {
     "rules": "firestore.rules"

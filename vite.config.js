@@ -16,6 +16,17 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/groq-api/, '')
       }
+    },
+    watch: {
+      ignored: ['**/android/**']
+    }
+  },
+  optimizeDeps: {
+    entries: ['index.html']
+  },
+  build: {
+    rollupOptions: {
+      input: 'index.html'
     }
   }
 })

@@ -9,11 +9,13 @@ import { generateTwinResponse, generateQuizFromTopic, generateFlashcardsFromTopi
 import { getLiveMentorData, saveSyllabusCompletion } from '../services/mentorDataService';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useGamification } from '../context/GamificationContext';
 import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 export default function PersonalMentor({ user }) {
   const { addToast } = useToast();
+  const { awardXP } = useGamification();
   const { tasks, notes, doubts } = useData(); // Real-time data from database context
   const userId = user?.uid || user?.email || 'default';
   const chatEndRef = useRef(null);
@@ -365,7 +367,7 @@ export default function PersonalMentor({ user }) {
       }`}>
         <div className="flex items-center gap-3">
           <div className={`p-3 rounded-2xl border text-brand-pink ${
-            isWarMode ? 'bg-red-500/10 border-red-500/35 text-red-400' : 'bg-brand-purple/10 border-brand-purple/20'
+            isWarMode ? 'bg-red-500/10 border-red-500/35 text-red-400' : 'bg-brand-purple/10 border-white/10'
           }`}>
             <Zap className="w-6 h-6 animate-pulse" />
           </div>
@@ -373,7 +375,7 @@ export default function PersonalMentor({ user }) {
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
               LUMIXORA Student OS™
               <span className={`text-[10px] uppercase font-extrabold tracking-widest px-2.5 py-0.5 rounded border ${
-                isWarMode ? 'bg-red-600/25 border-red-500 text-red-400 animate-pulse' : 'bg-brand-pink/20 text-brand-pink border-brand-pink/30'
+                isWarMode ? 'bg-red-600/25 border-red-500 text-red-400 animate-pulse' : 'bg-brand-pink/20 text-brand-pink border-white/10'
               }`}>
                 {isWarMode ? 'Exam War Mode' : 'PRO'}
               </span>
@@ -398,7 +400,7 @@ export default function PersonalMentor({ user }) {
                 onClick={() => setActiveSubTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${
                   isSel 
-                    ? isWarMode ? 'bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.4)]' : 'bg-brand-pink text-white shadow-[0_0_12px_rgba(247,37,133,0.3)]' 
+                    ? isWarMode ? 'bg-red-600 text-white shadow-sm' : 'bg-brand-pink text-white shadow-sm' 
                     : 'bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -475,7 +477,7 @@ export default function PersonalMentor({ user }) {
                     </defs>
                   </svg>
                   <div className="absolute flex flex-col items-center">
-                    <span className="text-3xl font-black text-white">{twinData.metrics.synergyScore}%</span>
+                    <span className="text-3xl font-semibold text-white">{twinData.metrics.synergyScore}%</span>
                     <span className="text-[8px] text-gray-400 uppercase font-extrabold tracking-widest mt-0.5">Synergy</span>
                   </div>
                 </div>
@@ -508,7 +510,7 @@ export default function PersonalMentor({ user }) {
 
             {/* Weakness Detection Panels */}
             <div className="glass-panel p-6 rounded-2xl">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-1.5 mb-4">
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 flex items-center gap-1.5 mb-4">
                 <AlertTriangle className="w-4 h-4 text-brand-orange animate-pulse" /> AI Weakness & Pattern Diagnostic
               </h3>
 
@@ -552,14 +554,14 @@ export default function PersonalMentor({ user }) {
             {/* Smart Study Planners / Schedules */}
             <div className="glass-panel p-6 rounded-2xl">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-2">
+                <h3 className="text-sm font-extrabold tracking-wide text-gray-100 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-brand-blue" /> Adaptive Plan & Rescheduling Timetable
                 </h3>
                 
                 {timetable.some(c => c.status === 'missed') && (
                   <button 
                     onClick={() => addToast({ message: 'Rescheduled missed classes successfully!', type: 'success' })}
-                    className="text-[10px] font-bold bg-brand-orange/20 border border-brand-orange/30 text-brand-orange px-3 py-1.5 rounded-lg hover:bg-brand-orange hover:text-black transition-all uppercase flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-bold bg-brand-orange/20 border border-white/10 text-brand-orange px-3 py-1.5 rounded-lg hover:bg-brand-orange hover:text-black transition-all uppercase flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> Auto Reschedule
                   </button>
@@ -582,7 +584,7 @@ export default function PersonalMentor({ user }) {
                         <h4 className="text-xs font-bold text-gray-200 mt-1">{item.subject}</h4>
                       </div>
 
-                      <span className={`text-[9px] px-2 py-0.5 rounded-md font-extrabold uppercase tracking-wider ${
+                      <span className={`text-[9px] px-2 py-0.5 rounded-md font-extrabold tracking-wide ${
                         item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                         item.status === 'missed' ? 'bg-red-500/20 text-red-400 animate-pulse' :
                         'bg-yellow-500/20 text-yellow-400'
@@ -597,7 +599,7 @@ export default function PersonalMentor({ user }) {
 
             {/* Hour charts */}
             <div className="glass-panel p-6 rounded-2xl">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 flex items-center gap-2 mb-4">
                 <BarChart2 className="w-4 h-4 text-brand-pink" /> Real-Time Study Focus Hours (Last 7 Days)
               </h3>
               
@@ -623,8 +625,8 @@ export default function PersonalMentor({ user }) {
             {/* Subject Mastery checklist */}
             <div className="glass-panel p-6 rounded-2xl">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100">Syllabus Completion & Mastery Analytics</h3>
-                <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Click to expand syllabus units</span>
+                <h3 className="text-sm font-extrabold tracking-wide text-gray-100">Syllabus Completion & Mastery Analytics</h3>
+                <span className="text-[10px] text-gray-500 font-semibold tracking-wide">Click to expand syllabus units</span>
               </div>
               
               <div className="space-y-4">
@@ -686,19 +688,19 @@ export default function PersonalMentor({ user }) {
           <div className="lg:col-span-4 space-y-6">
             
             {/* Active streak */}
-            <div className="glass-panel p-6 rounded-2xl bg-gradient-to-br from-brand-pink/10 to-brand-purple/10 text-center relative overflow-hidden border border-brand-pink/20">
+            <div className="glass-panel p-6 rounded-2xl bg-gradient-to-br from-brand-pink/10 to-brand-purple/10 text-center relative overflow-hidden border border-white/10">
               <div className="absolute -top-10 -left-10 w-24 h-24 bg-brand-pink/15 rounded-full blur-xl animate-pulse"></div>
-              <div className="w-16 h-16 rounded-full bg-brand-pink/20 border border-brand-pink/30 flex items-center justify-center mx-auto text-brand-pink text-2xl font-black mb-3 shadow-[0_0_15px_rgba(247,37,133,0.3)]">
+              <div className="w-16 h-16 rounded-full bg-brand-pink/20 border border-white/10 flex items-center justify-center mx-auto text-brand-pink text-2xl font-semibold mb-3 shadow-sm">
                 🔥
               </div>
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100">Study Streak</h3>
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100">Study Streak</h3>
               <p className="text-3xl font-extrabold tracking-tight gradient-text-cyan-purple mt-1">{twinData.studyAnalytics.currentStreak} Days</p>
               <p className="text-[10px] text-gray-400 mt-2 font-semibold">Study focus multiplier active! Keep up the momentum.</p>
             </div>
 
             {/* Daily motivational advice */}
             <div className="glass-panel p-6 rounded-2xl border-l-4 border-l-brand-purple relative overflow-hidden">
-              <span className="text-[9px] text-brand-purple font-extrabold uppercase tracking-widest block mb-2">Daily Twin Guidance</span>
+              <span className="text-[9px] text-brand-purple font-extrabold tracking-wide block mb-2">Daily Twin Guidance</span>
               <p className="text-xs text-gray-300 font-medium italic leading-relaxed">
                 "Based on your target of {profile.careerGoal} with a target CGPA of {profile.targetCGPA}, prioritize testing your skills in {profile.weakSubjects}. Let's run a Mock Interview simulation when you feel ready."
               </p>
@@ -715,7 +717,7 @@ export default function PersonalMentor({ user }) {
 
             {/* Upcoming items */}
             <div className="glass-panel p-6 rounded-2xl">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 flex items-center gap-2 mb-4">
                 <Clock className="w-4 h-4 text-brand-pink" /> Critical Deadlines
               </h3>
               
@@ -735,7 +737,7 @@ export default function PersonalMentor({ user }) {
 
             {/* AI Exam Readiness Projection */}
             <div className="glass-panel p-6 rounded-2xl text-center space-y-5">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100">AI Exam Readiness Projection</h3>
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100">AI Exam Readiness Projection</h3>
               
               <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -769,7 +771,7 @@ export default function PersonalMentor({ user }) {
               </div>
 
               <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-left">
-                <span className="text-[9px] text-brand-orange font-extrabold uppercase tracking-wider block">High Priority Target</span>
+                <span className="text-[9px] text-brand-orange font-extrabold tracking-wide block">High Priority Target</span>
                 <p className="text-[11px] text-gray-300 font-medium leading-relaxed mt-1">
                   Complete at least 3 practice questions for **{profile.weakSubjects}** to secure a readiness score above 80%.
                 </p>
@@ -912,7 +914,7 @@ export default function PersonalMentor({ user }) {
             <div className="border-t border-white/5 pt-5 flex justify-end">
               <button 
                 type="submit"
-                className="bg-brand-pink hover:opacity-95 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-[0_0_15px_rgba(247,37,133,0.35)]"
+                className="bg-brand-pink hover:opacity-95 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
               >
                 Sync Configuration
               </button>
@@ -931,7 +933,7 @@ export default function PersonalMentor({ user }) {
             <div className="p-4 bg-white/5 border-b border-white/5 flex flex-wrap justify-between items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-brand-pink animate-ping"></span>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-gray-100">Synchronized Twin Context</span>
+                <span className="text-xs font-extrabold tracking-wide text-gray-100">Synchronized Twin Context</span>
               </div>
 
               <div className="flex items-center gap-3 text-xs">
@@ -984,9 +986,9 @@ export default function PersonalMentor({ user }) {
 
               {/* Embed Interactive Quiz */}
               {activeQuiz && Array.isArray(activeQuiz.questions) && (
-                <div className="p-4 rounded-2xl bg-brand-purple/10 border border-brand-purple/20 space-y-4 my-2">
+                <div className="p-4 rounded-2xl bg-brand-purple/10 border border-white/10 space-y-4 my-2">
                   <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-xs font-bold text-brand-pink uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-xs font-bold text-brand-pink tracking-wide flex items-center gap-1">
                       <HelpCircle className="w-4 h-4" /> Interactive Quiz Solver
                     </span>
                     <button onClick={() => setActiveQuiz(null)} className="text-[10px] text-gray-500 hover:text-white">Clear</button>
@@ -1059,6 +1061,9 @@ export default function PersonalMentor({ user }) {
                             wrongAnswers: ['Quiz Concept Check']
                           });
                           addToast({ message: `Quiz complete! Score: ${correctCount}/${activeQuiz.questions.length}`, type: 'success' });
+                          if (awardXP) {
+                            await awardXP('FINISH_QUIZ');
+                          }
                         } catch (err) {
                           console.error("Error logging quiz result to Firestore:", err);
                         }
@@ -1080,14 +1085,14 @@ export default function PersonalMentor({ user }) {
 
               {/* Embed Flashcards */}
               {activeFlashcards && (
-                <div className="max-w-md mx-auto p-6 rounded-2xl bg-brand-blue/10 border border-brand-blue/20 flex flex-col items-center space-y-4 my-2 text-center">
+                <div className="max-w-md mx-auto p-6 rounded-2xl bg-brand-blue/10 border border-white/10 flex flex-col items-center space-y-4 my-2 text-center">
                   <span className="text-[10px] text-brand-blue font-extrabold uppercase">
                     Flashcard ({flashcardIndex + 1} / {activeFlashcards.flashcards.length})
                   </span>
 
                   <div 
                     onClick={() => setFlashcardFlipped(!flashcardFlipped)}
-                    className="w-full h-36 bg-black/40 border border-white/10 rounded-2xl p-5 flex items-center justify-center cursor-pointer hover:border-brand-blue/40 transition-all select-none"
+                    className="w-full h-36 bg-black/40 border border-white/10 rounded-2xl p-5 flex items-center justify-center cursor-pointer hover:border-white/10 transition-all select-none"
                   >
                     {!flashcardFlipped ? (
                       <p className="text-xs font-semibold text-gray-100">{activeFlashcards.flashcards[flashcardIndex].front}</p>
@@ -1151,12 +1156,12 @@ export default function PersonalMentor({ user }) {
             
             {/* Quick diagnostics triggers */}
             <div className="glass-panel p-6 rounded-2xl space-y-4">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 flex items-center gap-1.5">
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-brand-pink" /> AI Twin Generators
               </h3>
               
               <div className="space-y-1">
-                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Topic of Interest</label>
+                <label className="text-[10px] text-gray-400 font-bold tracking-wide block">Topic of Interest</label>
                 <input
                   type="text"
                   value={customQuizTopic}
@@ -1171,7 +1176,7 @@ export default function PersonalMentor({ user }) {
                 <button
                   disabled={quizLoading || chatLoading}
                   onClick={() => handleGenerateQuiz(customQuizTopic.trim() || profile.weakSubjects)}
-                  className="w-full py-2.5 bg-brand-purple/20 hover:bg-brand-purple/35 border border-brand-purple/30 rounded-xl text-xs font-bold text-brand-pink transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                  className="w-full py-2.5 bg-brand-purple/20 hover:bg-brand-purple/35 border border-white/10 rounded-xl text-xs font-bold text-brand-pink transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                 >
                   {quizLoading ? 'Generating Quiz...' : 'Generate Practice Quiz'}
                 </button>
@@ -1179,7 +1184,7 @@ export default function PersonalMentor({ user }) {
                 <button
                   disabled={flashcardsLoading || chatLoading}
                   onClick={() => handleGenerateFlashcards(customQuizTopic.trim() || profile.weakSubjects)}
-                  className="w-full py-2.5 bg-brand-blue/20 hover:bg-brand-blue/35 border border-brand-blue/30 rounded-xl text-xs font-bold text-brand-blue transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                  className="w-full py-2.5 bg-brand-blue/20 hover:bg-brand-blue/35 border border-white/10 rounded-xl text-xs font-bold text-brand-blue transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                 >
                   {flashcardsLoading ? 'Generating Flashcards...' : 'Generate Flashcards'}
                 </button>
@@ -1188,7 +1193,7 @@ export default function PersonalMentor({ user }) {
 
             {/* Simulated mock and oral test questions */}
             <div className="glass-panel p-6 rounded-2xl">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 mb-3">Suggested Twin Workouts</h3>
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 mb-3">Suggested Twin Workouts</h3>
               
               <div className="space-y-2.5">
                 {[
@@ -1250,7 +1255,7 @@ export default function PersonalMentor({ user }) {
                           <li key={tid}>{task}</li>
                         ))}
                       </ul>
-                      <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider block mt-1">Recommended: {ms.resource}</span>
+                      <span className="text-[9px] text-gray-500 font-bold tracking-wide block mt-1">Recommended: {ms.resource}</span>
                     </div>
                   ))
                 ) : (
@@ -1262,7 +1267,7 @@ export default function PersonalMentor({ user }) {
             </div>
 
             {careerRoadmap && (
-              <div className="p-3.5 rounded-xl bg-brand-pink/15 border border-brand-pink/25 flex gap-2.5 items-start mt-4">
+              <div className="p-3.5 rounded-xl bg-brand-pink/15 border border-white/10 flex gap-2.5 items-start mt-4">
                 <Target className="w-5 h-5 text-brand-pink shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wide">Roadmap Advisory</span>
@@ -1276,10 +1281,10 @@ export default function PersonalMentor({ user }) {
 
           <div className="lg:col-span-5 space-y-6">
             
-            <div className="glass-panel p-6 rounded-2xl bg-gradient-to-br from-brand-pink/20 to-brand-purple/20 border border-brand-pink/30 relative overflow-hidden group shadow-[0_0_20px_rgba(247,37,133,0.15)]">
+            <div className="glass-panel p-6 rounded-2xl bg-gradient-to-br from-brand-pink/20 to-brand-purple/20 border border-white/10 relative overflow-hidden group shadow-sm">
               <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-pink/30 rounded-full blur-2xl animate-pulse"></div>
               <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-2 text-brand-pink text-xs font-black uppercase tracking-widest">
+                <div className="flex items-center gap-2 text-brand-pink text-xs font-semibold tracking-wide">
                   <Star className="w-4 h-4 fill-brand-pink animate-pulse" />
                   <span>Pro Interview Simulator</span>
                 </div>
@@ -1302,7 +1307,7 @@ export default function PersonalMentor({ user }) {
             </div>
 
             <div className="glass-panel p-6 rounded-2xl space-y-3">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-100 font-bold">Launch AI Simulators</h3>
+              <h3 className="text-sm font-extrabold tracking-wide text-gray-100 font-bold">Launch AI Simulators</h3>
               
               <button
                 disabled={chatLoading}
