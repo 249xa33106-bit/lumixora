@@ -385,6 +385,7 @@ function App() {
                 
     setUser(userData);
     setIsAuthenticated(true);
+    setShowLogin(null);
     
     // Check if there was a pending join link
     const pendingJoin = sessionStorage.getItem('lumixora_pending_join');
