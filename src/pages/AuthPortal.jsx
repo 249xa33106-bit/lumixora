@@ -298,7 +298,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
-      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com';
+      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com' || cleanEmail === '249xa33106@gprec.ac.in';
       const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
 
       if (isLogin) {
