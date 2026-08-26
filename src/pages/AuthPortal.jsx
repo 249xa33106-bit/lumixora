@@ -148,384 +148,208 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     try {
       const cleanEmail = email.toLowerCase().trim();
       const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com';
-      
+      const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
+
       if (isLogin) {
-        try {
-          // 1. Try Firebase Auth
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const firebaseUser = userCredential.user;
-          try {
-            await firebaseUser.reload();
-          } catch (e) {
-            console.warn("User reload failed:", e);
-          }
-          
-          let userDoc = {};
-          try {
-            const { data: sbUsers } = await supabase
-              .from('users')
-              .select('*')
-              .or(`id.eq.${firebaseUser.uid},email.eq.${firebaseUser.email}`);
-              
-            if (sbUsers && sbUsers.length > 0) {
-              userDoc = sbUsers[0];
-            }
-          } catch (docErr) {
-            console.warn("Supabase user document fetch failed:", docErr);
-          }
+        // ⚡ FAST-PATH PARALLEL LOGIN (Checks Supabase & Firebase simultaneously)
+        const sbAuthPromise = supabase
+          .from('users')
+          .select('*')
+          .eq('email', cleanEmail)
+          .then(res => res.data || [])
+          .catch(() => []);
 
-          // Fallback check Firestore 'Users' and 'users' collections
-          try {
-            const fsDoc1 = await getDoc(doc(db, 'Users', firebaseUser.uid));
-            if (fsDoc1.exists()) userDoc = { ...fsDoc1.data(), ...userDoc };
-            
-            const fsDoc2 = await getDoc(doc(db, 'users', firebaseUser.uid));
-            if (fsDoc2.exists()) userDoc = { ...fsDoc2.data(), ...userDoc };
-          } catch (fsErr) {
-            console.warn("Firestore user document fetch failed:", fsErr);
-          }
+        const fbAuthPromise = signInWithEmailAndPassword(auth, cleanEmail, password)
+          .then(res => ({ user: res.user, error: null }))
+          .catch(err => ({ user: null, error: err }));
 
-          const isExplicitlyUnblocked = userDoc.is_blocked === false && (userDoc.is_approved === true || userDoc.isApproved === true);
-          const isTeammateUser = userDoc.role === 'teammate' || userDoc.role === 'team' || userDoc.role === 'team_member' || authMode === 'teammate' || isTeammateEmail(cleanEmail);
-          const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser;
+        const [sbUsers, fbRes] = await Promise.all([sbAuthPromise, fbAuthPromise]);
 
-          if (!isFounderOrAdmin && !isExplicitlyUnblocked && !isAllowedDomain) {
-            setError('Security Access Restricted: Please sign in using your official college or team mail.');
-            setLoading(false);
-            try { await auth.signOut(); } catch (e) {}
-            return;
-          }
-
-          if (userDoc && (userDoc.is_blocked === true || userDoc.is_deleted === true)) {
-            setError('Account Blocked: Access has been suspended by the Founder/Admin.');
-            setLoading(false);
-            try { await auth.signOut(); } catch (e) {}
-            return;
-          }
-
-          const isFacultyRole = (userDoc.role === 'faculty' || userDoc.role === 'mentor');
-          const isApprovedStatus = userDoc.isApproved === true || userDoc.is_approved === true;
-
-          if (isFacultyRole && !isApprovedStatus && !isFounderOrAdmin) {
-            setError('Faculty Security Restriction: Your account is pending Founder approval. Access is locked until verified.');
-            setLoading(false);
-            try { await auth.signOut(); } catch (e) {}
-            return;
-          }
-
-          const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
-
-          // Enforce Email Verification (Founders, Admins, Teammates, Clients, and Pre-approved accounts exempted)
-          if (!firebaseUser.emailVerified && !isFounderOrAdmin && !isTeammateUser && !isApprovedStatus && !isLumixoraBrand) {
-            try {
-              await sendEmailVerification(firebaseUser);
-            } catch (verErr) {
-              console.warn("Could not auto-trigger verification email:", verErr);
-            }
-            setUnverifiedUser(firebaseUser);
-            setError(`Email Verification Required: Please verify your email (${cleanEmail}) before logging in. A verification link has been sent to your inbox. Check Spam if not found.`);
-            setLoading(false);
-            try { await auth.signOut(); } catch (e) {}
-            return;
-          }
-
-          const rawLoginName = firebaseUser.displayName || userDoc.name || email.split('@')[0];
-          const cleanLoginName = cleanScholarName(rawLoginName);
-          const resolvedRole = isFounderOrAdmin ? 'founder' : (isTeammateUser ? 'teammate' : (userDoc.role || 'user'));
-
-          const loginUserDoc = { 
-            id: firebaseUser.uid,
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            emailVerified: firebaseUser.emailVerified,
-            ...userDoc,
-            name: cleanLoginName,
-            role: resolvedRole
-          };
-          if (!isFounderOrAdmin) {
-            sendFounderNotification('login', loginUserDoc);
-          }
-          handleSuccessfulLogin(loginUserDoc);
-        } catch (firebaseErr) {
-          console.warn("Firebase Authentication failed, attempting Supabase fallback:", firebaseErr);
-          
-          // 2. Try Supabase Auth check fallback
-          const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password);
-          
-          if (data && data.length > 0) {
-            const userDoc = data[0];
-            
-            if (userDoc.is_deleted) {
-              setError('Your account has been deactivated. Please contact support.');
-              setLoading(false);
-              return;
-            }
-
-            // Enforce Email Verification in fallback
-            if (!isFounderOrAdmin && userDoc.emailVerified !== true && userDoc.email_verified !== true) {
-              setError(`Email Verification Required: Please verify your institutional email (${cleanEmail}) before logging in.`);
-              setLoading(false);
-              return;
-            }
-
-            const isFacultyRole = (userDoc.role === 'faculty' || userDoc.role === 'mentor');
-            const isApprovedStatus = userDoc.isApproved === true || userDoc.is_approved === true;
-
-            if (isFacultyRole && !isApprovedStatus && !isFounderOrAdmin) {
-              setError('Faculty Security Restriction: Your account is pending Founder approval. Access is locked until verified.');
-              setLoading(false);
-              return;
-            }
-
-            const isFounderOrAdminRole = userDoc.email.toLowerCase() === 'founder@lumixora.com' || userDoc.email.toLowerCase() === '249xa33106@gmail.com';
-            if (!isFounderOrAdminRole) {
-              sendFounderNotification('login', userDoc);
-            }
-            handleSuccessfulLogin({ 
-              id: userDoc.id, 
-              uid: userDoc.id,
-              ...userDoc,
-              role: isFounderOrAdminRole ? 'founder' : userDoc.role 
-            });
-          } else {
-            setError(firebaseErr.message.includes('auth/') ? firebaseErr.message : 'Invalid email or password.');
+        let matchedUser = null;
+        if (sbUsers && sbUsers.length > 0) {
+          const exactMatch = sbUsers.find(u => u.password === password);
+          if (exactMatch || (!fbRes.error && fbRes.user)) {
+            matchedUser = exactMatch || sbUsers[0];
           }
         }
-      } else {
-        // Registration logic
-        try {
-          if (!isFounderOrAdmin && !isValidInstitutionalEmail(cleanEmail, customColleges)) {
-            setError('Security Access Restricted: Please register using your official college mail.');
-            setLoading(false);
-            return;
-          }
 
-          // 1. Try Firebase Auth Register
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const firebaseUser = userCredential.user;
-          
-          const role = (email.toLowerCase() === 'founder@lumixora.com') 
-            ? 'founder' 
-            : authMode === 'faculty' ? 'faculty' : 'user';
-
-          const metadata = authMode === 'faculty' ? {
-            department: department.trim(),
-            designation: designation.trim(),
-            mobileNumber: mobileNumber.trim()
-          } : {
-            rollNumber: rollNumber.trim().toUpperCase(),
-            qualification: qualification.trim(),
-            college: collegeName.trim(),
-            place: place.trim(),
-            year: yearOfStudy,
-            cgpa: cgpa.trim(),
-            careerGoal: careerGoal,
-            department: department.trim(),
-            learningStyle: learningStyle,
-            weakSubjects: weakSubjects.trim(),
-            sem: semester,
-            sec: section
+        let authenticatedUser = null;
+        if (matchedUser) {
+          authenticatedUser = {
+            id: matchedUser.id,
+            uid: matchedUser.id,
+            email: cleanEmail,
+            ...matchedUser
           };
-
-          const cleanName = name.trim();
-
-          await updateProfile(firebaseUser, {
-            displayName: cleanName
-          });
-
-          const determinedRole = authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user');
-          const defaultProfile = authMode === 'faculty' ? {
-            id: firebaseUser.uid,
-            uid: firebaseUser.uid,
-            name: name.trim(),
-            email,
-            department: department.trim(),
-            designation: designation.trim(),
-            mobileNumber: mobileNumber.trim(),
-            role: 'faculty',
-            isApproved: false,
-            is_approved: false,
-            created_at: new Date().toISOString(),
-            loginCount: 0,
-            lastLoginDate: new Date().toISOString()
-          } : {
-            id: firebaseUser.uid,
-            uid: firebaseUser.uid,
-            role: determinedRole,
-            isApproved: true,
-            is_approved: true,
-            name: name.trim(),
-            rollNumber: rollNumber.trim().toUpperCase() || 'TEAM',
-            email,
-            qualification: qualification.trim() || 'B.Tech',
-            college: collegeName.trim() || 'Lumixora Core Team',
-            place: place.trim() || 'Kurnool',
-            year: yearOfStudy || 'Core Team',
-            cgpa: cgpa.trim() || '9.5',
-            targetCGPA: cgpa.trim() || '9.5',
-            careerGoal: 'Product & Academic Curation',
-            department: department.trim() || 'CSE',
-            sem: semester || '1',
-            sec: section || 'A',
-            learningStyle: 'Practical',
-            weakSubjects: weakSubjects.trim() || 'None',
-            strongSubjects: 'Full Stack, AI Systems, Academic Curation',
-            subjects: 'Computer Science, Engineering Curriculum',
-            xp: 100,
-            todayXp: 0,
-            level: 1,
-            coins: 200,
-            streak: 1,
-            longestStreak: 1,
-            streakFreezeCount: 2,
-            lastActiveDate: null,
-            completedDays: [],
-            badges: ['first_login', 'team_contributor'],
-            purchasedThemes: ['default'],
-            purchasedFrames: ['none'],
-            currentTheme: 'default',
-            currentFrame: 'none',
-            studyHours: 0,
-            quizScore: 90,
-            notesShared: 0,
-            lastDailyReset: new Date().toDateString(),
-            created_at: new Date().toISOString(),
-            loginCount: 1,
-            lastLoginDate: new Date().toISOString()
+        } else if (fbRes.user) {
+          const fbUser = fbRes.user;
+          authenticatedUser = {
+            id: fbUser.uid,
+            uid: fbUser.uid,
+            email: fbUser.email,
+            emailVerified: fbUser.emailVerified,
+            role: isFounderOrAdmin ? 'founder' : (authMode === 'teammate' ? 'teammate' : 'user')
           };
+        }
 
-          try {
-            // Save to Firestore (both collections for failsafe security)
-            await setDoc(doc(db, 'Users', firebaseUser.uid), defaultProfile, { merge: true });
-            await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true });
-            
-            // Save to Supabase (Clean Schema Filter)
-            const sbPayload = {
-              name: name.trim(),
-              email: email.toLowerCase().trim(),
-              password: password || 'firebase_auth_managed',
-              role: defaultProfile.role,
-              created_at: new Date().toISOString()
-            };
-            if (firebaseUser.uid && firebaseUser.uid.length === 36 && firebaseUser.uid.includes('-')) {
-              sbPayload.id = firebaseUser.uid;
-            }
-            const { error: sbError } = await supabase.from('users').upsert([sbPayload], { onConflict: 'email' });
-            if (sbError) {
-              console.warn("Supabase profile creation notice:", sbError);
-            }
-          } catch (dbErr) {
-            console.warn("Database profiling failed:", dbErr);
-          }
-
-          if (authMode === 'faculty') {
-            try {
-              // Send Email via EmailJS directly from the browser
-              await emailjs.send(
-                'service_ya5r1pk',
-                'template_h3jbqrj',
-                {
-                  to_name: 'Founder',
-                  to_email: '249XA33106@gprec.ac.in',
-                  faculty_name: name.trim(),
-                  faculty_email: email,
-                  faculty_department: department.trim(),
-                  faculty_designation: designation.trim(),
-                  faculty_mobile: mobileNumber.trim(),
-                  message: `A new faculty member ${name.trim()} (${email}) from ${department.trim()} (${designation.trim()}) has registered. Mobile: ${mobileNumber.trim()}. Please log in to your Founder Portal to approve them.`
-                },
-                '9-0dhY139CBiyCxBJ'
-              );
-            } catch(e) { console.error("EmailJS trigger failed:", e); }
-            
-            await signOut(auth);
-            setSuccessMsg('Registration successful! Please wait for founder approval before logging in. You will be notified once approved.');
-            setIsLogin(true);
-            setLoading(false);
-            return;
-          }
-          
-          // Send email verification link
-          try {
-            await sendEmailVerification(firebaseUser);
-          } catch (verErr) {
-            console.warn("Email verification sending notice:", verErr);
-          }
-          
-          setUnverifiedUser(firebaseUser);
-          await signOut(auth);
-
-          // Notify founder of new registration
-          sendFounderNotification('register', {
-            name: name.trim(),
-            email,
-            role: mode === 'faculty' ? 'faculty' : 'user'
-          });
-          
-          setSuccessMsg(`Registration successful! A verification email has been sent to ${email}. Please verify your email from your inbox before signing in.`);
-          setIsLogin(true);
+        if (!authenticatedUser) {
+          const errMsg = fbRes?.error?.message ? fbRes.error.message.replace('Firebase: ', '') : 'Invalid email or password.';
+          setError(errMsg.includes('auth/') ? errMsg : 'Invalid email or password. Please verify your credentials.');
           setLoading(false);
           return;
-
-        } catch (firebaseErr) {
-          console.warn("Firebase Auth registration failed, attempting Supabase fallback:", firebaseErr);
-          
-          // 2. Try Supabase Auth check fallback
-          const { data: existingUsers } = await supabase.from('users').select('*').eq('email', email);
-          
-          if (existingUsers && existingUsers.length > 0) {
-            setError('An account with this email already exists.');
-            setLoading(false);
-            return;
-          }
-
-          const role = (email.toLowerCase() === 'founder@lumixora.com') 
-            ? 'founder' 
-            : 'user';
-
-          const metadata = {
-            rollNumber: rollNumber.trim().toUpperCase(),
-            qualification: qualification.trim(),
-            college: collegeName.trim(),
-            place: place.trim(),
-            year: yearOfStudy,
-            cgpa: cgpa.trim(),
-            careerGoal: careerGoal,
-            department: department.trim(),
-            learningStyle: learningStyle,
-            weakSubjects: weakSubjects.trim(),
-            sem: semester,
-            sec: section
-          };
-
-          const newUser = {
-            name: `${name.trim()} ${JSON.stringify(metadata)}`,
-            rollNumber: rollNumber.trim().toUpperCase(),
-            email,
-            password,
-            role,
-            created_at: new Date().toISOString()
-          };
-
-          const { data: insertedDocs, error: insertError } = await supabase.from('users').insert([newUser]).select();
-          
-          if (insertError || !insertedDocs || insertedDocs.length === 0) {
-             const errorMsg = firebaseErr?.message ? firebaseErr.message.replace('Firebase: ', '') : 'Failed to register account.';
-             setError(errorMsg);
-             setLoading(false);
-             return;
-          }
-          const createdUser = insertedDocs[0];
-          try {
-            await setDoc(doc(db, 'users', createdUser.id), { id: createdUser.id, ...newUser }, { merge: true });
-          } catch(e){}
-          sendFounderNotification('register', {
-            name: name.trim(),
-            email,
-            role: createdUser.role || 'user'
-          });
-          handleSuccessfulLogin({ id: createdUser.id, uid: createdUser.id, ...createdUser });
         }
+
+        // Account status verification
+        if (authenticatedUser.is_blocked === true || authenticatedUser.is_deleted === true) {
+          setError('Account Blocked: Access has been suspended by the Founder/Admin.');
+          setLoading(false);
+          try { await auth.signOut(); } catch (e) {}
+          return;
+        }
+
+        const isTeammateUser = authenticatedUser.role === 'teammate' || authenticatedUser.role === 'team' || isTeammateEmail(cleanEmail);
+        const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser;
+
+        if (!isFounderOrAdmin && !authenticatedUser.is_approved && !authenticatedUser.isApproved && !isAllowedDomain) {
+          setError('Security Access Restricted: Please sign in using your official college or team mail.');
+          setLoading(false);
+          try { await auth.signOut(); } catch (e) {}
+          return;
+        }
+
+        const isFacultyRole = (authenticatedUser.role === 'faculty' || authenticatedUser.role === 'mentor');
+        const isApprovedStatus = authenticatedUser.isApproved === true || authenticatedUser.is_approved === true;
+
+        if (isFacultyRole && !isApprovedStatus && !isFounderOrAdmin) {
+          setError('Faculty Security Restriction: Your account is pending Founder approval.');
+          setLoading(false);
+          try { await auth.signOut(); } catch (e) {}
+          return;
+        }
+
+        const rawLoginName = authenticatedUser.name || email.split('@')[0];
+        const cleanLoginName = cleanScholarName(rawLoginName, cleanEmail);
+        const resolvedRole = isFounderOrAdmin ? 'founder' : (isTeammateUser ? 'teammate' : (authenticatedUser.role || 'user'));
+
+        const finalUserDoc = {
+          ...authenticatedUser,
+          name: cleanLoginName,
+          role: resolvedRole
+        };
+
+        // Asynchronous non-blocking audit notification
+        if (!isFounderOrAdmin) {
+          sendFounderNotification('login', finalUserDoc).catch(() => {});
+        }
+
+        handleSuccessfulLogin(finalUserDoc);
+      } else {
+        // ⚡ FAST-PATH REGISTRATION
+        if (!isFounderOrAdmin && !isValidInstitutionalEmail(cleanEmail, customColleges)) {
+          setError('Security Access Restricted: Please register using your official college mail.');
+          setLoading(false);
+          return;
+        }
+
+        const cleanName = name.trim();
+        const determinedRole = authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user');
+
+        const profileMetadata = {
+          college: collegeName.trim() || 'GPREC',
+          department: department.trim() || 'CSE',
+          branch: department.trim() || 'CSE',
+          year: yearOfStudy || '1st Year',
+          sem: semester || '1',
+          sec: section || 'A',
+          rollNumber: rollNumber.trim().toUpperCase() || (cleanEmail.endsWith('@gprec.ac.in') ? cleanEmail.split('@')[0].toUpperCase() : ''),
+          qualification: qualification.trim() || 'B.Tech',
+          place: place.trim() || 'Kurnool',
+          cgpa: cgpa.trim() || '9.0',
+          careerGoal: careerGoal || 'Placement',
+          learningStyle: learningStyle || 'Practical',
+          weakSubjects: weakSubjects.trim() || 'None',
+          xp: 50,
+          coins: 100,
+          level: 1,
+          streak: 1
+        };
+
+        const packedName = `${cleanName} ${JSON.stringify(profileMetadata)}`;
+
+        // 1. Supabase Profile Upsert (Fast DB Save)
+        const sbPayload = {
+          name: packedName,
+          email: cleanEmail,
+          password: password,
+          role: determinedRole,
+          created_at: new Date().toISOString(),
+          is_approved: determinedRole !== 'faculty'
+        };
+
+        const sbPromise = supabase.from('users').upsert([sbPayload], { onConflict: 'email' });
+
+        // 2. Firebase Auth Account Creation
+        const fbPromise = createUserWithEmailAndPassword(auth, cleanEmail, password)
+          .then(async (userCredential) => {
+            const fbUser = userCredential.user;
+            await updateProfile(fbUser, { displayName: cleanName }).catch(() => {});
+            const fsDoc = {
+              id: fbUser.uid,
+              uid: fbUser.uid,
+              name: cleanName,
+              email: cleanEmail,
+              role: determinedRole,
+              ...profileMetadata,
+              created_at: new Date().toISOString(),
+              isApproved: determinedRole !== 'faculty',
+              is_approved: determinedRole !== 'faculty'
+            };
+            await Promise.allSettled([
+              setDoc(doc(db, 'users', fbUser.uid), fsDoc, { merge: true }),
+              setDoc(doc(db, 'Users', fbUser.uid), fsDoc, { merge: true }),
+              sendEmailVerification(fbUser).catch(() => {})
+            ]);
+            return fbUser;
+          })
+          .catch(fbErr => {
+            console.warn("Firebase registration notice:", fbErr);
+            return null;
+          });
+
+        await Promise.allSettled([sbPromise, fbPromise]);
+
+        // Non-blocking notifications
+        sendFounderNotification('register', {
+          name: cleanName,
+          email: cleanEmail,
+          role: determinedRole
+        }).catch(() => {});
+
+        if (authMode === 'faculty') {
+          emailjs.send(
+            'service_ya5r1pk',
+            'template_h3jbqrj',
+            {
+              to_name: 'Founder',
+              to_email: '249XA33106@gprec.ac.in',
+              faculty_name: cleanName,
+              faculty_email: cleanEmail,
+              faculty_department: department.trim(),
+              faculty_designation: designation.trim(),
+              faculty_mobile: mobileNumber.trim(),
+              message: `A new faculty member ${cleanName} (${cleanEmail}) from ${department.trim()} has registered.`
+            },
+            '9-0dhY139CBiyCxBJ'
+          ).catch(() => {});
+
+          setSuccessMsg('Registration successful! Please wait for founder approval before logging in.');
+        } else {
+          setSuccessMsg(`Registration successful! You can now log in with your institutional credentials.`);
+        }
+
+        try { await signOut(auth); } catch (e) {}
+        setIsLogin(true);
+        setLoading(false);
       }
     } catch (err) {
       console.error(err);
