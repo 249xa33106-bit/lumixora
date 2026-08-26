@@ -19,8 +19,9 @@ import CodingPractice from './pages/CodingPractice';
 import CodeEditorPage from './pages/CodeEditorPage';
 import PersonalMentor from './pages/PersonalMentor';
 import { isValidInstitutionalEmail } from './data/collegesData';
-import { signOut } from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from './config/firebase';
+import { supabase } from './config/supabase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
 import StudyWithMe from './pages/StudyWithMe';
 import ReportBug from './pages/ReportBug';
@@ -367,6 +368,77 @@ function App() {
   useEffect(() => {
     localStorage.setItem('lumixora_isAuthenticated', isAuthenticated ? 'true' : 'false');
   }, [isAuthenticated]);
+
+  // Listen for Firebase Auth changes (handles Google OAuth redirect on page load seamlessly)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        const email = (fbUser.email || '').toLowerCase().trim();
+        const isF = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+        
+        try {
+          const { data: sbUsers } = await supabase.from('users').select('*').ilike('email', email);
+          let userProfile;
+          if (sbUsers && sbUsers.length > 0) {
+            userProfile = { 
+              ...sbUsers[0], 
+              id: fbUser.uid, 
+              uid: fbUser.uid, 
+              emailVerified: true, 
+              role: sbUsers[0].role || (isF ? 'founder' : 'user') 
+            };
+          } else {
+            const cleanName = fbUser.displayName || email.split('@')[0];
+            const defaultProfile = {
+              id: fbUser.uid,
+              uid: fbUser.uid,
+              name: cleanName,
+              email: email,
+              password: 'google_oauth_managed',
+              qualification: 'B.Tech',
+              college: 'GPREC',
+              place: 'Kurnool',
+              year: '1st Year',
+              cgpa: '9.0',
+              targetCGPA: '9.0',
+              careerGoal: 'Placement',
+              department: 'CSE',
+              sem: '1',
+              sec: 'A',
+              learningStyle: 'Practical',
+              weakSubjects: 'None',
+              strongSubjects: 'None',
+              subjects: 'Computer Science',
+              xp: 50,
+              coins: 100,
+              level: 1,
+              streak: 1,
+              longestStreak: 1,
+              streakFreezeCount: 1,
+              badges: ['first_login'],
+              purchasedThemes: ['default'],
+              purchasedFrames: ['none'],
+              currentTheme: 'default',
+              currentFrame: 'none',
+              created_at: new Date().toISOString(),
+              role: isF ? 'founder' : 'user',
+              emailVerified: true,
+              is_approved: true,
+              isApproved: true
+            };
+            await supabase.from('users').upsert([defaultProfile], { onConflict: 'email' });
+            userProfile = defaultProfile;
+          }
+          
+          handleLogin(userProfile);
+        } catch (e) {
+          console.warn("Auth state sync error in App:", e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = (userData) => {
     const email = (userData?.email || '').toLowerCase().trim();
