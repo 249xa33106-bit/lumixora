@@ -446,24 +446,6 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       setLoading(true);
       setError('');
 
-      if (providerName === 'google') {
-        // Try Supabase Google OAuth first if enabled
-        try {
-          const { data: sbOAuth, error: sbOAuthErr } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: window.location.origin
-            }
-          });
-          if (!sbOAuthErr && sbOAuth?.url) {
-            window.location.href = sbOAuth.url;
-            return;
-          }
-        } catch (sbErr) {
-          console.warn("Supabase OAuth redirect notice, falling back to popup:", sbErr);
-        }
-      }
-
       let provider;
       if (providerName === 'google') {
         provider = new GoogleAuthProvider();
@@ -492,7 +474,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       const { data: sbUsers } = await supabase
         .from('users')
         .select('*')
-        .eq('email', oauthEmail);
+        .ilike('email', oauthEmail);
 
       let userProfile;
       if (sbUsers && sbUsers.length > 0) {
