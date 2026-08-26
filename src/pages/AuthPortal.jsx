@@ -238,8 +238,19 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         }
 
         if (!authenticatedUser) {
-          const errMsg = fbRes?.error?.message ? fbRes.error.message.replace('Firebase: ', '') : 'Invalid email or password.';
-          setError(errMsg.includes('auth/') ? errMsg : 'Invalid email or password. Please verify your credentials.');
+          const userExistsInDb = sbUsers && sbUsers.length > 0;
+          const DEFAULT_PASSWORDS = ['lumixora@123', 'student@2026', 'gprec#123', '123456', '12345678', 'password', 'default', '12345'];
+          const isDbDefaultPass = userExistsInDb && DEFAULT_PASSWORDS.includes((sbUsers[0].password || '').toLowerCase().trim());
+
+          if (userExistsInDb) {
+            if (isDbDefaultPass) {
+              setError(`Notice: Your account is assigned a temporary default password. Please click 'Reset Password' below to set your personal secure password.`);
+            } else {
+              setError(`Incorrect password for ${cleanEmail}. Click 'Reset Password' below to securely create a new one.`);
+            }
+          } else {
+            setError(`No account found for ${cleanEmail}. Please switch to 'Register' tab to create your account.`);
+          }
           setLoading(false);
           return;
         }
@@ -760,8 +771,22 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl mb-6 text-sm text-center">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3.5 rounded-xl mb-6 text-xs text-center space-y-2">
+            <p className="font-medium leading-relaxed">{error}</p>
+            {(error.includes('Reset') || error.includes('password') || error.includes('Password') || error.includes('temporary')) && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetEmail(email.trim() || '');
+                    setShowForgotPassword(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded-xl text-xs font-bold transition-all border border-amber-400/40 inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  🔑 Reset Password / Create New Password
+                </button>
+              </div>
+            )}
             {unverifiedUser && (
               <div className="mt-2">
                 <button 
