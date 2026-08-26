@@ -576,27 +576,19 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     setResetError('');
     setRetrievedAccounts([]);
     try {
-      const fbReset = sendPasswordResetEmail(auth, query)
-        .then(() => true)
-        .catch(err => {
-          console.warn("Firebase password reset notice:", err);
-          return false;
-        });
-
-      const sbReset = supabase.auth.resetPasswordForEmail(query, {
-        redirectTo: `${window.location.origin}/#reset-password`
-      })
-        .then(() => true)
-        .catch(err => {
-          console.warn("Supabase password reset notice:", err);
-          return false;
-        });
-
-      await Promise.allSettled([fbReset, sbReset]);
-      setResetError('Password reset link sent! Check your inbox (and Spam folder) to reset your password.');
+      await sendPasswordResetEmail(auth, query);
+      setResetError('Password reset email sent via Firebase! Please check your inbox (and Spam/Promotions folder) to reset your password.');
     } catch (err) {
-      console.error('Password reset error:', err);
-      setResetError('Password reset link sent! If an account exists with this email, you will receive a reset link shortly.');
+      console.warn('Firebase password reset notice:', err);
+      // Fallback for accounts registered via Supabase
+      try {
+        await supabase.auth.resetPasswordForEmail(query, {
+          redirectTo: `${window.location.origin}/#reset-password`
+        });
+        setResetError('Password reset link sent! Please check your inbox to reset your password.');
+      } catch (sbErr) {
+        setResetError('Password reset link dispatched! If an account exists with this email, you will receive a reset link shortly.');
+      }
     } finally {
       setResetLoading(false);
     }
