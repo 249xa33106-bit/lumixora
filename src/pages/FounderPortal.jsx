@@ -501,43 +501,27 @@ export default function FounderPortal({ user, setActiveTab }) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Consolidated 100+ Live Platform Activity Notifications
-  const displayNotifications = useMemo(() => {
-    const combined = [...notifications];
-    const seen = new Set(notifications.map(n => n.id || (n.email ? n.email + (n.type || '') : '')));
-
-    (usersList || []).forEach(u => {
-      const id = `reg_${u.id || u.email}`;
-      if (!seen.has(id)) {
-        seen.add(id);
-        const ts = u.created_at_raw || (u.created_at && u.created_at !== 'N/A' ? new Date(u.created_at).getTime() : Date.now() - 3600000);
-        combined.push({
-          id,
-          type: 'register',
-          name: cleanScholarName(u.name, u.email),
-          email: u.email,
-          role: u.role || 'user',
-          college: u.college || 'GPREC',
-          department: u.department || 'CSE',
-          read: false,
-          _sortTime: ts
-        });
-      }
-    });
-
-    combined.sort((a, b) => (b._sortTime || 0) - (a._sortTime || 0));
-    return combined.slice(0, 150);
-  }, [notifications, usersList]);
-
-  const unreadCount = displayNotifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllRead = async () => {
     const unread = notifications.filter(n => !n.read);
-    await Promise.all(unread.map(n => updateDoc(doc(db, 'founder_notifications', n.id), { read: true })));
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await Promise.all(unread.map(n => updateDoc(doc(db, 'founder_notifications', n.id), { read: true })));
+    } catch (e) {}
   };
 
   const clearAllNotifications = async () => {
-    await Promise.all(notifications.map(n => deleteDoc(doc(db, 'founder_notifications', n.id))));
+    setNotifications([]);
+    try {
+      const snap = await getDocs(collection(db, 'founder_notifications'));
+      const batch = writeBatch(db);
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      addToast({ message: "Live notifications cleared.", type: "info" });
+    } catch (e) {
+      console.warn("Clear notifications error:", e);
+    }
   };
 
 
@@ -1156,23 +1140,35 @@ export default function FounderPortal({ user, setActiveTab }) {
               <div className="absolute right-0 top-14 w-88 max-w-[calc(100vw-2rem)] max-h-[480px] overflow-y-auto bg-[#161622] border border-white/15 rounded-2xl shadow-2xl z-50 p-4 space-y-3 backdrop-blur-xl custom-scrollbar">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Bell className="w-3.5 h-3.5" /> Platform Activity Feed ({displayNotifications.length}+)
+                    <Bell className="w-3.5 h-3.5" /> Live Notifications ({notifications.length})
                   </span>
-                  {displayNotifications.length > 0 && (
-                    <button 
-                      onClick={() => markAllRead()} 
-                      className="text-[11px] text-amber-400/80 hover:text-amber-300 font-bold transition-colors hover:underline"
-                    >
-                      Mark All Read
-                    </button>
+                  {notifications.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={markAllRead} 
+                        className="text-[11px] text-amber-400 hover:text-amber-300 font-bold transition-colors hover:underline cursor-pointer"
+                      >
+                        Mark Read
+                      </button>
+                      <button 
+                        onClick={clearAllNotifications} 
+                        className="text-[11px] text-red-400 hover:text-red-300 font-bold transition-colors hover:underline cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                {displayNotifications.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-6 italic">No notifications yet.</p>
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center space-y-1">
+                    <Bell className="w-8 h-8 text-gray-600 mx-auto opacity-40 mb-2" />
+                    <p className="text-xs text-gray-400 font-medium">No new live notifications.</p>
+                    <p className="text-[11px] text-gray-600">Real-time logins, tests, and student activities will appear here.</p>
+                  </div>
                 ) : (
                   <div className="space-y-2">
-                    {displayNotifications.map(n => (
+                    {notifications.map(n => (
                       <div 
                         key={n.id} 
                         className={`p-3 rounded-xl border text-xs space-y-1.5 transition-colors ${
@@ -1196,7 +1192,7 @@ export default function FounderPortal({ user, setActiveTab }) {
                           <span className="text-[10px] text-gray-400 font-medium">
                             {n._sortTime 
                               ? new Date(n._sortTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                              : 'Recent'}
+                              : 'Just now'}
                           </span>
                         </div>
                         <div>
