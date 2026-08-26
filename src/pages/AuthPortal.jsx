@@ -362,6 +362,15 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           return;
         }
 
+        // Enforce Email Verification for registered students
+        if (!isFounderOrAdmin && fbRes.user && fbRes.user.emailVerified === false) {
+          setUnverifiedUser(fbRes.user);
+          setError(`Email Not Verified: A verification email was sent to ${cleanEmail}. Please verify your email before signing in, or click 'Resend Verification Email' below.`);
+          setLoading(false);
+          try { await signOut(auth); } catch (e) {}
+          return;
+        }
+
         // Account status verification
         if (authenticatedUser.is_blocked === true || authenticatedUser.is_deleted === true) {
           setError('Account Blocked: Access has been suspended by the Founder/Admin.');
@@ -507,7 +516,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
           setSuccessMsg('Registration successful! Please wait for founder approval before logging in.');
         } else {
-          setSuccessMsg(`Registration successful! You can now log in with your institutional credentials.`);
+          setSuccessMsg(`Registration successful! A verification link has been sent to ${cleanEmail}. Please check your inbox (and Spam folder) to verify your account, then sign in.`);
         }
 
         try { await signOut(auth); } catch (e) {}
