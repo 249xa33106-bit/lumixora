@@ -78,69 +78,91 @@ export default function FacultyPortal({ user, setActiveTab }) {
     setTimeout(() => setCopiedFacultyCode(false), 2500);
   };
 
-  // Fetch scholars
+  // Fetch scholars from Supabase (with Firebase merge)
   const fetchFacultyScholars = async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(collection(db, 'users'));
-      const list = [];
-      snap.forEach(d => {
-        const data = d.data();
-        if (data.is_deleted || data.isDeleted || data.role === 'founder' || data.role === 'faculty' || data.role === 'mentor') return;
-        
-        // STRICT GPREC-only filter
-        const email = (data.email || '').toLowerCase();
-        const rawName = data.name || '';
+      const mergedMap = new Map();
 
-        // 1) @gprec.ac.in domain = always GPREC
-        if (email.endsWith('@gprec.ac.in')) {
+      // 1. Fetch from Supabase
+      const { data: sbUsers, error: sbErr } = await supabase.from('users').select('*').range(0, 2000);
+      if (sbUsers && !sbErr) {
+        sbUsers.forEach(u => {
+          if (u.is_deleted || u.role === 'founder' || u.role === 'faculty' || u.role === 'mentor') return;
+
           let meta = {};
-          if (rawName.includes('{')) {
-            try { meta = JSON.parse(rawName.substring(rawName.indexOf('{'))); } catch (_e) {}
+          if (u.name && u.name.includes('{')) {
+            try { meta = JSON.parse(u.name.substring(u.name.indexOf('{'))); } catch (_e) {}
           }
-          list.push({ 
-            id: d.id, 
-            ...data,
-            name: data.cleanName || (rawName.includes('{') ? rawName.split('{')[0].trim() : rawName),
-            department: data.department || data.branch || meta.department || meta.branch || 'CSE',
-            branch: data.department || data.branch || meta.department || meta.branch || 'CSE',
-            year: data.year || meta.year || '1st Year',
-            sem: data.sem || data.semester || meta.sem || '1-1',
-            sec: data.sec || data.section || meta.sec || 'A',
-            rollNumber: data.rollNumber || meta.rollNumber || email.split('@')[0].toUpperCase()
-          });
-          return;
-        }
 
-        // 2) For non-gprec emails, parse embedded JSON in name to check college
-        let parsedCollege = '';
-        let meta = {};
-        if (rawName.includes('{')) {
-          try {
-            const jsonStr = rawName.substring(rawName.indexOf('{'));
-            meta = JSON.parse(jsonStr);
-            parsedCollege = (meta.college || '').toLowerCase().trim();
-          } catch (_e) {
-            const m = rawName.match(/"college"\s*:\s*"([^"]+)"/i);
-            if (m) parsedCollege = m[1].toLowerCase().trim();
+          const rawName = u.name || '';
+          let cName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
+          cName = cName.replace(/[{}":;]/g, '').trim();
+
+          const email = (u.email || '').toLowerCase().trim();
+          if (!cName || cName.toLowerCase() === 'scholar') {
+            if (email && email.endsWith('@gprec.ac.in')) {
+              cName = `Scholar (${email.split('@')[0].toUpperCase()})`;
+            } else if (email && email.includes('@') && !email.includes('@scholar.lumixora.com')) {
+              cName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            } else {
+              cName = 'Scholar';
+            }
           }
-        }
-        
-        const isGprecCollege = parsedCollege === 'gprec' || parsedCollege === 'g. pulla reddy' || parsedCollege === 'g.pulla reddy' || parsedCollege === 'gprec college';
-        if (isGprecCollege) {
-          list.push({ 
-            id: d.id, 
-            ...data,
-            name: data.cleanName || (rawName.includes('{') ? rawName.split('{')[0].trim() : rawName),
-            department: data.department || data.branch || meta.department || meta.branch || 'CSE',
-            branch: data.department || data.branch || meta.department || meta.branch || 'CSE',
-            year: data.year || meta.year || '1st Year',
-            sem: data.sem || data.semester || meta.sem || '1-1',
-            sec: data.sec || data.section || meta.sec || 'A',
-            rollNumber: data.rollNumber || meta.rollNumber || ''
-          });
-        }
-      });
+
+          const rollNumber = u.rollNumber || meta.rollNumber || (email && email.endsWith('@gprec.ac.in') ? email.split('@')[0].toUpperCase() : '');
+          const department = u.department || u.branch || meta.department || meta.branch || 'CSE';
+          const year = u.year || meta.year || '1st Year';
+          const sem = u.sem || u.semester || meta.sem || '1-1';
+          const sec = u.sec || u.section || meta.sec || 'A';
+          const xp = (u.xp !== undefined && u.xp !== null) ? u.xp : (meta.xp || 50);
+          const coins = (u.coins !== undefined && u.coins !== null) ? u.coins : (meta.coins || 100);
+
+          const scholarObj = {
+            id: u.id,
+            uid: u.id,
+            name: cName,
+            email: u.email || '',
+            college: u.college || meta.college || 'GPREC',
+            department,
+            branch: department,
+            year,
+            sem,
+            sec,
+            rollNumber,
+            xp,
+            coins,
+            cgpa: u.cgpa || meta.cgpa || '8.5',
+            role: u.role || 'user',
+            is_blocked: u.is_blocked || false
+          };
+
+          mergedMap.set(u.id, scholarObj);
+          if (email) mergedMap.set(email, scholarObj);
+        });
+      }
+
+      // 2. Merge from Firestore if available
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        snap.forEach(d => {
+          const data = d.data();
+          if (data.is_deleted || data.isDeleted || data.role === 'founder' || data.role === 'faculty' || data.role === 'mentor') return;
+          const email = (data.email || '').toLowerCase().trim();
+          const existing = mergedMap.get(d.id) || (email ? mergedMap.get(email) : null);
+          if (existing) {
+            if (data.cleanName) existing.name = data.cleanName;
+            if (data.rollNumber) existing.rollNumber = data.rollNumber;
+            if (data.department) existing.department = data.department;
+            if (data.xp) existing.xp = data.xp;
+            if (data.coins) existing.coins = data.coins;
+          }
+        });
+      } catch (fbErr) {
+        console.warn("Firestore fetch in FacultyPortal:", fbErr);
+      }
+
+      const list = Array.from(new Set(mergedMap.values()));
       setScholarsList(list);
     } catch (err) {
       console.error("Error fetching scholars for faculty portal:", err);
