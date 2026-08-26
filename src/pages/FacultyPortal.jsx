@@ -441,7 +441,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Users className="w-4 h-4" /> Department Scholars
+            <Users className="w-4 h-4" /> Department Scholars ({scholarsList.length})
           </button>
 
           <button
@@ -493,6 +493,52 @@ export default function FacultyPortal({ user, setActiveTab }) {
       {/* Main View Router */}
       {activeView === 'scholars' && (
         <div className="space-y-4">
+          {/* Quick Roster Counters */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3 shadow-sm">
+              <div className="p-2.5 rounded-xl bg-brand-teal/20 text-brand-teal border border-brand-teal/30">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Total Scholars</span>
+                <span className="text-lg font-black text-white">{scholarsList.length}</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3 shadow-sm">
+              <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                <Filter className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">In Current View</span>
+                <span className="text-lg font-black text-cyan-300">{filteredScholars.length}</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3 shadow-sm">
+              <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">CSE Dept</span>
+                <span className="text-lg font-black text-purple-300">
+                  {scholarsList.filter(s => (s.department || '').toUpperCase().includes('CSE')).length}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3 shadow-sm">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Avg Aura (AP)</span>
+                <span className="text-lg font-black text-amber-300">
+                  {scholarsList.length ? Math.round(scholarsList.reduce((a, b) => a + (b.xp || 0), 0) / scholarsList.length) : 0} AP
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="relative w-full sm:w-80">
               <input
