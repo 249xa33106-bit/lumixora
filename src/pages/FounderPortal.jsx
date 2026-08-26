@@ -917,57 +917,119 @@ export default function FounderPortal({ user, setActiveTab }) {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
-      const exportData = (filteredUsers || []).map((u, i) => ({
+      addToast({ message: 'Generating complete platform activity workbook...', type: 'info' });
+      const wb = XLSX.utils.book_new();
+
+      // 1. All Users & Scholars
+      const allUsersData = (usersList && usersList.length > 0 ? usersList : filteredUsers).map((u, i) => ({
         'S.No': i + 1,
         'Name': cleanScholarName(u.name),
         'Email': u.email || 'N/A',
         'Role': (u.role || 'user').toUpperCase(),
         'College': u.college || 'GPREC',
-        'Department': u.department || 'CSE',
+        'Department': u.department || u.branch || 'CSE',
         'Year': u.year || '1st Year',
         'Section': u.sec || 'A',
         'Semester': u.sem || '1',
         'Global Aura (AP)': u.xp || 0,
         'Synaptic Energy (SC)': u.coins || 0,
-        'Status': u.is_blocked ? 'BLOCKED' : (u.is_approved ? 'APPROVED' : 'ACTIVE'),
+        'Account Status': u.is_blocked ? 'BLOCKED' : (u.is_approved ? 'APPROVED' : 'ACTIVE'),
         'Registered Date': u.created_at || 'N/A'
       }));
+      const wsUsers = XLSX.utils.json_to_sheet(allUsersData);
+      XLSX.utils.book_append_sheet(wb, wsUsers, 'All Scholars (131)');
 
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Scholars Report');
-      XLSX.writeFile(wb, `Lumixora_Scholars_${selectedCollege !== 'All' ? selectedCollege : 'All'}_${new Date().toISOString().slice(0, 10)}.xlsx`);
-      addToast({ message: `Exported ${exportData.length} scholars to Excel successfully!`, type: 'success' });
+      // 2. Test Submissions
+      try {
+        const { data: subs } = await supabase.from('test_submissions').select('*').limit(2000);
+        if (subs && subs.length > 0) {
+          const subsData = subs.map((s, i) => ({
+            'S.No': i + 1,
+            'Scholar Email': s.user_email || s.email || s.userId || '',
+            'Scholar Name': s.user_name || s.name || '',
+            'Test Title': s.test_title || s.testTitle || 'Assessment',
+            'Score': s.score || 0,
+            'Total Questions': s.total_marks || s.totalQuestions || 0,
+            'Accuracy': s.accuracy ? s.accuracy + '%' : 'N/A',
+            'Time Spent': s.time_spent || s.timeTaken || '',
+            'Submitted Date': s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'
+          }));
+          const wsSubs = XLSX.utils.json_to_sheet(subsData);
+          XLSX.utils.book_append_sheet(wb, wsSubs, 'Test Submissions');
+        }
+      } catch(e) {}
+
+      // 3. Uploaded Notes & Papers
+      try {
+        const { data: notes } = await supabase.from('notes').select('*').limit(2000);
+        if (notes && notes.length > 0) {
+          const notesData = notes.map((n, i) => ({
+            'S.No': i + 1,
+            'Title': n.title || '',
+            'Subject': n.subject || '',
+            'Subject Code': n.subjectCode || n.subject_code || '',
+            'Branch': n.branch || '',
+            'Semester': n.semester || '',
+            'Uploaded By': n.contributedBy || n.author || '',
+            'Link': n.fileUrl || n.url || '',
+            'Date': n.created_at ? new Date(n.created_at).toLocaleString() : 'N/A'
+          }));
+          const wsNotes = XLSX.utils.json_to_sheet(notesData);
+          XLSX.utils.book_append_sheet(wb, wsNotes, 'Uploaded Papers & Notes');
+        }
+      } catch(e) {}
+
+      // 4. Doubts & Questions
+      try {
+        const { data: doubts } = await supabase.from('doubts').select('*').limit(2000);
+        if (doubts && doubts.length > 0) {
+          const doubtsData = doubts.map((d, i) => ({
+            'S.No': i + 1,
+            'Author': d.author || d.name || '',
+            'Email': d.email || '',
+            'Topic': d.subject || d.topic || '',
+            'Question': d.question || d.content || '',
+            'Status': d.status || 'Active',
+            'Date': d.createdAt || d.created_at ? new Date(d.createdAt || d.created_at).toLocaleString() : 'N/A'
+          }));
+          const wsDoubts = XLSX.utils.json_to_sheet(doubtsData);
+          XLSX.utils.book_append_sheet(wb, wsDoubts, 'Doubts & Q&A');
+        }
+      } catch(e) {}
+
+      XLSX.writeFile(wb, `Lumixora_Master_Database_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      addToast({ message: `Exported complete database (${allUsersData.length} scholars & all activities) to Excel!`, type: 'success' });
     } catch (err) {
       console.error('Excel Export Error:', err);
-      addToast({ message: 'Failed to export Excel report.', type: 'error' });
+      addToast({ message: 'Failed to export master Excel report.', type: 'error' });
     }
   };
 
   const handleExportPDF = () => {
     try {
       const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const targetList = usersList && usersList.length > 0 ? usersList : filteredUsers;
       
       doc.setFillColor(3, 7, 18);
       doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
       
       doc.setTextColor(45, 212, 191);
       doc.setFontSize(16);
-      doc.text("LUMIXORA SCHOLARS ACTIVITY REPORT", 40, 40);
+      doc.text("LUMIXORA SCHOLARS MASTER ACTIVITY REPORT", 40, 40);
       
       doc.setFontSize(9);
       doc.setTextColor(156, 163, 175);
-      doc.text(`Generated: ${new Date().toLocaleString()} | College: ${selectedCollege} | Department: ${selectedDept} | Total Records: ${filteredUsers.length}`, 40, 58);
+      doc.text(`Generated: ${new Date().toLocaleString()} | Total Registered Scholars: ${targetList.length}`, 40, 58);
       
-      const tableData = (filteredUsers || []).map((u, i) => [
+      const tableData = targetList.map((u, i) => [
         i + 1,
         cleanScholarName(u.name),
         u.email || 'N/A',
         (u.role || 'user').toUpperCase(),
         u.college || 'GPREC',
-        u.department || 'CSE',
+        u.department || u.branch || 'CSE',
         u.year || '1st',
         u.xp || 0,
         u.coins || 0,
@@ -985,8 +1047,8 @@ export default function FounderPortal({ user, setActiveTab }) {
         margin: { left: 40, right: 40 }
       });
       
-      doc.save(`Lumixora_Scholars_${new Date().toISOString().slice(0, 10)}.pdf`);
-      addToast({ message: `Exported ${filteredUsers.length} scholars to PDF successfully!`, type: 'success' });
+      doc.save(`Lumixora_All_Scholars_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      addToast({ message: `Exported all ${targetList.length} scholars to PDF successfully!`, type: 'success' });
     } catch (err) {
       console.error('PDF Export Error:', err);
       addToast({ message: 'Failed to export PDF report.', type: 'error' });
