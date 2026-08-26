@@ -454,7 +454,24 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         provider = new GithubAuthProvider();
       }
 
-      const result = await signInWithPopup(auth, provider);
+      let result;
+      try {
+        result = await signInWithPopup(auth, provider);
+      } catch (popupErr) {
+        console.warn("Popup sign-in notice:", popupErr);
+        if (popupErr.code === 'auth/popup-blocked') {
+          setError('Google Sign-In popup was blocked by your browser. Please allow popups for lumixora.in or use Email & Password.');
+        } else if (popupErr.code === 'auth/internal-error') {
+          setError('Google Sign-In is activating. Please ensure Google is Enabled under Firebase Console > Sign-in method, or log in with Email/Password.');
+        } else if (popupErr.code === 'auth/unauthorized-domain') {
+          setError('Domain authorization in progress. Please allow 1-2 minutes for Firebase DNS to propagate.');
+        } else {
+          setError(popupErr.message ? popupErr.message.replace('Firebase: ', '') : 'Failed to complete Google Sign-In.');
+        }
+        setLoading(false);
+        return;
+      }
+
       const firebaseUser = result.user;
       
       const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
