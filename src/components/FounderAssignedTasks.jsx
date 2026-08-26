@@ -140,7 +140,7 @@ export default function FounderAssignedTasks() {
     try {
       await deleteDoc(doc(db, 'assigned_tasks', id));
       addToast('Task deleted', 'success');
-      setTasks(tasks.filter(t => t.id !== id));
+      setTasks(prev => (prev || []).filter(t => t && t.id !== id));
     } catch (error) {
       console.error("Error deleting task:", error);
       addToast('Error deleting task', 'error');

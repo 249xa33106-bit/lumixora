@@ -467,7 +467,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
     let score = 0;
     let totalScoreable = 0;
     
-    activeTest.questions.forEach((q, idx) => {
+    (activeTest?.questions || []).forEach((q, idx) => {
       if (q.type === 'mcq') {
         totalScoreable++;
         if (answers[idx] === q.correct) {
@@ -476,7 +476,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       }
     });
 
-    const codeQuestions = activeTest.questions.map((q, idx) => ({ q, idx })).filter(item => item.q.type === 'code');
+    const codeQuestions = (activeTest?.questions || []).map((q, idx) => ({ q, idx })).filter(item => item.q?.type === 'code');
     if (codeQuestions.length > 0) {
       addToast({ message: 'Evaluating coding solutions...', type: 'info' });
       for (const item of codeQuestions) {
@@ -648,8 +648,8 @@ If there is a compilation or runtime error, set "error" to true and put the erro
 
           {/* Questions */}
           <div className="space-y-6">
-            {activeTest.questions.map((q, idx) => (
-              <div key={q.id} className="glass-panel p-6 rounded-2xl border border-white/10">
+            {(activeTest?.questions || []).map((q, idx) => (
+              <div key={q.id || idx} className="glass-panel p-6 rounded-2xl border border-white/10">
                 <h3 className="text-lg font-bold text-white mb-4">
                   <span className="text-brand-teal mr-2">Q{idx + 1}.</span>
                   {q.question}
@@ -657,7 +657,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                 
                 {q.type === 'mcq' && (
                   <div className="space-y-3">
-                    {q.options.map((opt, optIdx) => (
+                    {(q.options || []).map((opt, optIdx) => (
                       <label 
                         key={optIdx} 
                         className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-colors border ${
@@ -863,7 +863,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         </div>
 
         <div className="space-y-6">
-          {test.questions.map((q, idx) => {
+          {(test?.questions || []).map((q, idx) => {
             const userAnswer = answers[idx];
             const isCorrect = q.type === 'mcq' ? userAnswer === q.correct : null;
             
@@ -876,7 +876,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                 
                 {q.type === 'mcq' ? (
                   <div className="space-y-3">
-                    {q.options.map((opt, optIdx) => {
+                    {(q.options || []).map((opt, optIdx) => {
                       const isUserChoice = userAnswer === optIdx;
                       const isActualCorrect = q.correct === optIdx;
                       

@@ -254,11 +254,8 @@ export default function LifeReplay({ user }) {
     try {
       // Map badge IDs to actual names for the AI
       let resolvedBadges = [];
-      if (gamifyProfile?.badges) {
-        // Need to manually map or just pass raw if ALL_ACHIEVEMENTS isn't imported
-        // Since we don't have ALL_ACHIEVEMENTS imported easily without adding an import, 
-        // passing the raw IDs or basic formatting is okay, but Llama handles ID-like strings well.
-        resolvedBadges = gamifyProfile.badges.map(b => b.replace(/_/g, ' '));
+      if (Array.isArray(gamifyProfile?.badges)) {
+        resolvedBadges = gamifyProfile.badges.map(b => String(b || '').replace(/_/g, ' '));
       }
 
       const stats = {

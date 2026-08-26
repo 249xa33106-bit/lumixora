@@ -293,13 +293,13 @@ export default function NotesPlatform({ user }) {
     content += `${summary}\n\n`;
     
     content += `[ CORE ACADEMIC CONCEPTS ]\n`;
-    concepts.forEach(c => content += `- ${c}\n`);
+    (concepts || []).forEach(c => content += `- ${c}\n`);
     content += `\n`;
     
     content += `[ PRACTICE QUESTIONS ]\n`;
-    questions.forEach((q, i) => {
-      content += `Q${i+1}: ${q.q}\n`;
-      content += `A${i+1}: ${q.a}\n\n`;
+    (questions || []).forEach((q, i) => {
+      content += `Q${i+1}: ${q.q || ''}\n`;
+      content += `A${i+1}: ${q.a || ''}\n\n`;
     });
     
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -394,7 +394,8 @@ export default function NotesPlatform({ user }) {
     setIsEditingNote(null);
   };
 
-  const filteredNotes = notes.filter((n) => {
+  const filteredNotes = (notes || []).filter((n) => {
+    if (!n) return false;
     // Exclude code arena custom problems
     if (n.type === 'code_arena_problem' || n.category === 'code_arena_problem') return false;
 
@@ -787,7 +788,7 @@ export default function NotesPlatform({ user }) {
                       <span>AI-Generated Practice Questions</span>
                     </h4>
                     <div className="space-y-3">
-                      {activeNoteForEnhance.aiEnhancement.questions.map((item, idx) => (
+                      {(activeNoteForEnhance?.aiEnhancement?.questions || []).map((item, idx) => (
                           <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-4 transition-all hover:bg-white/10">
                             <p 
                               className="text-sm font-semibold text-gray-200 mb-2 prose prose-invert max-w-none"

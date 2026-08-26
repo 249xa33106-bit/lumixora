@@ -147,8 +147,8 @@ export default function PersonalMentor({ user }) {
     profile,
     studyAnalytics: liveMentorData.analytics,
     tasksStats: {
-      total: tasks.length,
-      completed: tasks.filter(t => t.status === 'Completed' || t.status === 'Done').length,
+      total: (tasks || []).length,
+      completed: (tasks || []).filter(t => t && (t.status === 'Completed' || t.status === 'Done')).length,
       completionRate: metrics.taskProgressPct
     },
     metrics: {
@@ -994,7 +994,7 @@ export default function PersonalMentor({ user }) {
                     <button onClick={() => setActiveQuiz(null)} className="text-[10px] text-gray-500 hover:text-white">Clear</button>
                   </div>
 
-                  {activeQuiz.questions.map((q, qIdx) => {
+                  {(activeQuiz?.questions || []).map((q, qIdx) => {
                     if (!q || !q.q || !Array.isArray(q.options)) return null;
                     return (
                       <div key={qIdx} className="space-y-2">
@@ -1246,12 +1246,12 @@ export default function PersonalMentor({ user }) {
               </div>
 
               <div className="mt-5 space-y-4">
-                {careerRoadmap ? (
-                  careerRoadmap.milestones.map((ms, i) => (
+                {careerRoadmap?.milestones ? (
+                  (careerRoadmap.milestones || []).map((ms, i) => (
                     <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
-                      <h4 className="text-xs font-bold text-brand-teal">{ms.phase}</h4>
+                      <h4 className="text-xs font-bold text-brand-teal">{ms.phase || `Phase ${i+1}`}</h4>
                       <ul className="list-disc list-inside text-xs text-gray-300 space-y-1">
-                        {ms.tasks.map((task, tid) => (
+                        {(ms.tasks || []).map((task, tid) => (
                           <li key={tid}>{task}</li>
                         ))}
                       </ul>

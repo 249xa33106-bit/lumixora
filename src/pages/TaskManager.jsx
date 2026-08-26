@@ -383,8 +383,8 @@ export default function TaskManager() {
     addToast({ message: 'Task deleted.', type: 'info' });
   };
 
-  const doneCount = tasks.filter(t => t.status === 'Done').length;
-  const progressPercent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+  const doneCount = (tasks || []).filter(t => t && t.status === 'Done').length;
+  const progressPercent = (tasks || []).length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
@@ -657,9 +657,9 @@ export default function TaskManager() {
                      <div className="w-12 h-4 bg-white/10 rounded"></div>
                    </div>
                  ))
-              ) : tasks.length === 0 ? (
+              ) : (tasks || []).length === 0 ? (
                  <div className="text-center text-gray-500 py-4 text-xs font-medium italic">No tasks yet. Add one above!</div>
-              ) : tasks.map((task) => (
+              ) : (tasks || []).map((task) => (
                 <div 
                   key={task.id} 
                   className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 group transition-colors duration-300 ${

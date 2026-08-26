@@ -94,7 +94,7 @@ export default function AptitudeArena({ user, isFounder }) {
         company: q.company || 'TCS NQT',
         difficulty: q.difficulty || 'Easy',
         question: String(q.question).trim(),
-        options: q.options.map(opt => String(opt).trim()),
+        options: (q.options || []).map(opt => String(opt).trim()),
         correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
         explanation: q.explanation || 'Verified by Lumixora Aptitude Faculty.'
       };
@@ -762,7 +762,7 @@ Keep response structured, concise, and engaging.`;
 
                     {/* Options Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                      {q.options.map((optText, optIdx) => {
+                      {(q.options || []).map((optText, optIdx) => {
                         let btnStyle = "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10";
                         if (isAnswered) {
                           if (optIdx === q.correctAnswer) {
@@ -935,7 +935,7 @@ Keep response structured, concise, and engaging.`;
                     <p className="text-sm font-semibold text-gray-100">{q.question}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {q.options.map((optText, optIdx) => (
+                      {(q.options || []).map((optText, optIdx) => (
                         <button
                           key={optIdx}
                           onClick={() => setTestAnswers(prev => ({ ...prev, [q.id]: optIdx }))}
