@@ -42,14 +42,35 @@ import FounderAssignedTasks from '../components/FounderAssignedTasks';
 import FounderAttendanceManager from '../components/FounderAttendanceManager';
 import FounderCommunityManager from '../components/FounderCommunityManager';
 
-export const cleanScholarName = (str) => {
-  if (!str || typeof str !== 'string') return 'Scholar';
-  let cleaned = str;
-  if (cleaned.includes('{')) {
-    cleaned = cleaned.split('{')[0].trim();
+export const cleanScholarName = (str, email = '') => {
+  if (str && typeof str === 'string') {
+    let cleaned = str.trim();
+    if (cleaned.includes('{')) {
+      try {
+        const parsed = JSON.parse(cleaned.slice(cleaned.indexOf('{')));
+        if (parsed.name && parsed.name.trim() && parsed.name.toLowerCase() !== 'scholar') {
+          return parsed.name.trim();
+        }
+      } catch (e) {}
+      cleaned = cleaned.split('{')[0].trim();
+    }
+    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    if (cleaned && cleaned.toLowerCase() !== 'scholar' && cleaned.length > 1) {
+      return cleaned;
+    }
   }
-  cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
-  return cleaned || 'Scholar';
+
+  if (email && typeof email === 'string' && email.includes('@') && !email.includes('@scholar.lumixora.com')) {
+    const userPart = email.split('@')[0];
+    if (/\d/.test(userPart)) {
+      return `Scholar (${userPart.toUpperCase()})`;
+    }
+    return userPart
+      .replace(/[._-]/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  return 'Scholar';
 };
 import FounderFacultyApprovals from '../components/FounderFacultyApprovals';
 import FounderCollegesManager from '../components/FounderCollegesManager';
@@ -493,7 +514,7 @@ export default function FounderPortal({ user, setActiveTab }) {
         combined.push({
           id,
           type: 'register',
-          name: cleanScholarName(u.name),
+          name: cleanScholarName(u.name, u.email),
           email: u.email,
           role: u.role || 'user',
           college: u.college || 'GPREC',
@@ -1179,8 +1200,13 @@ export default function FounderPortal({ user, setActiveTab }) {
                           </span>
                         </div>
                         <div>
-                          <p className="font-bold text-white text-xs">{cleanScholarName(n.name)}</p>
-                          <p className="text-[11px] text-gray-400 truncate">{n.email} · <span className="text-amber-400 font-semibold uppercase">{n.role || 'user'}</span> · <span className="text-gray-300 font-medium">{n.college || 'GPREC'}</span></p>
+                          <p className="font-bold text-white text-xs">{cleanScholarName(n.name, n.email)}</p>
+                          <p className="text-[11px] text-gray-400 truncate">
+                            {n.email && !n.email.includes('@scholar.lumixora.com') && !n.email.match(/^[0-9a-f]{8}-/i)
+                              ? n.email
+                              : `Scholar #${(n.id || '').replace('reg_', '').slice(0, 8).toUpperCase()}`
+                            } · <span className="text-amber-400 font-semibold uppercase">{n.role || 'user'}</span> · <span className="text-gray-300 font-medium">{n.college || 'GPREC'}</span>
+                          </p>
                         </div>
                       </div>
                     ))}
