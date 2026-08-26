@@ -105,6 +105,50 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   }, []);
 
+  // Detect and handle Supabase OAuth Redirects automatically on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const sbEmail = (session.user.email || '').toLowerCase().trim();
+        if (sbEmail) {
+          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com';
+          const rawName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || sbEmail.split('@')[0];
+          const cleanName = cleanScholarName(rawName);
+          
+          const { data: existing } = await supabase.from('users').select('*').eq('email', sbEmail);
+          let userProfile = existing && existing.length > 0 ? existing[0] : null;
+
+          if (!userProfile) {
+            const defaultProfile = {
+              id: session.user.id,
+              uid: session.user.id,
+              name: cleanName,
+              email: sbEmail,
+              role: isF ? 'founder' : 'user',
+              college: 'GPREC',
+              department: 'CSE',
+              year: '1st Year',
+              sem: '1',
+              sec: 'A',
+              cgpa: '9.0',
+              coins: 100,
+              xp: 50,
+              level: 1,
+              streak: 1,
+              is_approved: true,
+              isApproved: true,
+              created_at: new Date().toISOString()
+            };
+            await supabase.from('users').upsert([defaultProfile], { onConflict: 'email' });
+            userProfile = defaultProfile;
+          }
+
+          handleSuccessfulLogin({ ...userProfile, id: session.user.id, uid: session.user.id, name: cleanName });
+        }
+      }
+    }).catch(err => console.warn("Supabase session check:", err));
+  }, []);
+
   const handleSuccessfulLogin = (user) => {
     onLogin(user);
   };
