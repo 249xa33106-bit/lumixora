@@ -389,23 +389,39 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     try {
       setLoading(true);
       setError('');
+
+      if (providerName === 'google') {
+        // Try Supabase Google OAuth first if enabled
+        try {
+          const { data: sbOAuth, error: sbOAuthErr } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+          if (!sbOAuthErr && sbOAuth?.url) {
+            window.location.href = sbOAuth.url;
+            return;
+          }
+        } catch (sbErr) {
+          console.warn("Supabase OAuth redirect notice, falling back to popup:", sbErr);
+        }
+      }
+
       let provider;
       if (providerName === 'google') {
         provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
       } else if (providerName === 'github') {
         provider = new GithubAuthProvider();
       }
 
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
-      try {
-        await firebaseUser.reload();
-      } catch (e) {}
       
-      let userProfile;
       const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
       const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com';
-      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in');
+      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
       
       if (!isFounderOrAdmin && !isAllowedDomain) {
         setError(`Security Access Restricted: Please sign in using your official institutional email (e.g. @gprec.ac.in).`);
@@ -414,46 +430,25 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         return;
       }
 
-      // Enforce email verification on OAuth if not automatically verified
-      if (!firebaseUser.emailVerified && !isFounderOrAdmin) {
-        try {
-          await sendEmailVerification(firebaseUser);
-        } catch (e) {}
-        setUnverifiedUser(firebaseUser);
-        setError(`Email Verification Required: Please verify your institutional email (${oauthEmail}) before entering Lumixora.`);
-        setLoading(false);
-        try { await auth.signOut(); } catch (e) {}
-        return;
-      }
+      const role = isFounderOrAdmin ? 'founder' : (authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user'));
 
-      const role = isFounderOrAdmin ? 'founder' : 'user';
-
-      const { data: sbUsers, error: sbError } = await supabase
+      // Check if user already exists in Supabase
+      const { data: sbUsers } = await supabase
         .from('users')
         .select('*')
-        .eq('id', firebaseUser.uid);
+        .eq('email', oauthEmail);
 
-      if (!sbError && sbUsers && sbUsers.length > 0) {
-        userProfile = { ...sbUsers[0], id: firebaseUser.uid, uid: firebaseUser.uid, role };
-        
-        try {
-          const newLoginCount = (userProfile.loginCount || 0) + 1;
-          await supabase
-            .from('users')
-            .update({
-              loginCount: newLoginCount,
-              lastLoginDate: new Date().toISOString()
-            })
-            .eq('id', firebaseUser.uid);
-          userProfile.loginCount = newLoginCount;
-        } catch(e) { console.warn("Failed to update login count", e); }
-        
+      let userProfile;
+      if (sbUsers && sbUsers.length > 0) {
+        userProfile = { ...sbUsers[0], id: firebaseUser.uid, uid: firebaseUser.uid, role: sbUsers[0].role || role };
       } else {
+        const cleanName = firebaseUser.displayName || oauthEmail.split('@')[0];
         const defaultProfile = {
+          id: firebaseUser.uid,
           uid: firebaseUser.uid,
-          name: firebaseUser.displayName || 'Student',
-          email: firebaseUser.email || '',
-          password: 'Lumixora@123',
+          name: cleanName,
+          email: oauthEmail,
+          password: 'google_oauth_managed',
           qualification: 'B.Tech',
           college: 'GPREC',
           place: 'Kurnool',
@@ -467,43 +462,41 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           learningStyle: 'Practical',
           weakSubjects: 'None',
           strongSubjects: 'None',
-          subjects: 'Data Structures',
-          xp: 0,
-          todayXp: 0,
-          level: 1,
+          subjects: 'Computer Science',
+          xp: 50,
           coins: 100,
-          streak: 0,
-          longestStreak: 0,
+          level: 1,
+          streak: 1,
+          longestStreak: 1,
           streakFreezeCount: 1,
-          lastActiveDate: null,
-          completedDays: [],
           badges: ['first_login'],
           purchasedThemes: ['default'],
           purchasedFrames: ['none'],
           currentTheme: 'default',
           currentFrame: 'none',
-          studyHours: 0,
-          quizScore: 85,
-          notesShared: 0,
-          lastDailyReset: new Date().toDateString(),
           created_at: new Date().toISOString(),
           role,
-          loginCount: 1,
-          lastLoginDate: new Date().toISOString()
+          is_approved: true,
+          isApproved: true
         };
-        
-        try {
-          await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true });
-          const { error: insertError } = await supabase.from('users').upsert([{
-            id: firebaseUser.uid,
-            ...defaultProfile
-          }]);
-          if (insertError) console.warn("Supabase profile creation failed:", insertError);
-        } catch (err) {
-          console.warn("User doc error:", err);
-        }
-        userProfile = { ...defaultProfile, id: firebaseUser.uid };
-        sendFounderNotification('register', userProfile);
+
+        const sbPayload = {
+          name: `${cleanName} ${JSON.stringify(defaultProfile)}`,
+          email: oauthEmail,
+          password: 'google_oauth_managed',
+          role,
+          created_at: new Date().toISOString(),
+          is_approved: true
+        };
+
+        await Promise.allSettled([
+          supabase.from('users').upsert([sbPayload], { onConflict: 'email' }),
+          setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true }),
+          setDoc(doc(db, 'Users', firebaseUser.uid), defaultProfile, { merge: true })
+        ]);
+
+        userProfile = defaultProfile;
+        sendFounderNotification('register', userProfile).catch(() => {});
       }
 
       handleSuccessfulLogin(userProfile);
