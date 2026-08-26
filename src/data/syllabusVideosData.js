@@ -1120,12 +1120,12 @@ export const INITIAL_SYLLABUS_VIDEOS = [
     thumbnail: 'https://images.unsplash.com/photo-1541888946425-d0fbb18015f6?q=80&w=1000',
     oneShotVideo: {
       title: 'Strength of Materials Full Course Revision',
-      channel: 'Civil Engineering Academy',
-      url: 'https://www.youtube.com/watch?v=SOM12345678',
+      channel: 'Gate Academy / NPTEL',
+      url: 'https://www.youtube.com/watch?v=0IAPZzGSbME',
       duration: '7h 15m',
       views: '450K'
     },
-    playlistUrl: 'https://www.youtube.com/playlist?list=PLk7ptZcI9vmh2bC_3y_X_SOM_CIVIL',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLDN4rrl48XKpZkf03iYFl-O29szjTrs_O',
     units: [
       {
         unitNumber: 1,
@@ -1137,7 +1137,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Mohr Circle of Stress Step by Step Construction',
             channel: 'Learn Engineering',
             duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=MOHR123456',
+            url: 'https://www.youtube.com/watch?v=jDM6_TnYIuE',
             summary: 'Graphical determination of principal stresses and maximum shear planes.'
           }
         ]
@@ -1160,12 +1160,12 @@ export const INITIAL_SYLLABUS_VIDEOS = [
     thumbnail: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1000',
     oneShotVideo: {
       title: 'Thermodynamics Complete Course Marathon',
-      channel: 'NPTEL / Gate Academy',
-      url: 'https://www.youtube.com/watch?v=THERMO12345',
+      channel: 'NPTEL / Gate Smashers',
+      url: 'https://www.youtube.com/watch?v=QwtQj46rUa4',
       duration: '8h 30m',
       views: '520K'
     },
-    playlistUrl: 'https://www.youtube.com/playlist?list=PLMECH_THERMO_MECH',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLBlnK6fEyqRgMCUAG0XR3PKEZ9fxrapGg',
     units: [
       {
         unitNumber: 1,
@@ -1177,7 +1177,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Steady Flow Energy Equation (SFEE) Derivation & Applications',
             channel: 'Gate Smashers',
             duration: '28:10',
-            url: 'https://www.youtube.com/watch?v=SFEE123456',
+            url: 'https://www.youtube.com/watch?v=7uV8-W3K-2E',
             summary: 'Application of First Law to Nozzles, Diffusers, Turbines and Compressors.'
           }
         ]

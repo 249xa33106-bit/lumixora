@@ -15,19 +15,27 @@ import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore'
 // Helper to extract YouTube embed URL from various video URL formats
 function getYouTubeEmbedUrl(url) {
   if (!url) return '';
-  if (url.includes('youtube-nocookie.com/embed/')) return url;
+  if (url.includes('youtube.com/embed/') || url.includes('youtube-nocookie.com/embed/')) return url;
   
+  // Extract YouTube Playlist
+  if (url.includes('playlist?list=')) {
+    const listMatch = url.match(/list=([a-zA-Z0-9_-]+)/);
+    if (listMatch) {
+      return `https://www.youtube.com/embed/videoseries?list=${listMatch[1]}&rel=0&modestbranding=1`;
+    }
+  }
+
   // Extract standard 11-character YouTube video ID
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
 
   if (match && match[2] && match[2].length === 11) {
-    return `https://www.youtube-nocookie.com/embed/${match[2]}?autoplay=1&rel=0&modestbranding=1`;
+    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0&modestbranding=1`;
   }
 
   // Fallback for short links
   const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
-  if (shortMatch) return `https://www.youtube-nocookie.com/embed/${shortMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&rel=0&modestbranding=1`;
   
   return url;
 }
