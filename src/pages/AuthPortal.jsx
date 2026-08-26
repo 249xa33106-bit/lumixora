@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, Building2, GraduationCap, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
+  Building2, GraduationCap, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, 
+  ExternalLink, Key, Lock, Check, Cpu, Award
+} from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, 
+  sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, 
+  signInWithRedirect, getRedirectResult, sendEmailVerification, signOut 
+} from 'firebase/auth';
+import { doc, setDoc, collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 import { DEFAULT_COLLEGES, isValidInstitutionalEmail, getAllAllowedDomains, isTeammateEmail } from '../data/collegesData';
 
@@ -20,8 +28,37 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [unverifiedUser, setUnverifiedUser] = useState(null);
   const [customColleges, setCustomColleges] = useState([]);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  // Email verification waiting room state
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [checkingVerification, setCheckingVerification] = useState(false);
+
+  // Forgot Password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+
+  // Form state
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('lumixora_remembered_email') || '');
+  const [password, setPassword] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
+  const [qualification, setQualification] = useState('B.Tech');
+  const [collegeName, setCollegeName] = useState('GPREC');
+  const [place, setPlace] = useState('Kurnool');
+  const [yearOfStudy, setYearOfStudy] = useState('1st Year');
+  const [cgpa, setCgpa] = useState('9.0');
+  const [careerGoal, setCareerGoal] = useState('Placement');
+  const [department, setDepartment] = useState('CSE');
+  const [learningStyle, setLearningStyle] = useState('Practical');
+  const [weakSubjects, setWeakSubjects] = useState('None');
+  const [semester, setSemester] = useState('1');
+  const [section, setSection] = useState('A');
+  const [designation, setDesignation] = useState('Assistant Professor');
+  const [mobileNumber, setMobileNumber] = useState('');
 
   useEffect(() => {
     if (mode) {
@@ -31,33 +68,6 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       }
     }
   }, [mode]);
-
-  // Forgot Password state
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState('');
-  const [retrievedAccounts, setRetrievedAccounts] = useState([]);
-  const [newPasswords, setNewPasswords] = useState({});
-
-  // Form state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rollNumber, setRollNumber] = useState('');
-  const [qualification, setQualification] = useState('');
-  const [collegeName, setCollegeName] = useState('GPREC');
-  const [place, setPlace] = useState('');
-  const [yearOfStudy, setYearOfStudy] = useState('1st Year');
-  const [cgpa, setCgpa] = useState('9.0');
-  const [careerGoal, setCareerGoal] = useState('Placement');
-  const [department, setDepartment] = useState('CSE');
-  const [learningStyle, setLearningStyle] = useState('Practical');
-  const [weakSubjects, setWeakSubjects] = useState('Computer Networks');
-  const [semester, setSemester] = useState('1');
-  const [section, setSection] = useState('A');
-  const [designation, setDesignation] = useState('Assistant Professor');
-  const [mobileNumber, setMobileNumber] = useState('');
 
   // Real-time listener for partner colleges added by founder
   useEffect(() => {
@@ -71,51 +81,106 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     } catch (e) {}
   }, []);
 
-  // Pre-fill fields from invite link if present
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    let inviteParam = params.get('invite');
-    
-    if (!inviteParam) {
-      const pendingJoin = sessionStorage.getItem('lumixora_pending_join');
-      if (pendingJoin && pendingJoin.startsWith('join-group/')) {
-        inviteParam = pendingJoin.split('/')[1];
+  // AI & Domain Auto-Detection Intelligence
+  const detectedProfile = useMemo(() => {
+    if (!email || !email.includes('@')) return null;
+    const lower = email.toLowerCase().trim();
+    const prefix = lower.split('@')[0];
+    const domain = lower.split('@')[1];
+
+    let detectedCollege = 'GPREC Kurnool';
+    let detectedDept = 'CSE';
+    let detectedYear = '1st Year';
+    let detectedRoll = prefix.toUpperCase();
+    let isInstitutional = false;
+
+    if (domain === 'gprec.ac.in') {
+      isInstitutional = true;
+      detectedCollege = 'G. Pulla Reddy Engineering College';
+
+      // Batch detection from first 2 chars of roll number e.g. 249XA33106
+      const yearDigits = prefix.slice(0, 2);
+      if (yearDigits === '24') { detectedYear = '1st Year'; }
+      else if (yearDigits === '23') { detectedYear = '2nd Year'; }
+      else if (yearDigits === '22') { detectedYear = '3rd Year'; }
+      else if (yearDigits === '21') { detectedYear = '4th Year'; }
+
+      // Branch code detection from roll number pattern
+      if (prefix.includes('a33') || prefix.includes('31') || prefix.includes('csm') || prefix.includes('aiml')) {
+        detectedDept = 'CSE (AI & ML)';
+      } else if (prefix.includes('csd') || prefix.includes('32') || prefix.includes('ds')) {
+        detectedDept = 'CSE (Data Science)';
+      } else if (prefix.includes('05') || prefix.includes('a05') || prefix.includes('cse')) {
+        detectedDept = 'CSE';
+      } else if (prefix.includes('04') || prefix.includes('a04') || prefix.includes('ece')) {
+        detectedDept = 'ECE';
+      } else if (prefix.includes('02') || prefix.includes('a02') || prefix.includes('eee')) {
+        detectedDept = 'EEE';
+      } else if (prefix.includes('03') || prefix.includes('a03') || prefix.includes('mec')) {
+        detectedDept = 'Mechanical';
+      } else if (prefix.includes('01') || prefix.includes('a01') || prefix.includes('civ')) {
+        detectedDept = 'Civil';
       }
-    }
-    
-    // Fallback for hash query params
-    if (!inviteParam && window.location.hash.includes('?invite=')) {
-      const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
-      inviteParam = hashParams.get('invite');
+    } else if (domain?.includes('ashoka')) {
+      isInstitutional = true;
+      detectedCollege = "Ashoka Women's Engineering College";
+    } else if (domain === 'lumixora.com' || domain === 'team.lumixora.com') {
+      isInstitutional = true;
+      detectedCollege = 'Lumixora Core Team';
     }
 
-    if (inviteParam) {
-      // expected format: e.g. "CSE-A-2nd-Year"
-      setIsLogin(false); // force registration mode
-      const parts = inviteParam.split('-');
-      if (parts.length >= 3) {
-        setDepartment(parts[0]);
-        setSection(parts[1]);
-        if (parts.length >= 4) {
-          setYearOfStudy(parts[2] + '-' + parts[3]);
-        } else {
-          setYearOfStudy(parts[2]);
-        }
-      }
+    return {
+      isInstitutional,
+      college: detectedCollege,
+      department: detectedDept,
+      year: detectedYear,
+      roll: detectedRoll
+    };
+  }, [email]);
+
+  // Auto-apply detected profile to registration state
+  useEffect(() => {
+    if (!isLogin && detectedProfile && detectedProfile.isInstitutional) {
+      if (detectedProfile.roll && !rollNumber) setRollNumber(detectedProfile.roll);
+      if (detectedProfile.department) setDepartment(detectedProfile.department);
+      if (detectedProfile.year) setYearOfStudy(detectedProfile.year);
     }
-  }, []);
+  }, [detectedProfile, isLogin]);
+
+  // Password Security Strength Meter
+  const passwordStrength = useMemo(() => {
+    if (!password) return { score: 0, label: 'None', color: 'bg-gray-600', percent: 0 };
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    switch (score) {
+      case 1:
+        return { score, label: 'Weak', color: 'bg-red-500', text: 'text-red-400', percent: 25 };
+      case 2:
+        return { score, label: 'Fair', color: 'bg-amber-500', text: 'text-amber-400', percent: 50 };
+      case 3:
+        return { score, label: 'Strong', color: 'bg-emerald-500', text: 'text-emerald-400', percent: 75 };
+      case 4:
+        return { score, label: 'Cyber-Grade 🛡️', color: 'bg-[#00f5d4]', text: 'text-[#00f5d4]', percent: 100 };
+      default:
+        return { score: 0, label: 'Very Weak', color: 'bg-red-700', text: 'text-red-500', percent: 10 };
+    }
+  }, [password]);
 
   const cleanScholarName = (str) => {
     if (!str || typeof str !== 'string') return 'Scholar';
-    let cleaned = str;
-    if (cleaned.includes('{')) {
-      cleaned = cleaned.split('{')[0].trim();
-    }
+    let cleaned = str.includes('{') ? str.split('{')[0].trim() : str;
     cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
     return cleaned || 'Scholar';
   };
 
   const handleSuccessfulLogin = (userDoc) => {
+    if (rememberMe && userDoc?.email) {
+      localStorage.setItem('lumixora_remembered_email', userDoc.email);
+    }
     onLogin(userDoc);
   };
 
@@ -176,13 +241,13 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           email: oauthEmail,
           password: 'google_oauth_managed',
           qualification: 'B.Tech',
-          college: 'GPREC',
+          college: detectedProfile?.college || 'GPREC',
           place: 'Kurnool',
-          year: '1st Year',
+          year: detectedProfile?.year || '1st Year',
           cgpa: '9.0',
           targetCGPA: '9.0',
           careerGoal: 'Placement',
-          department: 'CSE',
+          department: detectedProfile?.department || 'CSE',
           sem: '1',
           sec: 'A',
           learningStyle: 'Practical',
@@ -195,7 +260,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           streak: 1,
           longestStreak: 1,
           streakFreezeCount: 1,
-          badges: ['first_login'],
+          badges: ['first_login', 'institutional_verified'],
           purchasedThemes: ['default'],
           purchasedFrames: ['none'],
           currentTheme: 'default',
@@ -235,7 +300,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   };
 
-  // Handle Google OAuth Redirects automatically on mount (Immune to popup blockers)
+  // Google OAuth Redirect Handler on mount
   useEffect(() => {
     getRedirectResult(auth).then(async (result) => {
       if (result?.user) {
@@ -289,21 +354,58 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }).catch(err => console.warn("Supabase session check:", err));
   }, []);
 
+  // Live background verification polling when in verification modal
+  useEffect(() => {
+    if (!unverifiedEmail) return;
+
+    const interval = setInterval(async () => {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        if (auth.currentUser.emailVerified) {
+          clearInterval(interval);
+          setUnverifiedEmail('');
+          setSuccessMsg('Email verified successfully! Logging you in now...');
+          await processOAuthUser(auth.currentUser, 'Email Verification');
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [unverifiedEmail]);
+
+  const handleManualCheckVerification = async () => {
+    try {
+      setCheckingVerification(true);
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        if (auth.currentUser.emailVerified) {
+          setUnverifiedEmail('');
+          setSuccessMsg('Email verified successfully! Opening your dashboard...');
+          await processOAuthUser(auth.currentUser, 'Email Verification');
+          return;
+        }
+      }
+      setError('Verification pending: We checked your account, but the email link has not been confirmed yet. Please click the link in your inbox.');
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setCheckingVerification(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccessMsg('');
-    setUnverifiedUser(null);
 
     try {
       const cleanEmail = email.toLowerCase().trim();
       const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com' || cleanEmail === '249xa33106@gprec.ac.in';
-      const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
+      const cleanPassword = password.trim();
 
       if (isLogin) {
         // ⚡ FAST-PATH PARALLEL LOGIN (Case-insensitive check across Supabase & Firebase)
-        const cleanPassword = password.trim();
         const sbAuthPromise = supabase
           .from('users')
           .select('*')
@@ -356,7 +458,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               setError(`Incorrect password for ${cleanEmail}. Click 'Reset Password' below to securely create a new one.`);
             }
           } else {
-            setError(`No account found for ${cleanEmail}. Please switch to 'Register' tab to create your account.`);
+            setError(`No account found for ${cleanEmail}. Please switch to 'Register' tab to create your official account.`);
           }
           setLoading(false);
           return;
@@ -364,10 +466,8 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
         // Enforce Email Verification for registered students
         if (!isFounderOrAdmin && fbRes.user && fbRes.user.emailVerified === false) {
-          setUnverifiedUser(fbRes.user);
-          setError(`Email Not Verified: A verification email was sent to ${cleanEmail}. Please verify your email before signing in, or click 'Resend Verification Email' below.`);
+          setUnverifiedEmail(cleanEmail);
           setLoading(false);
-          try { await signOut(auth); } catch (e) {}
           return;
         }
 
@@ -383,7 +483,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser;
 
         if (!isFounderOrAdmin && !authenticatedUser.is_approved && !authenticatedUser.isApproved && !isAllowedDomain) {
-          setError('Security Access Restricted: Please sign in using your official college or team mail.');
+          setError('Security Access Restricted: Please sign in using your official college (@gprec.ac.in) or team mail.');
           setLoading(false);
           try { await auth.signOut(); } catch (e) {}
           return;
@@ -400,7 +500,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         }
 
         const rawLoginName = authenticatedUser.name || email.split('@')[0];
-        const cleanLoginName = cleanScholarName(rawLoginName, cleanEmail);
+        const cleanLoginName = cleanScholarName(rawLoginName);
         const resolvedRole = isFounderOrAdmin ? 'founder' : (isTeammateUser ? 'teammate' : (authenticatedUser.role || 'user'));
 
         const finalUserDoc = {
@@ -409,7 +509,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           role: resolvedRole
         };
 
-        // Asynchronous non-blocking audit notification
+        // Audit notification
         if (!isFounderOrAdmin) {
           sendFounderNotification('login', finalUserDoc).catch(() => {});
         }
@@ -418,7 +518,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       } else {
         // ⚡ FAST-PATH REGISTRATION
         if (!isFounderOrAdmin && !isValidInstitutionalEmail(cleanEmail, customColleges)) {
-          setError('Security Access Restricted: Please register using your official college mail.');
+          setError('Security Access Restricted: Please register using your official college mail (@gprec.ac.in).');
           setLoading(false);
           return;
         }
@@ -427,13 +527,13 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         const determinedRole = authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user');
 
         const profileMetadata = {
-          college: collegeName.trim() || 'GPREC',
-          department: department.trim() || 'CSE',
-          branch: department.trim() || 'CSE',
-          year: yearOfStudy || '1st Year',
+          college: collegeName.trim() || detectedProfile?.college || 'GPREC',
+          department: department.trim() || detectedProfile?.department || 'CSE',
+          branch: department.trim() || detectedProfile?.department || 'CSE',
+          year: yearOfStudy || detectedProfile?.year || '1st Year',
           sem: semester || '1',
           sec: section || 'A',
-          rollNumber: rollNumber.trim().toUpperCase() || (cleanEmail.endsWith('@gprec.ac.in') ? cleanEmail.split('@')[0].toUpperCase() : ''),
+          rollNumber: rollNumber.trim().toUpperCase() || detectedProfile?.roll || '',
           qualification: qualification.trim() || 'B.Tech',
           place: place.trim() || 'Kurnool',
           cgpa: cgpa.trim() || '9.0',
@@ -514,18 +614,18 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
             '9-0dhY139CBiyCxBJ'
           ).catch(() => {});
 
-          setSuccessMsg('Registration successful! Please wait for founder approval before logging in.');
+          setSuccessMsg('Registration submitted! Faculty accounts require Founder verification before activation.');
+          setIsLogin(true);
         } else {
-          setSuccessMsg(`Registration successful! A verification link has been sent to ${cleanEmail}. Please check your inbox (and Spam folder) to verify your account, then sign in.`);
+          setUnverifiedEmail(cleanEmail);
+          setSuccessMsg(`Account created! A secure verification link was sent to ${cleanEmail}.`);
         }
 
-        try { await signOut(auth); } catch (e) {}
-        setIsLogin(true);
         setLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError('A network error occurred. Please ensure you are connected to the internet.');
+      setError(err.message ? err.message.replace('Firebase: ', '') : 'A network error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -533,26 +633,18 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
   const handleResendVerification = async () => {
     try {
-      if (unverifiedUser) {
-        await sendEmailVerification(unverifiedUser);
-        setSuccessMsg(`Verification email resent to ${unverifiedUser.email}! Please check your inbox (and Spam/Promotions folder).`);
-        setError('');
-        return;
+      setLoading(true);
+      if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser);
+        setSuccessMsg(`Verification email resent to ${auth.currentUser.email}! Please check your inbox & spam folder.`);
+      } else if (email && password) {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(cred.user);
+        setSuccessMsg(`Verification link dispatched to ${email}!`);
       }
-      if (email && password) {
-        setLoading(true);
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        await sendEmailVerification(userCred.user);
-        await signOut(auth);
-        setSuccessMsg(`Verification email resent to ${email}! Please check your inbox.`);
-        setError('');
-        setLoading(false);
-        return;
-      }
-      setSuccessMsg('Please enter your email and password above to resend the verification link.');
     } catch (e) {
-      console.error(e);
-      setError('Failed to resend verification link: ' + (e.message || 'Please try again.'));
+      setError('Could not resend email: ' + (e.message || 'Please try again in a few moments.'));
+    } finally {
       setLoading(false);
     }
   };
@@ -577,7 +669,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           return;
         }
       } catch (popupErr) {
-        console.warn("Popup attempt fallback to redirect:", popupErr);
+        console.warn("Popup fallback to redirect:", popupErr);
         await signInWithRedirect(auth, provider);
       }
     } catch (err) {
@@ -597,20 +689,17 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
     setResetLoading(true);
     setResetError('');
-    setRetrievedAccounts([]);
     try {
       await sendPasswordResetEmail(auth, query);
-      setResetError('Password reset email sent via Firebase! Please check your inbox (and Spam/Promotions folder) to reset your password.');
+      setResetError('Password reset link sent! Please check your inbox (and Spam/Promotions folder).');
     } catch (err) {
-      console.warn('Firebase password reset notice:', err);
-      // Fallback for accounts registered via Supabase
       try {
         await supabase.auth.resetPasswordForEmail(query, {
           redirectTo: `${window.location.origin}/#reset-password`
         });
-        setResetError('Password reset link sent! Please check your inbox to reset your password.');
+        setResetError('Password reset email dispatched to your inbox!');
       } catch (sbErr) {
-        setResetError('Password reset link dispatched! If an account exists with this email, you will receive a reset link shortly.');
+        setResetError('If an account is associated with this email, a reset link will arrive shortly.');
       }
     } finally {
       setResetLoading(false);
@@ -618,32 +707,25 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden py-10 px-4">
+    <div className="min-h-screen bg-[#07070b] flex items-center justify-center relative overflow-hidden py-10 px-4">
       
-      {/* Massive Background Logo Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-        <h1 className="text-[20vw] font-semibold text-transparent bg-clip-text bg-gradient-to-br from-[#00f5d4]/10 to-[#7209b7]/10 tracking-tighter opacity-40 animate-pulse-slow rotate-[-5deg] select-none">
-          LUMIXORA
-        </h1>
-      </div>
+      {/* Dynamic Cyber Orbs & Grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#00f5d4]/10 rounded-full blur-[140px] mix-blend-screen pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#7209b7]/15 rounded-full blur-[140px] mix-blend-screen pointer-events-none animate-pulse-slow" />
 
-      {/* Decorative Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00f5d4]/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7209b7]/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
-
-      {/* Step 1: Institutional / College Selection Screen */}
+      {/* Step 1: Institutional Portal Selection Screen */}
       {!selectedCollege ? (
         <div className="z-10 w-full max-w-4xl p-6 md:p-8 animate-fade-in-up">
-          {/* Header */}
           <div className="text-center mb-8 space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-bold uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-teal/5">
               <Building2 className="w-3.5 h-3.5" /> Lumixora Multi-Campus Network
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
-              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple">Portal</span>
+              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] via-[#3a86ff] to-[#7209b7]">Portal</span>
             </h1>
             <p className="text-gray-400 text-sm md:text-base max-w-xl mx-auto">
-              Choose your role and campus to access the official {authMode === 'faculty' ? 'Faculty Workspace, Attendance & Analytics' : 'Student AI Future Twin, Code Arena & Learning Platform'}.
+              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : 'Student AI Future Twin & Learning Engine'}.
             </p>
 
             {/* Dedicated Role Tabs */}
@@ -651,29 +733,29 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               <button
                 type="button"
                 onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
-                className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
+                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                   authMode === 'student'
-                    ? 'bg-brand-teal text-black shadow-lg shadow-brand-teal/20 scale-105'
+                    ? 'bg-[#00f5d4] text-black shadow-lg shadow-[#00f5d4]/20 scale-105'
                     : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
                 }`}
               >
-                🎓 Student Portal
+                <GraduationCap className="w-4 h-4" /> Student Portal
               </button>
               <button
                 type="button"
                 onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
-                className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
+                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
                   authMode === 'faculty'
-                    ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20 scale-105'
+                    ? 'bg-[#7209b7] text-white shadow-lg shadow-[#7209b7]/30 scale-105'
                     : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
                 }`}
               >
-                👨‍🏫 Faculty Portal
+                <Award className="w-4 h-4" /> Faculty Portal
               </button>
             </div>
           </div>
 
-          {/* College Cards Grid */}
+          {/* Campus Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...DEFAULT_COLLEGES, ...customColleges].map((col) => (
               <div
@@ -683,22 +765,21 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
                   setCollegeName(col.shortName || col.name || col.code);
                   setError('');
                 }}
-                className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 hover:border-brand-teal/50 hover:bg-white/[0.04] transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between"
+                className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 hover:border-[#00f5d4]/50 hover:bg-white/[0.04] transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between shadow-2xl"
               >
-                {/* Background Color Accent */}
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${col.bannerColor || 'from-purple-600 to-blue-600'} opacity-10 rounded-full blur-2xl group-hover:opacity-25 transition-opacity`}></div>
+                <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl ${col.bannerColor || 'from-purple-600 to-blue-600'} opacity-15 rounded-full blur-2xl group-hover:opacity-30 transition-opacity`} />
 
                 <div>
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
                       {col.logo || '🏛️'}
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-gray-300">
+                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-black text-gray-300">
                       {col.code || 'CAMPUS'}
                     </span>
                   </div>
 
-                  <h3 className="text-xl md:text-2xl font-black text-white group-hover:text-brand-teal transition-colors mb-2">
+                  <h3 className="text-xl md:text-2xl font-black text-white group-hover:text-[#00f5d4] transition-colors mb-2">
                     {col.name}
                   </h3>
                   
@@ -713,15 +794,15 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
                       📍 {col.location || 'Kurnool, AP'}
                     </span>
                     <span>•</span>
-                    <span className="text-emerald-400 font-medium">
-                      Official College Mail
+                    <span className="text-[#00f5d4] font-bold">
+                      Official Institutional Portal
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
                     <span className="text-xs font-bold text-white group-hover:translate-x-1 transition-transform flex items-center gap-1.5">
-                      Enter {col.shortName || col.code} {authMode === 'faculty' ? 'Faculty' : 'Student'} Portal
-                      <ArrowRight className="w-4 h-4 text-brand-teal" />
+                      Enter {col.shortName || col.code} {authMode === 'faculty' ? 'Faculty' : 'Student'} Workspace
+                      <ArrowRight className="w-4 h-4 text-[#00f5d4]" />
                     </span>
                   </div>
                 </div>
@@ -730,10 +811,10 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           </div>
         </div>
       ) : (
-        /* Step 2: College / Team Specific Auth Card */
-        <div className="z-10 w-full max-w-md p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[90vh] overflow-y-auto custom-scrollbar">
+        /* Step 2: Advanced Auth Card */
+        <div className="z-10 w-full max-w-md p-6 sm:p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[92vh] overflow-y-auto custom-scrollbar border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
           
-          {/* Top Bar with Back to College Selection */}
+          {/* Top Bar with Back Switcher */}
           <div className="flex items-center justify-between w-full mb-6">
             <button
               type="button"
@@ -747,17 +828,17 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               <span>Change Portal</span>
             </button>
 
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-brand-teal">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-[#00f5d4]">
               <span>{selectedCollege.logo || '🏛️'}</span>
               <span>{selectedCollege.shortName || selectedCollege.code}</span>
             </div>
           </div>
 
           <div className="flex flex-col items-center mb-6 text-center">
-            <h2 className="text-2xl font-extrabold text-white mb-1">
+            <h2 className="text-2xl font-black text-white tracking-tight mb-1">
               {isLogin 
-                ? `Sign In (${authMode === 'faculty' ? 'Faculty' : (authMode === 'teammate' ? '⚡ Teammate Portal' : 'Student')})` 
-                : `Register (${authMode === 'faculty' ? 'Faculty' : (authMode === 'teammate' ? '⚡ Teammate Portal' : 'Student')})`
+                ? `Sign In (${authMode === 'faculty' ? 'Faculty' : 'Student'})` 
+                : `Create Account (${authMode === 'faculty' ? 'Faculty' : 'Student'})`
               }
             </h2>
             <p className="text-gray-400 text-xs">
@@ -765,439 +846,404 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
             </p>
           </div>
 
-          {/* Institutional / Team Domain Warning Banner */}
-          <div className={`p-3.5 rounded-2xl mb-6 text-xs flex items-start gap-2.5 shadow-lg border ${
-            authMode === 'teammate'
-              ? 'bg-brand-pink/10 border-brand-pink/30 text-pink-300'
-              : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
-          }`}>
-            <span className="text-base leading-none">{selectedCollege.logo || '🏛️'}</span>
+          {/* Institutional Shield Badge */}
+          <div className="p-3.5 rounded-2xl mb-6 text-xs flex items-start gap-2.5 shadow-lg border bg-[#00f5d4]/10 border-[#00f5d4]/30 text-teal-300">
+            <ShieldCheck className="w-5 h-5 text-[#00f5d4] flex-shrink-0 mt-0.5" />
             <div>
-              <strong className="block font-bold mb-0.5">
-                {selectedCollege.shortName || selectedCollege.code || 'Official'} Portal
+              <strong className="block font-bold mb-0.5 text-white">
+                {selectedCollege.shortName || 'Official'} Verified Campus Access
               </strong>
               <span className="leading-relaxed text-gray-300">
-                {authMode === 'teammate' 
-                  ? 'Sign in or register with your @lumixora.com or designated team email address.'
-                  : <>Please login or register using your <strong className="text-white underline decoration-blue-400">official college mail</strong>.</>
-                }
+                Please sign in with your official <strong className="text-[#00f5d4] underline">@gprec.ac.in</strong> email address.
               </span>
             </div>
           </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3.5 rounded-xl mb-6 text-xs text-center space-y-2">
-            <p className="font-medium leading-relaxed">{error}</p>
-            {(error.includes('Reset') || error.includes('password') || error.includes('Password') || error.includes('temporary')) && (
-              <div className="pt-1">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-2xl mb-6 text-xs text-center space-y-2">
+              <div className="flex items-center justify-center gap-1.5 font-bold">
+                <AlertCircle className="w-4 h-4" /> {error}
+              </div>
+              {(error.includes('Reset') || error.includes('password') || error.includes('Password') || error.includes('temporary')) && (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetEmail(email.trim() || '');
+                      setShowForgotPassword(true);
+                    }}
+                    className="px-3.5 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded-xl text-xs font-black transition-all border border-amber-400/40 inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    🔑 1-Click Reset / Create New Password
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="bg-green-500/10 border border-green-500/50 text-green-400 p-4 rounded-2xl mb-6 text-xs text-center font-medium">
+              {successMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {!isLogin && (
+              <>
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1.5">Full Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                    placeholder="e.g. Mohammed Sowban"
+                  />
+                </div>
+
+                {authMode === 'student' ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Roll Number</label>
+                        <input
+                          type="text"
+                          value={rollNumber}
+                          onChange={(e) => setRollNumber(e.target.value)}
+                          required
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00f5d4]/50"
+                          placeholder="249XA33106"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Branch / Dept</label>
+                        <input
+                          type="text"
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          required
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none"
+                          placeholder="CSE"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Year of Study</label>
+                        <select
+                          value={yearOfStudy}
+                          onChange={(e) => setYearOfStudy(e.target.value)}
+                          required
+                          className="w-full bg-[#111118] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:outline-none"
+                        >
+                          <option value="1st Year">1st Year</option>
+                          <option value="2nd Year">2nd Year</option>
+                          <option value="3rd Year">3rd Year</option>
+                          <option value="4th Year">4th Year</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Semester</label>
+                        <select
+                          value={semester}
+                          onChange={(e) => setSemester(e.target.value)}
+                          required
+                          className="w-full bg-[#111118] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:outline-none"
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                            <option key={s} value={String(s)}>Sem {s}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1.5">Faculty Designation</label>
+                      <input
+                        type="text"
+                        value={designation}
+                        onChange={(e) => setDesignation(e.target.value)}
+                        required
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50"
+                        placeholder="Assistant Professor"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1.5">Mobile Number</label>
+                      <input
+                        type="text"
+                        value={mobileNumber}
+                        onChange={(e) => setMobileNumber(e.target.value)}
+                        required
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50"
+                        placeholder="+91 9876543210"
+                      />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-gray-300 mb-1.5">Official Campus Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all font-mono"
+                placeholder="rollnumber@gprec.ac.in"
+              />
+
+              {/* Dynamic Auto-Detected ID Badge */}
+              {detectedProfile && detectedProfile.isInstitutional && (
+                <div className="mt-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-[11px] text-emerald-300 animate-fade-in">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{detectedProfile.college}</span>
+                  </div>
+                  <span className="bg-emerald-500/20 px-2 py-0.5 rounded-md font-mono text-[10px] text-emerald-200">
+                    {detectedProfile.department} • {detectedProfile.year}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-300 mb-1.5">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all pr-12"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Live Password Strength Meter */}
+              {!isLogin && password && (
+                <div className="mt-2.5 space-y-1.5 animate-fade-in">
+                  <div className="flex justify-between items-center text-[10px] font-bold">
+                    <span className="text-gray-400">Security Strength:</span>
+                    <span className={passwordStrength.text}>{passwordStrength.label}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${passwordStrength.color} transition-all duration-300`} 
+                      style={{ width: `${passwordStrength.percent}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {isLogin && (
+              <div className="flex items-center justify-between text-xs pt-1">
+                <label className="flex items-center gap-2 text-gray-400 hover:text-gray-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded bg-white/5 border-white/10 text-[#00f5d4] focus:ring-0 cursor-pointer"
+                  />
+                  <span>Remember me</span>
+                </label>
+
                 <button
                   type="button"
                   onClick={() => {
-                    setResetEmail(email.trim() || '');
                     setShowForgotPassword(true);
+                    setResetEmail(email);
+                    setResetError('');
                   }}
-                  className="px-3.5 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded-xl text-xs font-bold transition-all border border-amber-400/40 inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  className="text-xs text-[#00f5d4] hover:underline transition-colors bg-transparent border-none cursor-pointer font-bold"
                 >
-                  🔑 Reset Password / Create New Password
+                  Forgot password?
                 </button>
               </div>
             )}
-            {unverifiedUser && (
-              <div className="mt-2">
-                <button 
-                  onClick={handleResendVerification}
-                  type="button" 
-                  className="underline text-red-300 hover:text-white transition-colors"
-                >
-                  Resend Verification Email
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
-        {successMsg && (
-          <div className="bg-green-500/10 border border-green-500/50 text-green-400 p-3 rounded-xl mb-6 text-sm text-center">
-            {successMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {!isLogin && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                  placeholder="John Doe"
-                />
-              </div>
-
-              {mode === 'student' ? (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Roll Number</label>
-                    <input
-                      type="text"
-                      value={rollNumber}
-                      onChange={(e) => setRollNumber(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white uppercase focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. 219X1A0501"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Qualification</label>
-                    <input
-                      type="text"
-                      value={qualification}
-                      onChange={(e) => setQualification(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. B.Tech, Degree"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Institution / College</label>
-                    <select
-                      value={collegeName}
-                      onChange={(e) => setCollegeName(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-200 font-semibold focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all appearance-none cursor-pointer"
-                    >
-                      {[...DEFAULT_COLLEGES, ...customColleges].map(c => (
-                        <option key={c.id} value={c.shortName || c.name || c.code}>
-                          {c.shortName || c.name} ({c.code})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">College Location (Place)</label>
-                    <input
-                      type="text"
-                      value={place}
-                      onChange={(e) => setPlace(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. Kurnool"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Year of Study</label>
-                    <select
-                      value={yearOfStudy}
-                      onChange={(e) => setYearOfStudy(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all appearance-none"
-                    >
-                      <option value="1st Year">1st Year</option>
-                      <option value="2nd Year">2nd Year</option>
-                      <option value="3rd Year">3rd Year</option>
-                      <option value="4th Year">4th Year</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Department / Major (Branch)</label>
-                    <input
-                      type="text"
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                      placeholder="e.g. CSE, ECE"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Semester</label>
-                    <select
-                      value={semester}
-                      onChange={(e) => setSemester(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                        <option key={s} value={String(s)}>Semester {s}</option>
-                      ))}
-                      <option value="Completed">Completed</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Section</label>
-                    <select
-                      value={section}
-                      onChange={(e) => setSection(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                    >
-                      {['A', 'B', 'C', 'D', 'E', 'None'].map(s => (
-                        <option key={s} value={s}>Section {s}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Target CGPA</label>
-                    <input
-                      type="text"
-                      value={cgpa}
-                      onChange={(e) => setCgpa(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                      placeholder="e.g. 9.0"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Career Goal</label>
-                    <select
-                      value={careerGoal}
-                      onChange={(e) => setCareerGoal(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                    >
-                      <option value="Placement">Placement / Jobs</option>
-                      <option value="GATE">GATE Exam</option>
-                      <option value="Higher Studies">Higher Studies</option>
-                      <option value="Entrepreneurship">Entrepreneurship</option>
-                      <option value="Government Jobs">Government Jobs</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Learning Style</label>
-                    <select
-                      value={learningStyle}
-                      onChange={(e) => setLearningStyle(e.target.value)}
-                      required
-                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                    >
-                      <option value="Practical">Practical (Hands-on)</option>
-                      <option value="Visual">Visual (Videos/Charts)</option>
-                      <option value="Reading">Reading (Books/Notes)</option>
-                      <option value="Audio">Audio (Lectures)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Weak Subject</label>
-                    <input
-                      type="text"
-                      value={weakSubjects}
-                      onChange={(e) => setWeakSubjects(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                      placeholder="e.g. Computer Networks"
-                    />
-                  </div>
-                </>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-4 rounded-2xl font-black text-black bg-gradient-to-r from-[#00f5d4] via-[#38bdf8] to-[#00f5d4] hover:opacity-95 shadow-lg shadow-[#00f5d4]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-sm"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2 font-bold animate-pulse text-black">
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Authenticating...
+                </span>
               ) : (
                 <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Designation</label>
-                    <input
-                      type="text"
-                      value={designation}
-                      onChange={(e) => setDesignation(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. Assistant Professor, HOD"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Department</label>
-                    <input
-                      type="text"
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. CSE, ECE"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Mobile Number</label>
-                    <input
-                      type="text"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      required
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                      placeholder="e.g. +91 9876543210"
-                    />
-                  </div>
+                  <span>{isLogin ? 'Sign In to Workspace' : 'Create Verified Account'}</span>
+                  {isLogin ? <LogIn className="w-4 h-4 text-black" /> : <UserPlus className="w-4 h-4 text-black" />}
                 </>
               )}
-            </>
-          )}
+            </button>
+          </form>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-              placeholder="Enter your official college email"
-            />
-            <p className="text-[11px] text-gray-400 font-semibold mt-1.5 flex items-center gap-1">
-              <span>🔒 Login or register using your official college mail</span>
-            </p>
+          {/* Social Auth Divider */}
+          <div className="relative flex items-center py-5">
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink-0 mx-4 text-gray-500 text-xs uppercase tracking-widest font-black">Or 1-Tap Login</span>
+            <div className="flex-grow border-t border-white/10"></div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all pr-12"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+          <div className="flex gap-3 mb-4">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => handleOAuthSignIn('google')}
+              className="flex-1 py-3 px-4 rounded-2xl font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00f5d4]/40 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-xs shadow-lg"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              <span>Google</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => handleOAuthSignIn('github')}
+              className="flex-1 py-3 px-4 rounded-2xl font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-purple/40 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-xs shadow-lg"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+              <span>GitHub</span>
+            </button>
           </div>
 
-          {isLogin && (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForgotPassword(true);
-                  setResetEmail(email);
-                  setResetError('');
-                }}
-                className="text-sm text-[#00f5d4] hover:text-[#00b4d8] transition-colors bg-transparent border-none cursor-pointer"
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
+          <div className="mt-6 text-center text-gray-400 text-xs">
+            {isLogin ? "New to Lumixora? " : "Already have an account? "}
+            <button 
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+                setSuccessMsg('');
+              }}
+              className="text-[#00f5d4] font-black hover:underline focus:outline-none cursor-pointer ml-1"
+            >
+              {isLogin ? 'Register your roll number' : 'Sign in here'}
+            </button>
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? (
-              <span className="animate-pulse">Processing...</span>
-            ) : (
-              <>
-                <span>{isLogin ? 'Sign In' : 'Sign Up'}</span>
-                {isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-              </>
-            )}
-          </button>
-        </form>
+          {/* Mobile APK Download Pill */}
+          <div className="mt-6 pt-5 border-t border-white/5 flex flex-col items-center">
+            <a 
+              href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Lumixora.apk" 
+              download="Lumixora.apk"
+              className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold text-[#00f5d4] border border-[#00f5d4]/30 hover:border-[#00f5d4] hover:bg-[#00f5d4]/5 transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
+              <Cpu className="w-3.5 h-3.5 text-[#00f5d4]" />
+              <span>Download Official Android App (APK)</span>
+            </a>
+          </div>
 
-        <div className="relative flex items-center py-6">
-          <div className="flex-grow border-t border-white/10"></div>
-          <span className="flex-shrink-0 mx-4 text-gray-500 text-sm">Or continue with</span>
-          <div className="flex-grow border-t border-white/10"></div>
         </div>
-
-        <div className="flex gap-4 mb-4">
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => handleOAuthSignIn('google')}
-            className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-            <span>Google</span>
-          </button>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => handleOAuthSignIn('github')}
-            className="flex-1 py-3 px-4 rounded-xl font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-            </svg>
-            <span>GitHub</span>
-          </button>
-        </div>
-
-        <div className="mt-8 text-center text-gray-400 text-sm">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button 
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError('');
-            }}
-            className="text-[#00f5d4] font-medium hover:underline focus:outline-none cursor-pointer"
-          >
-            {isLogin ? 'Register now' : 'Sign in here'}
-          </button>
-        </div>
-
-        {/* Download Android App Section */}
-        <div className="mt-6 pt-6 border-t border-white/5 flex flex-col items-center">
-          <a 
-            href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Lumixora.apk" 
-            download="Lumixora.apk"
-            className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-semibold text-[#00f5d4] border border-[#00f5d4]/30 hover:border-[#00f5d4] hover:bg-[#00f5d4]/5 transition-all flex items-center justify-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download Android App (APK)
-          </a>
-          <p className="text-[10px] text-gray-500 mt-2 text-center">Install directly on your phone for mobile access.</p>
-        </div>
-
-      </div>
       )}
 
-      {/* Forgot Password Modal */}
+      {/* Email Verification Waiting Room Modal */}
+      {unverifiedEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          <div className="relative z-10 w-full max-w-md p-8 rounded-3xl border border-[#00f5d4]/30 bg-[#0c0c14] shadow-2xl text-center space-y-5 animate-fade-in-up">
+            
+            <div className="w-16 h-16 rounded-3xl bg-[#00f5d4]/10 border border-[#00f5d4]/30 flex items-center justify-center mx-auto text-[#00f5d4] shadow-lg shadow-[#00f5d4]/10">
+              <Mail className="w-8 h-8 animate-bounce" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-black text-white">Verify Your Campus Email</h3>
+              <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                A secure confirmation link was sent to <strong className="text-[#00f5d4]">{unverifiedEmail}</strong>. Please click the link to activate your workspace.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <a
+                href="https://mail.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold border border-white/10 flex items-center justify-center gap-1.5 transition-all"
+              >
+                <span>Open Gmail</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href="https://mail.google.com/a/gprec.ac.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 bg-[#00f5d4]/10 hover:bg-[#00f5d4]/20 text-[#00f5d4] rounded-xl text-xs font-bold border border-[#00f5d4]/30 flex items-center justify-center gap-1.5 transition-all"
+              >
+                <span>GPREC Webmail</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={handleManualCheckVerification}
+                disabled={checkingVerification}
+                className="w-full py-3 bg-[#00f5d4] hover:opacity-95 text-black font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#00f5d4]/20 cursor-pointer"
+              >
+                <RefreshCw className={`w-4 h-4 ${checkingVerification ? 'animate-spin' : ''}`} />
+                <span>{checkingVerification ? 'Checking Server...' : 'I Have Clicked The Link (Verify Now)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                className="w-full py-2.5 text-xs text-gray-400 hover:text-white font-bold transition-colors cursor-pointer"
+              >
+                Didn't receive email? Click here to resend link
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setUnverifiedEmail('')}
+              className="text-xs text-gray-500 hover:text-gray-400 pt-2 block mx-auto cursor-pointer"
+            >
+              ← Back to Sign In
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 1-Click Forgot Password Modal */}
       {showForgotPassword && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowForgotPassword(false); }}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
 
-          {/* Modal Card */}
           <div
-            className="relative z-10 w-full max-w-md p-8 rounded-3xl border border-white/10 shadow-2xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(15,15,25,0.97) 0%, rgba(20,10,35,0.97) 100%)',
-              boxShadow: '0 0 60px rgba(0,245,212,0.08), 0 0 120px rgba(114,9,183,0.06)',
-              animation: 'fadeInUp 0.3s ease-out'
-            }}
+            className="relative z-10 w-full max-w-md p-8 rounded-3xl border border-white/10 shadow-2xl bg-[#0d0d16]"
           >
-            {/* Close Button */}
             <button
               onClick={() => setShowForgotPassword(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
@@ -1205,23 +1251,21 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Header */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00f5d4] to-[#7209b7] flex items-center justify-center mb-4 shadow-lg shadow-[#00f5d4]/20">
-                <Mail className="text-white w-7 h-7" />
+            <div className="flex flex-col items-center mb-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00f5d4] to-[#7209b7] flex items-center justify-center mb-3 shadow-lg shadow-[#00f5d4]/20">
+                <Key className="text-white w-7 h-7" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">
-                Reset Password
+              <h3 className="text-2xl font-black text-white mb-1">
+                Password Recovery
               </h3>
-              <p className="text-gray-400 text-sm text-center">
-                Enter your email address and we'll send you a secure link to reset your password.
+              <p className="text-gray-400 text-xs">
+                Enter your registered campus email to receive a password reset link.
               </p>
             </div>
 
-            {/* Error / Success Message */}
             {resetError && (
-              <div className={`border p-3 rounded-xl mb-5 text-sm text-center ${
-                resetError.includes('sent') 
+              <div className={`border p-3.5 rounded-xl mb-5 text-xs text-center font-medium ${
+                resetError.includes('sent') || resetError.includes('dispatched')
                   ? 'bg-green-500/10 border-green-500/50 text-green-400' 
                   : 'bg-red-500/10 border-red-500/50 text-red-400'
               }`}>
@@ -1229,49 +1273,48 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               </div>
             )}
 
-            {/* Search Form */}
-            <form onSubmit={handleForgotPassword} className="space-y-5">
+            <form onSubmit={handleForgotPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <label className="block text-xs font-bold text-gray-300 mb-1.5">Your Registered Email</label>
                 <input
                   type="email"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   required
                   autoFocus
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                  placeholder="you@example.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all font-mono"
+                  placeholder="rollnumber@gprec.ac.in"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={resetLoading}
-                className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl font-black text-black bg-[#00f5d4] hover:opacity-95 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 text-xs shadow-lg shadow-[#00f5d4]/20 cursor-pointer"
               >
                 {resetLoading ? (
-                  <span className="animate-pulse">Sending Reset Link...</span>
+                  <span className="animate-pulse flex items-center gap-1.5">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Dispatching...
+                  </span>
                 ) : (
                   <>
-                    <Mail className="w-5 h-5" />
-                    <span>Send Reset Link</span>
+                    <Mail className="w-4 h-4 text-black" />
+                    <span>Send Password Reset Link</span>
                   </>
                 )}
               </button>
             </form>
 
-            {/* Back to Login */}
             <div className="mt-5 text-center">
               <button
                 type="button"
                 onClick={() => {
                   setShowForgotPassword(false);
-                  setRetrievedAccounts([]);
                   setResetEmail('');
                 }}
-                className="text-sm text-gray-400 hover:text-[#00f5d4] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1 mx-auto"
+                className="text-xs text-gray-400 hover:text-[#00f5d4] transition-colors bg-transparent border-none cursor-pointer flex items-center gap-1 mx-auto font-bold"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5" />
                 Back to Sign In
               </button>
             </div>
