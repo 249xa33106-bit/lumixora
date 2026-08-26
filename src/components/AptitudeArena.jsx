@@ -160,8 +160,12 @@ export default function AptitudeArena({ user, isFounder }) {
 
   // User Responses State for Practice Mode: { [qId]: optionIndex }
   const [userAnswers, setUserAnswers] = useState(() => {
-    const saved = localStorage.getItem(`lumixora_aptitude_answers_${user?.id || 'guest'}`);
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem(`lumixora_aptitude_answers_${user?.id || 'guest'}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
   });
 
   // Toggled Explanation Drawers: { [qId]: boolean }
@@ -187,8 +191,12 @@ export default function AptitudeArena({ user, isFounder }) {
 
   // Custom Aptitude Questions from localStorage/Supabase
   const [customQuestions, setCustomQuestions] = useState(() => {
-    const saved = localStorage.getItem('lumixora_custom_aptitude');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('lumixora_custom_aptitude');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
   });
 
   // Formula Handbook Modal State
