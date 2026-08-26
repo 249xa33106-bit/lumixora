@@ -1003,7 +1003,7 @@ Do NOT use markdown backticks. Return raw JSON.`
                        </div>
                      )}
                      <div className="flex items-center gap-1 mb-2">
-                       {[...Array(fb.rating || 5)].map((_, j) => (
+                       {Array.from({ length: Math.max(1, Math.min(5, Math.floor(Number(fb.rating) || 5))) }).map((_, j) => (
                          <Star key={j} className="w-3 h-3 text-brand-orange fill-brand-orange" />
                        ))}
                      </div>
