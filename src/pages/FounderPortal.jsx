@@ -268,9 +268,14 @@ export default function FounderPortal({ user, setActiveTab }) {
       } else if (sbUsers) {
         sbUsers.forEach(u => {
           const userId = u.id || u.uid || u.email;
-          const parsed = parseProfileName(u.name);
+          let parsed = {};
+          if (u.name && u.name.includes('{')) {
+            try {
+              parsed = JSON.parse(u.name.slice(u.name.indexOf('{')));
+            } catch (e) {}
+          }
           const registerDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
-          const cleanName = parsed.name || (u.name && !u.name.includes('{') ? u.name : 'Scholar');
+          const cleanName = cleanScholarName(u.name, u.email);
           const college = u.college || parsed.college || 'GPREC';
           const department = u.department || u.branch || parsed.department || 'CSE';
           const year = u.year || parsed.year || '1st Year';
@@ -293,10 +298,10 @@ export default function FounderPortal({ user, setActiveTab }) {
             place: u.place || parsed.place || 'Kurnool',
             qualification: u.qualification || parsed.qualification || 'B.Tech',
             role: u.role || 'user',
-            xp: u.xp !== undefined && u.xp !== null ? u.xp : 0,
-            level: u.level !== undefined && u.level !== null ? u.level : 1,
-            coins: u.coins !== undefined && u.coins !== null ? u.coins : 0,
-            streak: u.streak !== undefined && u.streak !== null ? u.streak : 0,
+            xp: (u.xp !== undefined && u.xp !== null && u.xp > 0) ? u.xp : (parsed.xp || u.ap || 0),
+            level: (u.level !== undefined && u.level !== null && u.level > 0) ? u.level : (parsed.level || 1),
+            coins: (u.coins !== undefined && u.coins !== null && u.coins > 0) ? u.coins : (parsed.coins || u.sc || 0),
+            streak: (u.streak !== undefined && u.streak !== null && u.streak > 0) ? u.streak : (parsed.streak || 0),
             created_at: registerDate,
             created_at_raw: u.created_at ? new Date(u.created_at).getTime() : null,
             loginCount: u.loginCount || 1,
