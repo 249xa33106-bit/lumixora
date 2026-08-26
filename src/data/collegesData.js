@@ -59,7 +59,20 @@ export const isValidInstitutionalEmail = (email, customColleges = []) => {
   if (!email || typeof email !== 'string') return false;
   const lower = email.toLowerCase().trim();
   if (!lower.includes('@') || lower.length < 5) return false;
-  return true;
+
+  // 1. Founder & Super Admin whitelist
+  if (lower === 'founder@lumixora.com' || lower === '249xa33106@gmail.com' || lower === '249xa33106@gprec.ac.in') {
+    return true;
+  }
+
+  // 2. Official Lumixora Core Team
+  if (lower.endsWith('@lumixora.com') || lower.endsWith('@team.lumixora.com')) {
+    return true;
+  }
+
+  // 3. GPREC & Authorized Institutional Partner Domains
+  const allAllowed = getAllAllowedDomains(customColleges);
+  return allAllowed.some(domain => lower.endsWith(`@${domain.toLowerCase().trim()}`));
 };
 
 export const getCollegeByEmail = (email, customColleges = []) => {

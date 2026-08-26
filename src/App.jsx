@@ -76,7 +76,7 @@ function App() {
         const email = (u?.email || '').toLowerCase().trim();
         const isFounderOrAdmin = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
         
-        if (u?.is_blocked === true) {
+        if (u?.is_blocked === true || !isValidInstitutionalEmail(email)) {
           localStorage.removeItem('lumixora_user');
           localStorage.removeItem('lumixora_isAuthenticated');
           signOut(auth).catch(() => {});
@@ -375,6 +375,18 @@ function App() {
       if (fbUser) {
         const email = (fbUser.email || '').toLowerCase().trim();
         const isF = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+        
+        // Strict domain access verification: Only allow @gprec.ac.in, partner colleges, and founder whitelist
+        if (!isF && !isValidInstitutionalEmail(email)) {
+          console.warn(`Blocked unauthorized non-institutional email login: ${email}`);
+          try { await signOut(auth); } catch (e) {}
+          setUser(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem('lumixora_user');
+          localStorage.removeItem('lumixora_isAuthenticated');
+          return;
+        }
+
         const cleanName = fbUser.displayName || email.split('@')[0];
 
         const immediateProfile = {
