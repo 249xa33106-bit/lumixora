@@ -480,7 +480,35 @@ export default function FounderPortal({ user, setActiveTab }) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // Consolidated 100+ Live Platform Activity Notifications
+  const displayNotifications = useMemo(() => {
+    const combined = [...notifications];
+    const seen = new Set(notifications.map(n => n.id || (n.email ? n.email + (n.type || '') : '')));
+
+    (usersList || []).forEach(u => {
+      const id = `reg_${u.id || u.email}`;
+      if (!seen.has(id)) {
+        seen.add(id);
+        const ts = u.created_at_raw || (u.created_at && u.created_at !== 'N/A' ? new Date(u.created_at).getTime() : Date.now() - 3600000);
+        combined.push({
+          id,
+          type: 'register',
+          name: cleanScholarName(u.name),
+          email: u.email,
+          role: u.role || 'user',
+          college: u.college || 'GPREC',
+          department: u.department || 'CSE',
+          read: false,
+          _sortTime: ts
+        });
+      }
+    });
+
+    combined.sort((a, b) => (b._sortTime || 0) - (a._sortTime || 0));
+    return combined.slice(0, 150);
+  }, [notifications, usersList]);
+
+  const unreadCount = displayNotifications.filter(n => !n.read).length;
 
   const markAllRead = async () => {
     const unread = notifications.filter(n => !n.read);
@@ -1104,26 +1132,26 @@ export default function FounderPortal({ user, setActiveTab }) {
                 className="fixed inset-0 z-40" 
                 onClick={() => setShowNotifDropdown(false)} 
               />
-              <div className="absolute right-0 top-14 w-80 max-w-[calc(100vw-2rem)] max-h-[420px] overflow-y-auto bg-[#161622] border border-white/15 rounded-2xl shadow-2xl z-50 p-4 space-y-3 backdrop-blur-xl">
+              <div className="absolute right-0 top-14 w-88 max-w-[calc(100vw-2rem)] max-h-[480px] overflow-y-auto bg-[#161622] border border-white/15 rounded-2xl shadow-2xl z-50 p-4 space-y-3 backdrop-blur-xl custom-scrollbar">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Bell className="w-3.5 h-3.5" /> Notifications ({notifications.length})
+                    <Bell className="w-3.5 h-3.5" /> Platform Activity Feed ({displayNotifications.length}+)
                   </span>
-                  {notifications.length > 0 && (
+                  {displayNotifications.length > 0 && (
                     <button 
-                      onClick={clearAllNotifications} 
-                      className="text-[11px] text-red-400 hover:text-red-300 font-bold transition-colors hover:underline"
+                      onClick={() => markAllRead()} 
+                      className="text-[11px] text-amber-400/80 hover:text-amber-300 font-bold transition-colors hover:underline"
                     >
-                      Clear All
+                      Mark All Read
                     </button>
                   )}
                 </div>
 
-                {notifications.length === 0 ? (
+                {displayNotifications.length === 0 ? (
                   <p className="text-xs text-gray-400 text-center py-6 italic">No notifications yet.</p>
                 ) : (
                   <div className="space-y-2">
-                    {notifications.map(n => (
+                    {displayNotifications.map(n => (
                       <div 
                         key={n.id} 
                         className={`p-3 rounded-xl border text-xs space-y-1.5 transition-colors ${
@@ -1142,21 +1170,17 @@ export default function FounderPortal({ user, setActiveTab }) {
                               ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
                               : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                           }`}>
-                            {n.type === 'register' ? '🆕 New Register' : n.type === 'submission' ? '📝 Test Submitted' : n.type === 'doubt' ? '❓ Doubt Raised' : '🔑 Login'}
+                            {n.type === 'register' ? '🆕 Scholar Enrolled' : n.type === 'submission' ? '📝 Test Submitted' : n.type === 'doubt' ? '❓ Doubt Raised' : '🔑 Active Login'}
                           </span>
                           <span className="text-[10px] text-gray-400 font-medium">
-                            {n.timestamp?.toDate 
-                              ? n.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                              : n.createdAt 
-                              ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                              : typeof n.timestamp === 'number'
-                              ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                              : 'just now'}
+                            {n._sortTime 
+                              ? new Date(n._sortTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                              : 'Recent'}
                           </span>
                         </div>
                         <div>
                           <p className="font-bold text-white text-xs">{cleanScholarName(n.name)}</p>
-                          <p className="text-[11px] text-gray-400 truncate">{n.email} · <span className="text-amber-400 font-semibold uppercase">{n.role}</span></p>
+                          <p className="text-[11px] text-gray-400 truncate">{n.email} · <span className="text-amber-400 font-semibold uppercase">{n.role || 'user'}</span> · <span className="text-gray-300 font-medium">{n.college || 'GPREC'}</span></p>
                         </div>
                       </div>
                     ))}
