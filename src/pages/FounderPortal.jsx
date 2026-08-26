@@ -22,8 +22,13 @@ import {
   Trash2,
   RefreshCcw,
   Bell,
-  GraduationCap
+  GraduationCap,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, onSnapshot, query, orderBy, limit, where, writeBatch } from 'firebase/firestore';
@@ -912,12 +917,79 @@ export default function FounderPortal({ user, setActiveTab }) {
     }
   };
 
-  const toggleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
+  const handleExportExcel = () => {
+    try {
+      const exportData = (filteredUsers || []).map((u, i) => ({
+        'S.No': i + 1,
+        'Name': cleanScholarName(u.name),
+        'Email': u.email || 'N/A',
+        'Role': (u.role || 'user').toUpperCase(),
+        'College': u.college || 'GPREC',
+        'Department': u.department || 'CSE',
+        'Year': u.year || '1st Year',
+        'Section': u.sec || 'A',
+        'Semester': u.sem || '1',
+        'Global Aura (AP)': u.xp || 0,
+        'Synaptic Energy (SC)': u.coins || 0,
+        'Status': u.is_blocked ? 'BLOCKED' : (u.is_approved ? 'APPROVED' : 'ACTIVE'),
+        'Registered Date': u.created_at || 'N/A'
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Scholars Report');
+      XLSX.writeFile(wb, `Lumixora_Scholars_${selectedCollege !== 'All' ? selectedCollege : 'All'}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      addToast({ message: `Exported ${exportData.length} scholars to Excel successfully!`, type: 'success' });
+    } catch (err) {
+      console.error('Excel Export Error:', err);
+      addToast({ message: 'Failed to export Excel report.', type: 'error' });
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      
+      doc.setFillColor(3, 7, 18);
+      doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+      
+      doc.setTextColor(45, 212, 191);
+      doc.setFontSize(16);
+      doc.text("LUMIXORA SCHOLARS ACTIVITY REPORT", 40, 40);
+      
+      doc.setFontSize(9);
+      doc.setTextColor(156, 163, 175);
+      doc.text(`Generated: ${new Date().toLocaleString()} | College: ${selectedCollege} | Department: ${selectedDept} | Total Records: ${filteredUsers.length}`, 40, 58);
+      
+      const tableData = (filteredUsers || []).map((u, i) => [
+        i + 1,
+        cleanScholarName(u.name),
+        u.email || 'N/A',
+        (u.role || 'user').toUpperCase(),
+        u.college || 'GPREC',
+        u.department || 'CSE',
+        u.year || '1st',
+        u.xp || 0,
+        u.coins || 0,
+        u.is_blocked ? 'BLOCKED' : 'ACTIVE'
+      ]);
+      
+      autoTable(doc, {
+        startY: 70,
+        head: [['#', 'Name', 'Email', 'Role', 'College', 'Dept', 'Year', 'AP (XP)', 'SC (Coins)', 'Status']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [147, 51, 234], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+        styles: { fontSize: 7.5, textColor: [229, 231, 235], fillColor: [17, 24, 39] },
+        alternateRowStyles: { fillColor: [31, 41, 55] },
+        margin: { left: 40, right: 40 }
+      });
+      
+      doc.save(`Lumixora_Scholars_${new Date().toISOString().slice(0, 10)}.pdf`);
+      addToast({ message: `Exported ${filteredUsers.length} scholars to PDF successfully!`, type: 'success' });
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+      addToast({ message: 'Failed to export PDF report.', type: 'error' });
     }
   };
 
@@ -1136,34 +1208,53 @@ export default function FounderPortal({ user, setActiveTab }) {
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           {activeView === 'scholars' && (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleDeleteAllUsers}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl text-xs font-bold uppercase transition-all"
-              >
-                <Trash2 className="w-4 h-4" />
-                Deactivate All Scholars
-              </button>
-              <div className="flex gap-2 w-full md:w-auto">
-          <button 
-            onClick={toggleDemoMode}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-              demoMode ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
-            }`}
-          >
-            <Shield className="w-4 h-4" />
-            {demoMode ? 'Demo Mode: ON (XP Paused)' : 'Demo Mode: OFF'}
-          </button>
-          <button 
-            onClick={loadUsersData}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-gray-300 transition-colors"
-          >
-            <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-teal' : ''}`} />
-            Refresh Data
-          </button>
-        </div>
-      </div>
-    )}
+            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handleDeleteAllUsers}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl text-xs font-bold uppercase transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Deactivate All
+                </button>
+                <button 
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+                  title="Download all scholar data in Excel (.xlsx) format"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Export Excel (.xlsx)
+                </button>
+                <button 
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/30 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+                  title="Download formatted printable PDF report"
+                >
+                  <Download className="w-4 h-4" />
+                  Export PDF (.pdf)
+                </button>
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <button 
+                  onClick={toggleDemoMode}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                    demoMode ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  {demoMode ? 'Demo Mode: ON (XP Paused)' : 'Demo Mode: OFF'}
+                </button>
+                <button 
+                  onClick={loadUsersData}
+                  className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-gray-300 transition-colors"
+                >
+                  <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-teal' : ''}`} />
+                  Refresh Data
+                </button>
+              </div>
+            </div>
+          )}
   </div>
 
 
