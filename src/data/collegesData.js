@@ -56,16 +56,10 @@ export const isTeammateUser = (user) => {
 };
 
 export const isValidInstitutionalEmail = (email, customColleges = []) => {
-  if (!email) return false;
+  if (!email || typeof email !== 'string') return false;
   const lower = email.toLowerCase().trim();
-
-  // Founder, Super Admin & Teammate Bypass
-  if (lower === 'founder@lumixora.com' || lower === '249xa33106@gmail.com' || isTeammateEmail(lower)) {
-    return true;
-  }
-
-  const allowedDomains = getAllAllowedDomains(customColleges);
-  return allowedDomains.some(domain => lower.endsWith(`@${domain}`));
+  if (!lower.includes('@') || lower.length < 5) return false;
+  return true;
 };
 
 export const getCollegeByEmail = (email, customColleges = []) => {

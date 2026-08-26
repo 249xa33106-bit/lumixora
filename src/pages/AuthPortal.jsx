@@ -510,14 +510,8 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    const query = resetEmail.trim();
-    if (!query) {
-      setResetError('Please enter your email address.');
-      return;
-    }
-    
-    // We only accept valid email formats for Firebase Auth
-    if (!query.includes('@')) {
+    const query = resetEmail.trim().toLowerCase();
+    if (!query || !query.includes('@')) {
       setResetError('Please enter a valid email address.');
       return;
     }
@@ -526,17 +520,27 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     setResetError('');
     setRetrievedAccounts([]);
     try {
-      await sendPasswordResetEmail(auth, query);
-      setResetError('Password reset email sent! Check your inbox to securely reset your password.');
-      // Keep modal open so they see the success message
+      const fbReset = sendPasswordResetEmail(auth, query)
+        .then(() => true)
+        .catch(err => {
+          console.warn("Firebase password reset notice:", err);
+          return false;
+        });
+
+      const sbReset = supabase.auth.resetPasswordForEmail(query, {
+        redirectTo: `${window.location.origin}/#reset-password`
+      })
+        .then(() => true)
+        .catch(err => {
+          console.warn("Supabase password reset notice:", err);
+          return false;
+        });
+
+      await Promise.allSettled([fbReset, sbReset]);
+      setResetError('Password reset link sent! Check your inbox (and Spam folder) to reset your password.');
     } catch (err) {
       console.error('Password reset error:', err);
-      // Firebase throws 'auth/user-not-found' if email doesn't exist
-      if (err.code === 'auth/user-not-found') {
-        setResetError('No account found with this email.');
-      } else {
-        setResetError('Failed to send reset email. Please try again later.');
-      }
+      setResetError('Password reset link sent! If an account exists with this email, you will receive a reset link shortly.');
     } finally {
       setResetLoading(false);
     }
