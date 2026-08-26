@@ -561,8 +561,16 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         provider = new GithubAuthProvider();
       }
 
-      // Direct Redirect Authentication (100% immune to popup blockers and third-party cookie restrictions)
-      await signInWithRedirect(auth, provider);
+      try {
+        const result = await signInWithPopup(auth, provider);
+        if (result?.user) {
+          await processOAuthUser(result.user, providerName);
+          return;
+        }
+      } catch (popupErr) {
+        console.warn("Popup attempt fallback to redirect:", popupErr);
+        await signInWithRedirect(auth, provider);
+      }
     } catch (err) {
       console.error('OAuth sign in error:', err);
       setError(`Google Sign-In notice: ${err.message || 'Please try again.'}`);

@@ -375,64 +375,61 @@ function App() {
       if (fbUser) {
         const email = (fbUser.email || '').toLowerCase().trim();
         const isF = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
-        
+        const cleanName = fbUser.displayName || email.split('@')[0];
+
+        const immediateProfile = {
+          id: fbUser.uid,
+          uid: fbUser.uid,
+          name: cleanName,
+          email: email,
+          password: 'google_oauth_managed',
+          qualification: 'B.Tech',
+          college: 'GPREC',
+          place: 'Kurnool',
+          year: '1st Year',
+          cgpa: '9.0',
+          targetCGPA: '9.0',
+          careerGoal: 'Placement',
+          department: 'CSE',
+          sem: '1',
+          sec: 'A',
+          learningStyle: 'Practical',
+          weakSubjects: 'None',
+          strongSubjects: 'None',
+          subjects: 'Computer Science',
+          xp: 50,
+          coins: 100,
+          level: 1,
+          streak: 1,
+          longestStreak: 1,
+          streakFreezeCount: 1,
+          badges: ['first_login'],
+          purchasedThemes: ['default'],
+          purchasedFrames: ['none'],
+          currentTheme: 'default',
+          currentFrame: 'none',
+          created_at: new Date().toISOString(),
+          role: isF ? 'founder' : 'user',
+          emailVerified: true,
+          is_approved: true,
+          isApproved: true
+        };
+
+        // Log in immediately
+        handleLogin(immediateProfile);
+
+        // Background sync
         try {
           const { data: sbUsers } = await supabase.from('users').select('*').ilike('email', email);
-          let userProfile;
           if (sbUsers && sbUsers.length > 0) {
-            userProfile = { 
-              ...sbUsers[0], 
-              id: fbUser.uid, 
-              uid: fbUser.uid, 
-              emailVerified: true, 
-              role: sbUsers[0].role || (isF ? 'founder' : 'user') 
-            };
+            const merged = { ...sbUsers[0], id: fbUser.uid, uid: fbUser.uid, emailVerified: true, role: isF ? 'founder' : (sbUsers[0].role || 'user') };
+            setUser(merged);
+            localStorage.setItem('lumixora_user', JSON.stringify(merged));
           } else {
-            const cleanName = fbUser.displayName || email.split('@')[0];
-            const defaultProfile = {
-              id: fbUser.uid,
-              uid: fbUser.uid,
-              name: cleanName,
-              email: email,
-              password: 'google_oauth_managed',
-              qualification: 'B.Tech',
-              college: 'GPREC',
-              place: 'Kurnool',
-              year: '1st Year',
-              cgpa: '9.0',
-              targetCGPA: '9.0',
-              careerGoal: 'Placement',
-              department: 'CSE',
-              sem: '1',
-              sec: 'A',
-              learningStyle: 'Practical',
-              weakSubjects: 'None',
-              strongSubjects: 'None',
-              subjects: 'Computer Science',
-              xp: 50,
-              coins: 100,
-              level: 1,
-              streak: 1,
-              longestStreak: 1,
-              streakFreezeCount: 1,
-              badges: ['first_login'],
-              purchasedThemes: ['default'],
-              purchasedFrames: ['none'],
-              currentTheme: 'default',
-              currentFrame: 'none',
-              created_at: new Date().toISOString(),
-              role: isF ? 'founder' : 'user',
-              emailVerified: true,
-              is_approved: true,
-              isApproved: true
-            };
-            await supabase.from('users').upsert([defaultProfile], { onConflict: 'email' });
-            userProfile = defaultProfile;
+            await supabase.from('users').upsert([immediateProfile], { onConflict: 'email' });
           }
-          
-          handleLogin(userProfile);
-        } catch (e) {
-          console.warn("Auth state sync error in App:", e);
+        } catch (syncErr) {
+          console.warn("Background user sync notice:", syncErr);
         }
       }
     });
@@ -441,13 +438,22 @@ function App() {
   }, []);
 
   const handleLogin = (userData) => {
+    if (!userData) return;
     const email = (userData?.email || '').toLowerCase().trim();
-    const isF = userData?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+    const isF = userData?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
     const isTeammate = userData?.role === 'teammate' || userData?.role === 'team' || userData?.role === 'team_member' || email.endsWith('@lumixora.com');
                 
-    setUser(userData);
+    const finalizedUser = {
+      ...userData,
+      role: isF ? 'founder' : (userData.role || 'user'),
+      emailVerified: true
+    };
+
+    setUser(finalizedUser);
     setIsAuthenticated(true);
     setShowLogin(null);
+    localStorage.setItem('lumixora_user', JSON.stringify(finalizedUser));
+    localStorage.setItem('lumixora_isAuthenticated', 'true');
     
     // Check if there was a pending join link
     const pendingJoin = sessionStorage.getItem('lumixora_pending_join');
