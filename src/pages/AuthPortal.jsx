@@ -195,15 +195,16 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
 
       if (isLogin) {
-        // ⚡ FAST-PATH PARALLEL LOGIN (Checks Supabase & Firebase simultaneously)
+        // ⚡ FAST-PATH PARALLEL LOGIN (Case-insensitive check across Supabase & Firebase)
+        const cleanPassword = password.trim();
         const sbAuthPromise = supabase
           .from('users')
           .select('*')
-          .eq('email', cleanEmail)
+          .ilike('email', cleanEmail)
           .then(res => res.data || [])
           .catch(() => []);
 
-        const fbAuthPromise = signInWithEmailAndPassword(auth, cleanEmail, password)
+        const fbAuthPromise = signInWithEmailAndPassword(auth, cleanEmail, cleanPassword)
           .then(res => ({ user: res.user, error: null }))
           .catch(err => ({ user: null, error: err }));
 
@@ -211,7 +212,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
         let matchedUser = null;
         if (sbUsers && sbUsers.length > 0) {
-          const exactMatch = sbUsers.find(u => u.password === password);
+          const exactMatch = sbUsers.find(u => (u.password || '').trim() === cleanPassword);
           if (exactMatch || (!fbRes.error && fbRes.user)) {
             matchedUser = exactMatch || sbUsers[0];
           }
