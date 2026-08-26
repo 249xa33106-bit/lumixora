@@ -105,6 +105,136 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   }, []);
 
+  const cleanScholarName = (str) => {
+    if (!str || typeof str !== 'string') return 'Scholar';
+    let cleaned = str;
+    if (cleaned.includes('{')) {
+      cleaned = cleaned.split('{')[0].trim();
+    }
+    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    return cleaned || 'Scholar';
+  };
+
+  const handleSuccessfulLogin = (userDoc) => {
+    onLogin(userDoc);
+  };
+
+  const sendFounderNotification = async (type, userInfo) => {
+    try {
+      const rawName = userInfo.name || userInfo.displayName || userInfo.email?.split('@')[0] || 'Unknown';
+      const cleanName = cleanScholarName(rawName);
+      await addDoc(collection(db, 'founder_notifications'), {
+        type,
+        name: cleanName,
+        email: userInfo.email || '',
+        role: userInfo.role || 'user',
+        timestamp: serverTimestamp(),
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+    } catch (e) {
+      console.warn('Failed to send founder notification:', e);
+    }
+  };
+
+  const processOAuthUser = async (firebaseUser, providerName = 'Google') => {
+    try {
+      const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
+      const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com' || oauthEmail === '249xa33106@gprec.ac.in';
+      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
+      
+      if (!isFounderOrAdmin && !isAllowedDomain) {
+        setError(`Security Access Restricted: Please sign in using your official institutional email (e.g. @gprec.ac.in).`);
+        setLoading(false);
+        try { await auth.signOut(); } catch (e) {}
+        return;
+      }
+
+      const role = isFounderOrAdmin ? 'founder' : (authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user'));
+
+      // Check if user already exists in Supabase
+      const { data: sbUsers } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('email', oauthEmail);
+
+      let userProfile;
+      if (sbUsers && sbUsers.length > 0) {
+        userProfile = { 
+          ...sbUsers[0], 
+          id: firebaseUser.uid, 
+          uid: firebaseUser.uid, 
+          emailVerified: true,
+          role: sbUsers[0].role || role 
+        };
+      } else {
+        const cleanName = firebaseUser.displayName || oauthEmail.split('@')[0];
+        const defaultProfile = {
+          id: firebaseUser.uid,
+          uid: firebaseUser.uid,
+          name: cleanName,
+          email: oauthEmail,
+          password: 'google_oauth_managed',
+          qualification: 'B.Tech',
+          college: 'GPREC',
+          place: 'Kurnool',
+          year: '1st Year',
+          cgpa: '9.0',
+          targetCGPA: '9.0',
+          careerGoal: 'Placement',
+          department: 'CSE',
+          sem: '1',
+          sec: 'A',
+          learningStyle: 'Practical',
+          weakSubjects: 'None',
+          strongSubjects: 'None',
+          subjects: 'Computer Science',
+          xp: 50,
+          coins: 100,
+          level: 1,
+          streak: 1,
+          longestStreak: 1,
+          streakFreezeCount: 1,
+          badges: ['first_login'],
+          purchasedThemes: ['default'],
+          purchasedFrames: ['none'],
+          currentTheme: 'default',
+          currentFrame: 'none',
+          created_at: new Date().toISOString(),
+          role,
+          emailVerified: true,
+          is_approved: true,
+          isApproved: true
+        };
+
+        const sbPayload = {
+          name: `${cleanName} ${JSON.stringify(defaultProfile)}`,
+          email: oauthEmail,
+          password: 'google_oauth_managed',
+          role,
+          created_at: new Date().toISOString(),
+          is_approved: true
+        };
+
+        await Promise.allSettled([
+          supabase.from('users').upsert([sbPayload], { onConflict: 'email' }),
+          setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true }),
+          setDoc(doc(db, 'Users', firebaseUser.uid), defaultProfile, { merge: true })
+        ]);
+
+        userProfile = defaultProfile;
+        sendFounderNotification('register', userProfile).catch(() => {});
+      }
+
+      handleSuccessfulLogin(userProfile);
+    } catch (err) {
+      console.error(err);
+      setError(`Failed to process sign-in with ${providerName}. ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle Google OAuth Redirects automatically on mount (Immune to popup blockers)
   useEffect(() => {
     getRedirectResult(auth).then(async (result) => {
@@ -120,7 +250,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       if (session?.user) {
         const sbEmail = (session.user.email || '').toLowerCase().trim();
         if (sbEmail) {
-          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com';
+          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com' || sbEmail === '249xa33106@gprec.ac.in';
           const rawName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || sbEmail.split('@')[0];
           const cleanName = cleanScholarName(rawName);
           
@@ -146,6 +276,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               streak: 1,
               is_approved: true,
               isApproved: true,
+              emailVerified: true,
               created_at: new Date().toISOString()
             };
             await supabase.from('users').upsert([defaultProfile], { onConflict: 'email' });
@@ -157,39 +288,6 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       }
     }).catch(err => console.warn("Supabase session check:", err));
   }, []);
-
-  const handleSuccessfulLogin = (user) => {
-    onLogin(user);
-  };
-
-  const cleanScholarName = (str) => {
-    if (!str || typeof str !== 'string') return 'Scholar';
-    let cleaned = str;
-    if (cleaned.includes('{')) {
-      cleaned = cleaned.split('{')[0].trim();
-    }
-    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
-    return cleaned || 'Scholar';
-  };
-
-  // Write a real-time notification to Firestore for the founder
-  const sendFounderNotification = async (type, userInfo) => {
-    try {
-      const rawName = userInfo.name || userInfo.displayName || userInfo.email?.split('@')[0] || 'Unknown';
-      const cleanName = cleanScholarName(rawName);
-      await addDoc(collection(db, 'founder_notifications'), {
-        type,
-        name: cleanName,
-        email: userInfo.email || '',
-        role: userInfo.role || 'user',
-        timestamp: serverTimestamp(),
-        createdAt: new Date().toISOString(),
-        read: false
-      });
-    } catch (e) {
-      console.warn('Failed to send founder notification:', e);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -446,97 +544,6 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     } catch (e) {
       console.error(e);
       setError('Failed to resend verification link: ' + (e.message || 'Please try again.'));
-      setLoading(false);
-    }
-  };
-
-  const processOAuthUser = async (firebaseUser, providerName = 'Google') => {
-    try {
-      const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
-      const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com';
-      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
-      
-      if (!isFounderOrAdmin && !isAllowedDomain) {
-        setError(`Security Access Restricted: Please sign in using your official institutional email (e.g. @gprec.ac.in).`);
-        setLoading(false);
-        try { await auth.signOut(); } catch (e) {}
-        return;
-      }
-
-      const role = isFounderOrAdmin ? 'founder' : (authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user'));
-
-      // Check if user already exists in Supabase
-      const { data: sbUsers } = await supabase
-        .from('users')
-        .select('*')
-        .ilike('email', oauthEmail);
-
-      let userProfile;
-      if (sbUsers && sbUsers.length > 0) {
-        userProfile = { ...sbUsers[0], id: firebaseUser.uid, uid: firebaseUser.uid, role: sbUsers[0].role || role };
-      } else {
-        const cleanName = firebaseUser.displayName || oauthEmail.split('@')[0];
-        const defaultProfile = {
-          id: firebaseUser.uid,
-          uid: firebaseUser.uid,
-          name: cleanName,
-          email: oauthEmail,
-          password: 'google_oauth_managed',
-          qualification: 'B.Tech',
-          college: 'GPREC',
-          place: 'Kurnool',
-          year: '1st Year',
-          cgpa: '9.0',
-          targetCGPA: '9.0',
-          careerGoal: 'Placement',
-          department: 'CSE',
-          sem: '1',
-          sec: 'A',
-          learningStyle: 'Practical',
-          weakSubjects: 'None',
-          strongSubjects: 'None',
-          subjects: 'Computer Science',
-          xp: 50,
-          coins: 100,
-          level: 1,
-          streak: 1,
-          longestStreak: 1,
-          streakFreezeCount: 1,
-          badges: ['first_login'],
-          purchasedThemes: ['default'],
-          purchasedFrames: ['none'],
-          currentTheme: 'default',
-          currentFrame: 'none',
-          created_at: new Date().toISOString(),
-          role,
-          is_approved: true,
-          isApproved: true
-        };
-
-        const sbPayload = {
-          name: `${cleanName} ${JSON.stringify(defaultProfile)}`,
-          email: oauthEmail,
-          password: 'google_oauth_managed',
-          role,
-          created_at: new Date().toISOString(),
-          is_approved: true
-        };
-
-        await Promise.allSettled([
-          supabase.from('users').upsert([sbPayload], { onConflict: 'email' }),
-          setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true }),
-          setDoc(doc(db, 'Users', firebaseUser.uid), defaultProfile, { merge: true })
-        ]);
-
-        userProfile = defaultProfile;
-        sendFounderNotification('register', userProfile).catch(() => {});
-      }
-
-      handleSuccessfulLogin(userProfile);
-    } catch (err) {
-      console.error(err);
-      setError(`Failed to process sign-in with ${providerName}. ${err.message}`);
-    } finally {
       setLoading(false);
     }
   };

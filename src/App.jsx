@@ -73,19 +73,9 @@ function App() {
       try {
         const u = JSON.parse(saved);
         const email = (u?.email || '').toLowerCase().trim();
-        const isFounderOrAdmin = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
-        const isExplicitlyUnblocked = u?.is_blocked === false && (u?.is_approved === true || u?.isApproved === true);
-        const isAllowedDomain = isValidInstitutionalEmail(email) || isFounderOrAdmin || isExplicitlyUnblocked;
+        const isFounderOrAdmin = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
         
-        if (u?.is_blocked === true || !isAllowedDomain) {
-          localStorage.removeItem('lumixora_user');
-          localStorage.removeItem('lumixora_isAuthenticated');
-          signOut(auth).catch(() => {});
-          return null;
-        }
-
-        // Enforce Email Verification across all non-founder sessions
-        if (!isFounderOrAdmin && (u?.emailVerified === false || u?.email_verified === false)) {
+        if (u?.is_blocked === true) {
           localStorage.removeItem('lumixora_user');
           localStorage.removeItem('lumixora_isAuthenticated');
           signOut(auth).catch(() => {});
