@@ -26,8 +26,8 @@ files.forEach(file => {
     let original = content;
 
     // 1. Remove bg-clip-text text-transparent gradients
-    content = content.replace(/bg-gradient-to-[a-z]+ from-[a-z0-9-\/]+ (via-[a-z0-9-\/]+ )?to-[a-z0-9-\/]+ bg-clip-text text-transparent/g, 'text-gray-100');
-    content = content.replace(/bg-gradient-to-[a-z]+ from-[a-z0-9-\/]+ (via-[a-z0-9-\/]+ )?to-[a-z0-9-\/]+ text-transparent bg-clip-text/g, 'text-gray-100');
+    content = content.replace(/bg-gradient-to-[a-z]+ from-[a-z0-9-/]+ (via-[a-z0-9-/]+ )?to-[a-z0-9-/]+ bg-clip-text text-transparent/g, 'text-gray-100');
+    content = content.replace(/bg-gradient-to-[a-z]+ from-[a-z0-9-/]+ (via-[a-z0-9-/]+ )?to-[a-z0-9-/]+ text-transparent bg-clip-text/g, 'text-gray-100');
     
     // 2. Reduce font-black to font-bold or font-semibold for less aggressive look
     content = content.replace(/font-black/g, 'font-semibold');

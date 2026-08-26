@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Brain, TrendingUp, AlertTriangle, Play, RefreshCw, Zap, Award, Calendar, BookOpen, CheckSquare, PlusCircle } from 'lucide-react';
+import { Sparkles, Brain, TrendingUp, AlertTriangle, Play, RefreshCw, Zap, Award, Calendar, BookOpen, CheckSquare, PlusCircle, Globe, ArrowLeft, Sliders, CheckCircle, Flame, BarChart2 } from 'lucide-react';
 import { db } from '../config/firebase';
 import { collection, addDoc, doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { checkAndSeedTwinData, fetchFullStudentHistory, generateAIPredictions, calculateDeterministicTwinPredictions, saveAcademicBaseline } from '../services/aiFutureTwinService';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
+import PublicScholarPortfolio from './PublicScholarPortfolio';
 
 export default function AiFutureTwin({ user, setActiveTab }) {
   const { addToast } = useToast();
@@ -16,16 +17,19 @@ export default function AiFutureTwin({ user, setActiveTab }) {
   
   // Setup Modal State
   const [showSetup, setShowSetup] = useState(false);
+  const [savingSetup, setSavingSetup] = useState(false);
   const [setupData, setSetupData] = useState({
-    cgpa: 8.0,
-    target_cgpa: 9.0,
-    attendance: 85,
+    cgpa: '8.2',
+    target_cgpa: '9.0',
+    attendance: '85',
     semester: 'Sem 3'
   });
-  const [savingSetup, setSavingSetup] = useState(false);
+
+  // Public Portfolio View State
+  const [showPublicPortfolio, setShowPublicPortfolio] = useState(false);
 
   // Simulator parameters state
-  const [simStudyHours, setSimStudyHours] = useState(2);
+  const [simStudyHours, setSimStudyHours] = useState(3);
   const [simRevisionRate, setSimRevisionRate] = useState(80);
   const [simAttendance, setSimAttendance] = useState(85);
   const [simPyqRatio, setSimPyqRatio] = useState(70);
@@ -33,6 +37,16 @@ export default function AiFutureTwin({ user, setActiveTab }) {
   // Simulated metrics overlay
   const [simulatedMetrics, setSimulatedMetrics] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  const cleanScholarName = (str) => {
+    if (!str || typeof str !== 'string') return 'Scholar';
+    let cleaned = str;
+    if (cleaned.includes('{')) {
+      cleaned = cleaned.split('{')[0].trim();
+    }
+    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    return cleaned || 'Scholar';
+  };
 
   // Load and subscribe to Firestore changes
   useEffect(() => {
@@ -42,29 +56,19 @@ export default function AiFutureTwin({ user, setActiveTab }) {
       setLoading(true);
       await checkAndSeedTwinData(user.id);
       
-      // Fetch initial profile
       const data = await fetchFullStudentHistory(user.id);
       if (data) {
         setHistory(data);
         const initialPreds = await generateAIPredictions(user.id, data);
         setPredictions(initialPreds);
         
-        // Auto-save default baseline if none exists, instead of asking user
         if (!data.goals?.previousCGPA) {
-          const defaultBaseline = {
-            cgpa: 8.0,
-            target_cgpa: 9.0,
-            attendance: 85,
-            semester: 'Sem 3'
-          };
-          // Save in background
-          saveAcademicBaseline(user.id, defaultBaseline);
-          setSetupData(defaultBaseline);
+          setShowSetup(true);
         } else {
           setSetupData({
-            cgpa: data.goals.previousCGPA || 8.0,
-            target_cgpa: data.goals.targetCGPA || 9.0,
-            attendance: data.goals.overallAttendance || 85,
+            cgpa: data.goals.previousCGPA || '8.2',
+            target_cgpa: data.goals.targetCGPA || '9.0',
+            attendance: data.goals.overallAttendance || '85',
             semester: data.goals.semester || 'Sem 3'
           });
         }
@@ -74,9 +78,9 @@ export default function AiFutureTwin({ user, setActiveTab }) {
 
     initData();
 
-    // Set up real-time listener on StudySessions to auto-recompute predictions
+    // Set up real-time listener on StudySessions
     const sessionsColl = collection(db, 'Users', user.id, 'StudySessions');
-    const unsubSessions = onSnapshot(sessionsColl, async (snap) => {
+    const unsubSessions = onSnapshot(sessionsColl, async () => {
       const data = await fetchFullStudentHistory(user.id);
       if (data) {
         setHistory(data);
@@ -93,7 +97,30 @@ export default function AiFutureTwin({ user, setActiveTab }) {
     return () => unsubSessions();
   }, [user?.id]);
 
-  // Handle running fully refreshed LLM AI analysis
+  const handleSaveSetup = async () => {
+    if (!setupData.cgpa || !setupData.target_cgpa) {
+      addToast({ message: 'Please enter current and target CGPA', type: 'error' });
+      return;
+    }
+    setSavingSetup(true);
+    try {
+      await saveAcademicBaseline(user.id, setupData);
+      addToast({ message: 'Academic Baseline Saved!', type: 'success' });
+      setShowSetup(false);
+      const data = await fetchFullStudentHistory(user.id);
+      if (data) {
+        setHistory(data);
+        const freshPreds = await generateAIPredictions(user.id, data);
+        setPredictions(freshPreds);
+      }
+    } catch (err) {
+      console.error(err);
+      addToast({ message: 'Failed to save baseline', type: 'error' });
+    } finally {
+      setSavingSetup(false);
+    }
+  };
+
   const handleFullAIAnalysis = async () => {
     if (!user?.id || !history) return;
     setRefreshing(true);
@@ -102,662 +129,545 @@ export default function AiFutureTwin({ user, setActiveTab }) {
       const freshPreds = await generateAIPredictions(user.id, history);
       setPredictions(freshPreds);
       addToast({ message: 'Twin intelligence synced successfully!', type: 'success' });
-      awardXP('SYNC_AI_TWIN');
-    } catch (e) {
-      addToast({ message: 'Neural sync offline. Kept local intelligence.', type: 'warning' });
+      awardXP(100, 'Synced AI Twin');
+    } catch (err) {
+      addToast({ message: 'AI Sync failed', type: 'error' });
     } finally {
       setRefreshing(false);
     }
   };
 
-  // Handle saving the baseline data to Supabase
-  const handleSaveSetup = async () => {
-    if (!user?.id) return;
-    setSavingSetup(true);
-    try {
-      const success = await saveAcademicBaseline(user.id, setupData);
-      if (success) {
-        addToast({ message: 'Baseline data saved to database!', type: 'success' });
-        setShowSetup(false);
-        // Refresh history to apply baseline
-        const data = await fetchFullStudentHistory(user.id);
-        if (data) {
-          setHistory(data);
-          const updatedPreds = calculateDeterministicTwinPredictions(data);
-          setPredictions(prev => ({
-            ...prev,
-            metrics: updatedPreds.metrics,
-            subjectPassingProbabilities: updatedPreds.subjectPassingProbabilities,
-            lastUpdated: new Date().toISOString()
-          }));
-        }
-      } else {
-        addToast({ message: 'Saved baseline locally (Supabase unavailable).', type: 'info' });
-        setShowSetup(false);
-      }
-    } catch (err) {
-      console.error(err);
-      addToast({ message: 'Failed to save baseline.', type: 'error' });
-    } finally {
-      setSavingSetup(false);
-    }
-  };
-
-  // Run decision simulator calculations instantly
-  useEffect(() => {
-    if (!predictions) return;
-    
+  const runSimulation = () => {
     setIsSimulating(true);
-    // Baseline predictions
-    const baseline = predictions.metrics;
-    
-    // Simulate adjustments relative to baseline metrics
-    const hoursDelta = simStudyHours - (baseline.totalStudyMinutes / 120); // normalized baseline study hrs
-    const attDelta = simAttendance - baseline.overallAttendance;
-    const revDelta = simRevisionRate - 65;
-    const pyqDelta = simPyqRatio - 50;
+    setTimeout(() => {
+      const baseCGPA = Number(setupData.cgpa) || 8.2;
+      const hoursFactor = (simStudyHours - 2) * 0.15;
+      const revisionFactor = (simRevisionRate - 70) * 0.005;
+      const attendanceFactor = (simAttendance - 75) * 0.004;
 
-    const simulatedCGPA = Math.min(10.0, Math.max(5.0, Number((
-      baseline.predictedCGPA + 
-      (hoursDelta * 0.15) + 
-      (attDelta * 0.01) + 
-      (revDelta * 0.005) + 
-      (pyqDelta * 0.004)
-    ).toFixed(2))));
+      const simCGPA = Math.min(10, Math.max(5, (baseCGPA + hoursFactor + revisionFactor + attendanceFactor))).toFixed(2);
+      const simSemPct = Math.min(100, Math.max(40, Math.round(85 + hoursFactor * 10 + revisionFactor * 20)));
+      const simPlacement = Math.min(100, Math.max(10, Math.round(20 + hoursFactor * 25 + simPyqRatio * 0.3)));
+      const simBurnout = Math.min(100, Math.max(5, Math.round(10 + hoursFactor * 20)));
 
-    const simulatedSemesterPercentage = Math.min(100, Math.max(45, Math.round(simulatedCGPA * 9.5)));
-    const simulatedPlacementReadiness = Math.min(100, Math.max(20, Math.round(
-      baseline.placementReadiness + (hoursDelta * 4) + (pyqDelta * 0.3)
-    )));
-    const simulatedBurnoutRisk = Math.min(100, Math.max(10, Math.round(
-      baseline.burnoutRisk + (simStudyHours * 8) - (simRevisionRate * 0.2)
-    )));
-    const simulatedBacklogRisk = Math.min(100, Math.max(1, Math.round(
-      baseline.backlogRisk - (attDelta * 1.5) - (hoursDelta * 2)
-    )));
-
-    // Debounce state updates for buttery smooth transitions
-    const timer = setTimeout(() => {
       setSimulatedMetrics({
-        cgpa: simulatedCGPA,
-        percentage: simulatedSemesterPercentage,
-        placement: simulatedPlacementReadiness,
-        burnout: simulatedBurnoutRisk,
-        backlog: simulatedBacklogRisk
+        projectedCGPA: simCGPA,
+        projectedSemesterPercentage: `${simSemPct}%`,
+        placementReadiness: `${simPlacement}%`,
+        burnoutRisk: simBurnout > 40 ? 'High' : simBurnout > 20 ? 'Moderate' : '10%'
       });
       setIsSimulating(false);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [simStudyHours, simRevisionRate, simAttendance, simPyqRatio, predictions]);
-
-  // Real-time Action Loggers to Firestore
-  const logStudySession = async (minutes, source = 'Manual Session') => {
-    if (!user?.id) return;
-    try {
-      const sub = history?.subjects[Math.floor(Math.random() * history.subjects.length)] || { id: 'ds101', name: 'DSA' };
-      const topics = ['Graphs', 'Tree Balances', 'Index optimization', 'Subnet Masking', 'Model Regularization'];
-      const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-      
-      await addDoc(collection(db, 'Users', user.id, 'StudySessions'), {
-        subjectId: sub.id,
-        duration: minutes,
-        date: new Date().toISOString().split('T')[0],
-        focusScore: Math.floor(Math.random() * 20) + 80,
-        topic: source === 'Extension' ? `Tracked via Chrome Extension: ${randomTopic}` : randomTopic
-      });
-
-      addToast({ message: source === 'Extension' ? `Synced ${minutes}m session from Lumixora Chrome Extension!` : `Logged ${minutes}m study session in ${sub.name}!`, type: 'success' });
-      awardXP('COMPLETE_STUDY_SESSION');
-    } catch (e) {
-      console.error(e);
-    }
+      addToast({ message: 'Simulation parameters updated!', type: 'success' });
+    }, 400);
   };
 
-  const logQuizAttempt = async () => {
-    if (!user?.id) return;
-    try {
-      const sub = history?.subjects[Math.floor(Math.random() * history.subjects.length)] || { id: 'ds101' };
-      const score = Math.floor(Math.random() * 3) + 8; // 8, 9, or 10
-
-      await addDoc(collection(db, 'Users', user.id, 'QuizResults'), {
-        subjectId: sub.id,
-        score,
-        total: 10,
-        date: new Date().toISOString().split('T')[0],
-        wrongAnswers: ['Mock subtopic concepts']
-      });
-
-      addToast({ message: `Logged quiz score: ${score}/10!`, type: 'success' });
-      awardXP('FINISH_QUIZ');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const logNotesRead = async () => {
-    if (!user?.id) return;
-    try {
-      const sub = history?.subjects[Math.floor(Math.random() * history.subjects.length)] || { id: 'ds101' };
-      await addDoc(collection(db, 'Users', user.id, 'NotesRead'), {
-        subjectId: sub.id,
-        noteId: `note_${Date.now()}`,
-        title: 'Advanced Module Summaries',
-        readDuration: 12
-      });
-
-      addToast({ message: 'Logged reading lecture notes!', type: 'success' });
-      awardXP('READ_NOTE');
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  if (showPublicPortfolio) {
+    return <PublicScholarPortfolio user={user} history={history} predictions={predictions} onBack={() => setShowPublicPortfolio(false)} />;
+  }
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-brand-teal animate-spin"></div>
-        <p className="text-sm text-gray-400 font-medium animate-pulse">Synchronizing Academic Digital Twin...</p>
+      <div className="flex flex-col items-center justify-center min-h-[500px] space-y-4">
+        <Sparkles className="w-10 h-10 text-emerald-400 animate-spin" />
+        <p className="text-sm font-bold text-gray-400">Synchronizing Predictive Academic Digital Twin...</p>
       </div>
     );
   }
 
-  // Active metrics to display (simulated overrides if adjusting simulator)
-  const activeCGPA = simulatedMetrics?.cgpa || predictions?.metrics?.predictedCGPA || 8.2;
-  const activePercentage = simulatedMetrics?.percentage || predictions?.metrics?.predictedSemesterPercentage || 78;
-  const activePlacement = simulatedMetrics?.placement || predictions?.metrics?.placementReadiness || 65;
-  const activeBurnout = simulatedMetrics?.burnout || predictions?.metrics?.burnoutRisk || 20;
-  const activeBacklog = simulatedMetrics?.backlog || predictions?.metrics?.backlogRisk || 10;
+  const activeMetrics = simulatedMetrics || {
+    projectedCGPA: predictions?.metrics?.projectedCGPA || '8.90',
+    projectedSemesterPercentage: predictions?.metrics?.projectedSemesterPercentage || '85%',
+    placementReadiness: predictions?.metrics?.placementReadiness || '20%',
+    burnoutRisk: predictions?.metrics?.burnoutRisk || '10%'
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
+    <div className="space-y-8 animate-fade-in pb-20 text-left">
+
+      {/* TOP HEADER BAR */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {setActiveTab && (
+            <button 
+              onClick={() => setActiveTab('dashboard')}
+              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 text-emerald-400" />
+              <span>Back</span>
+            </button>
+          )}
+          <div>
+            <h2 className="text-base font-extrabold text-white flex items-center gap-1.5">
+              <span>Welcome back, {cleanScholarName(user?.name)}</span>
+              <span className="text-amber-400">👋</span>
+            </h2>
+            <p className="text-[11px] text-gray-400 font-medium">Explore your personalized academic portal</p>
+          </div>
+        </div>
+      </div>
       
-      {/* Top Banner Widget */}
-      <div className="relative rounded-3xl p-6 md:p-8 bg-gradient-to-br from-brand-purple/20 via-brand-pink/10 to-transparent border border-white/10 overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-pink/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-pink/20 border border-white/10 text-brand-pink text-xs font-semibold tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+      {/* MAIN HERO CARD */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d0f1a] via-[#121526] to-[#0c0d16] p-6 md:p-10 border border-white/10 shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-600/15 via-emerald-600/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold tracking-wide mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
               <span>AI Future Twin™ Live</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
               Predictive Academic Digital Twin
             </h1>
-            <p className="text-xs md:text-sm text-gray-300 max-w-xl leading-relaxed">
+            <p className="text-gray-300 mt-2.5 text-xs md:text-sm leading-relaxed font-normal">
               Lumixora monitors your daily study streaks, attendance rates, and quiz precision to project future milestones, placement potential, and CGPA trends.
             </p>
           </div>
-          
-          <div className="flex gap-2">
+
+          <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => setShowSetup(true)}
-              className="px-4 py-2 rounded-xl bg-white/10 text-white font-bold text-xs tracking-wider uppercase border-none hover:bg-white/20 transition-all flex items-center gap-2 cursor-pointer"
+              onClick={() => setShowPublicPortfolio(true)}
+              className="px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-lg"
             >
-              Update Baseline
+              <Globe className="w-4 h-4" />
+              <span>PUBLIC AI TWIN PORTFOLIO</span>
             </button>
+
             <button
               onClick={handleFullAIAnalysis}
               disabled={refreshing}
-              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-purple text-black font-extrabold text-xs tracking-wider uppercase border-none hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-purple-600 text-white text-xs font-bold flex items-center gap-2 shadow-xl hover:opacity-90 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span>Neural Recalculate</span>
+              <span>NEURAL RECALCULATE</span>
+            </button>
+
+            <button
+              onClick={() => setShowSetup(true)}
+              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-bold transition-all cursor-pointer"
+            >
+              <span>UPDATE BASELINE</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Baseline Setup Modal */}
+      {/* 4 METRIC CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Card 1: Expected CGPA */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/10 bg-black/40 relative overflow-hidden space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-extrabold text-emerald-400">Expected CGPA</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/15 flex items-center justify-center border border-emerald-500/30">
+              <Brain className="w-4 h-4 text-emerald-400" />
+            </div>
+          </div>
+          <span className="text-3xl font-extrabold text-white block tracking-tight">{activeMetrics.projectedCGPA}</span>
+          <p className="text-[10px] text-gray-400 font-medium">Projected based on current study trajectory</p>
+          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${(Number(activeMetrics.projectedCGPA) / 10) * 100}%` }}></div>
+          </div>
+        </div>
+
+        {/* Card 2: Projected Semester % */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/10 bg-black/40 relative overflow-hidden space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-extrabold text-purple-400">Projected Semester %</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/15 flex items-center justify-center border border-purple-500/30">
+              <TrendingUp className="w-4 h-4 text-purple-400" />
+            </div>
+          </div>
+          <span className="text-3xl font-extrabold text-white block tracking-tight">{activeMetrics.projectedSemesterPercentage}</span>
+          <p className="text-[10px] text-gray-400 font-medium">Equates to estimated internal scores</p>
+          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-purple-400 rounded-full" style={{ width: activeMetrics.projectedSemesterPercentage }}></div>
+          </div>
+        </div>
+
+        {/* Card 3: Placement Readiness */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/10 bg-black/40 relative overflow-hidden space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-extrabold text-amber-400">Placement Readiness</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center border border-amber-500/30">
+              <Zap className="w-4 h-4 text-amber-400" />
+            </div>
+          </div>
+          <span className="text-3xl font-extrabold text-white block tracking-tight">{activeMetrics.placementReadiness}</span>
+          <p className="text-[10px] text-gray-400 font-medium">Calculated from DSA + coding practice</p>
+          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-amber-400 rounded-full" style={{ width: activeMetrics.placementReadiness }}></div>
+          </div>
+        </div>
+
+        {/* Card 4: Burnout Risk */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/10 bg-black/40 relative overflow-hidden space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-extrabold text-indigo-400">Burnout Risk</span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 flex items-center justify-center border border-indigo-500/30">
+              <AlertTriangle className="w-4 h-4 text-indigo-400" />
+            </div>
+          </div>
+          <span className="text-3xl font-extrabold text-white block tracking-tight">{activeMetrics.burnoutRisk}</span>
+          <p className="text-[10px] text-gray-400 font-medium">Risk score relative to target consistency</p>
+          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-400 rounded-full" style={{ width: '15%' }}></div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* CGPA GROWTH TIMELINE & FUTURE SIMULATOR GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left: CGPA Growth Timeline with Graph */}
+        <div className="lg:col-span-2 glass-panel p-6 rounded-3xl border border-white/10 bg-black/40 space-y-5">
+          <div className="flex justify-between items-center">
+            <div className="space-y-0.5">
+              <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-emerald-400" />
+                <span>CGPA Growth Timeline & Interactive Trajectory Graph</span>
+              </h3>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Live neural curve simulated across past, current, and forecasted semesters.
+              </p>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30 shrink-0">
+              PREDICTED: {activeMetrics.projectedCGPA} CGPA
+            </span>
+          </div>
+
+          {/* Dynamic SVG Graph & Semester Cards */}
+          {(() => {
+            const sem1 = 7.8;
+            const sem2 = 8.2;
+            const sem3 = Number(setupData.cgpa) || 8.5;
+            const sem4 = Number(activeMetrics.projectedCGPA) || 8.88;
+            const targetCGPA = Number(setupData.target_cgpa) || 9.0;
+
+            const width = 500;
+            const height = 180;
+            const paddingLeft = 45;
+            const paddingRight = 45;
+            const paddingTop = 30;
+            const paddingBottom = 40;
+
+            const minY = 6.0;
+            const maxY = 10.0;
+
+            const getY = (val) => {
+              const clamped = Math.min(maxY, Math.max(minY, val));
+              const ratio = (clamped - minY) / (maxY - minY);
+              return height - paddingBottom - ratio * (height - paddingTop - paddingBottom);
+            };
+
+            const points = [
+              { sem: 'Sem 1', val: sem1.toFixed(1), x: paddingLeft, y: getY(sem1), status: 'Completed' },
+              { sem: 'Sem 2', val: sem2.toFixed(1), x: paddingLeft + (width - paddingLeft - paddingRight) * 0.33, y: getY(sem2), status: 'Completed' },
+              { sem: 'Sem 3', val: sem3.toFixed(1), x: paddingLeft + (width - paddingLeft - paddingRight) * 0.66, y: getY(sem3), status: 'Current' },
+              { sem: 'Sem 4', val: sem4.toFixed(2), x: width - paddingRight, y: getY(sem4), status: 'Predicted' }
+            ];
+
+            const p0 = points[0];
+            const p1 = points[1];
+            const p2 = points[2];
+            const p3 = points[3];
+
+            const linePath = `M ${p0.x} ${p0.y} C ${p0.x + 40} ${p0.y}, ${p1.x - 40} ${p1.y}, ${p1.x} ${p1.y} C ${p1.x + 40} ${p1.y}, ${p2.x - 40} ${p2.y}, ${p2.x} ${p2.y} C ${p2.x + 40} ${p2.y}, ${p3.x - 40} ${p3.y}, ${p3.x} ${p3.y}`;
+            const areaPath = `${linePath} L ${p3.x} ${height - paddingBottom} L ${p0.x} ${height - paddingBottom} Z`;
+            const targetY = getY(targetCGPA);
+
+            return (
+              <div className="space-y-4">
+                {/* SVG Visual Graph */}
+                <div className="relative w-full overflow-hidden rounded-2xl bg-black/60 border border-white/5 p-2 sm:p-4 shadow-inner">
+                  {/* Target Goal Badge */}
+                  <div className="absolute right-3 top-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-extrabold text-amber-300 z-10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                    Target Goal: {targetCGPA.toFixed(1)} CGPA
+                  </div>
+
+                  <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto drop-shadow-md">
+                    <defs>
+                      <linearGradient id="cgpaAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+                        <stop offset="60%" stopColor="#a855f7" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#000000" stopOpacity="0.0" />
+                      </linearGradient>
+                      <linearGradient id="cgpaStrokeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="60%" stopColor="#06b6d4" />
+                        <stop offset="100%" stopColor="#c084fc" />
+                      </linearGradient>
+                      <filter id="glowG" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+
+                    {/* Horizontal Reference Lines */}
+                    {[7.0, 8.0, 9.0, 10.0].map((level) => {
+                      const yPos = getY(level);
+                      return (
+                        <g key={level}>
+                          <line
+                            x1={paddingLeft - 10}
+                            y1={yPos}
+                            x2={width - paddingRight + 10}
+                            y2={yPos}
+                            stroke="#ffffff"
+                            strokeOpacity="0.08"
+                            strokeDasharray="4 4"
+                          />
+                          <text
+                            x={paddingLeft - 15}
+                            y={yPos + 3}
+                            fill="#64748b"
+                            fontSize="9"
+                            fontFamily="sans-serif"
+                            fontWeight="bold"
+                            textAnchor="end"
+                          >
+                            {level.toFixed(1)}
+                          </text>
+                        </g>
+                      );
+                    })}
+
+                    {/* Target CGPA Gold Line */}
+                    <line
+                      x1={paddingLeft}
+                      y1={targetY}
+                      x2={width - paddingRight}
+                      y2={targetY}
+                      stroke="#f59e0b"
+                      strokeOpacity="0.4"
+                      strokeWidth="1.5"
+                      strokeDasharray="6 4"
+                    />
+
+                    {/* Area Fill */}
+                    <path d={areaPath} fill="url(#cgpaAreaGradient)" />
+
+                    {/* Main Line */}
+                    <path
+                      d={linePath}
+                      fill="none"
+                      stroke="url(#cgpaStrokeGradient)"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      filter="url(#glowG)"
+                    />
+
+                    {/* Data Points */}
+                    {points.map((pt, i) => (
+                      <g key={i} className="cursor-pointer group">
+                        {(pt.status === 'Predicted' || pt.status === 'Current') && (
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r="11"
+                            fill={pt.status === 'Predicted' ? '#a855f7' : '#10b981'}
+                            fillOpacity="0.25"
+                            className="animate-pulse"
+                          />
+                        )}
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r="5.5"
+                          fill={pt.status === 'Predicted' ? '#c084fc' : pt.status === 'Current' ? '#10b981' : '#e2e8f0'}
+                          stroke="#0e0e1a"
+                          strokeWidth="2.5"
+                        />
+                        <rect
+                          x={pt.x - 22}
+                          y={pt.y - 23}
+                          width="44"
+                          height="16"
+                          rx="4"
+                          fill="#10101c"
+                          stroke={pt.status === 'Predicted' ? '#a855f7' : '#ffffff20'}
+                          strokeWidth="1"
+                        />
+                        <text
+                          x={pt.x}
+                          y={pt.y - 12}
+                          fill={pt.status === 'Predicted' ? '#c084fc' : '#ffffff'}
+                          fontSize="9"
+                          fontWeight="900"
+                          textAnchor="middle"
+                        >
+                          {pt.val}
+                        </text>
+                        <text
+                          x={pt.x}
+                          y={height - paddingBottom + 18}
+                          fill={pt.status === 'Predicted' ? '#c084fc' : '#94a3b8'}
+                          fontSize="10"
+                          fontWeight="bold"
+                          textAnchor="middle"
+                        >
+                          {pt.sem}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+
+                {/* Semester Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    { sem: 'Sem 1', cgpa: `${sem1.toFixed(1)}`, status: 'Completed', color: 'text-gray-400 bg-gray-500/10 border-gray-500/20' },
+                    { sem: 'Sem 2', cgpa: `${sem2.toFixed(1)}`, status: 'Completed', color: 'text-gray-400 bg-gray-500/10 border-gray-500/20' },
+                    { sem: 'Sem 3 (Current)', cgpa: `${sem3.toFixed(1)}`, status: 'In Progress', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+                    { sem: 'Sem 4 (Forecast)', cgpa: `${sem4.toFixed(2)}`, status: 'Predicted Outcome', color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' }
+                  ].map((s, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 rounded-2xl bg-black/30 border border-white/5 hover:border-white/10 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold border ${s.color}`}>{s.sem}</span>
+                        <span className="text-[11px] font-bold text-gray-300">{s.status}</span>
+                      </div>
+                      <span className="text-xs font-black text-white">{s.cgpa} CGPA</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Right: Future Simulator */}
+        <div className="glass-panel p-6 rounded-3xl border border-white/10 bg-black/40 space-y-5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-base font-extrabold text-white">Future Simulator</h3>
+          </div>
+          <p className="text-xs text-gray-400">Adjust parameters to simulate your future academic outcome.</p>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold text-gray-300">
+                <span>Daily Study Hours:</span>
+                <span className="text-emerald-400 font-extrabold">{simStudyHours} hrs/day</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                value={simStudyHours}
+                onChange={(e) => setSimStudyHours(Number(e.target.value))}
+                className="w-full accent-emerald-400 cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold text-gray-300">
+                <span>Target Revision Rate:</span>
+                <span className="text-purple-400 font-extrabold">{simRevisionRate}%</span>
+              </div>
+              <input
+                type="range"
+                min="40"
+                max="100"
+                value={simRevisionRate}
+                onChange={(e) => setSimRevisionRate(Number(e.target.value))}
+                className="w-full accent-purple-400 cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold text-gray-300">
+                <span>Class Attendance:</span>
+                <span className="text-blue-400 font-extrabold">{simAttendance}%</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="100"
+                value={simAttendance}
+                onChange={(e) => setSimAttendance(Number(e.target.value))}
+                className="w-full accent-blue-400 cursor-pointer"
+              />
+            </div>
+
+            <button
+              onClick={runSimulation}
+              disabled={isSimulating}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-purple-600 text-white font-extrabold text-xs shadow-lg hover:opacity-90 transition-all cursor-pointer mt-2"
+            >
+              {isSimulating ? 'Simulating Output...' : 'Run Simulation'}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* BASELINE SETUP MODAL */}
       {showSetup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1a1a24] border border-white/10 p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-2xl relative">
-            <h2 className="text-2xl font-bold text-white mb-2">Setup Your Baseline</h2>
-            <p className="text-sm text-gray-400 mb-6">Enter your actual previous data to generate accurate AI predictions and store it in your profile.</p>
-            
-            <div className="space-y-5">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0c0f1d] p-6 md:p-8 rounded-3xl border border-white/15 max-w-md w-full space-y-4">
+            <h3 className="text-xl font-extrabold text-white flex items-center gap-2">
+              <Brain className="w-5 h-5 text-emerald-400" />
+              <span>Academic Baseline Setup</span>
+            </h3>
+            <p className="text-xs text-gray-400">Configure your current CGPA and target goals to calibrate your AI Future Twin™.</p>
+
+            <div className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Previous CGPA</label>
-                <input 
-                  type="number" step="0.01" min="0" max="10"
+                <label className="text-xs font-bold text-gray-300 block mb-1">Current CGPA:</label>
+                <input
+                  type="number"
+                  step="0.01"
                   value={setupData.cgpa}
-                  onChange={e => setSetupData({...setupData, cgpa: parseFloat(e.target.value) || 0})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-teal"
+                  onChange={(e) => setSetupData(prev => ({ ...prev, cgpa: e.target.value }))}
+                  placeholder="e.g. 8.2"
+                  className="w-full bg-black/60 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none focus:border-emerald-400"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Goal Target CGPA</label>
-                <input 
-                  type="number" step="0.01" min="0" max="10"
+                <label className="text-xs font-bold text-gray-300 block mb-1">Target CGPA Goal:</label>
+                <input
+                  type="number"
+                  step="0.01"
                   value={setupData.target_cgpa}
-                  onChange={e => setSetupData({...setupData, target_cgpa: parseFloat(e.target.value) || 0})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink"
+                  onChange={(e) => setSetupData(prev => ({ ...prev, target_cgpa: e.target.value }))}
+                  placeholder="e.g. 9.0"
+                  className="w-full bg-black/60 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none focus:border-emerald-400"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Current Semester</label>
-                <select 
-                  value={setupData.semester}
-                  onChange={e => setSetupData({...setupData, semester: e.target.value})}
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-blue"
-                >
-                  <option>Sem 1</option><option>Sem 2</option><option>Sem 3</option><option>Sem 4</option>
-                  <option>Sem 5</option><option>Sem 6</option><option>Sem 7</option><option>Sem 8</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-300 tracking-wide mb-2">Overall Past Attendance (%)</label>
-                <input 
-                  type="number" min="0" max="100"
+                <label className="text-xs font-bold text-gray-300 block mb-1">Overall Attendance (%):</label>
+                <input
+                  type="number"
                   value={setupData.attendance}
-                  onChange={e => setSetupData({...setupData, attendance: parseInt(e.target.value) || 0})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-purple"
+                  onChange={(e) => setSetupData(prev => ({ ...prev, attendance: e.target.value }))}
+                  placeholder="e.g. 85"
+                  className="w-full bg-black/60 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none focus:border-emerald-400"
                 />
               </div>
             </div>
 
-            <div className="flex gap-4 mt-8">
-              <button 
+            <div className="flex gap-3 pt-2">
+              <button
                 onClick={() => setShowSetup(false)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all"
+                className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveSetup}
                 disabled={savingSetup}
-                className="flex-1 py-3 rounded-xl bg-brand-teal text-black font-bold hover:opacity-90 transition-all disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-purple-600 text-white font-extrabold text-xs cursor-pointer hover:opacity-90"
               >
-                {savingSetup ? 'Saving...' : 'Save & Predict'}
+                {savingSetup ? 'Saving...' : 'Save Baseline'}
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Grid of Key Projections & Real-Time Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* Expected CGPA */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-teal font-extrabold tracking-wide">Expected CGPA</span>
-            <div className="w-8 h-8 rounded-lg bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-              <Brain className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="my-4">
-            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activeCGPA.toFixed(2)}</h3>
-            <p className="text-[10px] text-gray-400 mt-1 font-semibold">Projected based on current study trajectory</p>
-          </div>
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-brand-teal rounded-full transition-all duration-75" style={{ width: `${(activeCGPA / 10) * 100}%` }}></div>
-          </div>
-        </div>
-
-        {/* Semester Pass Percentage */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-pink font-extrabold tracking-wide">Projected Semester %</span>
-            <div className="w-8 h-8 rounded-lg bg-brand-pink/10 flex items-center justify-center text-brand-pink">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="my-4">
-            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activePercentage}%</h3>
-            <p className="text-[10px] text-gray-400 mt-1 font-semibold">Equates to estimated internal scores</p>
-          </div>
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-brand-pink rounded-full transition-all duration-75" style={{ width: `${activePercentage}%` }}></div>
-          </div>
-        </div>
-
-        {/* Placement Readiness */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-blue font-extrabold tracking-wide">Placement Readiness</span>
-            <div className="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center text-brand-blue">
-              <Zap className="w-4 h-4 animate-pulse" />
-            </div>
-          </div>
-          <div className="my-4">
-            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activePlacement}%</h3>
-            <p className="text-[10px] text-gray-400 mt-1 font-semibold">Calculated from DSA + coding practice</p>
-          </div>
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-brand-blue rounded-full transition-all duration-75" style={{ width: `${activePlacement}%` }}></div>
-          </div>
-        </div>
-
-        {/* Burnout Risk */}
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between group border border-white/5 hover:border-white/10 transition-all duration-300">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] text-brand-purple font-extrabold tracking-wide">Burnout Risk</span>
-            <div className="w-8 h-8 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="my-4">
-            <h3 className="text-4xl font-semibold text-gray-100 tracking-tight">{activeBurnout}%</h3>
-            <p className="text-[10px] text-gray-400 mt-1 font-semibold">Risk score relative to target consistency</p>
-          </div>
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-brand-purple rounded-full transition-all duration-75" style={{ width: `${activeBurnout}%` }}></div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Real-time Interaction Console */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-base font-bold text-gray-100 tracking-wide">Real-Time Action Center</h2>
-            <p className="text-[10px] text-gray-400 mt-0.5">Perform study actions instantly to recalculate the twin forecasts.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button 
-              onClick={() => logStudySession(45)} 
-              className="text-[10px] bg-brand-teal/10 hover:bg-brand-teal border border-white/10 text-brand-teal hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <PlusCircle className="w-3.5 h-3.5" /> Study Session (45m)
-            </button>
-            <button 
-              onClick={() => {
-                localStorage.setItem('mentor_action', 'generate_quiz');
-                setActiveTab('mentor');
-              }} 
-              className="text-[10px] bg-brand-pink/10 hover:bg-brand-pink border border-white/10 text-brand-pink hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Award className="w-3.5 h-3.5" /> Take Quiz (9/10)
-            </button>
-            <button 
-              onClick={() => logNotesRead()} 
-              className="text-[10px] bg-brand-blue/10 hover:bg-brand-blue border border-white/10 text-brand-blue hover:text-black font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <BookOpen className="w-3.5 h-3.5" /> Read Notes
-            </button>
-            <button 
-              onClick={() => logStudySession(60, 'Extension')} 
-              className="text-[10px] bg-[#9333ea]/15 hover:bg-[#9333ea] border border-[#9333ea]/35 text-[#c084fc] hover:text-white font-bold uppercase py-2 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer relative overflow-hidden group shadow-sm"
-            >
-              <Zap className="w-3.5 h-3.5 animate-pulse" /> Sync Extension (60m)
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Two Column Layout: Visualizations & Simulator */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Visualizations Column */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {/* Custom SVG Line Chart */}
-          <div className="glass-panel p-6 rounded-2xl flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h3 className="text-sm font-bold text-gray-100 tracking-wide">CGPA Growth Timeline</h3>
-                <p className="text-[10px] text-gray-400 mt-0.5">Projections mapping study hours to semester outcomes.</p>
-              </div>
-              <span className="text-[10px] bg-brand-teal/20 text-brand-teal font-extrabold uppercase py-1 px-3 rounded-full border border-white/10">
-                Predicted: {activeCGPA.toFixed(2)} CGPA
-              </span>
-            </div>
-
-            {/* Custom SVG Line Chart */}
-            <div className="h-64 w-full relative">
-              <svg className="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00f5d4" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#00f5d4" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="simGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f72585" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#f72585" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                
-                {/* Horizontal Grid lines */}
-                {[40, 80, 120, 160].map((y, idx) => (
-                  <line key={idx} x1="0" y1={y} x2="500" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                ))}
-
-                {/* Base Prediction Line */}
-                <path 
-                  d={`M 0 160 Q 100 135, 200 110 T 300 80 T 400 65 T 500 ${200 - (predictions?.metrics?.predictedCGPA || 8.0) * 18}`}
-                  fill="url(#chartGrad)"
-                  stroke="#00f5d4"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-
-                {/* Simulated Prediction Line (Red overlay if simulator values adjusted) */}
-                {(simStudyHours !== 2 || simAttendance !== 85) && (
-                  <path 
-                    d={`M 0 160 Q 100 135, 200 110 T 300 85 T 400 70 T 500 ${200 - activeCGPA * 18}`}
-                    fill="url(#simGrad)"
-                    stroke="#f72585"
-                    strokeWidth="2.5"
-                    strokeDasharray="4"
-                    strokeLinecap="round"
-                  />
-                )}
-              </svg>
-              
-              {/* Timeline labels */}
-              <div className="flex justify-between mt-2 text-[9px] text-gray-500 font-bold tracking-wide px-1">
-                <span>Month 1</span>
-                <span>Month 2</span>
-                <span>Month 3</span>
-                <span>Month 4</span>
-                <span>Semester End (Projections)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Subject passing probabilities */}
-          <div className="glass-panel p-6 rounded-2xl flex flex-col">
-            <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-4">Subject-wise Passing Probabilities</h3>
-            
-            <div className="space-y-4">
-              {predictions?.subjectPassingProbabilities?.map((sub, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white/5 border border-white/5 rounded-xl">
-                  <div className="space-y-0.5">
-                    <span className="text-[10px] text-brand-blue font-bold uppercase">{sub.code}</span>
-                    <h4 className="text-xs font-bold text-gray-200">{sub.name}</h4>
-                  </div>
-
-                  <div className="flex items-center gap-3 w-full sm:w-1/2">
-                    <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          sub.probability > 85 ? 'bg-brand-teal' : sub.probability > 70 ? 'bg-brand-blue' : 'bg-brand-pink'
-                        }`} 
-                        style={{ width: `${sub.probability}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs font-bold text-gray-300 shrink-0 w-10 text-right">{sub.probability}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
-        {/* Future Decision Simulator Column */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden bg-gradient-to-br from-brand-purple/10 to-transparent">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-brand-teal" />
-              <h3 className="text-sm font-bold text-gray-100 tracking-wide">Future Simulator</h3>
-            </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed mb-6">
-              Simulate actions to test how modifying study habits affects predictions instantly.
-            </p>
-
-            <div className="space-y-5">
-              
-              {/* Daily Study Hours Slider */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-bold text-gray-300">
-                  <span>Daily Study Target</span>
-                  <span className="text-brand-teal">{simStudyHours} Hours</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="8" 
-                  step="0.5"
-                  value={simStudyHours}
-                  onChange={(e) => setSimStudyHours(Number(e.target.value))}
-                  className="w-full accent-brand-teal h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-              {/* Revision Rate Slider */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-bold text-gray-300">
-                  <span>Revision Frequency</span>
-                  <span className="text-brand-pink">{simRevisionRate}% frequency</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="20" 
-                  max="100" 
-                  value={simRevisionRate}
-                  onChange={(e) => setSimRevisionRate(Number(e.target.value))}
-                  className="w-full accent-brand-pink h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-              {/* Attendance Ratio Slider */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] font-bold text-gray-300">
-                  <span>Simulated Attendance</span>
-                  <span className="text-brand-blue">{simAttendance}% rate</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="40" 
-                  max="100" 
-                  value={simAttendance}
-                  onChange={(e) => setSimAttendance(Number(e.target.value))}
-                  className="w-full accent-brand-blue h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-            </div>
-
-            {/* Sim outcomes details overlay card */}
-            <div className="mt-6 p-4 rounded-xl border border-white/10 bg-brand-teal/5 space-y-3">
-              <span className="text-[9px] text-brand-teal font-extrabold tracking-wide block">Simulated Outcome projection</span>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] text-gray-500 block font-bold">Projected CGPA</span>
-                  <span className="text-lg font-semibold text-gray-200 mt-0.5 block">{activeCGPA.toFixed(2)}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-gray-500 block font-bold">Burnout Risk</span>
-                  <span className="text-lg font-semibold text-gray-200 mt-0.5 block">{activeBurnout}%</span>
-                </div>
-              </div>
-              <button 
-                onClick={async () => {
-                  const newGoals = {
-                    ...setupData,
-                    target_cgpa: activeCGPA,
-                    attendance: simAttendance
-                  };
-                  setSetupData(newGoals);
-                  addToast({ message: 'Saving new target baseline...', type: 'info' });
-                  const success = await saveAcademicBaseline(user.id, newGoals);
-                  if (success) {
-                    addToast({ message: 'New goal target automatically saved!', type: 'success' });
-                    // Refresh predictions silently
-                    const data = await fetchFullStudentHistory(user.id);
-                    if (data) {
-                      setHistory(data);
-                      const updatedPreds = calculateDeterministicTwinPredictions(data);
-                      setPredictions(prev => ({ ...prev, metrics: updatedPreds.metrics, subjectPassingProbabilities: updatedPreds.subjectPassingProbabilities }));
-                    }
-                  } else {
-                    addToast({ message: 'Failed to auto-save goals.', type: 'error' });
-                  }
-                }}
-                className="w-full mt-2 py-2 rounded-lg bg-brand-teal/10 hover:bg-brand-teal border border-white/10 text-brand-teal hover:text-black font-bold text-xs transition-all tracking-wide cursor-pointer"
-              >
-                Save as New Goal Target
-              </button>
-            </div>
-
-          </div>
-
-          {/* Risk Alerts Engine */}
-          <div className="glass-panel p-6 rounded-2xl flex flex-col border border-white/5">
-            <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-4">Risk Engine Monitoring</h3>
-            
-            <div className="space-y-3">
-              {activeBacklog > 20 && (
-                <div className="p-3 bg-brand-pink/10 border border-white/10 rounded-xl flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-brand-pink shrink-0" />
-                  <div>
-                    <h5 className="text-[10px] text-brand-pink font-extrabold uppercase">Backlog warning</h5>
-                    <p className="text-[10px] text-gray-300 mt-0.5">Below 75% attendance / low completion triggers backlogs.</p>
-                  </div>
-                </div>
-              )}
-              {activeBurnout > 40 && (
-                <div className="p-3 bg-brand-purple/10 border border-white/10 rounded-xl flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-brand-purple shrink-0" />
-                  <div>
-                    <h5 className="text-[10px] text-brand-purple font-extrabold uppercase">Burnout warning</h5>
-                    <p className="text-[10px] text-gray-300 mt-0.5">High target hours and low sleep ratios trigger fatigue indicators.</p>
-                  </div>
-                </div>
-              )}
-              {activeBacklog <= 20 && activeBurnout <= 40 && (
-                <div className="p-3 bg-brand-teal/10 border border-white/10 rounded-xl flex gap-3">
-                  <CheckSquare className="w-5 h-5 text-brand-teal shrink-0" />
-                  <div>
-                    <h5 className="text-[10px] text-brand-teal font-extrabold uppercase">All Trajectories Stable</h5>
-                    <p className="text-[10px] text-gray-300 mt-0.5">Academic focus variance is stable. No backlog or risk flags raised.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* AI Recommendations */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/5 relative overflow-hidden">
-        <h3 className="text-sm font-bold text-gray-100 tracking-wide mb-5">AI Recommendation Feed</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {predictions?.recommendations?.map((rec, idx) => (
-            <div key={idx} className="p-4 bg-white/5 border border-white/5 rounded-2xl flex justify-between items-start gap-4">
-              <div className="space-y-1">
-                <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wide inline-block ${
-                  rec.priority === 'High' ? 'bg-brand-pink/20 text-brand-pink' : 'bg-brand-teal/20 text-brand-teal'
-                }`}>{rec.priority} Priority</span>
-                <h4 className="text-xs font-bold text-gray-200 mt-1">{rec.task}</h4>
-                <p className="text-[10px] text-gray-500 font-semibold">{rec.subject} • {rec.estTime} study time</p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-xs font-bold text-brand-teal block">{rec.expectedIncrease}</span>
-                <span className="text-[9px] text-gray-500 font-bold block mt-0.5">Impact</span>
-              </div>
-            </div>
-          )) || (
-            <div className="col-span-2 text-center py-4 text-xs italic text-gray-500">No suggestions compiled. Click Neural Recalculate above!</div>
-          )}
-        </div>
-      </div>
 
     </div>
   );

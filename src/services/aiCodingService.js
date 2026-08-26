@@ -1,68 +1,77 @@
-// AI Coding Assistant and Submission Feedback Service for Lumixora
+// AI Coding Assistant Services for Lumixora Code Arena
+// Migrated completely to Groq API (openai/gpt-oss-120b)
+
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+async function fetchGroq(systemPrompt, userPrompt, temperature = 0.7, jsonMode = false) {
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+  if (!apiKey) { console.warn("API Key omitted, using deterministic code service..."); return "Code helper offline. Check API settings."; }
+
+  const requestBody = {
+    model: "openai/gpt-oss-120b",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    temperature: temperature
+  };
+
+  if (jsonMode) {
+    requestBody.response_format = { type: "json_object" };
+  }
+
+  const response = await fetch(GROQ_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.warn(`API call status ${response.status}: ${text}, returning default code assistant output...`); return "Code assistant standby.";
+  }
+
+  const data = await response.json();
+  let text = data.choices[0].message.content;
+  return text;
+}
+
+function parseJsonFromText(text) {
+  text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  const jsonStart = text.indexOf('{');
+  const jsonEnd = text.lastIndexOf('}');
+  if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+    return text.substring(jsonStart, jsonEnd + 1);
+  }
+  return text;
+}
 
 /**
- * AI Coding Assistance Drawer Actions: Hint, Dry Run, Explain, Optimize
+ * Triggered manually by user (Explain, Optimize, Trace, Hint)
  */
 export async function getAICodingAssistantHelp(actionType, problem, code, language) {
   try {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-    if (!apiKey) throw new Error("Groq API Key is missing!");
-
-    let prompt = '';
+    let systemPrompt = "You are an expert AI pair programmer.";
+    let userPrompt = `Challenge Problem: "${problem.title}"\nProblem Statement:\n${problem.statement}\n\nSelected Language: ${language}\nCurrent Code Draft:\n${code}\n\n`;
+    
     if (actionType === 'explain') {
-      prompt = `You are a professional coding coach. Provide an intuitive, step-by-step breakdown of how the user's code solves the problem "${problem.title}". Highlight key algorithmic parts, and explain how the loops/data-structures work. Keep it clear, concise, and structured in Markdown. Do not reveal alternative complete solutions unless specifically requested.`;
-    } else if (actionType === 'hint') {
-      prompt = `You are a supportive, high-level coding mentor. Review the user's current code for the problem "${problem.title}". 
-**CRITICAL**: Do NOT write or provide the complete solution. 
-Instead:
-1. Point out any logical bugs or syntactical issues in their current draft.
-2. Provide a constructive, guided hint or a leading question that helps them think about the next step or an edge-case.
-3. Suggest an algorithm class (e.g., "Think about using two-pointers here...").
-Format the output in clear, readable Markdown.`;
+      systemPrompt = "You are a patient computer science tutor.";
+      userPrompt += `Explain what this code is doing step-by-step. Break down the logic simply. If the code is incomplete or empty, explain the general approach to solve this problem instead.`;
     } else if (actionType === 'dry-run') {
-      prompt = `You are a debugger and virtual executor. Review the user's code for "${problem.title}" and generate a Dry Run Visualization.
-1. Provide a step-by-step trace of how the variables change state on a small input (e.g. if Arrays, trace a 3-element list).
-2. Generate a clean Markdown trace table representing columns for: Row/Line, Iteration, Variable Values, and Operation.
-3. Conclude with a 2-sentence summary of the dry run walk.`;
+      systemPrompt = "You are a deterministic code tracer.";
+      userPrompt += `Perform a dry-run trace of this code using the first example test case. Show the values of the variables at each step of the loop. Format clearly in markdown.`;
+    } else if (actionType === 'hint') {
+      systemPrompt = "You are an encouraging mentor.";
+      userPrompt += `Provide a subtle hint to help me progress or fix my logic. DO NOT give me the full code or the direct answer. Just point me in the right direction.`;
     } else if (actionType === 'optimize') {
-      prompt = `You are a senior systems engineer. Analyze the time and space complexity of the user's code for "${problem.title}".
-1. Calculate the current Time Complexity (e.g., O(N^2)) and Space Complexity (e.g., O(1)).
-2. Explain where the bottleneck is.
-3. Suggest a better, more optimal algorithm (e.g. showing how to reduce it to O(N log N) or O(N)), explaining the trade-offs.
-Do not write the full code, just explain the approach in Markdown.`;
+      systemPrompt = "You are a senior staff software engineer.";
+      userPrompt += `Analyze the time and space complexity of this code. Suggest a better, more optimal algorithm (e.g. showing how to reduce it to O(N log N) or O(N)), explaining the trade-offs. Do not write the full code, just explain the approach in Markdown.`;
     }
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: prompt },
-          { 
-            role: "user", 
-            content: `Challenge Problem: "${problem.title}"
-Problem Statement:
-${problem.statement}
-
-Selected Language: ${language}
-Current Code Draft:
-${code}` 
-          }
-        ],
-        temperature: 0.3
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI Gateway Error (${response.status})`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
+    return await fetchGroq(systemPrompt, userPrompt, 0.7);
   } catch (err) {
     console.error("AI Assistant error:", err);
     return `### AI Assistant Unavailable\n\nFailed to load feedback from AI Copilot: ${err.message}`;
@@ -74,9 +83,6 @@ ${code}`
  */
 export async function getPostSubmissionFeedback(problem, code, language, status, runtime, memory) {
   try {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-    if (!apiKey) throw new Error("Groq API Key is missing!");
-
     const systemPrompt = `You are a code review auditor. Review the user's final submission for the coding problem "${problem.title}".
 Submission Status: ${status}
 Recorded Execution Time: ${runtime}
@@ -87,8 +93,10 @@ Analyze their code and provide a structured JSON response.
 You must output ONLY a valid JSON object. Do not include markdown code blocks or backticks.
 JSON Schema:
 {
-  "qualityScore": 85, (Grade 1-100 based on syntax, clean-code, and efficiency)
-  "readabilityScore": 90, (Grade 1-100 based on names, formatting, and simplicity)
+  "timeComplexity": "O(N) (or whatever the estimated time complexity is)",
+  "spaceComplexity": "O(N) (or whatever the estimated space complexity is)",
+  "qualityScore": 85,
+  "readabilityScore": 90,
   "correctnessAnalysis": "A short summary explaining if the code handles all edge cases, duplicates, nulls, and boundary conditions.",
   "suggestions": [
     "Suggestion 1: e.g. Rename single-character variables to be more descriptive.",
@@ -98,46 +106,15 @@ JSON Schema:
   "learningTip": "A customized tip on what coding patterns/data-structures they should review based on this solve."
 }`;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { 
-            role: "user", 
-            content: `Code submitted in ${language}:
-${code}` 
-          }
-        ],
-        temperature: 0.2
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI Review API Error (${response.status})`);
-    }
-
-    const data = await response.json();
-    let text = data.choices[0].message.content;
-    
-    // Clean JSON tags
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      text = text.substring(jsonStart, jsonEnd + 1);
-    }
-
-    return JSON.parse(text);
+    const userPrompt = `Code submitted in ${language}:\n${code}`;
+    const text = await fetchGroq(systemPrompt, userPrompt, 0.1, true);
+    const jsonStr = parseJsonFromText(text);
+    return JSON.parse(jsonStr);
   } catch (err) {
     console.error("AI review helper error:", err);
-    // Fallback response if AI review fails
     return {
+      timeComplexity: "Unknown",
+      spaceComplexity: "Unknown",
       qualityScore: 70,
       readabilityScore: 75,
       correctnessAnalysis: "Could not evaluate correctness automatically due to API timeout.",
@@ -153,9 +130,6 @@ ${code}`
  */
 export async function generateProblemFromCode(codeContent, fileName) {
   try {
-    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-    if (!apiKey) throw new Error("Groq API Key is missing!");
-
     const systemPrompt = `You are an expert curriculum developer and technical interviewer.
 Analyze the provided code file and extract/generate a complete LeetCode-style coding question out of it.
 Generate appropriate test cases (both public and hidden), input/output descriptions, examples, editorial, and starter templates.
@@ -201,40 +175,25 @@ Format:
   }
 }`;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `File Name: ${fileName}\n\nCode Content:\n${codeContent}` }
-        ],
-        temperature: 0.2
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI API Error (${response.status})`);
-    }
-
-    const data = await response.json();
-    let text = data.choices[0].message.content;
-    
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      text = text.substring(jsonStart, jsonEnd + 1);
-    }
-
-    return JSON.parse(text);
+    const userPrompt = `File Name: ${fileName}\n\nCode Content:\n${codeContent}`;
+    const text = await fetchGroq(systemPrompt, userPrompt, 0.5, true);
+    const jsonStr = parseJsonFromText(text);
+    return JSON.parse(jsonStr);
   } catch (err) {
     console.error("Error in generateProblemFromCode:", err);
     throw err;
   }
 }
 
+export async function getQuickComplexity(code, language) {
+  try {
+    const systemPrompt = "Analyze the given code and return ONLY a valid JSON object with timeComplexity and spaceComplexity keys. Format like O(N), O(1), etc. NO markdown or extra text.";
+    const userPrompt = code;
+    const text = await fetchGroq(systemPrompt, userPrompt, 0.1, true);
+    const match = text.match(/\{[^}]+\}/);
+    if (match) return JSON.parse(match[0]);
+    return null;
+  } catch (err) {
+    return null;
+  }
+}

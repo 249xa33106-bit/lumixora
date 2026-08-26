@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>Python Tutor - iframe embed page</title>
+  <meta name="robots" content="noindex">
+
+  <!-- let Webpack take care of everything. Use the [hash] feature to
+       create unique filenames for releases:
+       https://webpack.github.io/docs/long-term-caching.html -->
+  <!-- 2026-08-05: defer lets the (tiny) static HTML render while this big
+       bundle downloads in parallel; all entry-point code already waits for
+       $(document).ready, so execution behavior is unchanged. [written by
+       Claude Code on 2026-08-05, may be incorrect/outdated] -->
+  <script type="text/javascript" src="build/iframe-embed.bundle.js?2bd6ac3eef" charset="utf-8" defer></script>
+
+</head>
+
+<body>
+
+  <div id="vizDiv"></div>
+  <div id="frontendErrorOutput"></div>
+
+</body>
+</html>

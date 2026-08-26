@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, Mail, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, Building2, GraduationCap, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, signOut } from 'firebase/auth';
+import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import emailjs from '@emailjs/browser';
+import { DEFAULT_COLLEGES, isValidInstitutionalEmail, getAllAllowedDomains, isTeammateEmail } from '../data/collegesData';
 
-export default function AuthPortal({ onLogin }) {
+export default function AuthPortal({ onLogin, mode = 'student' }) {
+  const [selectedCollege, setSelectedCollege] = useState(() => {
+    if (mode === 'teammate' || mode === 'team') {
+      return { id: 'team', name: 'Lumixora Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' };
+    }
+    return null;
+  });
+  const [authMode, setAuthMode] = useState(mode || 'student');
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [unverifiedUser, setUnverifiedUser] = useState(null);
+  const [customColleges, setCustomColleges] = useState([]);
+
+  useEffect(() => {
+    if (mode) {
+      setAuthMode(mode);
+      if (mode === 'teammate' || mode === 'team') {
+        setSelectedCollege({ id: 'team', name: 'Lumixora Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' });
+      }
+    }
+  }, [mode]);
 
   // Forgot Password state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -23,8 +44,9 @@ export default function AuthPortal({ onLogin }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rollNumber, setRollNumber] = useState('');
   const [qualification, setQualification] = useState('');
-  const [collegeName, setCollegeName] = useState('');
+  const [collegeName, setCollegeName] = useState('GPREC');
   const [place, setPlace] = useState('');
   const [yearOfStudy, setYearOfStudy] = useState('1st Year');
   const [cgpa, setCgpa] = useState('9.0');
@@ -34,43 +56,196 @@ export default function AuthPortal({ onLogin }) {
   const [weakSubjects, setWeakSubjects] = useState('Computer Networks');
   const [semester, setSemester] = useState('1');
   const [section, setSection] = useState('A');
+  const [designation, setDesignation] = useState('Assistant Professor');
+  const [mobileNumber, setMobileNumber] = useState('');
+
+  // Real-time listener for partner colleges added by founder
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(collection(db, 'college_tenants'), (snap) => {
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        setCustomColleges(list);
+      }, (e) => console.warn('College tenant load error:', e));
+      return () => unsub();
+    } catch (e) {}
+  }, []);
+
+  // Pre-fill fields from invite link if present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    let inviteParam = params.get('invite');
+    
+    if (!inviteParam) {
+      const pendingJoin = sessionStorage.getItem('lumixora_pending_join');
+      if (pendingJoin && pendingJoin.startsWith('join-group/')) {
+        inviteParam = pendingJoin.split('/')[1];
+      }
+    }
+    
+    // Fallback for hash query params
+    if (!inviteParam && window.location.hash.includes('?invite=')) {
+      const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
+      inviteParam = hashParams.get('invite');
+    }
+
+    if (inviteParam) {
+      // expected format: e.g. "CSE-A-2nd-Year"
+      setIsLogin(false); // force registration mode
+      const parts = inviteParam.split('-');
+      if (parts.length >= 3) {
+        setDepartment(parts[0]);
+        setSection(parts[1]);
+        if (parts.length >= 4) {
+          setYearOfStudy(parts[2] + '-' + parts[3]);
+        } else {
+          setYearOfStudy(parts[2]);
+        }
+      }
+    }
+  }, []);
 
   const handleSuccessfulLogin = (user) => {
     onLogin(user);
+  };
+
+  const cleanScholarName = (str) => {
+    if (!str || typeof str !== 'string') return 'Scholar';
+    let cleaned = str;
+    if (cleaned.includes('{')) {
+      cleaned = cleaned.split('{')[0].trim();
+    }
+    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    return cleaned || 'Scholar';
+  };
+
+  // Write a real-time notification to Firestore for the founder
+  const sendFounderNotification = async (type, userInfo) => {
+    try {
+      const rawName = userInfo.name || userInfo.displayName || userInfo.email?.split('@')[0] || 'Unknown';
+      const cleanName = cleanScholarName(rawName);
+      await addDoc(collection(db, 'founder_notifications'), {
+        type,
+        name: cleanName,
+        email: userInfo.email || '',
+        role: userInfo.role || 'user',
+        timestamp: serverTimestamp(),
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+    } catch (e) {
+      console.warn('Failed to send founder notification:', e);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMsg('');
+    setUnverifiedUser(null);
 
     try {
+      const cleanEmail = email.toLowerCase().trim();
+      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com';
+      
       if (isLogin) {
         try {
           // 1. Try Firebase Auth
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
           const firebaseUser = userCredential.user;
+          try {
+            await firebaseUser.reload();
+          } catch (e) {
+            console.warn("User reload failed:", e);
+          }
           
           let userDoc = {};
           try {
-            const docRef = doc(db, 'users', firebaseUser.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              userDoc = docSnap.data();
+            const { data: sbUsers } = await supabase
+              .from('users')
+              .select('*')
+              .or(`id.eq.${firebaseUser.uid},email.eq.${firebaseUser.email}`);
+              
+            if (sbUsers && sbUsers.length > 0) {
+              userDoc = sbUsers[0];
             }
           } catch (docErr) {
-            console.warn("Firestore user document fetch failed:", docErr);
+            console.warn("Supabase user document fetch failed:", docErr);
           }
-          
-          const isFounderOrAdmin = firebaseUser.email.toLowerCase() === 'admin@lumixora.com' || firebaseUser.email.toLowerCase().includes('founder') || firebaseUser.email.toLowerCase().includes('admin');
-          handleSuccessfulLogin({ 
+
+          // Fallback check Firestore 'Users' and 'users' collections
+          try {
+            const fsDoc1 = await getDoc(doc(db, 'Users', firebaseUser.uid));
+            if (fsDoc1.exists()) userDoc = { ...fsDoc1.data(), ...userDoc };
+            
+            const fsDoc2 = await getDoc(doc(db, 'users', firebaseUser.uid));
+            if (fsDoc2.exists()) userDoc = { ...fsDoc2.data(), ...userDoc };
+          } catch (fsErr) {
+            console.warn("Firestore user document fetch failed:", fsErr);
+          }
+
+          const isExplicitlyUnblocked = userDoc.is_blocked === false && (userDoc.is_approved === true || userDoc.isApproved === true);
+          const isTeammateUser = userDoc.role === 'teammate' || userDoc.role === 'team' || userDoc.role === 'team_member' || authMode === 'teammate' || isTeammateEmail(cleanEmail);
+          const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser;
+
+          if (!isFounderOrAdmin && !isExplicitlyUnblocked && !isAllowedDomain) {
+            setError('Security Access Restricted: Please sign in using your official college or team mail.');
+            setLoading(false);
+            try { await auth.signOut(); } catch (e) {}
+            return;
+          }
+
+          if (userDoc && (userDoc.is_blocked === true || userDoc.is_deleted === true)) {
+            setError('Account Blocked: Access has been suspended by the Founder/Admin.');
+            setLoading(false);
+            try { await auth.signOut(); } catch (e) {}
+            return;
+          }
+
+          const isFacultyRole = (userDoc.role === 'faculty' || userDoc.role === 'mentor');
+          const isApprovedStatus = userDoc.isApproved === true || userDoc.is_approved === true;
+
+          if (isFacultyRole && !isApprovedStatus && !isFounderOrAdmin) {
+            setError('Faculty Security Restriction: Your account is pending Founder approval. Access is locked until verified.');
+            setLoading(false);
+            try { await auth.signOut(); } catch (e) {}
+            return;
+          }
+
+          const isLumixoraBrand = cleanEmail.endsWith('@lumixora.com') || cleanEmail.endsWith('@team.lumixora.com');
+
+          // Enforce Email Verification (Founders, Admins, Teammates, Clients, and Pre-approved accounts exempted)
+          if (!firebaseUser.emailVerified && !isFounderOrAdmin && !isTeammateUser && !isApprovedStatus && !isLumixoraBrand) {
+            try {
+              await sendEmailVerification(firebaseUser);
+            } catch (verErr) {
+              console.warn("Could not auto-trigger verification email:", verErr);
+            }
+            setUnverifiedUser(firebaseUser);
+            setError(`Email Verification Required: Please verify your email (${cleanEmail}) before logging in. A verification link has been sent to your inbox. Check Spam if not found.`);
+            setLoading(false);
+            try { await auth.signOut(); } catch (e) {}
+            return;
+          }
+
+          const rawLoginName = firebaseUser.displayName || userDoc.name || email.split('@')[0];
+          const cleanLoginName = cleanScholarName(rawLoginName);
+          const resolvedRole = isFounderOrAdmin ? 'founder' : (isTeammateUser ? 'teammate' : (userDoc.role || 'user'));
+
+          const loginUserDoc = { 
             id: firebaseUser.uid,
             uid: firebaseUser.uid,
-            name: firebaseUser.displayName || userDoc.name || email.split('@')[0],
             email: firebaseUser.email,
+            emailVerified: firebaseUser.emailVerified,
             ...userDoc,
-            role: isFounderOrAdmin ? 'founder' : (userDoc.role || 'user')
-          });
+            name: cleanLoginName,
+            role: resolvedRole
+          };
+          if (!isFounderOrAdmin) {
+            sendFounderNotification('login', loginUserDoc);
+          }
+          handleSuccessfulLogin(loginUserDoc);
         } catch (firebaseErr) {
           console.warn("Firebase Authentication failed, attempting Supabase fallback:", firebaseErr);
           
@@ -79,12 +254,38 @@ export default function AuthPortal({ onLogin }) {
           
           if (data && data.length > 0) {
             const userDoc = data[0];
-            const isFounderOrAdmin = userDoc.email.toLowerCase() === 'admin@lumixora.com' || userDoc.email.toLowerCase().includes('founder') || userDoc.email.toLowerCase().includes('admin');
+            
+            if (userDoc.is_deleted) {
+              setError('Your account has been deactivated. Please contact support.');
+              setLoading(false);
+              return;
+            }
+
+            // Enforce Email Verification in fallback
+            if (!isFounderOrAdmin && userDoc.emailVerified !== true && userDoc.email_verified !== true) {
+              setError(`Email Verification Required: Please verify your institutional email (${cleanEmail}) before logging in.`);
+              setLoading(false);
+              return;
+            }
+
+            const isFacultyRole = (userDoc.role === 'faculty' || userDoc.role === 'mentor');
+            const isApprovedStatus = userDoc.isApproved === true || userDoc.is_approved === true;
+
+            if (isFacultyRole && !isApprovedStatus && !isFounderOrAdmin) {
+              setError('Faculty Security Restriction: Your account is pending Founder approval. Access is locked until verified.');
+              setLoading(false);
+              return;
+            }
+
+            const isFounderOrAdminRole = userDoc.email.toLowerCase() === 'founder@lumixora.com' || userDoc.email.toLowerCase() === '249xa33106@gmail.com';
+            if (!isFounderOrAdminRole) {
+              sendFounderNotification('login', userDoc);
+            }
             handleSuccessfulLogin({ 
               id: userDoc.id, 
               uid: userDoc.id,
               ...userDoc,
-              role: isFounderOrAdmin ? 'founder' : userDoc.role 
+              role: isFounderOrAdminRole ? 'founder' : userDoc.role 
             });
           } else {
             setError(firebaseErr.message.includes('auth/') ? firebaseErr.message : 'Invalid email or password.');
@@ -93,15 +294,26 @@ export default function AuthPortal({ onLogin }) {
       } else {
         // Registration logic
         try {
+          if (!isFounderOrAdmin && !isValidInstitutionalEmail(cleanEmail, customColleges)) {
+            setError('Security Access Restricted: Please register using your official college mail.');
+            setLoading(false);
+            return;
+          }
+
           // 1. Try Firebase Auth Register
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const firebaseUser = userCredential.user;
           
-          const role = (email.toLowerCase().includes('founder') || email.toLowerCase().includes('admin')) 
+          const role = (email.toLowerCase() === 'founder@lumixora.com') 
             ? 'founder' 
-            : 'user';
+            : authMode === 'faculty' ? 'faculty' : 'user';
 
-          const metadata = {
+          const metadata = authMode === 'faculty' ? {
+            department: department.trim(),
+            designation: designation.trim(),
+            mobileNumber: mobileNumber.trim()
+          } : {
+            rollNumber: rollNumber.trim().toUpperCase(),
             qualification: qualification.trim(),
             college: collegeName.trim(),
             place: place.trim(),
@@ -115,83 +327,145 @@ export default function AuthPortal({ onLogin }) {
             sec: section
           };
 
-          const nameWithMetadata = `${name.trim()} ${JSON.stringify(metadata)}`;
+          const cleanName = name.trim();
 
           await updateProfile(firebaseUser, {
-            displayName: nameWithMetadata
+            displayName: cleanName
           });
 
-          const defaultProfile = {
+          const determinedRole = authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : 'user');
+          const defaultProfile = authMode === 'faculty' ? {
+            id: firebaseUser.uid,
             uid: firebaseUser.uid,
             name: name.trim(),
             email,
-            qualification: qualification.trim(),
-            college: collegeName.trim(),
-            place: place.trim(),
-            year: yearOfStudy,
-            cgpa: cgpa.trim(),
-            targetCGPA: cgpa.trim(),
-            careerGoal,
             department: department.trim(),
-            sem: semester,
-            sec: section,
-            learningStyle,
-            weakSubjects: weakSubjects.trim(),
-            strongSubjects: 'Data Structures, Algorithms',
-            subjects: 'Data Structures, Design and Analysis of Algorithms, Database Systems, Computer Networks',
-            xp: 0,
+            designation: designation.trim(),
+            mobileNumber: mobileNumber.trim(),
+            role: 'faculty',
+            isApproved: false,
+            is_approved: false,
+            created_at: new Date().toISOString(),
+            loginCount: 0,
+            lastLoginDate: new Date().toISOString()
+          } : {
+            id: firebaseUser.uid,
+            uid: firebaseUser.uid,
+            role: determinedRole,
+            isApproved: true,
+            is_approved: true,
+            name: name.trim(),
+            rollNumber: rollNumber.trim().toUpperCase() || 'TEAM',
+            email,
+            qualification: qualification.trim() || 'B.Tech',
+            college: collegeName.trim() || 'Lumixora Core Team',
+            place: place.trim() || 'Kurnool',
+            year: yearOfStudy || 'Core Team',
+            cgpa: cgpa.trim() || '9.5',
+            targetCGPA: cgpa.trim() || '9.5',
+            careerGoal: 'Product & Academic Curation',
+            department: department.trim() || 'CSE',
+            sem: semester || '1',
+            sec: section || 'A',
+            learningStyle: 'Practical',
+            weakSubjects: weakSubjects.trim() || 'None',
+            strongSubjects: 'Full Stack, AI Systems, Academic Curation',
+            subjects: 'Computer Science, Engineering Curriculum',
+            xp: 100,
             todayXp: 0,
             level: 1,
-            coins: 100,
-            streak: 0,
-            longestStreak: 0,
-            streakFreezeCount: 1,
+            coins: 200,
+            streak: 1,
+            longestStreak: 1,
+            streakFreezeCount: 2,
             lastActiveDate: null,
             completedDays: [],
-            badges: ['first_login'],
+            badges: ['first_login', 'team_contributor'],
             purchasedThemes: ['default'],
             purchasedFrames: ['none'],
             currentTheme: 'default',
             currentFrame: 'none',
             studyHours: 0,
-            quizScore: 85,
+            quizScore: 90,
             notesShared: 0,
             lastDailyReset: new Date().toDateString(),
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            loginCount: 1,
+            lastLoginDate: new Date().toISOString()
           };
 
           try {
-            await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile);
-            await setDoc(doc(db, 'leaderboards', firebaseUser.uid), {
-              id: firebaseUser.uid,
-              name: defaultProfile.name,
-              college: defaultProfile.college,
-              department: defaultProfile.department,
-              year: defaultProfile.year,
-              city: defaultProfile.place,
-              state: defaultProfile.place,
-              country: 'India',
-              xp: 0,
-              streak: 0,
-              badgesCount: 1,
-              level: 1,
-              avatarUrl: '',
-              quizScore: 85,
-              studyHours: 0,
-              notesShared: 0
-            });
+            // Save to Firestore (both collections for failsafe security)
+            await setDoc(doc(db, 'Users', firebaseUser.uid), defaultProfile, { merge: true });
+            await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true });
+            
+            // Save to Supabase (Clean Schema Filter)
+            const sbPayload = {
+              name: name.trim(),
+              email: email.toLowerCase().trim(),
+              password: password || 'firebase_auth_managed',
+              role: defaultProfile.role,
+              created_at: new Date().toISOString()
+            };
+            if (firebaseUser.uid && firebaseUser.uid.length === 36 && firebaseUser.uid.includes('-')) {
+              sbPayload.id = firebaseUser.uid;
+            }
+            const { error: sbError } = await supabase.from('users').upsert([sbPayload], { onConflict: 'email' });
+            if (sbError) {
+              console.warn("Supabase profile creation notice:", sbError);
+            }
           } catch (dbErr) {
-            console.warn("Firestore database profiling failed:", dbErr);
+            console.warn("Database profiling failed:", dbErr);
           }
 
-          handleSuccessfulLogin({
-            id: firebaseUser.uid,
-            uid: firebaseUser.uid,
-            name: nameWithMetadata,
+          if (authMode === 'faculty') {
+            try {
+              // Send Email via EmailJS directly from the browser
+              await emailjs.send(
+                'service_ya5r1pk',
+                'template_h3jbqrj',
+                {
+                  to_name: 'Founder',
+                  to_email: '249XA33106@gprec.ac.in',
+                  faculty_name: name.trim(),
+                  faculty_email: email,
+                  faculty_department: department.trim(),
+                  faculty_designation: designation.trim(),
+                  faculty_mobile: mobileNumber.trim(),
+                  message: `A new faculty member ${name.trim()} (${email}) from ${department.trim()} (${designation.trim()}) has registered. Mobile: ${mobileNumber.trim()}. Please log in to your Founder Portal to approve them.`
+                },
+                '9-0dhY139CBiyCxBJ'
+              );
+            } catch(e) { console.error("EmailJS trigger failed:", e); }
+            
+            await signOut(auth);
+            setSuccessMsg('Registration successful! Please wait for founder approval before logging in. You will be notified once approved.');
+            setIsLogin(true);
+            setLoading(false);
+            return;
+          }
+          
+          // Send email verification link
+          try {
+            await sendEmailVerification(firebaseUser);
+          } catch (verErr) {
+            console.warn("Email verification sending notice:", verErr);
+          }
+          
+          setUnverifiedUser(firebaseUser);
+          await signOut(auth);
+
+          // Notify founder of new registration
+          sendFounderNotification('register', {
+            name: name.trim(),
             email,
-            ...defaultProfile,
-            role
+            role: mode === 'faculty' ? 'faculty' : 'user'
           });
+          
+          setSuccessMsg(`Registration successful! A verification email has been sent to ${email}. Please verify your email from your inbox before signing in.`);
+          setIsLogin(true);
+          setLoading(false);
+          return;
 
         } catch (firebaseErr) {
           console.warn("Firebase Auth registration failed, attempting Supabase fallback:", firebaseErr);
@@ -205,11 +479,12 @@ export default function AuthPortal({ onLogin }) {
             return;
           }
 
-          const role = (email.toLowerCase().includes('founder') || email.toLowerCase().includes('admin')) 
+          const role = (email.toLowerCase() === 'founder@lumixora.com') 
             ? 'founder' 
             : 'user';
 
           const metadata = {
+            rollNumber: rollNumber.trim().toUpperCase(),
             qualification: qualification.trim(),
             college: collegeName.trim(),
             place: place.trim(),
@@ -225,6 +500,7 @@ export default function AuthPortal({ onLogin }) {
 
           const newUser = {
             name: `${name.trim()} ${JSON.stringify(metadata)}`,
+            rollNumber: rollNumber.trim().toUpperCase(),
             email,
             password,
             role,
@@ -234,11 +510,20 @@ export default function AuthPortal({ onLogin }) {
           const { data: insertedDocs, error: insertError } = await supabase.from('users').insert([newUser]).select();
           
           if (insertError || !insertedDocs || insertedDocs.length === 0) {
-             setError('Failed to register account.');
+             const errorMsg = firebaseErr?.message ? firebaseErr.message.replace('Firebase: ', '') : 'Failed to register account.';
+             setError(errorMsg);
              setLoading(false);
              return;
           }
           const createdUser = insertedDocs[0];
+          try {
+            await setDoc(doc(db, 'users', createdUser.id), { id: createdUser.id, ...newUser }, { merge: true });
+          } catch(e){}
+          sendFounderNotification('register', {
+            name: name.trim(),
+            email,
+            role: createdUser.role || 'user'
+          });
           handleSuccessfulLogin({ id: createdUser.id, uid: createdUser.id, ...createdUser });
         }
       }
@@ -246,6 +531,32 @@ export default function AuthPortal({ onLogin }) {
       console.error(err);
       setError('A network error occurred. Please ensure you are connected to the internet.');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      if (unverifiedUser) {
+        await sendEmailVerification(unverifiedUser);
+        setSuccessMsg(`Verification email resent to ${unverifiedUser.email}! Please check your inbox (and Spam/Promotions folder).`);
+        setError('');
+        return;
+      }
+      if (email && password) {
+        setLoading(true);
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(userCred.user);
+        await signOut(auth);
+        setSuccessMsg(`Verification email resent to ${email}! Please check your inbox.`);
+        setError('');
+        setLoading(false);
+        return;
+      }
+      setSuccessMsg('Please enter your email and password above to resend the verification link.');
+    } catch (e) {
+      console.error(e);
+      setError('Failed to resend verification link: ' + (e.message || 'Please try again.'));
       setLoading(false);
     }
   };
@@ -263,24 +574,65 @@ export default function AuthPortal({ onLogin }) {
 
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
-      
-      const docRef = doc(db, 'users', firebaseUser.uid);
-      const docSnap = await getDoc(docRef);
+      try {
+        await firebaseUser.reload();
+      } catch (e) {}
       
       let userProfile;
-      const isFounderOrAdmin = firebaseUser.email?.toLowerCase() === 'admin@lumixora.com' || firebaseUser.email?.toLowerCase().includes('founder') || firebaseUser.email?.toLowerCase().includes('admin');
+      const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
+      const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com';
+      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in');
+      
+      if (!isFounderOrAdmin && !isAllowedDomain) {
+        setError(`Security Access Restricted: Please sign in using your official institutional email (e.g. @gprec.ac.in).`);
+        setLoading(false);
+        try { await auth.signOut(); } catch (e) {}
+        return;
+      }
+
+      // Enforce email verification on OAuth if not automatically verified
+      if (!firebaseUser.emailVerified && !isFounderOrAdmin) {
+        try {
+          await sendEmailVerification(firebaseUser);
+        } catch (e) {}
+        setUnverifiedUser(firebaseUser);
+        setError(`Email Verification Required: Please verify your institutional email (${oauthEmail}) before entering Lumixora.`);
+        setLoading(false);
+        try { await auth.signOut(); } catch (e) {}
+        return;
+      }
+
       const role = isFounderOrAdmin ? 'founder' : 'user';
 
-      if (docSnap.exists()) {
-        userProfile = { ...docSnap.data(), id: firebaseUser.uid, uid: firebaseUser.uid, role };
+      const { data: sbUsers, error: sbError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', firebaseUser.uid);
+
+      if (!sbError && sbUsers && sbUsers.length > 0) {
+        userProfile = { ...sbUsers[0], id: firebaseUser.uid, uid: firebaseUser.uid, role };
+        
+        try {
+          const newLoginCount = (userProfile.loginCount || 0) + 1;
+          await supabase
+            .from('users')
+            .update({
+              loginCount: newLoginCount,
+              lastLoginDate: new Date().toISOString()
+            })
+            .eq('id', firebaseUser.uid);
+          userProfile.loginCount = newLoginCount;
+        } catch(e) { console.warn("Failed to update login count", e); }
+        
       } else {
         const defaultProfile = {
           uid: firebaseUser.uid,
           name: firebaseUser.displayName || 'Student',
           email: firebaseUser.email || '',
+          password: 'Lumixora@123',
           qualification: 'B.Tech',
-          college: 'Lumixora Academy',
-          place: 'Online',
+          college: 'GPREC',
+          place: 'Kurnool',
           year: '1st Year',
           cgpa: '9.0',
           targetCGPA: '9.0',
@@ -311,32 +663,23 @@ export default function AuthPortal({ onLogin }) {
           notesShared: 0,
           lastDailyReset: new Date().toDateString(),
           created_at: new Date().toISOString(),
-          role
+          role,
+          loginCount: 1,
+          lastLoginDate: new Date().toISOString()
         };
-        await setDoc(docRef, defaultProfile);
+        
         try {
-          await setDoc(doc(db, 'leaderboards', firebaseUser.uid), {
+          await setDoc(doc(db, 'users', firebaseUser.uid), defaultProfile, { merge: true });
+          const { error: insertError } = await supabase.from('users').upsert([{
             id: firebaseUser.uid,
-            name: defaultProfile.name,
-            college: defaultProfile.college,
-            department: defaultProfile.department,
-            year: defaultProfile.year,
-            city: defaultProfile.place,
-            state: defaultProfile.place,
-            country: 'India',
-            xp: 0,
-            streak: 0,
-            badgesCount: 1,
-            level: 1,
-            avatarUrl: firebaseUser.photoURL || '',
-            quizScore: 85,
-            studyHours: 0,
-            notesShared: 0
-          });
+            ...defaultProfile
+          }]);
+          if (insertError) console.warn("Supabase profile creation failed:", insertError);
         } catch (err) {
-          console.warn("Leaderboard doc error:", err);
+          console.warn("User doc error:", err);
         }
         userProfile = { ...defaultProfile, id: firebaseUser.uid };
+        sendFounderNotification('register', userProfile);
       }
 
       handleSuccessfulLogin(userProfile);
@@ -352,101 +695,38 @@ export default function AuthPortal({ onLogin }) {
     e.preventDefault();
     const query = resetEmail.trim();
     if (!query) {
-      setResetError('Please enter your email or roll number.');
+      setResetError('Please enter your email address.');
       return;
     }
+    
+    // We only accept valid email formats for Firebase Auth
+    if (!query.includes('@')) {
+      setResetError('Please enter a valid email address.');
+      return;
+    }
+
     setResetLoading(true);
     setResetError('');
     setRetrievedAccounts([]);
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*');
-
-      if (error) throw error;
-
-      const lowercaseQuery = query.toLowerCase();
-      const matches = data.filter(u => {
-        const email = (u.email || '').toLowerCase();
-        const name = (u.name || '').toLowerCase();
-        
-        return email === lowercaseQuery || 
-               email.split('@')[0] === lowercaseQuery || 
-               email.includes(lowercaseQuery) ||
-               name.includes(lowercaseQuery);
-      });
-
-      if (matches.length === 0) {
-        setResetError('No account found with this email or roll number.');
+      await sendPasswordResetEmail(auth, query);
+      setResetError('Password reset email sent! Check your inbox to securely reset your password.');
+      // Keep modal open so they see the success message
+    } catch (err) {
+      console.error('Password reset error:', err);
+      // Firebase throws 'auth/user-not-found' if email doesn't exist
+      if (err.code === 'auth/user-not-found') {
+        setResetError('No account found with this email.');
       } else {
-        const accounts = matches.map(u => {
-          let displayName = u.name || '';
-          if (displayName.includes('{')) {
-            try {
-              const parts = displayName.split(' ');
-              const jsonPart = parts.find(p => p.startsWith('{'));
-              if (jsonPart) {
-                const meta = JSON.parse(jsonPart);
-                displayName = meta.name || parts[0];
-              } else {
-                displayName = parts[0];
-              }
-            } catch (e) {
-              displayName = displayName.split(' ')[0];
-            }
-          }
-          const isFounderOrAdmin = u.email.toLowerCase() === 'admin@lumixora.com' || u.email.toLowerCase().includes('founder') || u.email.toLowerCase().includes('admin') || u.role === 'founder';
-          return {
-            id: u.id,
-            email: u.email,
-            name: displayName,
-            password: u.password,
-            isFounder: isFounderOrAdmin
-          };
-        });
-        setRetrievedAccounts(accounts);
+        setResetError('Failed to send reset email. Please try again later.');
       }
-    } catch (err) {
-      console.error('Retrieve password error:', err);
-      setResetError(err.message || 'Failed to retrieve password. Please try again.');
     } finally {
       setResetLoading(false);
     }
   };
-
-  const handleUpdatePassword = async (userId, newPasswordStr) => {
-    try {
-      if (!newPasswordStr || newPasswordStr.length < 6) {
-        setResetError('Password must be at least 6 characters long.');
-        return;
-      }
-      setResetLoading(true);
-      setResetError('');
-      
-      const { error } = await supabase
-        .from('users')
-        .update({ password: newPasswordStr })
-        .eq('id', userId);
-        
-      if (error) throw error;
-      
-      alert('Password updated successfully! You can now log in.');
-      setRetrievedAccounts([]);
-      setResetEmail('');
-      setShowForgotPassword(false);
-      setNewPasswords({});
-    } catch (err) {
-      console.error('Update password error:', err);
-      setResetError(err.message || 'Failed to update password. Please try again.');
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
-
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden py-10 px-4">
       
       {/* Massive Background Logo Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
@@ -459,26 +739,180 @@ export default function AuthPortal({ onLogin }) {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00f5d4]/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7209b7]/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
 
-      {/* Glassmorphic Auth Card */}
-      <div className="z-10 w-full max-w-md p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[90vh] overflow-y-auto custom-scrollbar">
-        
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00f5d4] to-[#7209b7] flex items-center justify-center mb-4 shadow-lg shadow-[#00f5d4]/20">
-            <Sparkles className="text-white w-8 h-8" />
+      {/* Step 1: Institutional / College Selection Screen */}
+      {!selectedCollege ? (
+        <div className="z-10 w-full max-w-4xl p-6 md:p-8 animate-fade-in-up">
+          {/* Header */}
+          <div className="text-center mb-8 space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-bold uppercase tracking-widest">
+              <Building2 className="w-3.5 h-3.5" /> Lumixora Multi-Campus Network
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
+              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple">Portal</span>
+            </h1>
+            <p className="text-gray-400 text-sm md:text-base max-w-xl mx-auto">
+              Choose your role and campus to access the official {authMode === 'faculty' ? 'Faculty Workspace, Attendance & Analytics' : 'Student AI Future Twin, Code Arena & Learning Platform'}.
+            </p>
+
+            {/* Dedicated Role Tabs */}
+            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-4 pt-2">
+              <button
+                type="button"
+                onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
+                className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
+                  authMode === 'student'
+                    ? 'bg-brand-teal text-black shadow-lg shadow-brand-teal/20 scale-105'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                }`}
+              >
+                🎓 Student Portal
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
+                className={`px-4 py-2 rounded-2xl text-xs font-black transition-all cursor-pointer ${
+                  authMode === 'faculty'
+                    ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20 scale-105'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                }`}
+              >
+                👨‍🏫 Faculty Portal
+              </button>
+            </div>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">
-            {isLogin ? 'Welcome back to Lumixora' : 'Create Account'}
-          </h2>
-          <p className="text-gray-400 text-center">
-            {isLogin 
-              ? 'Enter your credentials to access your workspace.' 
-              : 'Join Lumixora to supercharge your learning experience.'}
-          </p>
+
+          {/* College Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...DEFAULT_COLLEGES, ...customColleges].map((col) => (
+              <div
+                key={col.id}
+                onClick={() => {
+                  setSelectedCollege(col);
+                  setCollegeName(col.shortName || col.name || col.code);
+                  setError('');
+                }}
+                className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 hover:border-brand-teal/50 hover:bg-white/[0.04] transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between"
+              >
+                {/* Background Color Accent */}
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${col.bannerColor || 'from-purple-600 to-blue-600'} opacity-10 rounded-full blur-2xl group-hover:opacity-25 transition-opacity`}></div>
+
+                <div>
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
+                      {col.logo || '🏛️'}
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold text-gray-300">
+                      {col.code || 'CAMPUS'}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl md:text-2xl font-black text-white group-hover:text-brand-teal transition-colors mb-2">
+                    {col.name}
+                  </h3>
+                  
+                  <p className="text-gray-400 text-xs line-clamp-2 mb-4 leading-relaxed">
+                    {col.description || 'Premier technical institution accredited for engineering excellence.'}
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+                    <span className="flex items-center gap-1 text-gray-300">
+                      📍 {col.location || 'Kurnool, AP'}
+                    </span>
+                    <span>•</span>
+                    <span className="text-emerald-400 font-medium">
+                      Official College Mail
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xs font-bold text-white group-hover:translate-x-1 transition-transform flex items-center gap-1.5">
+                      Enter {col.shortName || col.code} {authMode === 'faculty' ? 'Faculty' : 'Student'} Portal
+                      <ArrowRight className="w-4 h-4 text-brand-teal" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      ) : (
+        /* Step 2: College / Team Specific Auth Card */
+        <div className="z-10 w-full max-w-md p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[90vh] overflow-y-auto custom-scrollbar">
+          
+          {/* Top Bar with Back to College Selection */}
+          <div className="flex items-center justify-between w-full mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCollege(null);
+                setError('');
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Change Portal</span>
+            </button>
+
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-brand-teal">
+              <span>{selectedCollege.logo || '🏛️'}</span>
+              <span>{selectedCollege.shortName || selectedCollege.code}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center mb-6 text-center">
+            <h2 className="text-2xl font-extrabold text-white mb-1">
+              {isLogin 
+                ? `Sign In (${authMode === 'faculty' ? 'Faculty' : (authMode === 'teammate' ? '⚡ Teammate Portal' : 'Student')})` 
+                : `Register (${authMode === 'faculty' ? 'Faculty' : (authMode === 'teammate' ? '⚡ Teammate Portal' : 'Student')})`
+              }
+            </h2>
+            <p className="text-gray-400 text-xs">
+              {selectedCollege.name}
+            </p>
+          </div>
+
+          {/* Institutional / Team Domain Warning Banner */}
+          <div className={`p-3.5 rounded-2xl mb-6 text-xs flex items-start gap-2.5 shadow-lg border ${
+            authMode === 'teammate'
+              ? 'bg-brand-pink/10 border-brand-pink/30 text-pink-300'
+              : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+          }`}>
+            <span className="text-base leading-none">{selectedCollege.logo || '🏛️'}</span>
+            <div>
+              <strong className="block font-bold mb-0.5">
+                {selectedCollege.shortName || selectedCollege.code || 'Official'} Portal
+              </strong>
+              <span className="leading-relaxed text-gray-300">
+                {authMode === 'teammate' 
+                  ? 'Sign in or register with your @lumixora.com or designated team email address.'
+                  : <>Please login or register using your <strong className="text-white underline decoration-blue-400">official college mail</strong>.</>
+                }
+              </span>
+            </div>
+          </div>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl mb-6 text-sm text-center">
             {error}
+            {unverifiedUser && (
+              <div className="mt-2">
+                <button 
+                  onClick={handleResendVerification}
+                  type="button" 
+                  className="underline text-red-300 hover:text-white transition-colors"
+                >
+                  Resend Verification Email
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="bg-green-500/10 border border-green-500/50 text-green-400 p-3 rounded-xl mb-6 text-sm text-center">
+            {successMsg}
           </div>
         )}
 
@@ -498,155 +932,213 @@ export default function AuthPortal({ onLogin }) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Qualification</label>
-                <input
-                  type="text"
-                  value={qualification}
-                  onChange={(e) => setQualification(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                  placeholder="e.g. B.Tech, Degree"
-                />
-              </div>
+              {mode === 'student' ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Roll Number</label>
+                    <input
+                      type="text"
+                      value={rollNumber}
+                      onChange={(e) => setRollNumber(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white uppercase focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. 219X1A0501"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">College Name</label>
-                <input
-                  type="text"
-                  value={collegeName}
-                  onChange={(e) => setCollegeName(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                  placeholder="e.g. GPREC"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Qualification</label>
+                    <input
+                      type="text"
+                      value={qualification}
+                      onChange={(e) => setQualification(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. B.Tech, Degree"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">College Location (Place)</label>
-                <input
-                  type="text"
-                  value={place}
-                  onChange={(e) => setPlace(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                  placeholder="e.g. Kurnool"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Institution / College</label>
+                    <select
+                      value={collegeName}
+                      onChange={(e) => setCollegeName(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-200 font-semibold focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all appearance-none cursor-pointer"
+                    >
+                      {[...DEFAULT_COLLEGES, ...customColleges].map(c => (
+                        <option key={c.id} value={c.shortName || c.name || c.code}>
+                          {c.shortName || c.name} ({c.code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Year of Study</label>
-                <select
-                  value={yearOfStudy}
-                  onChange={(e) => setYearOfStudy(e.target.value)}
-                  required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all appearance-none"
-                >
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">College Location (Place)</label>
+                    <input
+                      type="text"
+                      value={place}
+                      onChange={(e) => setPlace(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. Kurnool"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Department / Major (Branch)</label>
-                <input
-                  type="text"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                  placeholder="e.g. CSE, ECE"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Year of Study</label>
+                    <select
+                      value={yearOfStudy}
+                      onChange={(e) => setYearOfStudy(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all appearance-none"
+                    >
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Semester</label>
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value)}
-                  required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                    <option key={s} value={String(s)}>Semester {s}</option>
-                  ))}
-                  <option value="Completed">Completed</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Department / Major (Branch)</label>
+                    <input
+                      type="text"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
+                      placeholder="e.g. CSE, ECE"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Section</label>
-                <select
-                  value={section}
-                  onChange={(e) => setSection(e.target.value)}
-                  required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                >
-                  {['A', 'B', 'C', 'D', 'E', 'None'].map(s => (
-                    <option key={s} value={s}>Section {s}</option>
-                  ))}
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Semester</label>
+                    <select
+                      value={semester}
+                      onChange={(e) => setSemester(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                        <option key={s} value={String(s)}>Semester {s}</option>
+                      ))}
+                      <option value="Completed">Completed</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Target CGPA</label>
-                <input
-                  type="text"
-                  value={cgpa}
-                  onChange={(e) => setCgpa(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                  placeholder="e.g. 9.0"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Section</label>
+                    <select
+                      value={section}
+                      onChange={(e) => setSection(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
+                    >
+                      {['A', 'B', 'C', 'D', 'E', 'None'].map(s => (
+                        <option key={s} value={s}>Section {s}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Career Goal</label>
-                <select
-                  value={careerGoal}
-                  onChange={(e) => setCareerGoal(e.target.value)}
-                  required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                >
-                  <option value="Placement">Placement / Jobs</option>
-                  <option value="GATE">GATE Exam</option>
-                  <option value="Higher Studies">Higher Studies</option>
-                  <option value="Entrepreneurship">Entrepreneurship</option>
-                  <option value="Government Jobs">Government Jobs</option>
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Target CGPA</label>
+                    <input
+                      type="text"
+                      value={cgpa}
+                      onChange={(e) => setCgpa(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
+                      placeholder="e.g. 9.0"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Learning Style</label>
-                <select
-                  value={learningStyle}
-                  onChange={(e) => setLearningStyle(e.target.value)}
-                  required
-                  className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
-                >
-                  <option value="Practical">Practical (Hands-on)</option>
-                  <option value="Visual">Visual (Videos/Charts)</option>
-                  <option value="Reading">Reading (Books/Notes)</option>
-                  <option value="Audio">Audio (Lectures)</option>
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Career Goal</label>
+                    <select
+                      value={careerGoal}
+                      onChange={(e) => setCareerGoal(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
+                    >
+                      <option value="Placement">Placement / Jobs</option>
+                      <option value="GATE">GATE Exam</option>
+                      <option value="Higher Studies">Higher Studies</option>
+                      <option value="Entrepreneurship">Entrepreneurship</option>
+                      <option value="Government Jobs">Government Jobs</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Weak Subject</label>
-                <input
-                  type="text"
-                  value={weakSubjects}
-                  onChange={(e) => setWeakSubjects(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
-                  placeholder="e.g. Computer Networks"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Learning Style</label>
+                    <select
+                      value={learningStyle}
+                      onChange={(e) => setLearningStyle(e.target.value)}
+                      required
+                      className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-gray-300 focus:outline-none appearance-none"
+                    >
+                      <option value="Practical">Practical (Hands-on)</option>
+                      <option value="Visual">Visual (Videos/Charts)</option>
+                      <option value="Reading">Reading (Books/Notes)</option>
+                      <option value="Audio">Audio (Lectures)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Weak Subject</label>
+                    <input
+                      type="text"
+                      value={weakSubjects}
+                      onChange={(e) => setWeakSubjects(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none"
+                      placeholder="e.g. Computer Networks"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Designation</label>
+                    <input
+                      type="text"
+                      value={designation}
+                      onChange={(e) => setDesignation(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. Assistant Professor, HOD"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Department</label>
+                    <input
+                      type="text"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. CSE, ECE"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Mobile Number</label>
+                    <input
+                      type="text"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                      placeholder="e.g. +91 9876543210"
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -658,8 +1150,11 @@ export default function AuthPortal({ onLogin }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-              placeholder="you@example.com"
+              placeholder="Enter your official college email"
             />
+            <p className="text-[11px] text-gray-400 font-semibold mt-1.5 flex items-center gap-1">
+              <span>🔒 Login or register using your official college mail</span>
+            </p>
           </div>
 
           <div>
@@ -702,7 +1197,7 @@ export default function AuthPortal({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               <span className="animate-pulse">Processing...</span>
@@ -756,7 +1251,7 @@ export default function AuthPortal({ onLogin }) {
               setIsLogin(!isLogin);
               setError('');
             }}
-            className="text-[#00f5d4] font-medium hover:underline focus:outline-none"
+            className="text-[#00f5d4] font-medium hover:underline focus:outline-none cursor-pointer"
           >
             {isLogin ? 'Register now' : 'Sign in here'}
           </button>
@@ -776,6 +1271,7 @@ export default function AuthPortal({ onLogin }) {
         </div>
 
       </div>
+      )}
 
       {/* Forgot Password Modal */}
       {showForgotPassword && (
@@ -809,122 +1305,54 @@ export default function AuthPortal({ onLogin }) {
                 <Mail className="text-white w-7 h-7" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-1">
-                {retrievedAccounts.length > 0 ? 'Account Details' : 'Retrieve Password'}
+                Reset Password
               </h3>
               <p className="text-gray-400 text-sm text-center">
-                {retrievedAccounts.length > 0 
-                  ? 'Here are your account credentials:' 
-                  : "Enter your email address or student roll number to find your password."}
+                Enter your email address and we'll send you a secure link to reset your password.
               </p>
             </div>
 
-            {/* Error Message */}
+            {/* Error / Success Message */}
             {resetError && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl mb-5 text-sm text-center">
+              <div className={`border p-3 rounded-xl mb-5 text-sm text-center ${
+                resetError.includes('sent') 
+                  ? 'bg-green-500/10 border-green-500/50 text-green-400' 
+                  : 'bg-red-500/10 border-red-500/50 text-red-400'
+              }`}>
                 {resetError}
               </div>
             )}
 
-            {retrievedAccounts.length > 0 ? (
-              <div className="space-y-4">
-                <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar pr-1">
-                  {retrievedAccounts.map((acc, idx) => (
-                    <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-[#00f5d4] font-semibold tracking-wider uppercase">Account #{idx + 1}</span>
-                        <span className="text-xs text-gray-400 font-medium">{acc.name}</span>
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-gray-500 block tracking-wide font-semibold">Email Address</label>
-                        <span className="text-white text-sm break-all font-medium">{acc.email}</span>
-                      </div>
-                      
-                      {acc.isFounder ? (
-                        <div className="bg-black/40 border border-white/5 rounded-xl p-3 flex justify-between items-center mt-2">
-                          <div>
-                            <label className="text-[10px] text-gray-500 block tracking-wide font-semibold">Password</label>
-                            <span className="text-[#00f5d4] text-base font-mono font-bold tracking-wide select-all">{acc.password}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText(acc.password);
-                              alert('Password copied to clipboard!');
-                            }}
-                            className="text-xs text-gray-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors font-medium cursor-pointer"
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="mt-3 space-y-3">
-                          <div>
-                            <label className="text-[10px] text-gray-500 block tracking-wide font-semibold mb-1">New Password</label>
-                            <input
-                              type="password"
-                              value={newPasswords[acc.id] || ''}
-                              onChange={(e) => setNewPasswords({...newPasswords, [acc.id]: e.target.value})}
-                              placeholder="Enter new password"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#00f5d4]/50 transition-colors text-sm"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleUpdatePassword(acc.id, newPasswords[acc.id])}
-                            disabled={resetLoading || !(newPasswords[acc.id]?.length >= 6)}
-                            className="w-full py-2 rounded-xl text-xs font-bold tracking-wide bg-white/10 hover:bg-[#00f5d4]/20 text-white hover:text-[#00f5d4] transition-colors disabled:opacity-50 cursor-pointer"
-                          >
-                            {resetLoading ? 'Updating...' : 'Update Password'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRetrievedAccounts([]);
-                    setResetEmail('');
-                  }}
-                  className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity mt-2"
-                >
-                  Search Another Account
-                </button>
+            {/* Search Form */}
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
+                  placeholder="you@example.com"
+                />
               </div>
-            ) : (
-              /* Search Form */
-              <form onSubmit={handleForgotPassword} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email or Roll Number</label>
-                  <input
-                    type="text"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    required
-                    autoFocus
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                    placeholder="e.g. 249xa33106 or you@example.com"
-                  />
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={resetLoading}
-                  className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50"
-                >
-                  {resetLoading ? (
-                    <span className="animate-pulse">Finding Account...</span>
-                  ) : (
-                    <>
-                      <Mail className="w-5 h-5" />
-                      <span>Get Password</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+              <button
+                type="submit"
+                disabled={resetLoading}
+                className="w-full py-3 px-4 rounded-xl font-medium text-white bg-gradient-to-r from-[#00f5d4] to-[#7209b7] hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {resetLoading ? (
+                  <span className="animate-pulse">Sending Reset Link...</span>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5" />
+                    <span>Send Reset Link</span>
+                  </>
+                )}
+              </button>
+            </form>
 
             {/* Back to Login */}
             <div className="mt-5 text-center">

@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "lumixora-6497b",
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -28,13 +27,17 @@
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+            "value": "no-cache, must-revalidate"
           }
         ]
       }
     ]
   },
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

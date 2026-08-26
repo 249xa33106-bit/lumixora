@@ -1,59 +1,35 @@
-import React, { useState } from 'react';
-import { User, Award, FolderGit, Link2, Sparkles, Edit3, ShieldAlert, Cpu, Heart, Check } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { User, Award, Link2, Edit3, Cpu, Heart, Check, Sparkles } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
-const parseUserProfile = (fullName) => {
-  let name = fullName || '';
-  let metadata = { qualification: '', college: '', place: '', year: '3rd Year', avatarUrl: '' };
-  if (name.includes('{')) {
-    const idx = name.indexOf('{');
-    const jsonStr = name.substring(idx).trim();
-    name = name.substring(0, idx).trim();
-    try {
-      metadata = JSON.parse(jsonStr);
-    } catch (e) {}
-  }
-  return { name: name || 'Scholar Student', ...metadata };
-};
-
-export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
+export default function NetworkProfile({ user }) {
   const { addToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiScore, setAiScore] = useState(null);
 
-  const parsedUser = parseUserProfile(user?.name);
+  const parsed = useMemo(() => {
+    let rawStr = user?.name || '';
+    let name = rawStr;
+    if (name.includes('{')) {
+      name = name.split('{')[0].trim();
+    }
+    name = name.replace(/[\{\}":;]/g, '').trim() || 'Scholar';
+    return { name, dept: user?.department || 'CSE', year: user?.year || '3rd Year', college: user?.college || 'GPREC' };
+  }, [user]);
 
-  // Form states
-  const [name, setName] = useState(profileData?.name || parsedUser.name);
-  const [college, setCollege] = useState(profileData?.college || parsedUser.college || 'LUMIXORA University of Tech');
-  const [dept, setDept] = useState(profileData?.dept || parsedUser.qualification || 'Computer Science');
-  const [year, setYear] = useState(profileData?.year || parsedUser.year || '3rd Year');
-  const [bio, setBio] = useState(profileData?.bio || 'Passionate student designer & coder building the next-gen ed-tech ecosystems. Let\'s collaborate!');
-  const [skills, setSkills] = useState(profileData?.skills || 'React, Node.js, Python, Firebase, Figma');
-  const [interests, setInterests] = useState(profileData?.interests || 'AI/ML, Open Source, Hackathons, Placements');
-  
-  // Custom links
-  const [github, setGithub] = useState(profileData?.github || 'https://github.com/scholar-student');
-  const [linkedin, setLinkedin] = useState(profileData?.linkedin || 'https://linkedin.com/in/scholar-student');
-  const [portfolio, setPortfolio] = useState(profileData?.portfolio || 'https://scholar.dev');
+  const [name] = useState(parsed.name);
+  const [dept] = useState(parsed.dept);
+  const [year] = useState(parsed.year);
+  const [college] = useState(parsed.college);
+  const [bio, setBio] = useState('Passionate scholar & software engineering student building innovative projects on LUMIXORA.');
+  const [skills, setSkills] = useState('React, JavaScript, Python, Data Structures');
+  const [interests, setInterests] = useState('Web Development, AI/ML, Cloud Computing');
+  const [github, setGithub] = useState('https://github.com');
+  const [linkedin, setLinkedin] = useState('https://linkedin.com');
+  const [portfolio, setPortfolio] = useState('https://lumixora.com');
 
   const handleSave = () => {
-    const updated = {
-      name,
-      college,
-      dept,
-      year,
-      bio,
-      skills,
-      interests,
-      github,
-      linkedin,
-      portfolio
-    };
-    if (onUpdateProfile) {
-      onUpdateProfile(updated);
-    }
     setIsEditing(false);
     addToast({ message: 'Profile updated successfully!', type: 'success' });
   };
@@ -61,7 +37,6 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
   const handleRunAiGrader = () => {
     setLoadingAi(true);
     setTimeout(() => {
-      // Simulate semantic profile completeness score
       const skillCount = skills.split(',').filter(s => s.trim().length > 0).length;
       const interestCount = interests.split(',').filter(i => i.trim().length > 0).length;
       const score = Math.min(100, 40 + (skillCount * 6) + (interestCount * 5) + (bio.length > 50 ? 15 : 5) + (github ? 10 : 0));
@@ -96,7 +71,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
         {/* Profile Details Header */}
         <div className="px-6 pb-6 pt-16 relative flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          {/* Avatar Picture (Absolutely Positioned Over Cover boundary) */}
+          {/* Avatar Picture */}
           <div className="absolute -top-12 left-6 w-24 h-24 rounded-2xl bg-[#0b0b14] border-4 border-[#0b0b14] overflow-hidden shadow-2xl">
             <div className="w-full h-full bg-gradient-to-br from-brand-teal to-brand-blue flex items-center justify-center text-white text-3xl font-semibold">
               {name.charAt(0).toUpperCase()}
@@ -106,7 +81,7 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
           <div className="space-y-1">
             <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
               <span>{name}</span>
-              <span className="text-[9px] font-semibold uppercase icon-3d-teal Student</span>
+              <span className="text-[9px] font-semibold uppercase icon-3d-teal">Student</span>
             </h2>
             <p className="text-xs text-gray-400 font-semibold">{dept} • {year}</p>
             <p className="text-[11px] text-gray-500 font-bold tracking-wide">{college}</p>
@@ -138,7 +113,6 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
           {/* Skills & Interests Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            
             {/* Skills */}
             <div className="glass-panel p-6 rounded-3xl space-y-3">
               <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Skills & Expertise</span>
@@ -178,7 +152,6 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
                 </div>
               )}
             </div>
-
           </div>
 
           {/* Portfolio & Credentials links */}
@@ -225,7 +198,6 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
 
         {/* Right Column: AI Grader & Badges */}
         <div className="space-y-6">
-          
           {/* AI Grader Widget */}
           <div className="glass-panel p-6 rounded-3xl bg-gradient-to-br from-brand-pink/5 to-brand-purple/5 border border-white/10 space-y-4">
             <div className="flex items-center justify-between">
@@ -300,7 +272,6 @@ export default function NetworkProfile({ user, profileData, onUpdateProfile }) {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

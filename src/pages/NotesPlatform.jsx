@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Search, Upload, Plus, Download, Sparkles, Filter, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw } from 'lucide-react';
+import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
@@ -7,10 +7,13 @@ import { generateNoteEnhancement } from '../services/aiService';
 import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import * as pdfjsLib from 'pdfjs-dist';
+import { marked } from 'marked';
+import mermaid from 'mermaid';
 // Use the legacy worker which is compatible with Vite's standard bundler config for ES modules
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+mermaid.initialize({ startOnLoad: false, theme: 'dark' });
 
 export default function NotesPlatform({ user }) {
   // ── All state hooks first ──────────────────────────────────────────
@@ -27,6 +30,14 @@ export default function NotesPlatform({ user }) {
   const [editForm, setEditForm] = useState({ title: '', branch: 'CSE', semester: 'Sem 1', fileUrl: '' });
   const [noteOpenTime, setNoteOpenTime] = useState(null);
   const [activeNoteForTimeTracking, setActiveNoteForTimeTracking] = useState(null);
+
+  useEffect(() => {
+    if (activeNoteForEnhance?.aiEnhancement?.status === 'complete') {
+      setTimeout(() => {
+        try { mermaid.contentLoaded(); } catch (e) { console.warn("Mermaid render failed", e); }
+      }, 100);
+    }
+  }, [activeNoteForEnhance?.aiEnhancement?.status]);
 
   // ── Context hooks ──────────────────────────────────────────────────
   const { notes, addNote, updateNote, deleteNote, uploadFile, loading } = useData();
@@ -100,7 +111,7 @@ export default function NotesPlatform({ user }) {
       setNoteOpenTime(null);
       setActiveNoteForTimeTracking(null);
     }
-  }, [previewUrl, showEnhancer]);
+  }, [previewUrl, showEnhancer, activeNoteForEnhance, activeNoteForTimeTracking, addToast, noteOpenTime, notes, user?.id]);
 
   // ── Helpers ────────────────────────────────────────────────────────
   const getEmbedUrl = (url) => {
@@ -148,7 +159,7 @@ export default function NotesPlatform({ user }) {
     try {
       const path = `notes/${Date.now()}_${file.name}`;
       fileUrl = await uploadFile(path, file);
-    } catch (err) {
+    } catch (_err) { console.error("Error in NotesPlatform:", _err);
       addToast({ message: 'Failed to upload PDF to cloud. Continuing with local processing...', type: 'error' });
     }
 
@@ -744,9 +755,10 @@ export default function NotesPlatform({ user }) {
                       <BookOpen className="w-4 h-4" />
                       <span>Structured Summary Outline</span>
                     </h4>
-                    <p className="text-xs text-gray-300 leading-relaxed font-normal p-4 rounded-xl bg-white/5 border border-white/5">
-                      {activeNoteForEnhance.aiEnhancement.summary}
-                    </p>
+                    <div 
+                      className="text-sm text-gray-300 leading-relaxed font-normal p-4 rounded-xl bg-white/5 border border-white/5 prose prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: marked.parse(activeNoteForEnhance.aiEnhancement.summary || '') }}
+                    />
                   </div>
 
                   {/* Core Concepts */}
@@ -776,10 +788,16 @@ export default function NotesPlatform({ user }) {
                     </h4>
                     <div className="space-y-3">
                       {activeNoteForEnhance.aiEnhancement.questions.map((item, idx) => (
-                        <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-1.5">
-                          <h5 className="text-xs font-bold text-gray-200">Q: {item.q}</h5>
-                          <p className="text-xs text-gray-400 font-medium">A: {item.a}</p>
-                        </div>
+                          <div key={idx} className="bg-white/5 border border-white/5 rounded-xl p-4 transition-all hover:bg-white/10">
+                            <p 
+                              className="text-sm font-semibold text-gray-200 mb-2 prose prose-invert max-w-none"
+                              dangerouslySetInnerHTML={{ __html: `Q: ${marked.parseInline(item.q || '')}` }}
+                            />
+                            <div 
+                              className="text-xs text-gray-400 prose prose-invert max-w-none"
+                              dangerouslySetInnerHTML={{ __html: `<strong>A:</strong> ${marked.parseInline(item.a || '')}` }}
+                            />
+                          </div>
                       ))}
                     </div>
                   </div>

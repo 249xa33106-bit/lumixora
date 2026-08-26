@@ -1,0 +1,1 @@
+let str = 'THU OCT 08 2026 053000 GMT0530 INDIA STANDARD TIME'; let fix = str.replace(/(\d{2})(\d{2})(\d{2}) GMT/, '$1:$2:$3 GMT'); console.log(fix); console.log(new Date(fix)); console.log(new Date(str));

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, PlayCircle, Star, Clock, Heart, Share2, FileText, Download, Users, CheckCircle2, Shield, Plus, Edit2, Trash2, X, BookOpen } from 'lucide-react';
+import { ArrowLeft, PlayCircle, Star, Clock, Heart, Share2, FileText, Download, Users, CheckCircle2, Shield, Plus, Edit2, Trash2, X, BookOpen, Sparkles } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
+import AINotesGeneratorModal from '../components/AINotesGeneratorModal';
 
 export default function SubjectPage({ subject, onBack, user }) {
   const { hubMaterials, updateHubMaterials, uploadFile } = useData();
@@ -34,6 +35,7 @@ export default function SubjectPage({ subject, onBack, user }) {
   const [viewingUrl, setViewingUrl] = useState('');
   const [viewingType, setViewingType] = useState('pdf'); // 'pdf' or 'image'
   const [isWindowFocused, setIsWindowFocused] = useState(true);
+  const [aiNotesModalOpen, setAiNotesModalOpen] = useState(false);
 
   // Window focus and blur listeners to prevent screenshots
   useEffect(() => {
@@ -429,12 +431,24 @@ export default function SubjectPage({ subject, onBack, user }) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-white">Academic Resources</h2>
-            <button 
-              onClick={() => handleOpenModal('resource')} 
-              className="text-xs bg-brand-teal/20 hover:bg-brand-teal/30 text-brand-teal font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors tracking-wide shadow-sm"
-            >
-              <Plus className="w-3 h-3" /> Contribute PDF
-            </button>
+            <div className="flex items-center gap-2">
+              {isFounderMode && (
+                <>
+                  <button 
+                    onClick={() => setAiNotesModalOpen(true)} 
+                    className="text-xs bg-brand-pink/20 hover:bg-brand-pink/30 text-brand-pink font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors tracking-wide shadow-sm"
+                  >
+                    <Sparkles className="w-3 h-3" /> Generate AI Notes
+                  </button>
+                  <button 
+                    onClick={() => handleOpenModal('resource')} 
+                    className="text-xs bg-brand-teal/20 hover:bg-brand-teal/30 text-brand-teal font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors tracking-wide shadow-sm"
+                  >
+                    <Plus className="w-3 h-3" /> Contribute PDF
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           <div className="glass-panel p-5 rounded-2xl border border-white/5 space-y-2">
              {resources.length === 0 && (
@@ -723,7 +737,6 @@ export default function SubjectPage({ subject, onBack, user }) {
                   src={viewingUrl}
                   className="w-full h-full border-none z-10"
                   title="Document Viewer"
-                  sandbox="allow-scripts allow-same-origin allow-downloads"
                 />
               )}
             </div>
@@ -736,6 +749,13 @@ export default function SubjectPage({ subject, onBack, user }) {
           </div>
         </div>
       )}
+
+      {/* AI Notes Generator Modal */}
+      <AINotesGeneratorModal 
+        subject={subject}
+        isOpen={aiNotesModalOpen}
+        onClose={() => setAiNotesModalOpen(false)}
+      />
     </div>
   );
 }

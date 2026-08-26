@@ -29,7 +29,7 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-const newVersion = '1.1.10';
+const newVersion = '1.1.11';
 
 async function updateDatabases() {
   console.log(`Bumping version to ${newVersion} in databases...`);

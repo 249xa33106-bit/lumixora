@@ -12,6 +12,9 @@ const INITIAL_SUBJECTS = [
 
 // Save the user's past academic baseline to Supabase
 export async function saveAcademicBaseline(userId, data) {
+  if (!userId) userId = 'default_user';
+  localStorage.setItem(`lumixora_baseline_${userId}`, JSON.stringify(data));
+
   try {
     const { error } = await supabase.from('student_baselines').upsert({
       user_id: userId,
@@ -22,14 +25,26 @@ export async function saveAcademicBaseline(userId, data) {
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
     
-    if (error) throw error;
-    return true;
+    if (!error) return true;
   } catch (err) {
-    console.error('Error saving baseline to Supabase:', err);
-    // Fallback to local storage
-    localStorage.setItem(`lumixora_baseline_${userId}`, JSON.stringify(data));
-    return false;
+    console.warn('Supabase baseline sync warning, writing to Firestore & local storage:', err);
   }
+
+  try {
+    const safeDocId = String(userId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const baselineRef = doc(db, 'Users', safeDocId, 'Baselines', 'academic');
+    await setDoc(baselineRef, {
+      cgpa: Number(data.cgpa) || 0,
+      target_cgpa: Number(data.target_cgpa) || 0,
+      attendance: Number(data.attendance) || 0,
+      semester: data.semester || 'Sem 3',
+      updated_at: new Date().toISOString()
+    }, { merge: true });
+  } catch (fbErr) {
+    console.warn('Firestore baseline save warning:', fbErr);
+  }
+
+  return true; // Always return true as local storage backup is saved
 }
 
 export async function checkAndSeedTwinData(userId) {
@@ -89,59 +104,7 @@ export async function fetchFullStudentHistory(userId) {
     const notesRead = notesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const goals = goalsSnap.docs.map(d => ({ id: d.id, ...d.data() }))[0] || { targetCGPA: 9.0, studyHoursGoal: 4 };
 
-    // 2. Load Real Study Sessions from local storage
-    try {
-      const rawLocalSessions = localStorage.getItem(`lumixora_study_sessions_${userId}`);
-      if (rawLocalSessions) {
-        const parsed = JSON.parse(rawLocalSessions);
-        const mappedLocal = parsed.map((s, idx) => ({
-          id: `local_session_${idx}`,
-          subjectId: s.subject ? s.subject.toLowerCase().replace(/\s+/g, '') : 'ds101',
-          duration: s.activeMinutes || s.totalMinutes || 25,
-          date: s.timestamp ? s.timestamp.split('T')[0] : new Date().toISOString().split('T')[0],
-          focusScore: s.focusScore || 85,
-          topic: s.goal || 'General focus session'
-        }));
-        // Merge without duplicates
-        sessions = [...sessions, ...mappedLocal];
-      }
-    } catch (e) {
-      console.warn("Failed to merge local study sessions:", e);
-    }
-
-    // 3. Load Real Coding Submissions from local storage (Code Arena)
-    try {
-      const rawSubmissions = localStorage.getItem(`lumixora_submissions_${userId}`);
-      if (rawSubmissions) {
-        const parsedSubmissions = JSON.parse(rawSubmissions);
-        const solvedSubmissions = parsedSubmissions.filter(s => s.status === 'Accepted');
-        
-        // Map solved problems as successful PYQ attempts
-        const mappedPyqs = solvedSubmissions.map((sub, idx) => ({
-          id: `code_solved_${idx}`,
-          subjectId: 'ds101', // Coding maps directly to Data Structures & Algorithms
-          year: 2026,
-          questionNumber: idx + 1,
-          status: 'Solved',
-          difficulty: sub.difficulty || 'Medium'
-        }));
-        pyqs = [...pyqs, ...mappedPyqs];
-
-        // Also add to quizzes list as test validation points
-        const mappedQuizzes = solvedSubmissions.map((sub, idx) => ({
-          id: `code_quiz_${idx}`,
-          subjectId: 'ds101',
-          score: 10,
-          total: 10,
-          date: sub.timestamp ? sub.timestamp.split('T')[0] : new Date().toISOString().split('T')[0],
-          wrongAnswers: []
-        }));
-        quizzes = [...quizzes, ...mappedQuizzes];
-      }
-    } catch (e) {
-      console.warn("Failed to merge code submissions:", e);
-    }
-
+    // No local storage merging for study sessions or coding submissions - rely entirely on Firestore and Supabase
     // 4. Query Real Tasks from Supabase Database
     try {
       const { data: supabaseTasks, error: taskErr } = await supabase.from('tasks').select('*');
@@ -170,145 +133,39 @@ export async function fetchFullStudentHistory(userId) {
       console.warn("Failed to query doubts:", e);
     }
 
-    // 6. Fetch user attendance timetable schedule from local storage
-    let mergedAttendance = [...attendance];
+    // No local storage merging for attendance, quizzes or syllabus - rely entirely on databases
+    // 9. Fetch baseline from both Supabase and Firestore (Cloud Databases) and merge
+    let mergedGoals = { targetCGPA: 0, previousCGPA: 0, overallAttendance: 0, studyHoursGoal: 4 };
     try {
-      const rawTimetable = localStorage.getItem('lumixora_timetable');
-      if (rawTimetable) {
-        const timetable = JSON.parse(rawTimetable);
-        // Calculate dynamic attendance from actual timetable definitions
-        for (const entry of timetable) {
-          const subId = entry.subject ? entry.subject.toLowerCase().replace(/\s+/g, '') : 'ds101';
-          if (!mergedAttendance.some(a => a.subjectId === subId)) {
-            mergedAttendance.push({
-              subjectId: subId,
-              attended: 12,
-              total: 14 // default baseline
-            });
-          }
+      let sbBaseline = null;
+      try {
+        const { data: baselineData, error: baseErr } = await supabase
+          .from('student_baselines')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (!baseErr && baselineData) sbBaseline = baselineData;
+      } catch (e) { console.warn("Fallback fetch failed", e); }
+
+      let fbBaseline = null;
+      try {
+        const baselineRef = doc(db, 'Users', userId, 'Baselines', 'academic');
+        const baselineSnap = await getDoc(baselineRef);
+        if (baselineSnap.exists()) {
+          fbBaseline = baselineSnap.data();
         }
-      }
-    } catch (e) {}
+      } catch (e) { console.warn("Fallback fetch failed", e); }
 
-    // Merge real attendance from localStorage
-    try {
-      const rawLocalAttendance = localStorage.getItem(`lumixora_attendance_${userId}`);
-      if (rawLocalAttendance) {
-        const parsedLocalAtt = JSON.parse(rawLocalAttendance);
-        // parsedLocalAtt is like: { "Computer Networks": { attended: 10, total: 12 }, ... }
-        Object.entries(parsedLocalAtt).forEach(([subjectName, attObj]) => {
-          const normalizedInputName = subjectName.toLowerCase();
-          const matchedSubject = subjects.find(s => 
-            s.name.toLowerCase().includes(normalizedInputName) || 
-            normalizedInputName.includes(s.name.toLowerCase()) ||
-            (normalizedInputName.includes('structures') && s.id === 'ds101') ||
-            (normalizedInputName.includes('database') && s.id === 'db102') ||
-            (normalizedInputName.includes('networks') && s.id === 'cn104')
-          );
-          
-          const subjectId = matchedSubject ? matchedSubject.id : subjectName.toLowerCase().replace(/\s+/g, '');
-          
-          // Replace or add to mergedAttendance
-          const existingIdx = mergedAttendance.findIndex(a => a.subjectId === subjectId);
-          const attEntry = {
-            subjectId,
-            attended: Number(attObj.attended) || 0,
-            total: Number(attObj.total) || 0
-          };
-          if (existingIdx !== -1) {
-            mergedAttendance[existingIdx] = attEntry;
-          } else {
-            mergedAttendance.push(attEntry);
-          }
-        });
+      // Prefer Firestore (since fallback writes go there) or the one with actual non-zero data
+      const bestBaseline = (fbBaseline && fbBaseline.cgpa > 0) ? fbBaseline : (sbBaseline || fbBaseline);
+      
+      if (bestBaseline) {
+        mergedGoals.targetCGPA = Number(bestBaseline.target_cgpa) || 0;
+        mergedGoals.previousCGPA = Number(bestBaseline.cgpa) || 0;
+        mergedGoals.overallAttendance = Number(bestBaseline.attendance) || 0;
       }
     } catch (e) {
-      console.warn("Failed to merge local attendance data:", e);
-    }
-
-    // 7. Merge real quiz results from localStorage
-    try {
-      const rawLocalQuizzes = localStorage.getItem(`lumixora_quiz_scores_${userId}`);
-      if (rawLocalQuizzes) {
-        const parsedLocalQuizzes = JSON.parse(rawLocalQuizzes);
-        const mappedQuizzes = parsedLocalQuizzes.map((q, idx) => {
-          const normalizedInputName = (q.subject || '').toLowerCase();
-          const matchedSubject = subjects.find(s => 
-            s.name.toLowerCase().includes(normalizedInputName) || 
-            normalizedInputName.includes(s.name.toLowerCase()) ||
-            (normalizedInputName.includes('structures') && s.id === 'ds101') ||
-            (normalizedInputName.includes('database') && s.id === 'db102') ||
-            (normalizedInputName.includes('networks') && s.id === 'cn104')
-          );
-          return {
-            id: `local_quiz_${idx}`,
-            subjectId: matchedSubject ? matchedSubject.id : 'ds101',
-            score: Number(q.score) || 0,
-            total: Number(q.total) || 10,
-            date: q.timestamp ? q.timestamp.split('T')[0] : new Date().toISOString().split('T')[0],
-            wrongAnswers: []
-          };
-        });
-        quizzes = [...quizzes, ...mappedQuizzes];
-      }
-    } catch (e) {
-      console.warn("Failed to merge local quiz scores:", e);
-    }
-
-    // 8. Merge real syllabus progress from localStorage
-    let syllabusProgress = {};
-    try {
-      const rawLocalSyllabus = localStorage.getItem(`lumixora_syllabus_completion_${userId}`);
-      if (rawLocalSyllabus) {
-        syllabusProgress = JSON.parse(rawLocalSyllabus);
-      }
-    } catch (e) {
-      console.warn("Failed to merge local syllabus completion:", e);
-    }
-
-    // 9. Merge real profile settings and goals from localStorage & Supabase Baseline
-    let mergedGoals = { ...goals };
-    try {
-      const { data: baselineData, error: baseErr } = await supabase
-        .from('student_baselines')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-        
-      if (!baseErr && baselineData) {
-        mergedGoals.targetCGPA = Number(baselineData.target_cgpa) || 9.0;
-        mergedGoals.previousCGPA = Number(baselineData.cgpa) || 8.0;
-        mergedGoals.overallAttendance = Number(baselineData.attendance) || 85;
-      } else {
-        // Fallback to local storage baseline
-        const rawLocalBaseline = localStorage.getItem(`lumixora_baseline_${userId}`);
-        if (rawLocalBaseline) {
-          const parsed = JSON.parse(rawLocalBaseline);
-          mergedGoals.targetCGPA = Number(parsed.target_cgpa) || 9.0;
-          mergedGoals.previousCGPA = Number(parsed.cgpa) || 8.0;
-          mergedGoals.overallAttendance = Number(parsed.attendance) || 85;
-        }
-      }
-    } catch (e) {
-      console.warn("Failed to fetch Supabase baseline:", e);
-    }
-
-    try {
-      const rawLocalProfile = localStorage.getItem(`lumixora_mentor_profile_${userId}`);
-      if (rawLocalProfile) {
-        const parsedProfile = JSON.parse(rawLocalProfile);
-        if (parsedProfile.targetCGPA && !mergedGoals.targetCGPA) mergedGoals.targetCGPA = Number(parsedProfile.targetCGPA) || 9.0;
-        if (parsedProfile.dailyHours) mergedGoals.studyHoursGoal = Number(parsedProfile.dailyHours) || 4;
-      }
-    } catch (e) {
-      console.warn("Failed to merge local profile settings:", e);
-    }
-
-    // Fallback defaults if they have zero study sessions logged yet (so dashboard loads cleanly)
-    if (sessions.length === 0) {
-      sessions = [
-        { subjectId: 'ds101', duration: 30, date: new Date().toISOString().split('T')[0], focusScore: 85, topic: 'Introduction to Algorithms' }
-      ];
+      console.warn("Failed to fetch baselines:", e);
     }
 
     return { 
@@ -317,11 +174,11 @@ export async function fetchFullStudentHistory(userId) {
       quizzes, 
       pyqs, 
       assignments, 
-      attendance: mergedAttendance, 
+      attendance, 
       notesRead, 
       goals: mergedGoals,
       doubtsCount,
-      syllabusProgress
+      syllabusProgress: {}
     };
   } catch (err) {
     console.error('Error fetching student history:', err);
@@ -335,16 +192,16 @@ export function calculateDeterministicTwinPredictions(history) {
 
   // 1. Core aggregates
   const totalStudyMinutes = sessions.reduce((sum, s) => sum + (Number(s.duration) || 0), 0);
-  const avgFocus = sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + (s.focusScore || 70), 0) / sessions.length) : 75;
-  const quizAccuracy = quizzes.length > 0 ? Math.round((quizzes.reduce((sum, q) => sum + (q.score / q.total), 0) / quizzes.length) * 100) : 80;
+  const avgFocus = sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + (s.focusScore || 70), 0) / sessions.length) : 0;
+  const quizAccuracy = quizzes.length > 0 ? Math.round((quizzes.reduce((sum, q) => sum + (q.score / q.total), 0) / quizzes.length) * 100) : 0;
   
   const totalClasses = attendance.reduce((sum, a) => sum + (a.total || 0), 0);
   const attendedClasses = attendance.reduce((sum, a) => sum + (a.attended || 0), 0);
-  const overallAttendance = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 85;
+  const overallAttendance = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
 
   const totalAssignments = assignments.length;
   const completedAssignments = assignments.filter(a => a.status === 'Completed').length;
-  const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 100;
+  const assignmentCompletionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
   // Calculate average syllabus completion
   let totalUnits = 0;
@@ -359,7 +216,7 @@ export function calculateDeterministicTwinPredictions(history) {
       }
     });
   }
-  const syllabusCoverage = totalUnits > 0 ? Math.round((completedUnits / totalUnits) * 100) : 50;
+  const syllabusCoverage = totalUnits > 0 ? Math.round((completedUnits / totalUnits) * 100) : 0;
 
   // 2. Calculations
   // Focus consistency multiplier
@@ -386,14 +243,14 @@ export function calculateDeterministicTwinPredictions(history) {
   const subjectPassingProbabilities = subjects.map(sub => {
     const subSessions = sessions.filter(s => s.subjectId === sub.id);
     const subQuizzes = quizzes.filter(q => q.subjectId === sub.id);
-    const subAttendance = attendance.find(a => a.subjectId === sub.id) || { attended: 12, total: 14 };
+    const subAttendance = attendance.find(a => a.subjectId === sub.id) || { attended: 0, total: 0 };
     
-    const attRate = subAttendance.total > 0 ? (subAttendance.attended / subAttendance.total) : 0.85;
+    const attRate = subAttendance.total > 0 ? (subAttendance.attended / subAttendance.total) : 0;
     const sessionCount = subSessions.length;
-    const subQuizAcc = subQuizzes.length > 0 ? (subQuizzes.reduce((sum, q) => sum + (q.score / q.total), 0) / subQuizzes.length) : 0.85;
+    const subQuizAcc = subQuizzes.length > 0 ? (subQuizzes.reduce((sum, q) => sum + (q.score / q.total), 0) / subQuizzes.length) : 0;
 
     // Retrieve syllabus coverage for this specific subject
-    let subSyllabusCoverage = 50;
+    let subSyllabusCoverage = 0;
     if (syllabusProgress) {
       const matchedKey = Object.keys(syllabusProgress).find(k => 
         k.toLowerCase().includes(sub.name.toLowerCase()) || 
@@ -411,7 +268,7 @@ export function calculateDeterministicTwinPredictions(history) {
       }
     }
 
-    const prob = Math.min(99, Math.max(40, Math.round((attRate * 35) + (sessionCount * 5) + (subQuizAcc * 35) + (subSyllabusCoverage * 0.25))));
+    const prob = Math.min(99, Math.max(0, Math.round((attRate * 35) + (sessionCount * 5) + (subQuizAcc * 35) + (subSyllabusCoverage * 0.25))));
     return {
       subjectId: sub.id,
       name: sub.name,
@@ -422,17 +279,21 @@ export function calculateDeterministicTwinPredictions(history) {
   });
 
   // Expected CGPA and Semester Percentage
-  // CGPA baseline uses dynamic user baseline if available, otherwise 8.1
-  const baseCGPA = goals.previousCGPA || 8.1;
+  // CGPA baseline uses dynamic user baseline if available, otherwise 0
+  const baseCGPA = goals.previousCGPA || 0;
   const attDiff = goals.overallAttendance ? (overallAttendance - goals.overallAttendance) : (overallAttendance - 75);
   
-  const accuracyMod = (quizAccuracy - 70) * 0.03; // max +0.9
-  const attMod = attDiff * 0.02; // max +0.5
-  const consistencyMod = (consistencyScore - 60) * 0.015; // max +0.6
-  const syllabusMod = (syllabusCoverage - 50) * 0.01; // max +0.5
-  const predictedCGPA = Math.min(10.0, Math.max(5.0, Number((baseCGPA + accuracyMod + attMod + consistencyMod + syllabusMod).toFixed(2))));
+  const accuracyMod = quizAccuracy > 0 ? (quizAccuracy - 70) * 0.03 : 0; 
+  const attMod = overallAttendance > 0 ? attDiff * 0.02 : 0;
+  const consistencyMod = consistencyScore > 0 ? (consistencyScore - 60) * 0.015 : 0;
+  const syllabusMod = syllabusCoverage > 0 ? (syllabusCoverage - 50) * 0.01 : 0;
   
-  const predictedSemesterPercentage = Math.min(100, Math.max(45, Math.round(predictedCGPA * 9.5)));
+  let predictedCGPA = 0;
+  if (baseCGPA > 0 || totalStudyMinutes > 0 || totalClasses > 0 || quizzes.length > 0 || pyqs.length > 0) {
+    predictedCGPA = Math.min(10.0, Math.max(0.0, Number((baseCGPA + accuracyMod + attMod + consistencyMod + syllabusMod).toFixed(2))));
+  }
+  
+  const predictedSemesterPercentage = predictedCGPA > 0 ? Math.min(100, Math.max(0, Math.round(predictedCGPA * 9.5))) : 0;
 
   return {
     metrics: {
@@ -505,7 +366,7 @@ You MUST output ONLY a valid JSON object matching this structure exactly. No mar
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Student Data:\n${JSON.stringify(userPayload, null, 2)}` }

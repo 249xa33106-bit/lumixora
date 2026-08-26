@@ -345,6 +345,15 @@ export function DataProvider({ children }) {
   const addDoubt = async (doubt) => {
     const newItem = await addItem('doubts', { ...doubt, timestamp: new Date().toISOString() });
     if (newItem) setDoubts(prev => [...prev, newItem]);
+    return newItem;
+  };
+
+  const updateDoubt = async (id, updates) => {
+    setDoubts(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+    const updated = await updateItem('doubts', id, updates);
+    if (updated) {
+      setDoubts(prev => prev.map(item => item.id === id ? updated : item));
+    }
   };
 
   // Learning Hub Actions
@@ -421,7 +430,7 @@ export function DataProvider({ children }) {
   const value = {
     tasks, addTask, updateTask, deleteTask,
     notes, addNote, updateNote, deleteNote,
-    doubts, addDoubt,
+    doubts, addDoubt, updateDoubt,
     hubSubjects, addHubSubject, updateHubSubject, deleteHubSubject,
     hubMaterials, updateHubMaterials,
     uploadFile,

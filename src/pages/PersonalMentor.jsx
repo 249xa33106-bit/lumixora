@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
-  GraduationCap, Sparkles, User, Calendar, BarChart2, MessageSquare, 
-  Award, Clock, BookOpen, ChevronRight, CheckCircle2, Circle, Send, 
-  RefreshCw, Star, Briefcase, Target, TrendingUp, AlertTriangle, 
-  Play, HelpCircle, FileText, CheckCircle, RefreshCcw, LayoutDashboard, Flame, Zap, Volume2
+  Sparkles, User, Calendar, BarChart2, MessageSquare, 
+  Clock, ChevronRight, Send, 
+  RefreshCw, Star, Briefcase, Target, AlertTriangle, 
+  HelpCircle, CheckCircle, RefreshCcw, LayoutDashboard, Zap, Volume2
 } from 'lucide-react';
 import { generateTwinResponse, generateQuizFromTopic, generateFlashcardsFromTopic, generatePlacementRoadmap } from '../services/aiService';
 import { getLiveMentorData, saveSyllabusCompletion } from '../services/mentorDataService';
@@ -105,7 +105,7 @@ export default function PersonalMentor({ user }) {
   const [timetable, setTimetable] = useState(() => {
     const saved = localStorage.getItem('lumixora_timetable');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { return JSON.parse(saved); } catch (_e) {}
     }
     return [];
   });
@@ -115,7 +115,7 @@ export default function PersonalMentor({ user }) {
     const syncTimetable = () => {
       const saved = localStorage.getItem('lumixora_timetable');
       if (saved) {
-        try { setTimetable(JSON.parse(saved)); } catch (e) {}
+        try { setTimetable(JSON.parse(saved)); } catch (_e) {}
       }
     };
     window.addEventListener('storage', syncTimetable);
@@ -139,7 +139,6 @@ export default function PersonalMentor({ user }) {
   const synergyScore = metrics.compositeReadiness;
   const consistencyScore = Math.min(100, (metrics.streak * 12) + (liveMentorData.analytics.totalSessions * 5)) || 60;
   const focusScore = liveMentorData.analytics.avgFocusScore || 75;
-  const currentStreak = metrics.streak;
   const productivityScore = Math.round(
     Math.min(100, ((liveMentorData.analytics.totalMinutes || 0) / ((Number(profile.dailyHours) || 4) * 60)) * 100)
   ) || 0;
@@ -198,10 +197,10 @@ export default function PersonalMentor({ user }) {
   const [profileState, setProfileState] = useState(profile);
   useEffect(() => {
     setProfileState(profile);
-  }, [profile.name, profile.college, profile.department, profile.year, profile.careerGoal, profile.weakSubjects]);
+  }, [profile]);
 
   // ─── Streaks & Goal Tracker ────────────────────────────────────────────────
-  const toggleGoalCompletion = (taskId) => {
+  const toggleGoalCompletion = () => {
     // Simulate checking goals
     addToast({ message: 'Study milestone status updated!', type: 'success' });
   };
@@ -225,13 +224,13 @@ export default function PersonalMentor({ user }) {
       });
     }
     setWeaknessAlerts(alerts);
-  }, [profile.weakSubjects, twinData.tasksStats.completionRate]);
+  }, [profile.weakSubjects, twinData.tasksStats.completionRate, twinData.tasksStats.total]);
 
   // ─── AI Mentor Chat States ─────────────────────────────────────────────────
   const [chatMessages, setChatMessages] = useState(() => {
     const saved = localStorage.getItem(`lumixora_twin_chat_${userId}`);
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { return JSON.parse(saved); } catch (_e) {}
     }
     return [
       { role: 'system', content: 'You are now talking to your Lumixora AI Academic Twin™.' },
@@ -265,11 +264,11 @@ export default function PersonalMentor({ user }) {
       setChatMessages(prev => [...prev, assistantMsg]);
 
       if (voiceEnabled && 'speechSynthesis' in window) {
-        const speechText = responseText.replace(/[*#`_\-]/g, '').substring(0, 150) + '...';
+        const speechText = responseText.replace(/[*#`_-]/g, '').substring(0, 150) + '...';
         const utterance = new SpeechSynthesisUtterance(speechText);
         window.speechSynthesis.speak(utterance);
       }
-    } catch (err) {
+    } catch (_err) {
       addToast({ message: 'Failed to synchronize with AI Academic Twin.', type: 'error' });
     } finally {
       setChatLoading(false);
@@ -295,6 +294,7 @@ export default function PersonalMentor({ user }) {
     if (action === 'generate_quiz' && profile?.weakSubjects) {
       localStorage.removeItem('mentor_action');
       setActiveSubTab('chat');
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       handleGenerateQuiz(profile.weakSubjects);
     }
   }, [profile?.weakSubjects]);
@@ -313,7 +313,7 @@ export default function PersonalMentor({ user }) {
       setActiveQuiz(quiz);
       setQuizStartTime(Date.now());
       addToast({ message: 'AI Quiz generated successfully!', type: 'success' });
-    } catch (e) {
+    } catch (_e) {
       addToast({ message: 'Could not generate quiz. Try again.', type: 'error' });
     } finally {
       setQuizLoading(false);
@@ -334,7 +334,7 @@ export default function PersonalMentor({ user }) {
       const cards = await generateFlashcardsFromTopic(topic, profile.weakSubjects);
       setActiveFlashcards(cards);
       addToast({ message: 'AI Flashcards generated successfully!', type: 'success' });
-    } catch (e) {
+    } catch (_e) {
       addToast({ message: 'Could not generate flashcards.', type: 'error' });
     } finally {
       setFlashcardsLoading(false);
@@ -351,7 +351,7 @@ export default function PersonalMentor({ user }) {
       const r = await generatePlacementRoadmap(profile);
       setCareerRoadmap(r);
       addToast({ message: 'Custom roadmap generated!', type: 'success' });
-    } catch (e) {
+    } catch (_e) {
       addToast({ message: 'Roadmap generation failed.', type: 'error' });
     } finally {
       setRoadmapLoading(false);

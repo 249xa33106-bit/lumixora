@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, Filter, Briefcase, RefreshCw, Star, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, Filter, Briefcase, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Shuffle, Brain } from 'lucide-react';
 import { PROBLEMS, CATEGORIES } from '../config/problemsData';
 import { useData } from '../context/DataContext';
+import { supabase } from '../config/supabase';
 import { generateProblemFromCode } from '../services/aiCodingService';
 import { useToast } from '../context/ToastContext';
+import AptitudeArena from '../components/AptitudeArena';
 
 const sandboxProblem = {
   id: 'sandbox',
@@ -37,11 +39,12 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
 
   const isFounder = useMemo(() => {
     return user?.role === 'founder' || 
-           user?.email?.toLowerCase().includes('founder') || 
-           user?.email?.toLowerCase().includes('admin') || 
-           user?.email?.toLowerCase() === 'admin@lumixora.com';
+            
+            
+           user?.email?.toLowerCase() === 'founder@lumixora.com';
   }, [user]);
 
+  const [viewMode, setViewMode] = useState('problems'); // 'problems' or 'leaderboard'
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
@@ -55,6 +58,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
   const [editingProblemId, setEditingProblemId] = useState(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [activeStarterTab, setActiveStarterTab] = useState('javascript');
+  const fileInputRef = useRef(null);
 
   const initialFormState = {
     title: '',
@@ -109,7 +113,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
           hints: n.hints || [],
           editorial: n.editorial || '',
           starterTemplates: n.starterTemplates || initialFormState.starterTemplates,
-          companies: n.companies || ['Custom'],
+          companies: Array.isArray(n.companies) ? n.companies : (typeof n.companies === 'string' ? n.companies.split(',').map(c => c.trim()) : ['Custom']),
           functionName: n.functionName || 'solve',
           type: 'code_arena_problem'
         };
@@ -125,9 +129,177 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
   // Load solved problems list from localStorage
   const solvedProblemIds = useMemo(() => {
     if (!user) return [];
-    const submissions = JSON.parse(localStorage.getItem(`lumixora_submissions_${user.id}`) || '[]');
+    const submissions = (() => { try { const item = localStorage.getItem(`lumixora_submissions_${user.id}`); return item ? JSON.parse(item) : []; } catch (e) { return []; } })();
     return [...new Set(submissions.filter(s => s.status === 'Accepted').map(s => s.problemId))];
   }, [user]);
+
+  const streak = useMemo(() => {
+    if (!user) return 0;
+    const submissions = (() => { try { const item = localStorage.getItem(`lumixora_submissions_${user.id}`); return item ? JSON.parse(item) : []; } catch (e) { return []; } })();
+    const accepted = submissions.filter(s => s.status === 'Accepted');
+    const dates = accepted.map(s => new Date(s.timestamp).toDateString());
+    const uniqueDates = [...new Set(dates)].map(d => new Date(d));
+    uniqueDates.sort((a, b) => b - a);
+
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if (uniqueDates.length > 0) {
+      const firstDate = new Date(uniqueDates[0]);
+      firstDate.setHours(0,0,0,0);
+      const diffTime = Math.abs(today - firstDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays <= 1) {
+        currentStreak = 1;
+        let expectedDate = firstDate;
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const nextDate = new Date(uniqueDates[i]);
+          nextDate.setHours(0,0,0,0);
+          const diff = Math.round((expectedDate - nextDate) / (1000 * 60 * 60 * 24));
+          if (diff === 1) {
+            currentStreak++;
+            expectedDate = nextDate;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return currentStreak;
+  }, [user]);
+
+  const [realLeaderboard, setRealLeaderboard] = useState([]);
+  const [leaderboardFilterYear, setLeaderboardFilterYear] = useState('All');
+  const [leaderboardFilterBranch, setLeaderboardFilterBranch] = useState('All');
+  const [leaderboardFilterTier, setLeaderboardFilterTier] = useState('All');
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data: dbUsers, error } = await supabase.from('users').select('*');
+        if (!error && dbUsers) {
+          const activeUsers = dbUsers.filter(u => u.status !== 'trashed');
+          const formatted = activeUsers.map(dbUser => {
+            const isCurrentUser = user && dbUser.id === user.id;
+            let cleanName = dbUser.name || 'Student';
+            let parsedData = {};
+            try {
+              if (cleanName.includes('{')) {
+                const jsonStr = cleanName.substring(cleanName.indexOf('{'));
+                cleanName = cleanName.substring(0, cleanName.indexOf('{')).trim();
+                parsedData = JSON.parse(jsonStr);
+              }
+              if (cleanName.includes('-')) cleanName = cleanName.split('-')[0].trim();
+            } catch (_e) {
+              if (cleanName.includes('{')) cleanName = cleanName.split('{')[0].trim();
+            }
+
+            const totalXp = dbUser.xp || 0;
+            let tier = 'Bronze';
+            if (totalXp > 40000) tier = 'Diamond';
+            else if (totalXp > 30000) tier = 'Platinum';
+            else if (totalXp > 20000) tier = 'Gold';
+            else if (totalXp > 10000) tier = 'Silver';
+
+            return {
+              id: dbUser.id,
+              name: cleanName,
+              xp: totalXp,
+              solved: dbUser.badges ? dbUser.badges.length : 0, 
+              tier,
+              year: dbUser.year || parsedData.year || 'Unknown',
+              branch: dbUser.qualification || parsedData.qualification || 'CSE',
+              college: dbUser.college || parsedData.college || 'GPREC',
+              badgesCount: dbUser.badges ? dbUser.badges.length : 0,
+              isCurrentUser
+            };
+          });
+
+          if (user && !formatted.some(u => u.id === user.id)) {
+            const totalXp = parseInt(localStorage.getItem('lumixora_xp') || '0');
+            let tier = 'Bronze';
+            if (totalXp > 40000) tier = 'Diamond';
+            else if (totalXp > 30000) tier = 'Platinum';
+            else if (totalXp > 20000) tier = 'Gold';
+            else if (totalXp > 10000) tier = 'Silver';
+            
+            let storedUser = null;
+            try { storedUser = (() => { try { const item = localStorage.getItem('lumixora_user'); return item ? JSON.parse(item) : {}; } catch (e) { return {}; } })(); } catch(_e){}
+
+            formatted.push({
+              id: user.id,
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'You',
+              xp: totalXp,
+              solved: solvedProblemIds.length,
+              tier,
+              year: storedUser?.year || '1st Year',
+              branch: storedUser?.qualification || 'CSE',
+              college: storedUser?.college || 'GPREC',
+              badgesCount: 0,
+              isCurrentUser: true
+            });
+          }
+
+          let finalBoard = formatted.map(u => {
+            if (u.isCurrentUser) {
+              const currentXp = Math.max(u.xp, parseInt(localStorage.getItem('lumixora_xp') || '0'));
+              let tier = 'Bronze';
+              if (currentXp > 40000) tier = 'Diamond';
+              else if (currentXp > 30000) tier = 'Platinum';
+              else if (currentXp > 20000) tier = 'Gold';
+              else if (currentXp > 10000) tier = 'Silver';
+              
+              return {
+                ...u,
+                solved: Math.max(u.solved, solvedProblemIds.length), 
+                xp: currentXp,
+                tier
+              };
+            }
+            return u;
+          });
+
+          // Filter for GPREC students, fallback to all active coders if empty
+          const gprecBoard = finalBoard.filter(u => u.college && u.college.toUpperCase().includes('GPREC'));
+          const displayBoard = gprecBoard.length > 0 ? gprecBoard : (finalBoard.length > 0 ? finalBoard : [
+            { id: 'demo-1', name: 'Rahul Sharma', xp: 34500, solved: 18, tier: 'Platinum', year: '3rd Year', branch: 'CSE', college: 'GPREC', badgesCount: 5, isCurrentUser: false },
+            { id: 'demo-2', name: 'Ananya Reddy', xp: 28900, solved: 14, tier: 'Gold', year: '2nd Year', branch: 'CSM', college: 'GPREC', badgesCount: 4, isCurrentUser: false },
+            { id: 'demo-3', name: 'Siddharth Verma', xp: 19400, solved: 11, tier: 'Silver', year: '4th Year', branch: 'ECE', college: 'GPREC', badgesCount: 3, isCurrentUser: false }
+          ]);
+
+          displayBoard.sort((a, b) => b.xp - a.xp);
+          setRealLeaderboard(displayBoard);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchUsers();
+
+    // Real-time Supabase socket subscription for live updates
+    const channel = supabase
+      .channel('public:users')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+        fetchUsers();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, solvedProblemIds.length]);
+
+  // Derived filtered leaderboard
+  const filteredLeaderboard = useMemo(() => {
+    return realLeaderboard.filter(coder => {
+      if (leaderboardFilterYear !== 'All' && coder.year !== leaderboardFilterYear) return false;
+      if (leaderboardFilterBranch !== 'All' && coder.branch !== leaderboardFilterBranch) return false;
+      if (leaderboardFilterTier !== 'All' && coder.tier !== leaderboardFilterTier) return false;
+      return true;
+    });
+  }, [realLeaderboard, leaderboardFilterYear, leaderboardFilterBranch, leaderboardFilterTier]);
 
   // Extract all unique company tags from our problems for filter list
   const companyTags = useMemo(() => {
@@ -201,6 +373,16 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
     setActiveTab('code-editor');
   };
 
+  const handlePickRandom = () => {
+    const unsolved = allProblemsList.filter(p => !solvedProblemIds.includes(p.id) && p.id !== 'sandbox');
+    if (unsolved.length === 0) {
+      addToast({ message: 'You have solved all problems!', type: 'success' });
+      return;
+    }
+    const randomProblem = unsolved[Math.floor(Math.random() * unsolved.length)];
+    handleStartProblem(randomProblem);
+  };
+
   const handleFileUpload = async (e) => {
     if (!isFounder) {
       addToast({ message: 'Unauthorized: Only founders can upload code files.', type: 'error' });
@@ -254,6 +436,90 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
     } catch (err) {
       console.error(err);
       addToast({ message: 'Failed to read file.', type: 'error' });
+      setUploadingFile(false);
+    }
+  };
+
+  const handleBulkImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!isFounder) {
+      addToast({ message: 'Unauthorized: Only founders can import problems.', type: 'error' });
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+      const text = await file.text();
+      const problems = JSON.parse(text);
+
+      if (!Array.isArray(problems)) {
+        throw new Error("Invalid format. Expected a JSON array.");
+      }
+
+      let count = 0;
+      for (const p of problems) {
+        const payload = {
+          title: p.title || 'Untitled Problem',
+          type: 'code_arena_problem',
+          category: 'code_arena_problem',
+          difficulty: p.difficulty || 'Easy',
+          acceptanceRate: p.acceptanceRate || '50.0%',
+          problemCategory: p.category || p.problemCategory || 'Arrays',
+          statement: p.statement || '',
+          inputFormat: p.inputFormat || '',
+          outputFormat: p.outputFormat || '',
+          constraints: p.constraints || '',
+          timeLimit: p.timeLimit || '1000ms',
+          memoryLimit: p.memoryLimit || '256MB',
+          functionName: p.functionName || 'solve',
+          examples: p.examples || [],
+          testCases: p.testCases || [],
+          hiddenTestCases: p.hiddenTestCases || [],
+          hints: p.hints || '',
+          editorial: p.editorial || '',
+          starterTemplates: p.starterTemplates || initialFormState.starterTemplates,
+          frequency: 50,
+          popularity: 50,
+          companies: p.companies || ['Custom'],
+          createdAt: new Date().toISOString()
+        };
+        await addNote(payload);
+        count++;
+      }
+      
+      addToast({ message: `Successfully imported ${count} problems!`, type: 'success' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err) {
+      console.error(err);
+      addToast({ message: 'Failed to import problems. Check JSON format.', type: 'error' });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleFixCompanies = async () => {
+    const topCompanies = ['Google', 'Amazon', 'Meta', 'Microsoft', 'Apple', 'Netflix', 'Bloomberg', 'Uber', 'LinkedIn', 'Adobe'];
+    let updatedCount = 0;
+    setUploadingFile(true);
+    try {
+      for (const p of allProblemsList) {
+        if (p.companies && p.companies.length === 1 && p.companies[0] === 'Custom') {
+          // Pick 2 to 4 random companies
+          const shuffled = topCompanies.sort(() => 0.5 - Math.random());
+          const numCompanies = Math.floor(Math.random() * 3) + 2;
+          const newCompanies = shuffled.slice(0, numCompanies);
+          
+          await updateNote(p.id, { ...p, companies: newCompanies });
+          updatedCount++;
+        }
+      }
+      addToast({ message: `Updated companies for ${updatedCount} problems!`, type: 'success' });
+    } catch (err) {
+      console.error(err);
+      addToast({ message: `Failed to fix companies: ${err.message}`, type: 'error' });
+    } finally {
       setUploadingFile(false);
     }
   };
@@ -399,28 +665,56 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         <div className="flex flex-wrap items-center gap-3">
           {/* Add Problem Button only for Founder */}
           {isFounder && (
-            <button 
-              onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-sm transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-black" />
-              <span>Add Custom Problem</span>
-            </button>
+            <>
+              <button 
+                onClick={() => { setEditingProblemId(null); setFormState(initialFormState); setIsModalOpen(true); }}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-teal hover:opacity-95 text-black font-bold text-xs shadow-sm transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-black" />
+                <span>Add Custom Problem</span>
+              </button>
+              
+              <input 
+                type="file" 
+                accept=".json"
+                ref={fileInputRef}
+                onChange={handleBulkImport}
+                className="hidden"
+              />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFile}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs shadow-sm transition-all cursor-pointer border border-white/10"
+                title="Import bulk LeetCode questions via JSON"
+              >
+                <Code className="w-4 h-4" />
+                <span>{uploadingFile ? 'Importing...' : 'Bulk Import JSON'}</span>
+              </button>
+              <button 
+                onClick={handleFixCompanies}
+                disabled={uploadingFile}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-bold text-xs shadow-sm transition-all cursor-pointer border border-blue-500/30"
+                title="Randomly assign FAANG companies to imported problems"
+              >
+                <Briefcase className="w-4 h-4" />
+                <span>Fix Companies</span>
+              </button>
+            </>
           )}
 
           {/* Free Sandbox Button */}
           <button 
             onClick={() => handleStartProblem(sandboxProblem)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
           >
             <Sparkles className="w-4 h-4 text-white" />
-            <span>Free Code Sandbox</span>
+            <span className="hidden xl:inline">Free Sandbox</span>
           </button>
 
           {/* Level Stats Pill */}
-          <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl p-3 shrink-0">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl p-3 shrink-0 group">
             <div className="w-10 h-10 rounded-xl icon-3d-teal flex items-center justify-center">
-<GraduationCap className="w-5.5 h-5.5" />
+              <GraduationCap className="w-5.5 h-5.5" />
             </div>
             <div>
               <span className="text-[10px] text-gray-500 font-bold uppercase block leading-none">Solving Stats</span>
@@ -428,12 +722,229 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                 {statistics.solved}/{statistics.total} Solved ({statistics.rate}%)
               </span>
             </div>
+            {isFounder && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Reset demo solving stats to zero?')) {
+                    localStorage.setItem(`lumixora_submissions_${user?.id}`, '[]');
+                    localStorage.setItem('lumixora_xp', '0');
+                    window.location.reload();
+                  }
+                }}
+                className="ml-2 px-2 py-1 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-bold uppercase transition-all opacity-0 group-hover:opacity-100"
+                title="Reset Demo Stats"
+              >
+                Reset Zero
+              </button>
+            )}
+          </div>
+
+          {/* Streak Pill */}
+          <div className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl p-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+              <Flame className="w-5.5 h-5.5" />
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-500 font-bold uppercase block leading-none">Current Streak</span>
+              <span className="text-xs font-semibold text-gray-200 mt-1 block">
+                {streak} Day{streak !== 1 && 's'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Top Section: Daily Challenge & Progress Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Tabs Row */}
+      <div className="flex border-b border-white/10 mb-6 overflow-x-auto">
+        <button
+          onClick={() => setViewMode('problems')}
+          className={`px-6 py-3 text-xs font-bold uppercase tracking-wide border-b-2 transition-all cursor-pointer ${
+            viewMode === 'problems' ? 'border-brand-teal text-brand-teal' : 'border-transparent text-gray-500 hover:text-white'
+          }`}
+        >
+          Coding Problems
+        </button>
+        <button
+          onClick={() => setViewMode('aptitude')}
+          className={`px-6 py-3 text-xs font-bold uppercase tracking-wide border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+            viewMode === 'aptitude' ? 'border-brand-purple text-brand-purple' : 'border-transparent text-gray-500 hover:text-white'
+          }`}
+        >
+          <Brain className="w-4 h-4" /> Aptitude Arena
+        </button>
+        <button
+          onClick={() => setViewMode('leaderboard')}
+          className={`px-6 py-3 text-xs font-bold uppercase tracking-wide border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+            viewMode === 'leaderboard' ? 'border-brand-pink text-brand-pink' : 'border-transparent text-gray-500 hover:text-white'
+          }`}
+        >
+          <Award className="w-4 h-4" /> GPREC Leaderboard
+        </button>
+      </div>
+
+      {viewMode === 'aptitude' && (
+        <AptitudeArena user={user} isFounder={isFounder} />
+      )}
+
+      {viewMode === 'leaderboard' && (
+        <div className="glass-panel p-8 rounded-3xl animate-fade-in">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+            <h2 className="text-2xl font-extrabold text-white uppercase tracking-wide flex items-center gap-3">
+              <Award className="w-8 h-8 text-brand-pink" /> G PULLA REDDY ENGINEERING COLLEGE CODER'S LEADERSHIP BOARD
+            </h2>
+            
+            <div className="flex flex-wrap gap-3">
+              <select 
+                value={leaderboardFilterYear}
+                onChange={(e) => setLeaderboardFilterYear(e.target.value)}
+                className="bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2 outline-none focus:border-brand-teal transition-all cursor-pointer"
+              >
+                <option value="All">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+              <select 
+                value={leaderboardFilterBranch}
+                onChange={(e) => setLeaderboardFilterBranch(e.target.value)}
+                className="bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2 outline-none focus:border-brand-teal transition-all cursor-pointer"
+              >
+                <option value="All">All Branches</option>
+                <option value="CSM">CSM</option>
+                <option value="CSE">CSE</option>
+                <option value="EEE">EEE</option>
+                <option value="ECE">ECE</option>
+                <option value="CIVIL">CIVIL</option>
+                <option value="MECH">MECH</option>
+              </select>
+              <select 
+                value={leaderboardFilterTier}
+                onChange={(e) => setLeaderboardFilterTier(e.target.value)}
+                className="bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2 outline-none focus:border-brand-teal transition-all cursor-pointer"
+              >
+                <option value="All">All Tiers</option>
+                <option value="Diamond">Diamond</option>
+                <option value="Platinum">Platinum</option>
+                <option value="Gold">Gold</option>
+                <option value="Silver">Silver</option>
+                <option value="Bronze">Bronze</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* Podium UI */}
+          {filteredLeaderboard.length >= 3 && (
+            <div className="flex justify-center items-end gap-2 md:gap-6 mb-12 mt-8 pt-8">
+              {/* Rank 2 - Silver */}
+              <div className="flex flex-col items-center animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-400/20 border-2 border-gray-400 flex items-center justify-center text-xl font-bold mb-3 shadow-[0_0_15px_rgba(156,163,175,0.4)]">
+                  {filteredLeaderboard[1].name.charAt(0)}
+                </div>
+                <div className="text-sm font-bold text-gray-200 mb-1">{filteredLeaderboard[1].name}</div>
+                <div className="text-xs text-brand-pink font-mono mb-2">{filteredLeaderboard[1].xp.toLocaleString()} XP</div>
+                <div className="w-20 md:w-28 h-24 md:h-32 bg-gradient-to-t from-white/5 to-gray-400/20 rounded-t-xl border-t border-x border-gray-400/50 flex items-start justify-center pt-4">
+                  <span className="text-2xl font-extrabold text-gray-400">2</span>
+                </div>
+              </div>
+
+              {/* Rank 1 - Gold */}
+              <div className="flex flex-col items-center animate-fade-in-up z-10" style={{ animationDelay: '0ms' }}>
+                <div className="text-yellow-400 mb-2 animate-bounce"><Award className="w-8 h-8" /></div>
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-yellow-400/20 border-2 border-yellow-400 flex items-center justify-center text-2xl font-bold mb-3 shadow-[0_0_30px_rgba(250,204,21,0.6)]">
+                  {filteredLeaderboard[0].name.charAt(0)}
+                </div>
+                <div className="text-base font-bold text-white mb-1">{filteredLeaderboard[0].name}</div>
+                <div className="text-sm text-brand-pink font-mono font-extrabold mb-2">{filteredLeaderboard[0].xp.toLocaleString()} XP</div>
+                <div className="w-24 md:w-32 h-32 md:h-40 bg-gradient-to-t from-white/5 to-yellow-400/20 rounded-t-xl border-t border-x border-yellow-400/50 flex items-start justify-center pt-4">
+                  <span className="text-4xl font-extrabold text-yellow-400">1</span>
+                </div>
+              </div>
+
+              {/* Rank 3 - Bronze */}
+              <div className="flex flex-col items-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-orange-600/20 border-2 border-orange-600 flex items-center justify-center text-xl font-bold mb-3 shadow-[0_0_15px_rgba(234,88,12,0.4)]">
+                  {filteredLeaderboard[2].name.charAt(0)}
+                </div>
+                <div className="text-sm font-bold text-gray-200 mb-1">{filteredLeaderboard[2].name}</div>
+                <div className="text-xs text-brand-pink font-mono mb-2">{filteredLeaderboard[2].xp.toLocaleString()} XP</div>
+                <div className="w-20 md:w-28 h-16 md:h-24 bg-gradient-to-t from-white/5 to-orange-600/20 rounded-t-xl border-t border-x border-orange-600/50 flex items-start justify-center pt-4">
+                  <span className="text-2xl font-extrabold text-orange-600">3</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-x-auto bg-black/20 rounded-2xl border border-white/5">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-wider bg-white/5">
+                  <th className="p-4 font-bold">Rank</th>
+                  <th className="p-4 font-bold">Coder</th>
+                  <th className="p-4 font-bold">Tier</th>
+                  <th className="p-4 font-bold hidden md:table-cell">Branch</th>
+                  <th className="p-4 font-bold hidden md:table-cell">Year</th>
+                  <th className="p-4 font-bold text-center">Badges</th>
+                  <th className="p-4 font-bold text-right">Solved</th>
+                  <th className="p-4 font-bold text-right">Total XP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLeaderboard.length === 0 && (
+                  <tr><td colSpan="8" className="p-8 text-center text-gray-500 italic">No competitors found matching these filters.</td></tr>
+                )}
+                {filteredLeaderboard.map((coder, index) => (
+                  <tr key={coder.id} className={`border-b border-white/5 transition-colors ${coder.isCurrentUser ? 'bg-brand-teal/10' : 'hover:bg-white/5'}`}>
+                    <td className="p-4 text-sm font-bold text-gray-400">
+                      {index + 1}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                          coder.isCurrentUser ? 'bg-brand-teal text-black shadow-[0_0_10px_rgba(0,245,212,0.3)]' : 'bg-white/10 text-gray-300'
+                        }`}>
+                          {coder.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className={`font-bold text-sm ${coder.isCurrentUser ? 'text-brand-teal' : 'text-gray-200'}`}>
+                          {coder.name} {coder.isCurrentUser && '(You)'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                        coder.tier === 'Diamond' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.2)]' :
+                        coder.tier === 'Platinum' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' :
+                        coder.tier === 'Gold' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' :
+                        coder.tier === 'Silver' ? 'bg-gray-400/10 text-gray-300 border-gray-400/30' :
+                        'bg-orange-500/10 text-orange-400 border-orange-500/30'
+                      }`}>
+                        {coder.tier}
+                      </span>
+                    </td>
+                    <td className="p-4 hidden md:table-cell text-xs font-semibold text-gray-400">{coder.branch}</td>
+                    <td className="p-4 hidden md:table-cell text-xs font-semibold text-gray-400">{coder.year}</td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-[10px] font-bold text-brand-teal bg-brand-teal/10 px-2.5 py-1 rounded-full border border-brand-teal/20">
+                          {coder.badgesCount}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-right text-xs font-mono text-gray-300">{coder.solved}</td>
+                    <td className="p-4 text-right text-sm font-extrabold text-brand-pink font-mono">{coder.xp.toLocaleString()} XP</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'problems' && (
+        <>
+          {/* Top Section: Daily Challenge & Progress Overview */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Daily Challenge Card */}
         <div className="lg:col-span-2 glass-panel p-6 rounded-3xl relative overflow-hidden bg-gradient-to-r from-brand-teal/5 via-transparent to-transparent border border-white/10">
@@ -748,19 +1259,38 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
  
                     <td className="p-4 hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
-                        {problem.companies?.slice(0, 3).map((comp, idx) => (
-                          <span 
-                            key={idx}
-                            className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-gray-400 font-bold tracking-wide"
-                          >
-                            {comp}
-                          </span>
-                        ))}
-                        {problem.companies?.length > 3 && (
-                          <span className="text-[9px] text-gray-500 font-bold pl-1 align-middle leading-[18px]">
-                            +{problem.companies.length - 3} more
-                          </span>
-                        )}
+                        {(() => {
+                          let displayCompanies = problem.companies || [];
+                          if (displayCompanies.length === 1 && displayCompanies[0] === 'Custom') {
+                            const seed = (problem.title || '').length + (problem.id ? problem.id.charCodeAt(0) : 0);
+                            const topFAANG = ['Google', 'Amazon', 'Meta', 'Microsoft', 'Apple', 'Netflix', 'Bloomberg', 'Uber'];
+                            const shuffled = [...topFAANG].sort((a, b) => {
+                              const hashA = (a.charCodeAt(0) * seed) % 100;
+                              const hashB = (b.charCodeAt(0) * seed) % 100;
+                              return hashA - hashB;
+                            });
+                            const num = (seed % 3) + 2;
+                            displayCompanies = shuffled.slice(0, num);
+                          }
+
+                          return (
+                            <>
+                              {displayCompanies.slice(0, 3).map((comp, idx) => (
+                                <span 
+                                  key={idx}
+                                  className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[9px] text-gray-400 font-bold tracking-wide"
+                                >
+                                  {comp}
+                                </span>
+                              ))}
+                              {displayCompanies.length > 3 && (
+                                <span className="text-[9px] text-gray-500 font-bold pl-1 align-middle leading-[18px]">
+                                  +{displayCompanies.length - 3} more
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </td>
  
@@ -799,6 +1329,8 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
           </table>
         </div>
       </div>
+        </>
+      )}
 
       {/* Add / Edit Problem Modal */}
       {isModalOpen && (

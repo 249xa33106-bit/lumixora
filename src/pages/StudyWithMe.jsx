@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
-  Play, Pause, Square, SkipForward, BookOpen, Target, Clock, Zap, Flame,
-  TrendingUp, Award, BarChart2, Coffee, Brain, Sparkles, RefreshCw,
-  CheckCircle2, XCircle, AlertTriangle, Star, Trophy, Calendar, Mic,
-  Volume2, VolumeX, Maximize2, Minimize2, ChevronRight, ChevronLeft,
-  Moon, Activity, Home
+  Play, Pause, Square, BookOpen, Target, Clock, Zap, Flame,
+  BarChart2, Brain, Sparkles, RefreshCw,
+  Maximize2, Minimize2, Activity, Home
 } from 'lucide-react';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
@@ -92,7 +90,6 @@ export default function StudyWithMe({ user }) {
   const [selectedDuration, setSelectedDuration] = useState(25);
   const [customDuration, setCustomDuration] = useState(45);
   const [isCustom, setIsCustom] = useState(false);
-  const [ambientSound, setAmbientSound] = useState(false);
 
   // Session state
   const [isRunning, setIsRunning] = useState(false);
@@ -106,7 +103,6 @@ export default function StudyWithMe({ user }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Inactivity detection
-  const [inactivitySeconds, setInactivitySeconds] = useState(0);
   const [inactivityWarning, setInactivityWarning] = useState(null); // null | 'warn1' | 'warn2'
   const lastActivityRef = useRef(Date.now());
   const inactivityRef = useRef(0);
@@ -127,7 +123,6 @@ export default function StudyWithMe({ user }) {
 
   // Refs for timer loops
   const timerRef = useRef(null);
-  const inactivityIntervalRef = useRef(null);
 
   // Load analytics on mount
   useEffect(() => {
@@ -159,7 +154,6 @@ export default function StudyWithMe({ user }) {
   const resetActivity = useCallback(() => {
     lastActivityRef.current = Date.now();
     inactivityRef.current = 0;
-    setInactivitySeconds(0);
     if (inactivityWarning) setInactivityWarning(null);
   }, [inactivityWarning]);
 
@@ -171,123 +165,12 @@ export default function StudyWithMe({ user }) {
     return () => events.forEach(e => window.removeEventListener(e, throttled));
   }, [phase, resetActivity]);
 
-  // ─── Main Session Timer ────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isRunning || isPaused) {
-      clearInterval(timerRef.current);
-      return;
-    }
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          handleSessionComplete(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-      setElapsedActive(prev => prev + 1);
-
-      // Inactivity counter
-      const idleSeconds = Math.round((Date.now() - lastActivityRef.current) / 1000);
-      inactivityRef.current = idleSeconds;
-      setInactivitySeconds(idleSeconds);
-
-      if (idleSeconds >= INACTIVITY_AUTO_PAUSE) {
-        handleAutoPause();
-      } else if (idleSeconds >= INACTIVITY_WARNING_2 && inactivityWarning !== 'warn2') {
-        setInactivityWarning('warn2');
-        setDistractions(prev => prev + 1);
-      } else if (idleSeconds >= INACTIVITY_WARNING_1 && !inactivityWarning) {
-        setInactivityWarning('warn1');
-        setDistractions(prev => prev + 1);
-      }
-    }, 1000);
-
-    return () => clearInterval(timerRef.current);
-  }, [isRunning, isPaused]);
-
-  // ─── Break Timer ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isPaused || !isRunning) return;
-    const ref = setInterval(() => setBreakTime(prev => prev + 1), 1000);
-    return () => clearInterval(ref);
-  }, [isPaused, isRunning]);
-
-  // ─── AI Coach Message Scheduler ────────────────────────────────────────────
-  useEffect(() => {
-    if (!isRunning || isPaused) {
-      clearTimeout(coachTimerRef.current);
-      return;
-    }
-    const scheduleNext = () => {
-      const delay = (Math.random() * 3 + 3) * 60 * 1000; // 3–6 minutes
-      coachTimerRef.current = setTimeout(() => {
-        const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
-        const msg = getCoachMessage('progress', progress);
-        setCoachMessage(msg);
-        setShowCoach(true);
-        setTimeout(() => setShowCoach(false), 6000);
-        scheduleNext();
-      }, delay);
-    };
-    scheduleNext();
-    return () => clearTimeout(coachTimerRef.current);
-  }, [isRunning, isPaused, totalDuration, timeLeft]);
-
-  // ─── Session Controls ──────────────────────────────────────────────────────
-  const handleStart = () => {
-    const dur = isCustom ? customDuration : selectedDuration;
-    if (!goal.trim()) { addToast({ message: 'Please enter a study goal!', type: 'error' }); return; }
-    if (dur < 1) { addToast({ message: 'Please set a valid duration.', type: 'error' }); return; }
-
-    const totalSecs = dur * 60;
-    setTotalDuration(totalSecs);
-    setTimeLeft(totalSecs);
-    setElapsedActive(0);
-    setBreakTime(0);
-    setDistractions(0);
-    setBreaks(0);
-    setIsRunning(true);
-    setIsPaused(false);
-    setSessionResult(null);
-    setAiFeedback(null);
-    setInactivityWarning(null);
-    resetActivity();
-
-    const msg = getCoachMessage('start', 0);
-    setCoachMessage(msg);
-    setShowCoach(true);
-    setTimeout(() => setShowCoach(false), 5000);
-
-    setPhase('session');
-    addToast({ message: `🚀 Study session started! ${dur} minutes of focus begins now.`, type: 'success' });
-  };
-
-  const handlePause = () => {
-    setIsPaused(true);
-    setBreaks(prev => prev + 1);
-    setCoachMessage(getCoachMessage('break', 0));
-    setShowCoach(true);
-    setTimeout(() => setShowCoach(false), 5000);
-  };
-
-  const handleResume = () => {
-    setIsPaused(false);
-    resetActivity();
-    setInactivityWarning(null);
-    setCoachMessage(getCoachMessage('resumed', 0));
-    setShowCoach(true);
-    setTimeout(() => setShowCoach(false), 4000);
-  };
-
-  const handleAutoPause = () => {
+  const handleAutoPause = useCallback(() => {
     setIsPaused(true);
     setBreaks(prev => prev + 1);
     setInactivityWarning(null);
     addToast({ message: '⏸️ Session auto-paused due to 10 minutes of inactivity.', type: 'info' });
-  };
+  }, [addToast]);
 
   const handleSessionComplete = useCallback(async (completed = false) => {
     clearInterval(timerRef.current);
@@ -365,13 +248,123 @@ export default function StudyWithMe({ user }) {
     } finally {
       setFeedbackLoading(false);
     }
-  }, [elapsedActive, breakTime, distractions, breaks, subject, goal, isCustom, customDuration, selectedDuration, user, awardXP, trackActivity]);
+  }, [elapsedActive, breakTime, distractions, breaks, subject, goal, isCustom, customDuration, selectedDuration, user, awardXP, trackActivity, addToast]);
 
   const handleEndEarly = () => {
     if (window.confirm('End this study session early? Progress will be saved.')) {
       handleSessionComplete(false);
     }
   };
+  // ─── Main Session Timer ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isRunning || isPaused) {
+      clearInterval(timerRef.current);
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          handleSessionComplete(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+      setElapsedActive(prev => prev + 1);
+
+      // Inactivity counter
+      const idleSeconds = Math.round((Date.now() - lastActivityRef.current) / 1000);
+      inactivityRef.current = idleSeconds;
+
+      if (idleSeconds >= INACTIVITY_AUTO_PAUSE) {
+        handleAutoPause();
+      } else if (idleSeconds >= INACTIVITY_WARNING_2 && inactivityWarning !== 'warn2') {
+        setInactivityWarning('warn2');
+        setDistractions(prev => prev + 1);
+      } else if (idleSeconds >= INACTIVITY_WARNING_1 && !inactivityWarning) {
+        setInactivityWarning('warn1');
+        setDistractions(prev => prev + 1);
+      }
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, [isRunning, isPaused, handleSessionComplete, handleAutoPause, inactivityWarning]);
+
+  // ─── Break Timer ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isPaused || !isRunning) return;
+    const ref = setInterval(() => setBreakTime(prev => prev + 1), 1000);
+    return () => clearInterval(ref);
+  }, [isPaused, isRunning]);
+
+  // ─── AI Coach Message Scheduler ────────────────────────────────────────────
+  useEffect(() => {
+    if (!isRunning || isPaused) {
+      clearTimeout(coachTimerRef.current);
+      return;
+    }
+    const scheduleNext = () => {
+      const delay = (Math.random() * 3 + 3) * 60 * 1000; // 3–6 minutes
+      coachTimerRef.current = setTimeout(() => {
+        const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
+        const msg = getCoachMessage('progress', progress);
+        setCoachMessage(msg);
+        setShowCoach(true);
+        setTimeout(() => setShowCoach(false), 6000);
+        scheduleNext();
+      }, delay);
+    };
+    scheduleNext();
+    return () => clearTimeout(coachTimerRef.current);
+  }, [isRunning, isPaused, totalDuration, timeLeft]);
+
+  // ─── Session Controls ──────────────────────────────────────────────────────
+  const handleStart = () => {
+    const dur = isCustom ? customDuration : selectedDuration;
+    if (!goal.trim()) { addToast({ message: 'Please enter a study goal!', type: 'error' }); return; }
+    if (dur < 1) { addToast({ message: 'Please set a valid duration.', type: 'error' }); return; }
+
+    const totalSecs = dur * 60;
+    setTotalDuration(totalSecs);
+    setTimeLeft(totalSecs);
+    setElapsedActive(0);
+    setBreakTime(0);
+    setDistractions(0);
+    setBreaks(0);
+    setIsRunning(true);
+    setIsPaused(false);
+    setSessionResult(null);
+    setAiFeedback(null);
+    setInactivityWarning(null);
+    resetActivity();
+
+    const msg = getCoachMessage('start', 0);
+    setCoachMessage(msg);
+    setShowCoach(true);
+    setTimeout(() => setShowCoach(false), 5000);
+
+    setPhase('session');
+    addToast({ message: `🚀 Study session started! ${dur} minutes of focus begins now.`, type: 'success' });
+  };
+
+  const handlePause = () => {
+    setIsPaused(true);
+    setBreaks(prev => prev + 1);
+    setCoachMessage(getCoachMessage('break', 0));
+    setShowCoach(true);
+    setTimeout(() => setShowCoach(false), 5000);
+  };
+
+  const handleResume = () => {
+    setIsPaused(false);
+    resetActivity();
+    setInactivityWarning(null);
+    setCoachMessage(getCoachMessage('resumed', 0));
+    setShowCoach(true);
+    setTimeout(() => setShowCoach(false), 4000);
+  };
+
 
   // ─── Computed values ───────────────────────────────────────────────────────
   const progressPercent = totalDuration > 0 ? Math.round(((totalDuration - timeLeft) / totalDuration) * 100) : 0;

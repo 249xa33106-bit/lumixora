@@ -1,0 +1,1 @@
+const admin = require('./firebase-admin-init.cjs'); async function get() { const db = admin.firestore(); const doc = await db.collection('attendance').doc('249XA33106').get(); console.log(doc.data()); } get();  

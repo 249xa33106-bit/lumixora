@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Newspaper, MessageSquare, Users, Sparkles, User, Search, UserCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Newspaper, MessageSquare, Users, Sparkles, User, UserCheck } from 'lucide-react';
 import NetworkFeed from '../components/NetworkFeed';
 import NetworkMessages from '../components/NetworkMessages';
 import NetworkGroups from '../components/NetworkGroups';
@@ -7,77 +7,35 @@ import NetworkAssistant from '../components/NetworkAssistant';
 import NetworkProfile from '../components/NetworkProfile';
 import { useToast } from '../context/ToastContext';
 import { useData } from '../context/DataContext';
-import { supabase } from '../config/supabase';
-
-const parseUserProfile = (fullName) => {
-  let name = fullName || '';
-  let metadata = { qualification: 'B.Tech', college: 'GPREC', place: 'Kurnool', year: '3rd Year', avatarUrl: '' };
-  if (name.includes('{')) {
-    const idx = name.indexOf('{');
-    const jsonStr = name.substring(idx).trim();
-    name = name.substring(0, idx).trim();
-    try {
-      metadata = { ...metadata, ...JSON.parse(jsonStr) };
-    } catch (e) {}
-  }
-  return { name: name || 'Scholar Student', ...metadata };
-};
 
 export default function NexoraNetwork({ user }) {
+  const [activeSubTab, setActiveSubTab] = useState('feed');
+  const [connectTab, setConnectTab] = useState('explore');
   const { addToast } = useToast();
-  const { notes, doubts } = useData();
-  const [activeSubTab, setActiveSubTab] = useState('feed'); // 'feed', 'messages', 'groups', 'assistant', 'profile'
-  
-  // Smart Connect & Connection Requests lists
-  const [connectTab, setConnectTab] = useState('explore'); // 'explore', 'pending'
-  const [pendingRequests, setPendingRequests] = useState([
-    { id: 201, name: 'Ankita Verma', branch: 'CSE Sem 3', college: 'LUMIXORA University' },
-    { id: 202, name: 'Vikram Malhotra', branch: 'CSM Sem 5', college: 'BITS Hyderabad' }
+  const { notes = [], doubts = [], registeredUsers = [] } = useData() || {};
+
+  const [suggestedStudents, setSuggestedStudents] = useState([
+    { id: 'st-1', name: 'Aarav Sharma', branch: 'CSE', college: 'GPREC', mutual: 4 },
+    { id: 'st-2', name: 'Priya Verma', branch: 'ECE', college: 'GPREC', mutual: 2 },
+    { id: 'st-3', name: 'Rohan Gupta', branch: 'AI/DS', college: 'GPREC', mutual: 7 }
   ]);
-  const [suggestedStudents, setSuggestedStudents] = useState([]);
-  const [registeredUsers, setRegisteredUsers] = useState([]);
 
-  useEffect(() => {
-    const fetchRegisteredUsers = async () => {
-      try {
-        const { data, error } = await supabase.from('users').select('*');
-        if (!error && data) {
-          const parsed = data.map(dbUser => {
-            const profile = parseUserProfile(dbUser.name);
-            return {
-              id: dbUser.id || dbUser.uid,
-              name: profile.name,
-              college: profile.college || 'GPREC',
-              branch: profile.qualification || 'CSE',
-              year: profile.year || '3rd Year',
-              avatarUrl: dbUser.avatarUrl || '',
-              mutual: Math.floor(Math.random() * 8) + 1
-            };
-          }).filter(u => u.name.toLowerCase() !== 'scholar student' && u.name.toLowerCase() !== (user?.name || '').toLowerCase());
-          
-          setRegisteredUsers(parsed);
-          setSuggestedStudents(parsed);
-        }
-      } catch (err) {
-        console.error("Error loading network suggestions:", err);
-      }
-    };
-    fetchRegisteredUsers();
-  }, [user]);
-
-  const handleAcceptConnect = (reqId, name) => {
-    setPendingRequests(pendingRequests.filter(r => r.id !== reqId));
-    addToast({ message: `Connection request from ${name} accepted!`, type: 'success' });
-  };
+  const [pendingRequests, setPendingRequests] = useState([
+    { id: 'req-1', name: 'Sneha Reddy', branch: 'IT', college: 'GPREC' }
+  ]);
 
   const handleSendConnect = (studentId, name) => {
-    setSuggestedStudents(suggestedStudents.filter(s => s.id !== studentId));
+    setSuggestedStudents(prev => prev.filter(s => s.id !== studentId));
     addToast({ message: `Connection request sent to ${name}!`, type: 'success' });
+  };
+
+  const handleAcceptConnect = (reqId, name) => {
+    setPendingRequests(prev => prev.filter(r => r.id !== reqId));
+    addToast({ message: `Accepted connection from ${name}!`, type: 'success' });
   };
 
   return (
     <div className="space-y-6 text-white pb-12 animate-fade-in">
-      
       {/* Social Hub Top Navigation Bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
         <div>
@@ -120,7 +78,6 @@ export default function NexoraNetwork({ user }) {
 
       {/* Main Grid Switcher layout */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        
         {/* Left Side Tab Content Panel */}
         <div className="xl:col-span-8 space-y-6">
           {activeSubTab === 'feed' && <NetworkFeed user={user} dbNotes={notes} dbDoubts={doubts} dbUsers={registeredUsers} />}
@@ -132,7 +89,6 @@ export default function NexoraNetwork({ user }) {
 
         {/* Right Side: Smart Connect / Explore Students drawer */}
         <div className="xl:col-span-4 space-y-6">
-          
           <div className="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
             <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5 border-b border-white/5 pb-3">
               <UserCheck className="w-4 h-4 text-brand-purple" />
@@ -165,7 +121,6 @@ export default function NexoraNetwork({ user }) {
             </div>
 
             <div className="space-y-3 pt-1 text-left">
-              
               {/* SUBTAB: EXPLORE SUGGESTIONS */}
               {connectTab === 'explore' && (
                 <>
@@ -211,7 +166,7 @@ export default function NexoraNetwork({ user }) {
                             Accept
                           </button>
                           <button 
-                            onClick={() => { setPendingRequests(pendingRequests.filter(r => r.id !== req.id)); addToast({ message: 'Request declined', type: 'info' }); }}
+                            onClick={() => { setPendingRequests(prev => prev.filter(r => r.id !== req.id)); addToast({ message: 'Request declined', type: 'info' }); }}
                             className="flex-1 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white font-extrabold text-[9px] tracking-wide cursor-pointer"
                           >
                             Decline
@@ -222,14 +177,10 @@ export default function NexoraNetwork({ user }) {
                   )}
                 </>
               )}
-
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

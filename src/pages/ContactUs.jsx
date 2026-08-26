@@ -98,6 +98,27 @@ export default function ContactUs({ user }) {
         {/* Left Side: Contact Information Cards */}
         <div className="md:col-span-5 space-y-6">
           
+          {/* WhatsApp Group Quick Access Card */}
+          <div className="glass-panel p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-left space-y-3 relative overflow-hidden shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-extrabold text-lg shrink-0">
+                💬
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white">WhatsApp Queries Group</h3>
+                <p className="text-[11px] text-emerald-300 font-semibold">Join for instant help, updates & queries</p>
+              </div>
+            </div>
+            <a
+              href="https://chat.whatsapp.com/Jkul7Bn8KgM2cqYTUCyDcS?s=cl&p=a&ilr=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer block text-center"
+            >
+              <span>Join Official WhatsApp Group</span>
+            </a>
+          </div>
+
           <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-black/10 text-left space-y-4">
             <h3 className="text-xs font-bold text-gray-200 tracking-wide">Office Contacts</h3>
             

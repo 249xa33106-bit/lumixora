@@ -139,22 +139,24 @@ export async function getUserProfile(uid, authUser = null) {
   if (isFirebaseAvailable()) {
     try {
       const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const data = userSnap.data();
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Ensure legacy streak handles completedDays
         if (!data.completedDays || data.completedDays.length === 0) {
           data.streak = 0;
         }
         return data;
       } else {
-        // Create new user profile in Firestore
+        // Create new user profile in Firebase
         const cleanProfile = parseProfileName(authUser?.displayName || authUser?.name || 'Academic Student');
         const defaultProfile = {
           uid,
           name: cleanProfile.name,
           email: authUser?.email || '',
           qualification: cleanProfile.qualification || 'B.Tech',
-          college: cleanProfile.college || 'Lumix Academy',
+          college: cleanProfile.college || 'GPREC',
           place: cleanProfile.place || 'India',
           year: cleanProfile.year || '1st Year',
           xp: 0,
@@ -177,32 +179,12 @@ export async function getUserProfile(uid, authUser = null) {
           lastDailyReset: new Date().toDateString(),
           created_at: new Date().toISOString()
         };
-        await setDoc(userRef, defaultProfile);
         
-        // Sync to leaderboards index
-        await setDoc(doc(db, 'leaderboards', uid), {
-          id: uid,
-          name: defaultProfile.name,
-          college: defaultProfile.college,
-          department: cleanProfile.department || 'CSE',
-          year: defaultProfile.year,
-          city: defaultProfile.place,
-          state: defaultProfile.place,
-          country: 'India',
-          xp: 0,
-          streak: 0,
-          badgesCount: 1,
-          level: 1,
-          avatarUrl: defaultProfile.avatarUrl || '',
-          quizScore: 0,
-          studyHours: 0,
-          notesShared: 0
-        });
-
+        await setDoc(userRef, defaultProfile);
         return defaultProfile;
       }
     } catch (e) {
-      console.warn("Firestore fetch error, falling back to LocalStorage:", e);
+      console.warn("Firebase fetch error, falling back to LocalStorage:", e);
     }
   }
 
@@ -221,7 +203,7 @@ export async function getUserProfile(uid, authUser = null) {
       name: cleanProfile.name,
       email: authUser?.email || '',
       qualification: cleanProfile.qualification || 'B.Tech',
-      college: cleanProfile.college || 'Lumix Academy',
+      college: cleanProfile.college || 'GPREC',
       place: cleanProfile.place || 'India',
       year: cleanProfile.year || '1st Year',
       xp: 0,
@@ -289,6 +271,14 @@ export function parseProfileName(fullName) {
       console.error("Failed to parse metadata in name field:", e);
     }
   }
+  
+  if (metadata.college) {
+    const c = metadata.college.toLowerCase().trim();
+    if (c === 'gprec' || c === 'g pulla reddy engineering college') {
+      metadata.college = 'GPREC';
+    }
+  }
+
   return { name, ...metadata };
 }
 
@@ -296,32 +286,32 @@ export function parseProfileName(fullName) {
  * Save / Update profile details
  */
 export async function saveUserProfile(uid, updates) {
+  // 1. Sync to Firebase Firestore
   if (isFirebaseAvailable()) {
     try {
       const userRef = doc(db, 'users', uid);
       await updateDoc(userRef, updates);
-      
-      // Sync leaderboard fields if updated
-      const boardRef = doc(db, 'leaderboards', uid);
-      const boardSnap = await getDoc(boardRef);
-      if (boardSnap.exists()) {
-        const boardUpdates = {};
-        if (updates.name !== undefined) boardUpdates.name = updates.name;
-        if (updates.college !== undefined) boardUpdates.college = updates.college;
-        if (updates.year !== undefined) boardUpdates.year = updates.year;
-        if (updates.place !== undefined) {
-          boardUpdates.city = updates.place;
-          boardUpdates.state = updates.place;
-        }
-        if (updates.avatarUrl !== undefined) boardUpdates.avatarUrl = updates.avatarUrl;
-        if (Object.keys(boardUpdates).length > 0) {
-          await updateDoc(boardRef, boardUpdates);
-        }
-      }
-      return true;
     } catch (e) {
-      console.warn("Firestore update error, falling back to LocalStorage:", e);
+      console.warn("Firebase update error, falling back to LocalStorage:", e);
     }
+  }
+
+  // 2. Sync to Supabase Database
+  try {
+    const sbUpdates = {};
+    if (updates.name !== undefined) sbUpdates.name = typeof updates.name === 'string' ? updates.name.split(' {')[0].trim() : updates.name;
+    if (updates.role !== undefined) sbUpdates.role = updates.role;
+    if (updates.is_deleted !== undefined) sbUpdates.is_deleted = updates.is_deleted;
+
+    if (Object.keys(sbUpdates).length > 0) {
+      if (updates.email) {
+        await supabase.from('users').update(sbUpdates).eq('email', updates.email.toLowerCase().trim());
+      } else if (uid) {
+        await supabase.from('users').update(sbUpdates).eq('id', uid);
+      }
+    }
+  } catch (sbErr) {
+    console.warn("Supabase sync notice:", sbErr);
   }
 
   // LocalStorage Fallback
@@ -379,74 +369,71 @@ export async function awardXP(uid, actionKey, customVal = null) {
 
   if (isFirebaseAvailable()) {
     try {
-      const userRef = doc(db, 'users', uid);
-      const historyRef = collection(db, 'xpHistory');
+      const { data: sbUsers, error: sbError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', uid);
 
-      // Use a Firestore Transaction to enforce atomic increments and prevent cheating
-      const result = await runTransaction(db, async (transaction) => {
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw new Error("User does not exist!");
+      if (sbError || !sbUsers || sbUsers.length === 0) throw new Error("User does not exist!");
+      const userData = sbUsers[0];
 
-        const userData = userSnap.data();
-        const newXp = userData.xp + xpAmount;
-        
-        // Reset daily XP if today is a new day
-        const todayStr = new Date().toDateString();
-        let newTodayXp = (userData.lastDailyReset === todayStr) ? (userData.todayXp + xpAmount) : xpAmount;
-        
-        // Calculate level progression
-        const levelDetails = getLevelFromXP(newXp);
-        const levelUpOccurred = levelDetails.level > userData.level;
+      const newXp = userData.xp + xpAmount;
+      
+      // Reset daily XP if today is a new day
+      const todayStr = new Date().toDateString();
+      let newTodayXp = (userData.lastDailyReset === todayStr) ? (userData.todayXp + xpAmount) : xpAmount;
+      
+      // Calculate level progression
+      const levelDetails = getLevelFromXP(newXp);
+      const levelUpOccurred = levelDetails.level > userData.level;
 
-        // Earn Lumix Coins on leveling up (+50 coins per level)
-        let newCoins = userData.coins;
-        if (levelUpOccurred) {
-          newCoins += 50 * (levelDetails.level - userData.level);
-        }
-        // Daily action coin award (e.g. +5 coins for study/task complete)
-        newCoins += Math.max(1, Math.floor(xpAmount / 5));
+      // Earn Lumix Coins on leveling up (+50 coins per level)
+      let newCoins = userData.coins;
+      if (levelUpOccurred) {
+        newCoins += 50 * (levelDetails.level - userData.level);
+      }
+      // Daily action coin award (e.g. +5 coins for study/task complete)
+      newCoins += Math.max(1, Math.floor(xpAmount / 5));
 
-        // Create transaction log
-        const logDocRef = doc(historyRef);
-        transaction.set(logDocRef, {
+      // Create transaction log in Firestore
+      try {
+        const historyRef = collection(db, 'xpHistory');
+        await addDoc(historyRef, {
           userId: uid,
           action: actionKey,
           xpAwarded: xpAmount,
           timestamp: serverTimestamp(),
           label
         });
+      } catch (err) {
+        console.warn("Could not log xpHistory to Firestore", err);
+      }
 
-        // Update user record
-        const userUpdates = {
-          xp: newXp,
-          todayXp: newTodayXp,
-          level: levelDetails.level,
-          coins: newCoins,
-          lastDailyReset: todayStr
-        };
-        transaction.update(userRef, userUpdates);
+      // Update user record in Supabase
+      const userUpdates = {
+        xp: newXp,
+        todayXp: newTodayXp,
+        level: levelDetails.level,
+        coins: newCoins,
+        lastDailyReset: todayStr
+      };
+      
+      await supabase
+        .from('users')
+        .update(userUpdates)
+        .eq('id', uid);
 
-        // Sync to leaderboards collection
-        const boardRef = doc(db, 'leaderboards', uid);
-        transaction.update(boardRef, {
-          xp: newXp,
-          level: levelDetails.level
-        });
-
-        return {
-          xp: newXp,
-          todayXp: newTodayXp,
-          level: levelDetails.level,
-          coins: newCoins,
-          levelUpOccurred,
-          xpEarned: xpAmount
-        };
-      });
-
-      return result;
+      return {
+        xp: newXp,
+        todayXp: newTodayXp,
+        level: levelDetails.level,
+        coins: newCoins,
+        levelUpOccurred,
+        xpEarned: xpAmount
+      };
 
     } catch (e) {
-      console.warn("Firestore XP transaction failed, falling back to LocalStorage:", e);
+      console.warn("Supabase XP transaction failed, falling back to LocalStorage:", e);
     }
   }
 
@@ -529,10 +516,13 @@ export async function trackDailyActivity(uid, activityType, countVal = 1) {
 
   if (isFirebaseAvailable()) {
     try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
+      const { data: sbUsers, error: sbError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', uid);
+        
+      if (!sbError && sbUsers && sbUsers.length > 0) {
+        const userData = sbUsers[0];
         const completedDays = userData.completedDays || [];
         
         if (completedDays.includes(todayStr)) {
@@ -548,16 +538,16 @@ export async function trackDailyActivity(uid, activityType, countVal = 1) {
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toDateString();
 
+        let streakFreezeCount = userData.streakFreezeCount || 0;
+
         if (completedDays.includes(yesterdayStr) || userData.streak === 0) {
           // Continuous streak
           newStreak += 1;
         } else {
           // Missed a day! Check if they have a Streak Freeze
-          if (userData.streakFreezeCount > 0) {
+          if (streakFreezeCount > 0) {
             // Auto use streak freeze to protect it
-            await updateDoc(userRef, {
-              streakFreezeCount: userData.streakFreezeCount - 1
-            });
+            streakFreezeCount -= 1;
             newStreak += 1; // Protect streak
             milestoneUnlocked = "Streak protected by Streak Freeze! ❄️";
           } else {
@@ -574,17 +564,16 @@ export async function trackDailyActivity(uid, activityType, countVal = 1) {
           milestoneUnlocked = `${newStreak}-Day Streak Milestone reached! 🔥`;
         }
 
-        await updateDoc(userRef, {
-          streak: newStreak,
-          longestStreak: newLongestStreak,
-          completedDays: newCompletedDays,
-          lastActiveDate: todayStr
-        });
-
-        // Sync to leaderboard index
-        await updateDoc(doc(db, 'leaderboards', uid), {
-          streak: newStreak
-        });
+        await supabase
+          .from('users')
+          .update({
+            streak: newStreak,
+            longestStreak: newLongestStreak,
+            completedDays: newCompletedDays,
+            lastActiveDate: todayStr,
+            streakFreezeCount
+          })
+          .eq('id', uid);
 
         // Award streak maintenance XP (+15 XP)
         const xpRes = await awardXP(uid, 'MAINTAIN_STREAK');
@@ -599,7 +588,7 @@ export async function trackDailyActivity(uid, activityType, countVal = 1) {
         };
       }
     } catch (e) {
-      console.warn("Firestore streak tracking error, falling back to LocalStorage:", e);
+      console.warn("Supabase streak tracking error, falling back to LocalStorage:", e);
     }
   }
 
@@ -681,10 +670,13 @@ export async function trackDailyActivity(uid, activityType, countVal = 1) {
 export async function buyShopItem(uid, itemType, itemId, cost) {
   if (isFirebaseAvailable()) {
     try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
+      const { data: sbUsers, error: sbError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', uid);
+        
+      if (!sbError && sbUsers && sbUsers.length > 0) {
+        const userData = sbUsers[0];
         if (userData.coins < cost) {
           return { success: false, msg: "Insufficient Lumix Coins!" };
         }
@@ -707,11 +699,15 @@ export async function buyShopItem(uid, itemType, itemId, cost) {
           updates.streakFreezeCount = (userData.streakFreezeCount || 0) + 1;
         }
 
-        await updateDoc(userRef, updates);
+        await supabase
+          .from('users')
+          .update(updates)
+          .eq('id', uid);
+          
         return { success: true, coins: updates.coins, updates };
       }
     } catch (e) {
-      console.warn("Firestore shop purchase error, falling back to LocalStorage:", e);
+      console.warn("Supabase shop purchase error, falling back to LocalStorage:", e);
     }
   }
 
@@ -756,33 +752,17 @@ export async function buyShopItem(uid, itemType, itemId, cost) {
 export async function getLeaderboardData(scope = 'Global', sortBy = 'xp', currentUser = null) {
   let list = [];
 
-  // 1. Try to fetch real users from Firestore leaderboards first
-  if (isFirebaseAvailable()) {
-    try {
-      const leaderRef = collection(db, 'leaderboards');
-      let q = query(leaderRef, orderBy(sortBy, 'desc'), limit(50));
-      
-      const snap = await getDocs(q);
-      list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (e) {
-      console.warn("Firestore leaderboard fetch error:", e);
-    }
-  }
-
-  // 2. Fetch real users from Supabase users database to complement
+  // 1. Fetch real users from Supabase users database
   try {
     const { data: dbUsers, error: dbErr } = await supabase.from('users').select('*');
     if (!dbErr && dbUsers && dbUsers.length > 0) {
-      const mergedList = [];
-      
       for (const dbUser of dbUsers) {
-        // Skip if user is already present in firestore list or is current logged-in user (appended later)
-        if (list.some(u => u.id === dbUser.id) || (currentUser && dbUser.id === currentUser.uid)) continue;
+        if (currentUser && dbUser.id === currentUser.uid) continue;
         
         // Parse metadata packed in name field
         const parsed = parseProfileName(dbUser.name);
         
-        mergedList.push({
+        list.push({
           id: dbUser.id,
           name: parsed.name,
           college: parsed.college || 'GPREC',
@@ -801,9 +781,6 @@ export async function getLeaderboardData(scope = 'Global', sortBy = 'xp', curren
           notesShared: dbUser.notesShared !== undefined && dbUser.notesShared !== null ? dbUser.notesShared : 0
         });
       }
-      
-      // Combine list
-      list = [...list, ...mergedList];
     }
   } catch (err) {
     console.error("Error loading real users from Supabase:", err);

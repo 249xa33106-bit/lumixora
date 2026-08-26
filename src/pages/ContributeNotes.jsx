@@ -141,7 +141,7 @@ export default function ContributeNotes({ user, setActiveTab }) {
             <span>Community Knowledge Sharing</span>
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
-            Contribute Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-blue">Academic Notes</span>
+            Contribute Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] to-[#00b4d8]">Academic Notes</span>
           </h1>
           <p className="text-xs text-gray-400 leading-relaxed">
             Help your peers succeed by uploading high-yield class notes, previous papers, or topic summaries. Your notes will appear live in the Previous Papers directory.

@@ -1,0 +1,24 @@
+{
+  "short_name": "Lumixora",
+  "name": "Lumixora Student Workspace",
+  "description": "Connecting the Future — Doubts, Schedules, Alarms & Notes Workspace",
+  "icons": [
+    {
+      "src": "/lumixora_logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lumixora_logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "display": "standalone",
+  "orientation": "portrait"
+}

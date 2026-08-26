@@ -3,7 +3,7 @@ import { db } from '../config/firebase';
 import { supabase } from '../config/supabase';
 
 // Current local code version of the app
-export const CURRENT_VERSION = '1.1.9';
+export const CURRENT_VERSION = '1.1.11';
 
 /**
  * Compare two semver version strings.

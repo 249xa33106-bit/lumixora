@@ -337,20 +337,26 @@ export function getLiveMentorData(userId, supabaseTasks = [], supabaseNotes = []
 export async function saveSyllabusCompletion(userId, syllabusData) {
   localStorage.setItem(`lumixora_syllabus_completion_${userId}`, JSON.stringify(syllabusData));
   try {
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { syllabusProgress: syllabusData });
+    const { error } = await supabase
+      .from('users')
+      .update({ syllabusProgress: syllabusData })
+      .eq('id', userId);
+    if (error) throw error;
   } catch (e) {
-    console.warn("Firestore sync error for syllabus:", e);
+    console.warn("Supabase sync error for syllabus:", e);
   }
 }
 
 export async function saveAttendance(userId, attendanceData) {
   localStorage.setItem(`lumixora_attendance_${userId}`, JSON.stringify(attendanceData));
   try {
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { attendance: attendanceData });
+    const { error } = await supabase
+      .from('users')
+      .update({ attendance: attendanceData })
+      .eq('id', userId);
+    if (error) throw error;
   } catch (e) {
-    console.warn("Firestore sync error for attendance:", e);
+    console.warn("Supabase sync error for attendance:", e);
   }
 }
 
@@ -360,7 +366,7 @@ export function saveCalendarEvents(userId, eventsData) {
 
 export function saveQuizScore(userId, quizScoreData) {
   const key = `lumixora_quiz_scores_${userId}`;
-  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const existing = (() => { try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : []; } catch (e) { return []; } })();
   existing.push({ ...quizScoreData, timestamp: new Date().toISOString() });
   localStorage.setItem(key, JSON.stringify(existing));
 }

@@ -381,7 +381,7 @@ class Solution {
 
 Given an integer \`n\`, return *all distinct solutions to the **n-queens puzzle***.
 
-Each solution contains a distinct board configuration of the n-queens\' placement, where \`'Q'\` and \`'.'\` both indicate a queen and an empty space, respectively.`,
+Each solution contains a distinct board configuration of the n-queens' placement, where \`'Q'\` and \`'.'\` both indicate a queen and an empty space, respectively.`,
     inputFormat: 'An integer `n` specifying board size.',
     outputFormat: 'A list of lists of strings showing queen positions.',
     constraints: [
@@ -397,8 +397,8 @@ Each solution contains a distinct board configuration of the n-queens\' placemen
       }
     ],
     testCases: [
-      { input: '4', output: '[[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]' },
-      { input: '1', output: '[[\"Q\"]]' }
+      { input: '4', output: '[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]' },
+      { input: '1', output: '[["Q"]]' }
     ],
     hiddenTestCases: [
       { input: '2', output: '[]' }

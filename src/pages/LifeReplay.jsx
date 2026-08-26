@@ -1,96 +1,141 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Film, Award, Sparkles, Folder, Calendar, Share2, Shield, Play, ChevronRight, FileText, Trash2, Edit3, Check, BarChart2, Zap } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import codeArenaFiles from '../data/codeArenaFiles.json';
 import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
+import { db } from '../config/firebase';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, setDoc, doc, query, where, serverTimestamp } from 'firebase/firestore';
+import { generateLifeStory } from '../services/aiService';
 
 
-const parseUserProfile = (fullName) => {
-  let name = fullName || '';
-  let metadata = { qualification: '', college: '', place: '', year: '3rd Year', avatarUrl: '' };
-  if (name.includes('{')) {
-    const idx = name.indexOf('{');
-    const jsonStr = name.substring(idx).trim();
-    name = name.substring(0, idx).trim();
-    try {
-      metadata = JSON.parse(jsonStr);
-    } catch (e) {}
-  }
-  return { name: name || 'Scholar Student', ...metadata };
-};
+const cleanScholarName = (str) => {
+    if (!str || typeof str !== 'string') return 'Scholar';
+    let cleaned = str;
+    if (cleaned.includes('{')) {
+      cleaned = cleaned.split('{')[0].trim();
+    }
+    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    return cleaned || 'Scholar';
+  };
+
+  const parseUserProfile = (fullName) => {
+    let rawStr = fullName || '';
+    let name = cleanScholarName(rawStr);
+    let metadata = { qualification: '', college: 'GPREC', place: 'Kurnool, AP', year: '1st Year', avatarUrl: '' };
+    if (rawStr.includes('{')) {
+      const idx = rawStr.indexOf('{');
+      const jsonStr = rawStr.substring(idx).trim();
+      try {
+        const rawJson = JSON.parse(jsonStr);
+        if (rawJson && typeof rawJson === 'object') {
+          Object.keys(rawJson).forEach(k => {
+            const lowerK = k.toLowerCase();
+            if (lowerK === 'qualification') metadata.qualification = rawJson[k];
+            if (lowerK === 'college') metadata.college = rawJson[k];
+            if (lowerK === 'place') metadata.place = rawJson[k];
+            if (lowerK === 'year') metadata.year = rawJson[k];
+            if (lowerK === 'avatarurl') metadata.avatarUrl = rawJson[k];
+          });
+        }
+      } catch (e) {
+        const qualMatch = jsonStr.match(/"qualification"\s*:\s*"([^"]+)"/i);
+        const collMatch = jsonStr.match(/"college"\s*:\s*"([^"]+)"/i);
+        const placeMatch = jsonStr.match(/"place"\s*:\s*"([^"]+)"/i);
+        const yearMatch = jsonStr.match(/"year"\s*:\s*"([^"]+)"/i);
+        const avatarMatch = jsonStr.match(/"avatarurl"\s*:\s*"([^"]+)"/i);
+        if (qualMatch) metadata.qualification = qualMatch[1];
+        if (collMatch) metadata.college = collMatch[1];
+        if (placeMatch) metadata.place = placeMatch[1];
+        if (yearMatch) metadata.year = yearMatch[1];
+        if (avatarMatch) metadata.avatarUrl = avatarMatch[1];
+      }
+    }
+    return { name: name || 'Scholar', ...metadata };
+  };
 
 export default function LifeReplay({ user }) {
   const { addToast } = useToast();
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'roadmap', 'gallery', 'story', 'movie'
-  
-  const { profile: gamifyProfile } = useGamification();
-  const { notes, tasks } = useData();
+  const { notes = [], doubts = [] } = useData() || {};
+  const { profile: gamifyProfile } = useGamification() || {};
 
-  const parsedUser = parseUserProfile(user?.name);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [galleryFilter, setGalleryFilter] = useState('All');
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [galleryForm, setGalleryForm] = useState({ title: '', type: 'Photo', sem: 'Sem 1-2', fileUrl: '' });
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [editingGalleryId, setEditingGalleryId] = useState(null);
 
-  // Privacy & Sharing
-  const [privacy, setPrivacy] = useState('Public'); // 'Public', 'Friends Only', 'Private'
-  const [shareLink, setShareLink] = useState('');
-
-  // AI Story States
-  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
-  const [editingStory, setEditingStory] = useState(false);
-  const [journeyStory, setJourneyStory] = useState(() => {
-    const saved = localStorage.getItem('lumixora_life_story');
-    return saved ? JSON.parse(saved) : null;
-  });
-  
-  const [storyDraft, setStoryDraft] = useState({
-    title: '',
-    semesters: '',
-    achievements: '',
-    challenges: '',
-    skills: '',
-    summary: ''
-  });
-
-  // Movie Script states
-  const [movieScript, setMovieScript] = useState(null);
-  const [loadingMovie, setLoadingMovie] = useState(false);
-
-  // Roadmap Checkpoint State — user-managed milestones
-  const [selectedMilestone, setSelectedMilestone] = useState(null);
-  const [checkpoints, setCheckpoints] = useState(() => {
-    const saved = localStorage.getItem('lumixora_roadmap_milestones');
-    return saved ? JSON.parse(saved) : [];
-  });
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   const [editingMilestoneId, setEditingMilestoneId] = useState(null);
   const [milestoneForm, setMilestoneForm] = useState({
-    year: 'Year 1', semester: 'Semester 1', title: '', desc: '', date: '', relatedSubjects: '', achievements: ''
+    year: 'Year 1',
+    semester: 'Semester 1',
+    title: '',
+    desc: '',
+    date: '',
+    relatedSubjects: '',
+    achievements: ''
   });
 
-  useEffect(() => {
-    localStorage.setItem('lumixora_roadmap_milestones', JSON.stringify(checkpoints));
-  }, [checkpoints]);
+  const [tasks, setTasks] = useState([]);
+  const [checkpoints, setCheckpoints] = useState([]);
 
-  const iconMap = { 'Zap': Zap, 'FileText': FileText, 'Award': Award, 'Sparkles': Sparkles, 'Film': Film };
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+  const [journeyStory, setJourneyStory] = useState(null);
+  const [storyDraft, setStoryDraft] = useState(null);
+  const [editingStory, setEditingStory] = useState(false);
+
+  const [loadingMovie, setLoadingMovie] = useState(false);
+  const [movieScript, setMovieScript] = useState(null);
+  const [shareLink, setShareLink] = useState('');
+  const [privacy, setPrivacy] = useState('Public');
+  const [selectedMilestone, setSelectedMilestone] = useState(null);
+
+  const iconMap = {
+    Award,
+    Sparkles,
+    Film,
+    Folder,
+    Calendar,
+    Shield,
+    Play,
+    Zap,
+    BarChart2
+  };
 
   const handleSaveMilestone = (e) => {
     e.preventDefault();
-    if (!milestoneForm.title.trim()) return;
+    if (!milestoneForm.title) return;
+
     if (editingMilestoneId !== null) {
       setCheckpoints(prev => prev.map(cp => cp.id === editingMilestoneId ? { ...cp, ...milestoneForm } : cp));
       addToast({ message: 'Milestone updated!', type: 'success' });
     } else {
-      const newMilestone = { id: Date.now(), ...milestoneForm, iconName: 'Award' };
-      setCheckpoints(prev => [...prev, newMilestone]);
-      addToast({ message: 'Milestone added to your journey!', type: 'success' });
+      const newCp = {
+        id: Date.now().toString(),
+        ...milestoneForm,
+        iconName: 'Award'
+      };
+      setCheckpoints(prev => [...prev, newCp]);
+      addToast({ message: 'New milestone added to your journey!', type: 'success' });
     }
+
     setIsMilestoneModalOpen(false);
     setEditingMilestoneId(null);
-    setMilestoneForm({ year: 'Year 1', semester: 'Semester 1', title: '', desc: '', date: '', relatedSubjects: '', achievements: '' });
   };
 
   const handleEditMilestone = (cp) => {
-    setMilestoneForm({ year: cp.year, semester: cp.semester, title: cp.title, desc: cp.desc, date: cp.date, relatedSubjects: cp.relatedSubjects || '', achievements: cp.achievements || '' });
     setEditingMilestoneId(cp.id);
+    setMilestoneForm({
+      year: cp.year || 'Year 1',
+      semester: cp.semester || 'Semester 1',
+      title: cp.title || '',
+      desc: cp.desc || '',
+      date: cp.date || '',
+      relatedSubjects: cp.relatedSubjects || '',
+      achievements: cp.achievements || ''
+    });
     setIsMilestoneModalOpen(true);
   };
 
@@ -99,16 +144,12 @@ export default function LifeReplay({ user }) {
     addToast({ message: 'Milestone removed.', type: 'info' });
   };
 
-  // Gallery Filters
-  const [galleryFilter, setGalleryFilter] = useState('All');
+  const parsedUser = useMemo(() => parseUserProfile(user?.name), [user]);
 
-  // User-managed Gallery Items (persisted in localStorage)
-  const [galleryItems, setGalleryItems] = useState(() => {
-    const saved = localStorage.getItem('lumixora_gallery_items');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const filteredGallery = useMemo(() => {
+    return galleryItems.filter(item => galleryFilter === 'All' || item.sem === galleryFilter);
+  }, [galleryItems, galleryFilter]);
 
-  // Notification permission handling
   const [notificationPermission, setNotificationPermission] = useState(() => {
     if (typeof Notification !== 'undefined') return Notification.permission;
     return 'denied';
@@ -120,7 +161,6 @@ export default function LifeReplay({ user }) {
     }
   };
 
-  // Request on mount if not decided yet
   useEffect(() => {
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       requestNotificationPermission();
@@ -128,23 +168,6 @@ export default function LifeReplay({ user }) {
       setNotificationPermission(Notification.permission);
     }
   }, []);
-
-  // Persist gallery items
-  useEffect(() => {
-    localStorage.setItem('lumixora_gallery_items', JSON.stringify(galleryItems));
-  }, [galleryItems]);
-
-  // Derived filtered list based on selected semester filter
-  const filteredGallery = galleryItems.filter(item => galleryFilter === 'All' || item.sem === galleryFilter);
-
-  // Modal state for adding/editing gallery items
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
-  const [editingGalleryId, setEditingGalleryId] = useState(null);
-  const [galleryForm, setGalleryForm] = useState({
-    title: '', type: 'Photo', sem: 'Sem 1-2', fileUrl: ''
-  });
-
-  // Utility to send a web notification (requires permission)
   const sendAppNotification = (title, body) => {
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       new Notification(title, { body });
@@ -175,27 +198,38 @@ export default function LifeReplay({ user }) {
   const handleSaveGalleryItem = async (e) => {
     e.preventDefault();
     if (!galleryForm.title.trim() || !galleryForm.fileUrl.trim()) return;
+    const userId = user?.uid || user?.email || 'default';
     let meta = {};
     try {
       meta = await analyzeImage(galleryForm.fileUrl);
     } catch (err) {
       console.warn('Image analysis failed:', err);
     }
-    if (editingGalleryId !== null) {
-      setGalleryItems(prev =>
-        prev.map(item => item.id === editingGalleryId ? { ...item, ...galleryForm, metadata: meta } : item)
-      );
-      addToast({ message: 'Gallery item updated!', type: 'success' });
-      sendAppNotification('Gallery Item Updated', `Updated "${galleryForm.title}"`);
-    } else {
-      const newItem = { id: Date.now(), ...galleryForm, metadata: meta };
-      setGalleryItems(prev => [...prev, newItem]);
-      addToast({ message: 'Gallery item added!', type: 'success' });
-      sendAppNotification('New Gallery Item', `Added "${galleryForm.title}"`);
+    
+    try {
+      if (editingGalleryId !== null) {
+        await updateDoc(doc(db, 'gallery_items', editingGalleryId), { ...galleryForm, metadata: meta });
+        setGalleryItems(prev =>
+          prev.map(item => item.id === editingGalleryId ? { ...item, ...galleryForm, metadata: meta } : item)
+        );
+        addToast({ message: 'Gallery item updated!', type: 'success' });
+        sendAppNotification('Gallery Item Updated', `Updated "${galleryForm.title}"`);
+      } else {
+        const docRef = await addDoc(collection(db, 'gallery_items'), {
+          ...galleryForm, metadata: meta, userId, createdAt: serverTimestamp()
+        });
+        const newItem = { id: docRef.id, ...galleryForm, metadata: meta, userId };
+        setGalleryItems(prev => [...prev, newItem]);
+        addToast({ message: 'Gallery item added!', type: 'success' });
+        sendAppNotification('New Gallery Item', `Added "${galleryForm.title}"`);
+      }
+      setIsGalleryModalOpen(false);
+      setEditingGalleryId(null);
+      setGalleryForm({ title: '', type: 'Photo', sem: 'Sem 1-2', fileUrl: '' });
+    } catch (error) {
+      console.error("Error saving gallery item:", error);
+      addToast({ message: 'Error saving gallery item.', type: 'error' });
     }
-    setIsGalleryModalOpen(false);
-    setEditingGalleryId(null);
-    setGalleryForm({ title: '', type: 'Photo', sem: 'Sem 1-2', fileUrl: '' });
   };
 
   const handleEditGallery = (item) => {
@@ -204,35 +238,84 @@ export default function LifeReplay({ user }) {
     setIsGalleryModalOpen(true);
   };
 
-  const handleDeleteGallery = (id) => {
-    setGalleryItems(prev => prev.filter(item => item.id !== id));
-    addToast({ message: 'Gallery item removed.', type: 'info' });
+  const handleDeleteGallery = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'gallery_items', id));
+      setGalleryItems(prev => prev.filter(item => item.id !== id));
+      addToast({ message: 'Gallery item removed.', type: 'info' });
+    } catch (error) {
+      console.error("Error deleting gallery item:", error);
+      addToast({ message: 'Error deleting gallery item.', type: 'error' });
+    }
   };
 
-  const handleGenerateStory = () => {
+  const handleGenerateStory = async () => {
     setIsGeneratingStory(true);
-    setTimeout(() => {
-      const generated = {
-        title: 'From First Login to SDE Placement: A Journey of Grit',
-        semesters: 'Successfully completed 5 academic semesters maintaining a 9.1 Target CGPA and completing over 300+ Code Arena problems.',
-        achievements: 'Secured Microsoft Summer SDE Internship, won 1st Place at BITS AI Hackathon, and awarded "Guru Contributor" note sharing badge.',
-        challenges: 'Overcoming Data Structures memory leak concepts in Year 2 and balancing high credits during Semester 3.',
-        skills: 'React.js, Node.js, Python, Firebase Cloud Systems, Advanced SQL, Figma Design.',
-        summary: 'An outstanding progression showing robust technical skillset, exceptional community contribution rates, and high placement readiness grades.'
+    try {
+      // Map badge IDs to actual names for the AI
+      let resolvedBadges = [];
+      if (gamifyProfile?.badges) {
+        // Need to manually map or just pass raw if ALL_ACHIEVEMENTS isn't imported
+        // Since we don't have ALL_ACHIEVEMENTS imported easily without adding an import, 
+        // passing the raw IDs or basic formatting is okay, but Llama handles ID-like strings well.
+        resolvedBadges = gamifyProfile.badges.map(b => b.replace(/_/g, ' '));
+      }
+
+      const stats = {
+        tasksCount: tasks?.length || 0,
+        notesCount: notes?.length || 0,
+        milestonesCount: checkpoints?.length || 0,
+        milestones: checkpoints?.length > 0 ? checkpoints.map(c => c.title) : 'None yet',
+        certificatesAndGallery: galleryItems?.length > 0 ? galleryItems.map(g => g.title) : 'None yet',
+        achievements: resolvedBadges.length > 0 ? resolvedBadges : 'None yet'
       };
+      
+      // If no real data is found, ask the user to upload some first.
+      if (stats.tasksCount === 0 && stats.notesCount === 0 && stats.milestonesCount === 0 && galleryItems?.length === 0) {
+        addToast({ message: 'No data found! Please upload certificates, milestones, or notes to generate your story.', type: 'info' });
+        setIsGeneratingStory(false);
+        return;
+      }
+      
+      const generated = await generateLifeStory(stats);
       setStoryDraft(generated);
       setJourneyStory(generated);
-      localStorage.setItem('lumixora_life_story', JSON.stringify(generated));
-      setIsGeneratingStory(false);
+      
+      const userId = user?.uid || user?.email || 'default';
+      const storyRef = query(collection(db, 'life_story'), where('userId', '==', userId));
+      const sSnap = await getDocs(storyRef);
+      if (!sSnap.empty) {
+        await updateDoc(doc(db, 'life_story', sSnap.docs[0].id), generated);
+      } else {
+        await addDoc(collection(db, 'life_story'), { ...generated, userId, createdAt: serverTimestamp() });
+      }
+      
       addToast({ message: 'AI Journey generated successfully!', type: 'success' });
-    }, 1500);
+    } catch (err) {
+      console.error("Story gen error", err);
+      addToast({ message: 'Failed to generate story.', type: 'error' });
+    } finally {
+      setIsGeneratingStory(false);
+    }
   };
 
-  const handleSaveEditedStory = () => {
-    setJourneyStory(storyDraft);
-    localStorage.setItem('lumixora_life_story', JSON.stringify(storyDraft));
-    setEditingStory(false);
-    addToast({ message: 'Graduation Story Saved!', type: 'success' });
+  const handleSaveEditedStory = async () => {
+    try {
+      const userId = user?.uid || user?.email || 'default';
+      const storyRef = query(collection(db, 'life_story'), where('userId', '==', userId));
+      const sSnap = await getDocs(storyRef);
+      if (!sSnap.empty) {
+        await updateDoc(doc(db, 'life_story', sSnap.docs[0].id), storyDraft);
+      } else {
+        await addDoc(collection(db, 'life_story'), { ...storyDraft, userId, createdAt: serverTimestamp() });
+      }
+      setJourneyStory(storyDraft);
+      setEditingStory(false);
+      addToast({ message: 'Graduation Story Saved!', type: 'success' });
+    } catch (error) {
+      console.error("Error saving story:", error);
+      addToast({ message: 'Failed to save story.', type: 'error' });
+    }
   };
 
   const handleGenerateMovie = () => {
@@ -288,7 +371,6 @@ export default function LifeReplay({ user }) {
             { id: 'roadmap', label: 'Roadmap Map' },
             { id: 'gallery', label: 'Memory Gallery' },
             { id: 'story', label: 'AI Story' },
-            { id: 'codeArena', label: 'Code Arena' },
           ].map(tab => (
             <button
               key={tab.id}

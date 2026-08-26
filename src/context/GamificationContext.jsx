@@ -1,3 +1,8 @@
+
+const getUserId = (u) => {
+  if (!u) return 'guest';
+  return u.id || u.uid || u.user_metadata?.sub || (u.email ? u.email.replace(/[@.]/g, '_') : 'guest');
+};
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   getUserProfile, 
@@ -70,12 +75,12 @@ export function GamificationProvider({ children, user, activeTab }) {
     const loadData = async () => {
       setLoading(true);
       try {
-        const prof = await getUserProfile(user.id, user);
+        const prof = await getUserProfile(getUserId(user), user);
         setProfile(prof);
         setIsStudying(true); // Auto-start background study tracker once profile loads
         
         // Load challenges
-        const ch = getDailyAndWeeklyChallenges(user.id);
+        const ch = getDailyAndWeeklyChallenges(getUserId(user));
         setChallenges(ch);
         
         const todayStr = new Date().toDateString();
@@ -97,8 +102,15 @@ export function GamificationProvider({ children, user, activeTab }) {
   // Award XP helper
   const handleAwardXP = async (actionKey, customVal = null) => {
     if (!user || !profile) return;
+    
+    // Check if founder demo mode is active
+    if (localStorage.getItem('lumixora_disable_xp') === 'true') {
+      console.log('Demo mode active: XP award skipped.', actionKey);
+      return;
+    }
+
     try {
-      const res = await awardXP(user.id, actionKey, customVal);
+      const res = await awardXP(getUserId(user), actionKey, customVal);
       if (res) {
         // Check for level up
         if (res.levelUpOccurred) {
@@ -138,7 +150,7 @@ export function GamificationProvider({ children, user, activeTab }) {
   const handleTrackActivity = async (activityType, countVal) => {
     if (!user || !profile) return;
     try {
-      const res = await trackDailyActivity(user.id, activityType, countVal);
+      const res = await trackDailyActivity(getUserId(user), activityType, countVal);
       
       // Update challenges progress
       if (activityType === 'study_minutes') {
@@ -175,7 +187,7 @@ export function GamificationProvider({ children, user, activeTab }) {
   const handleUpdateChallenge = async (progressKey, incrementVal) => {
     if (!user || !profile) return;
     try {
-      const res = await updateChallengeProgress(user.id, progressKey, incrementVal);
+      const res = await updateChallengeProgress(getUserId(user), progressKey, incrementVal);
       setChallenges(res.challenges);
       
       if (res.xpGained > 0) {
@@ -201,7 +213,7 @@ export function GamificationProvider({ children, user, activeTab }) {
   // Purchase Shop Item
   const handleBuyItem = async (itemType, itemId, cost) => {
     if (!user || !profile) return;
-    const res = await buyShopItem(user.id, itemType, itemId, cost);
+    const res = await buyShopItem(getUserId(user), itemType, itemId, cost);
     if (res.success) {
       setProfile(prev => ({
         ...prev,
@@ -222,12 +234,12 @@ export function GamificationProvider({ children, user, activeTab }) {
     try {
       const updates = type === 'theme' ? { currentTheme: itemId } : { currentFrame: itemId };
       setProfile(prev => ({ ...prev, ...updates }));
-      const userRef = getUserProfile(user.id); // updates local cache
+      const userRef = getUserProfile(getUserId(user)); // updates local cache
       const cachedUsers = localStorage.getItem('lumixora_gamify_users');
       if (cachedUsers) {
         const parsed = JSON.parse(cachedUsers);
-        if (parsed[user.id]) {
-          parsed[user.id] = { ...parsed[user.id], ...updates };
+        if (parsed[getUserId(user)]) {
+          parsed[getUserId(user)] = { ...parsed[getUserId(user)], ...updates };
           localStorage.setItem('lumixora_gamify_users', JSON.stringify(parsed));
         }
       }
@@ -253,8 +265,8 @@ export function GamificationProvider({ children, user, activeTab }) {
     const cachedUsers = localStorage.getItem('lumixora_gamify_users');
     if (cachedUsers) {
       const parsed = JSON.parse(cachedUsers);
-      if (parsed[user.id]) {
-        parsed[user.id].badges = newBadges;
+      if (parsed[getUserId(user)]) {
+        parsed[getUserId(user)].badges = newBadges;
         localStorage.setItem('lumixora_gamify_users', JSON.stringify(parsed));
       }
     }
@@ -290,18 +302,18 @@ export function GamificationProvider({ children, user, activeTab }) {
   };
 
   // Streak reminder helper: triggers alert if today's activity is not completed before midnight
-  const triggerStreakReminder = () => {
+  const triggerStreakReminder = React.useCallback(() => {
     const todayStr = new Date().toDateString();
     if (profile && !profile.completedDays?.includes(todayStr)) {
       addToast({ 
-        message: "Warning: Your daily focus rhythm is at risk! Complete a task or study now to protect it 🔥", 
+        message: "Warning: Your daily focus rhythm is at risk! Complete a task or study now to protect it 🛡️", 
         type: 'error',
         duration: 8000
       });
     }
-  };
+  }, [profile, addToast]);
 
-  // Simulate Midnight Streak Protection Check — only fire after 5 minutes of idle if not yet completed today
+  // Simulate Midnight Streak Protection Check – only fire after 5 minutes of idle if not yet completed today
   useEffect(() => {
     if (!profile) return;
     const todayStr = new Date().toDateString();
@@ -313,7 +325,7 @@ export function GamificationProvider({ children, user, activeTab }) {
     }, 5 * 60 * 1000); // 5 minutes, not 15 seconds
     
     return () => clearTimeout(reminderTimeout);
-  }, [profile?.completedDays]);
+  }, [profile?.completedDays, triggerStreakReminder, profile]);
 
   // Automatic background active study tracker
   useEffect(() => {
@@ -333,7 +345,7 @@ export function GamificationProvider({ children, user, activeTab }) {
           return;
         }
 
-        const storageKey = `lumixora_active_sec_${user.id}_${todayStr}`;
+        const storageKey = `lumixora_active_sec_${getUserId(user)}_${todayStr}`;
         const currentSeconds = parseInt(localStorage.getItem(storageKey) || '0') + 10;
         localStorage.setItem(storageKey, String(currentSeconds));
         
@@ -352,12 +364,13 @@ export function GamificationProvider({ children, user, activeTab }) {
     }, 10000);
     
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile?.completedDays, isStudying, lastInteractionTime]);
 
   const handleResetTodayProgress = async () => {
     if (!user || !profile) return;
     try {
-      const res = resetTodayProgressService(user.id);
+      const res = resetTodayProgressService(getUserId(user));
       if (res.challenges) setChallenges(res.challenges);
       if (res.profile) setProfile(res.profile);
       addToast({ 

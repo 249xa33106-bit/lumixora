@@ -25,8 +25,21 @@ export default defineConfig({
     entries: ['index.html']
   },
   build: {
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
-      input: 'index.html'
+      input: 'index.html',
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('pdfjs-dist')) return 'pdf-worker';
+            if (id.includes('monaco-editor')) return 'monaco-editor';
+            if (id.includes('mermaid')) return 'mermaid';
+            if (id.includes('firebase')) return 'firebase';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
+          }
+        }
+      }
     }
   }
 })
