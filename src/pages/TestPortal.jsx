@@ -13,8 +13,11 @@ import { generateTestQuestions } from '../services/aiService';
 import { generateTestResultsPDF } from '../utils/pdfGenerator';
 
 export default function TestPortal({ user, setActiveTab }) {
+  const userEmail = (user?.email || '').toLowerCase().trim();
   const isFounder = user?.role === 'founder' || 
-                    user?.email?.toLowerCase() === 'founder@lumixora.com';
+                    userEmail === 'founder@lumixora.com' ||
+                    userEmail === '249xa33106@gmail.com' ||
+                    userEmail === '249xa33106@gprec.ac.in';
 
   const { addToast } = useToast();
   const [view, setView] = useState('list'); // 'list', 'taking', 'leaderboard'
@@ -174,18 +177,61 @@ If there is a compilation or runtime error, set "error" to true and put the erro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, timeLeft]);
 
-  // Load tests from Firestore
+  // Load tests from Firestore & Supabase
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        const testsRef = collection(db, 'tests');
-        // Fetch all tests (including inactive) so leaderboard can respect resultsReleased status
-        const snap = await getDocs(testsRef);
-        const fetched = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        let allTests = [];
         
-        setTests(fetched);
-      } catch (_err) { console.error("Error in TestPortal:", _err);
-        console.error("Failed to fetch tests:", _err);
+        // 1. Fetch from Firestore
+        try {
+          const testsRef = collection(db, 'tests');
+          const snap = await getDocs(testsRef);
+          const fbTests = snap.docs.map(doc => ({ 
+            ...doc.data(), 
+            id: doc.id,
+            active: doc.data().active !== false 
+          }));
+          allTests = [...allTests, ...fbTests];
+        } catch (fbErr) {
+          console.warn("Firestore tests load note:", fbErr);
+        }
+
+        // 2. Fetch from Supabase
+        try {
+          const { data: sbData } = await supabase.from('tests').select('*');
+          if (sbData && sbData.length > 0) {
+            const sbTests = sbData.map(t => ({
+              ...t,
+              id: t.id ? String(t.id) : `sb_${Date.now()}`,
+              active: t.active !== false,
+              questions: typeof t.questions === 'string' ? JSON.parse(t.questions || '[]') : (t.questions || [])
+            }));
+            allTests = [...allTests, ...sbTests];
+          }
+        } catch (sbErr) {
+          console.warn("Supabase tests load note:", sbErr);
+        }
+
+        // 3. Fallback from LocalStorage
+        try {
+          const localTests = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
+          if (Array.isArray(localTests)) {
+            allTests = [...allTests, ...localTests];
+          }
+        } catch (lErr) {}
+
+        // Deduplicate by ID
+        const uniqueTestsMap = new Map();
+        allTests.forEach(t => {
+          if (t && (t.id || t.title)) {
+            uniqueTestsMap.set(t.id || t.title, t);
+          }
+        });
+
+        setTests(Array.from(uniqueTestsMap.values()));
+      } catch (_err) {
+        console.error("Error in TestPortal fetchTests:", _err);
       } finally {
         setLoadingTests(false);
       }
@@ -924,19 +970,24 @@ If there is a compilation or runtime error, set "error" to true and put the erro
 
   const renderList = () => {
     const availableTests = tests.filter(test => {
-      if (!test.active) return false;
       if (isFounder) return true;
-      const matchBranch = !test.targetBranch || test.targetBranch === 'All' || test.targetBranch === user?.department;
-      const matchSem = !test.targetSem || test.targetSem === 'All' || test.targetSem === String(user?.sem);
-      const matchSec = !test.targetSec || test.targetSec === 'All' || test.targetSec === user?.sec;
+      if (test.active === false) return false;
+
+      const userBranch = (user?.department || user?.branch || '').toLowerCase().trim();
+      const userSem = String(user?.sem || user?.semester || '').toLowerCase().trim();
+      const userSec = (user?.sec || user?.section || '').toUpperCase().trim();
+
+      const testBranch = (test.targetBranch || 'All').toLowerCase().trim();
+      const testSem = String(test.targetSem || 'All').toLowerCase().trim();
+      const testSec = (test.targetSec || 'All').toUpperCase().trim();
+
+      const matchBranch = testBranch === 'all' || !test.targetBranch || testBranch === userBranch || !userBranch;
+      const matchSem = testSem === 'all' || !test.targetSem || testSem === userSem || userSem.includes(testSem) || !userSem;
+      const matchSec = testSec === 'all' || !test.targetSec || testSec === userSec || !userSec;
       
       let isExpired = false;
-      if (test.scheduledTime && test.duration) {
-        const start = new Date(test.scheduledTime).getTime();
-        const end = start + test.duration * 60000;
-        if (Date.now() > end) {
-          isExpired = true;
-        }
+      if (test.dueDate) {
+        isExpired = Date.now() > new Date(test.dueDate).getTime();
       }
       return matchBranch && matchSem && matchSec && !isExpired;
     });
