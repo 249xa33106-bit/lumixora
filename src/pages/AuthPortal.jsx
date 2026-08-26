@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, Building2, GraduationCap, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 import { DEFAULT_COLLEGES, isValidInstitutionalEmail, getAllAllowedDomains, isTeammateEmail } from '../data/collegesData';
@@ -105,8 +105,17 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   }, []);
 
-  // Detect and handle Supabase OAuth Redirects automatically on mount
+  // Handle Google OAuth Redirects automatically on mount (Immune to popup blockers)
   useEffect(() => {
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        setLoading(true);
+        await processOAuthUser(result.user, 'Google');
+      }
+    }).catch(err => {
+      console.warn("Firebase redirect auth result notice:", err);
+    });
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const sbEmail = (session.user.email || '').toLowerCase().trim();
@@ -441,39 +450,8 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   };
 
-  const handleOAuthSignIn = async (providerName) => {
+  const processOAuthUser = async (firebaseUser, providerName = 'Google') => {
     try {
-      setLoading(true);
-      setError('');
-
-      let provider;
-      if (providerName === 'google') {
-        provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-      } else if (providerName === 'github') {
-        provider = new GithubAuthProvider();
-      }
-
-      let result;
-      try {
-        result = await signInWithPopup(auth, provider);
-      } catch (popupErr) {
-        console.warn("Popup sign-in notice:", popupErr);
-        if (popupErr.code === 'auth/popup-blocked') {
-          setError('Google Sign-In popup was blocked by your browser. Please allow popups for lumixora.in or use Email & Password.');
-        } else if (popupErr.code === 'auth/internal-error') {
-          setError('Google Sign-In is activating. Please ensure Google is Enabled under Firebase Console > Sign-in method, or log in with Email/Password.');
-        } else if (popupErr.code === 'auth/unauthorized-domain') {
-          setError('Domain authorization in progress. Please allow 1-2 minutes for Firebase DNS to propagate.');
-        } else {
-          setError(popupErr.message ? popupErr.message.replace('Firebase: ', '') : 'Failed to complete Google Sign-In.');
-        }
-        setLoading(false);
-        return;
-      }
-
-      const firebaseUser = result.user;
-      
       const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
       const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com';
       const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
@@ -557,8 +535,30 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       handleSuccessfulLogin(userProfile);
     } catch (err) {
       console.error(err);
-      setError(`Failed to sign in with ${providerName}. ${err.message}`);
+      setError(`Failed to process sign-in with ${providerName}. ${err.message}`);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOAuthSignIn = async (providerName) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      let provider;
+      if (providerName === 'google') {
+        provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+      } else if (providerName === 'github') {
+        provider = new GithubAuthProvider();
+      }
+
+      // Direct Redirect Authentication (100% immune to popup blockers and third-party cookie restrictions)
+      await signInWithRedirect(auth, provider);
+    } catch (err) {
+      console.error('OAuth sign in error:', err);
+      setError(`Google Sign-In notice: ${err.message || 'Please try again.'}`);
       setLoading(false);
     }
   };
