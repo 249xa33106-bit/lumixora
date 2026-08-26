@@ -360,12 +360,7 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      const email = (user.email || '').toLowerCase().trim();
-      const isFounderOrAdmin = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
-      const isExplicitlyUnblocked = user.is_blocked === false && (user.is_approved === true || user.isApproved === true);
-      const isAllowedDomain = email.endsWith('@gprec.ac.in') || isFounderOrAdmin || isExplicitlyUnblocked;
-
-      if (user.is_blocked === true || !isAllowedDomain) {
+      if (user.is_blocked === true || user.is_deleted === true) {
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('lumixora_user');
