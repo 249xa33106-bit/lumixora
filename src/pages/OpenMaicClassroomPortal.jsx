@@ -2047,23 +2047,30 @@ ${classroomNotes || 'No custom notes recorded.'}
               </div>
 
               {/* ─── SLIDE CANVAS VIEW CONTENT ─── */}
-              <div className="p-5 min-h-[340px]">
+              <div className="p-4 md:p-5 min-h-[340px]">
                 
-                {/* 1. KEYNOTE PRESENTATION SLIDE MODE */}
+                {/* 1. KEYNOTE PRESENTATION SLIDE MODE (COLORFUL WITH WHITE BACKGROUND) */}
                 {activeViewMode === 'slides' && (
-                  <div className="space-y-4">
-                    {/* Slide Header Card */}
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-[#0d1424] to-[#080d1a] border border-purple-500/30 relative overflow-hidden">
-                      <div className="flex items-center justify-between">
+                  <div className="rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl overflow-hidden space-y-0 relative">
+                    
+                    {/* Vivid Colorful Header Banner */}
+                    <div className="p-5 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white relative overflow-hidden">
+                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 relative z-10">
                         <div className="space-y-1">
-                          <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold border border-cyan-400/40">
-                            SLIDE {currentSceneIdx + 1} OF {activeLesson.scenes.length}
-                          </span>
-                          <h2 className="text-base md:text-lg font-black text-white font-sora tracking-tight">
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-0.5 rounded-full bg-white text-indigo-900 text-[11px] font-mono font-black tracking-wider shadow-sm uppercase">
+                              SLIDE {currentSceneIdx + 1} OF {activeLesson.scenes.length}
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-sm border border-white/20">
+                              {activeLesson.subject}
+                            </span>
+                          </div>
+                          <h2 className="text-lg md:text-xl font-black text-white font-sora tracking-tight pt-1">
                             {activeScene.title}
                           </h2>
                           {activeScene.slideSubtitle && (
-                            <p className="text-xs text-gray-300 font-medium">
+                            <p className="text-xs text-indigo-100 font-medium leading-relaxed">
                               {activeScene.slideSubtitle}
                             </p>
                           )}
@@ -2071,69 +2078,128 @@ ${classroomNotes || 'No custom notes recorded.'}
                       </div>
                     </div>
 
-                    {/* 2-Column Keynote Slide Layout */}
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                      {/* Left: Key Takeaway Cards */}
-                      <div className="md:col-span-7 space-y-2.5">
-                        <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <Star className="w-3.5 h-3.5 text-amber-400" /> Core Architectural Takeaways:
-                        </h4>
-                        
-                        {(activeScene.takeaways || [
-                          "Deterministic state replication across distributed cluster nodes.",
-                          "Mathematical invariant guarantees safety and linearizability.",
-                          "Low-latency execution with zero-copy buffer pools."
-                        ]).map((t, tIdx) => (
-                          <div 
-                            key={tIdx}
-                            className="p-3 rounded-xl bg-[#070b16] border border-white/10 flex items-start gap-2.5 hover:border-cyan-400/40 transition-all"
-                          >
-                            <div className="w-5 h-5 rounded-lg bg-cyan-500/20 text-cyan-300 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                              {tIdx + 1}
-                            </div>
-                            <p className="text-xs text-gray-200 leading-relaxed font-medium">
-                              {t}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
+                    {/* Crisp White Background Content Area */}
+                    <div className="p-5 md:p-6 bg-gradient-to-b from-white via-slate-50/50 to-indigo-50/30 space-y-4">
+                      {/* 2-Column Keynote Slide Layout */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                        {/* Left: Key Takeaway Cards with High-Vibrancy Colors */}
+                        <div className="md:col-span-7 space-y-2.5">
+                          <h4 className="text-[11px] font-black text-slate-600 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-600" /> Core Architectural Takeaways:
+                          </h4>
+                          
+                          {(activeScene.takeaways || [
+                            "Deterministic state replication across distributed cluster nodes.",
+                            "Mathematical invariant guarantees safety and linearizability.",
+                            "Low-latency execution with zero-copy buffer pools."
+                          ]).map((t, tIdx) => {
+                            const cardStyles = [
+                              { border: 'border-l-violet-600 border-violet-100 bg-gradient-to-r from-violet-50/90 to-indigo-50/40', badge: 'bg-violet-600 text-white', text: 'text-slate-800' },
+                              { border: 'border-l-cyan-600 border-cyan-100 bg-gradient-to-r from-cyan-50/90 to-sky-50/40', badge: 'bg-cyan-600 text-white', text: 'text-slate-800' },
+                              { border: 'border-l-emerald-600 border-emerald-100 bg-gradient-to-r from-emerald-50/90 to-teal-50/40', badge: 'bg-emerald-600 text-white', text: 'text-slate-800' },
+                              { border: 'border-l-amber-500 border-amber-100 bg-gradient-to-r from-amber-50/90 to-orange-50/40', badge: 'bg-amber-600 text-white', text: 'text-slate-800' }
+                            ];
+                            const currentStyle = cardStyles[tIdx % cardStyles.length];
 
-                      {/* Right: Visual Diagram or Code Snippet Preview */}
-                      <div className="md:col-span-5 space-y-2">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <Monitor className="w-3 h-3 text-purple-400" /> Slide Visual Model:
-                          </span>
-                          <button
-                            onClick={() => setActiveViewMode(activeScene.diagram ? 'diagram' : 'code')}
-                            className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold cursor-pointer"
-                          >
-                            Expand ↗
-                          </button>
+                            return (
+                              <div 
+                                key={tIdx}
+                                className={`p-3.5 rounded-xl border-l-4 border ${currentStyle.border} flex items-start gap-3 shadow-sm hover:shadow-md transition-all`}
+                              >
+                                <div className={`w-6 h-6 rounded-lg ${currentStyle.badge} text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
+                                  {tIdx + 1}
+                                </div>
+                                <p className={`text-xs ${currentStyle.text} leading-relaxed font-semibold`}>
+                                  {t}
+                                </p>
+                              </div>
+                            );
+                          })}
                         </div>
 
-                        {activeScene.diagram ? (
-                          <div className="p-3 rounded-xl bg-black/90 border border-purple-500/30 text-purple-300 font-mono text-[10px] overflow-x-auto max-h-[190px]">
-                            <pre className="leading-tight">{activeScene.diagram}</pre>
+                        {/* Right: Visual Diagram or Code Snippet Preview */}
+                        <div className="md:col-span-5 space-y-2">
+                          <div className="flex items-center justify-between text-[11px] font-black text-slate-600 uppercase tracking-wider mb-2">
+                            <span className="flex items-center gap-1.5">
+                              <Monitor className="w-3.5 h-3.5 text-indigo-600" /> Slide Visual Model:
+                            </span>
+                            <button
+                              onClick={() => setActiveViewMode(activeScene.diagram ? 'diagram' : 'code')}
+                              className="text-[10px] text-indigo-600 hover:text-indigo-800 font-extrabold cursor-pointer flex items-center gap-0.5"
+                            >
+                              Expand ↗
+                            </button>
                           </div>
-                        ) : (
-                          <div className="p-3 rounded-xl bg-black/90 border border-amber-500/30 text-amber-300 font-mono text-[10px] overflow-x-auto max-h-[190px]">
-                            <pre className="leading-tight">{activeScene.codeSnippet}</pre>
+
+                          {/* Mac-style Window Frame */}
+                          <div className="rounded-xl overflow-hidden border border-slate-700/80 shadow-lg bg-[#0f172a]">
+                            <div className="bg-[#1e293b] px-3 py-1.5 flex items-center justify-between border-b border-slate-700">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                              </div>
+                              <span className="text-[10px] font-mono font-bold text-slate-400">
+                                {activeScene.diagram ? 'visual-model.txt' : 'source-demo.java'}
+                              </span>
+                            </div>
+                            
+                            {activeScene.diagram ? (
+                              <div className="p-3.5 text-cyan-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
+                                <pre>{activeScene.diagram}</pre>
+                              </div>
+                            ) : (
+                              <div className="p-3.5 text-amber-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
+                                <pre>{activeScene.codeSnippet}</pre>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+                      </div>
+
+                      {/* Slide Bottom Bar with Colorful Badges */}
+                      <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px] border border-indigo-200">
+                            🎯 {activeLesson.difficulty || 'Advanced'}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">
+                            ⏱️ {activeLesson.duration || '20 mins'}
+                          </span>
+                          {activeLesson.tags?.slice(0, 3).map((tag, i) => (
+                            <span key={i} className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold text-[10px] border border-purple-200">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+                          <span>Prof. {activeLesson.professor.name.split(' ')[1] || activeLesson.professor.name}</span>
+                          <span>•</span>
+                          <span>Interactive Slide Deck</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* 2. Blackboard Markdown Mode */}
+                {/* 2. Blackboard Markdown Mode (Crisp White Background with Rich Colorful Typography) */}
                 {activeViewMode === 'blackboard' && (
-                  <div 
-                    className={'prose prose-invert max-w-none text-xs leading-relaxed text-gray-200 space-y-3 font-sans [&>h1]:text-base [&>h1]:font-black [&>h1]:text-cyan-300 [&>h3]:text-xs [&>h3]:font-bold [&>h3]:text-purple-300 [&>pre]:bg-black/95 [&>pre]:p-3 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-white/10 [&>pre]:font-mono [&>pre]:text-emerald-300 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:space-y-1'}
-                    dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(marked.parse(activeScene.whiteboardContent || ''))
-                    }}
-                  />
+                  <div className="rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl p-6 overflow-hidden space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                      <h3 className="text-sm font-black text-indigo-900 font-sora flex items-center gap-1.5">
+                        <Layers className="w-4 h-4 text-indigo-600" /> Blackboard Notes & Formal Proofs
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px]">
+                        Slide {currentSceneIdx + 1}
+                      </span>
+                    </div>
+                    <div 
+                      className={'prose max-w-none text-xs leading-relaxed text-slate-800 space-y-3 font-sans [&>h1]:text-base [&>h1]:font-black [&>h1]:text-indigo-900 [&>h3]:text-xs [&>h3]:font-black [&>h3]:text-violet-700 [&>pre]:bg-[#0f172a] [&>pre]:text-emerald-300 [&>pre]:p-3.5 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-slate-700 [&>pre]:font-mono [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:space-y-1.5 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:bg-indigo-600 [&>table_th]:text-white [&>table_th]:p-2.5 [&>table_th]:text-left [&>table_th]:font-bold [&>table_td]:p-2.5 [&>table_td]:border [&>table_td]:border-slate-200 [&>table_tr:nth-child(even)]:bg-slate-50'}
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(marked.parse(activeScene.whiteboardContent || ''))
+                      }}
+                    />
+                  </div>
                 )}
 
                 {/* 3. Diagram Mode */}
