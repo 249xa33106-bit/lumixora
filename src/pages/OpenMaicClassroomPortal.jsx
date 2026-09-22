@@ -1551,7 +1551,7 @@ Return ONLY valid JSON.`;
     setCustomTopicInput('');
   };
 
-  // ─── DOMAIN-AWARE NEXT SLIDE SYNTHESIZER ────────────────────────────────────
+  // ─── DOMAIN-AWARE NEXT SLIDE SYNTHESIZER (UNIQUE PER SLIDE NUMBER) ──────────
   const generateNextSlideFallback = (lesson, slideNum) => {
     const title = lesson?.title || 'Computer Science Masterclass';
     const isJava = lesson?.id?.includes('java') || title.toLowerCase().includes('java');
@@ -1559,10 +1559,10 @@ Return ONLY valid JSON.`;
     if (isJava) {
       if (slideNum === 5) {
         return {
-          id: `slide-${slideNum}-${Date.now()}`,
-          slideNumber: slideNum,
-          title: `Slide ${slideNum}: JVM Garbage Collection & String Deduplication`,
-          slideSubtitle: `Memory reclamation lifecycle, G1GC/ZGC region management, and String Pool deduplication.`,
+          id: `slide-5-${Date.now()}`,
+          slideNumber: 5,
+          title: `Slide 5: JVM Garbage Collection, Memory Lifecycles & String Deduplication`,
+          slideSubtitle: `Young vs Old Generation, G1GC/ZGC region management, and String Pool deduplication.`,
           takeaways: [
             `JVM Generational Garbage Collection divides Heap into Young (Eden, S0, S1) and Old Generation.`,
             `G1GC and ZGC use compacting regions to maintain sub-millisecond pause times during object lifecycle sweeps.`,
@@ -1570,10 +1570,10 @@ Return ONLY valid JSON.`;
           ],
           whiteboardContent: `# JVM Heap Generations & Garbage Collection Invariants\n\n### Heap Memory Partitioning:\n* **Young Generation (Eden + Survivor S0/S1):** Short-lived objects allocated here ($>90\\%$ die young).\n* **Tenured / Old Generation:** Long-lived objects promoted after surviving $N$ GC cycles.\n\n### Generational Hypothesis Invariant:\n$$\\text{Cost}(\\text{Minor GC}) \\ll \\text{Cost}(\\text{Full GC}) \\implies \\text{Prefer Primitive Allocations}$$`,
           diagram: `┌───────────────────────────────────────────────────────────────┐\n│                     JVM HEAP MEMORY SPACES                    │\n├───────────────────────────────────────────────────────────────┤\n│ [ Eden Space (80%) ] ──> [ S0 (10%) ] ──> [ S1 (10%) ]        │\n│                             │                                 │\n│                             ▼ (Promoted after 15 GC cycles)   │\n│                   [ Old Generation (Tenured) ]                │\n└───────────────────────────────────────────────────────────────┘`,
-          codeSnippet: `// JVM Garbage Collection & Reference Demo\npublic class GCMemoryOptimizationDemo {\n    public static void main(String[] args) {\n        // Prefer primitives to avoid GC allocation thrashing\n        long startTime = System.currentTimeMillis();\n        long primitiveSum = 0L;\n        for (int i = 0; i < 10_000_000; i++) {\n            primitiveSum += i;\n        }\n        System.out.println("Fast primitive sum in Stack: " + primitiveSum);\n    }\n}`,
+          codeSnippet: `// JVM Garbage Collection & Reference Demo\npublic class GCMemoryOptimizationDemo {\n    public static void main(String[] args) {\n        long startTime = System.currentTimeMillis();\n        long primitiveSum = 0L;\n        for (int i = 0; i < 10_000_000; i++) {\n            primitiveSum += i;\n        }\n        System.out.println("Fast primitive sum in Stack: " + primitiveSum);\n    }\n}`,
           terminalOutput: `[JVM GC RUNTIME] Executed 10M operations in 4.2ms.\n>>> Minor GC Count: 0 | Heap Allocations: 0 Bytes | All invariants satisfied.`,
           dialogue: [
-            { speaker: 'professor', text: `In Slide ${slideNum}, we analyze how the JVM manages object lifecycles on the Heap and when Garbage Collection triggers.` },
+            { speaker: 'professor', text: `In Slide 5, we examine how the JVM cleans up Heap objects and why Stack primitives require zero GC overhead.` },
             { speaker: 'alex', text: `Professor, how does using primitives prevent Garbage Collection pause spikes in high-frequency trading systems?` },
             { speaker: 'professor', text: `Primitives reside directly on the Stack Frame and are cleaned up instantly when the method returns, putting zero pressure on the JVM Garbage Collector!` }
           ],
@@ -1589,18 +1589,18 @@ Return ONLY valid JSON.`;
             explanation: `Local primitive variables are stored directly within the thread's Stack frame for O(1) zero-overhead memory management.`
           }
         };
-      } else {
+      } else if (slideNum === 6) {
         return {
-          id: `slide-${slideNum}-${Date.now()}`,
-          slideNumber: slideNum,
-          title: `Slide ${slideNum}: Advanced Primitive Collections & Memory Packing`,
-          slideSubtitle: `High-density memory layouts, Trove/FastUtil primitive arrays, and cache-line efficiency.`,
+          id: `slide-6-${Date.now()}`,
+          slideNumber: 6,
+          title: `Slide 6: High-Density Primitive Collections & Cache Locality`,
+          slideSubtitle: `Contiguous memory packing, int[] vs ArrayList<Integer>, and 64-byte CPU cache line prefetching.`,
           takeaways: [
-            `Standard Java ArrayList<Integer> uses 5x more memory than raw int[] due to pointer references and object headers.`,
-            `Primitive collections pack contiguous bytes in RAM, maximizing CPU L1/L2 cache prefetching.`,
-            `Eliminating box/unbox cycles yields up to 10x higher iteration throughput.`
+            `Standard Java ArrayList<Integer> uses 5x more memory than raw int[] due to object headers and reference pointer chasing.`,
+            `Primitive collections pack contiguous bytes in RAM, maximizing CPU L1/L2 hardware prefetch efficiency.`,
+            `Eliminating box/unbox cycles yields up to 10x higher iteration speed and eliminates false sharing.`
           ],
-          whiteboardContent: `# Memory Density: int[] vs ArrayList<Integer>\n\n| Data Structure | Memory for 1M Integers | Cache Line Miss Rate |\n| :--- | :--- | :--- |\n| \`int[]\` (Primitive) | **4 MB** (Contiguous) | $< 1\\%$ (Hardware prefetch) |\n| \`ArrayList<Integer>\` | **20-24 MB** (Pointers + Wrappers) | $> 35\\%$ (Pointer chasing) |`,
+          whiteboardContent: `# Memory Density: int[] vs ArrayList<Integer>\n\n| Data Structure | Memory for 1M Integers | Cache Line Miss Rate |\n| :--- | :--- | :--- |\n| \`int[]\` (Primitive) | **4 MB** (Contiguous) | $< 1\\%$ (Hardware prefetch) |\n| \`ArrayList<Integer>\` | **20-24 MB** (Pointers + Wrappers) | $> 35\\%$ (Pointer chasing) |\n\n### CPU Cache Line Math:\n$$\\text{Cache Line} = 64 \\text{ Bytes} = 16 \\times 4\\text{-byte ints fetched in 1 cycle!}$$`,
           diagram: `┌───────────────────────────────────────────────────────────────┐\n│            CONTIGUOUS PRIMITIVE MEMORY IN CPU CACHE           │\n├───────────────────────────────────────────────────────────────┤\n│ [ int 4B ][ int 4B ][ int 4B ][ int 4B ][ int 4B ][ int 4B ] │\n│ <────────────── Single 64-Byte Cache Line Burst ─────────────>│\n└───────────────────────────────────────────────────────────────┘`,
           codeSnippet: `// High efficiency primitive array\nint[] highDensityBuffer = new int[1_000_000];\nfor (int i = 0; i < highDensityBuffer.length; i++) {\n    highDensityBuffer[i] = i * 2;\n}`,
           terminalOutput: `[PERFORMANCE] Allocated 4MB primitive array in 0.1ms.\n>>> L1 Cache Hits: 99.8% | Iteration: 1.2ms.`,
@@ -1620,39 +1620,204 @@ Return ONLY valid JSON.`;
             explanation: `Primitive arrays store elements contiguously in RAM, allowing the CPU to prefetch consecutive values into high-speed L1/L2 caches.`
           }
         };
+      } else if (slideNum === 7) {
+        return {
+          id: `slide-7-${Date.now()}`,
+          slideNumber: 7,
+          title: `Slide 7: JVM JIT Compiler Optimizations & Escape Analysis`,
+          slideSubtitle: `C2 compiler optimizations, Scalar Replacement, On-Stack Allocation, and lock coarsening.`,
+          takeaways: [
+            `JVM JIT Escape Analysis determines whether an object instance escapes its defining method or thread scope.`,
+            `Scalar Replacement decomposes small objects into primitive fields stored directly in CPU registers or Stack.`,
+            `Lock Elision automatically strips synchronized blocks when thread contention is provably impossible.`
+          ],
+          whiteboardContent: `# JVM Escape Analysis & Scalar Replacement\n\n### Optimization Stages:\n1. **Global Escape:** Object passed to external thread $\\implies$ Must allocate on Heap.\n2. **Arg Escape:** Object passed to method but not stored $\\implies$ Stack pinning.\n3. **No Escape:** Object strictly local $\\implies$ **Scalar Replacement into CPU Registers!**\n\n### Scalar Invariant:\n$$\\text{Point } p = \\text{new Point}(x, y) \\xrightarrow{\\text{JIT C2}} \\text{int } p\\_x = x; \\; \\text{int } p\\_y = y; \\quad (0 \\text{ Heap})$$`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│            JVM C2 JIT SCALAR REPLACEMENT PIPELINE             │\n├───────────────────────────────────────────────────────────────┤\n│ [ Point(x,y) Object ] ──[Escape Analysis]──> [ CPU Reg: rdx ] │\n│                                              [ CPU Reg: rcx ] │\n│                                         (0 Heap allocations!) │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Scalar replacement candidate\npublic static int computeDistance(int x, int y) {\n    // Point object never escapes method scope -> JIT turns this into 2 raw ints!\n    Point p = new Point(x, y);\n    return p.x * p.x + p.y * p.y;\n}`,
+          terminalOutput: `[JIT C2 COMPILER] Hot method inlined: computeDistance()\n>>> Escape Analysis: NO_ESCAPE -> Scalar Replacement active (0 Heap bytes allocated).`,
+          dialogue: [
+            { speaker: 'alex', text: `Does this mean the JVM can eliminate object creation overhead automatically?` },
+            { speaker: 'professor', text: `Yes! When the C2 JIT compiler verifies that an object never escapes the method, it decomposes the object into pure primitive variables stored in CPU registers.` }
+          ],
+          quiz: {
+            question: `What is the primary benefit of JVM Scalar Replacement during JIT compilation?`,
+            options: [
+              `It decomposes non-escaping objects into primitive variables, avoiding Heap allocation entirely`,
+              `It converts all Java classes into C source code`,
+              `It disables JVM garbage collection forever`,
+              `It slows down CPU clock cycles`
+            ],
+            correct: 0,
+            explanation: `Scalar replacement allows the JIT compiler to replace small non-escaping objects with pure primitive registers, avoiding heap allocation and GC entirely.`
+          }
+        };
+      } else if (slideNum === 8) {
+        return {
+          id: `slide-8-${Date.now()}`,
+          slideNumber: 8,
+          title: `Slide 8: Concurrency, Atomic Primitives & Java Memory Model (JMM)`,
+          slideSubtitle: `Volatile visibility, AtomicInteger, CPU Compare-And-Swap (CAS), and Happens-Before ordering.`,
+          takeaways: [
+            `The volatile keyword guarantees memory visibility across CPU cores by issuing hardware memory fences.`,
+            `AtomicInteger and AtomicLong use hardware atomic CAS (Compare-And-Swap) instructions without mutex lock overhead.`,
+            `The Java Memory Model (JMM) defines strict Happens-Before rules to prevent CPU out-of-order instruction reordering.`
+          ],
+          whiteboardContent: `# Java Memory Model (JMM) & Atomic Invariants\n\n### Volatile vs Atomic vs Synchronized:\n* **\`volatile\`:** Guarantees read/write visibility across CPU core L1/L2 caches, but NOT compound atomic operations (e.g. \`count++\`).\n* **\`AtomicInteger\`:** Uses lock-free hardware CAS loops: \`compareAndSet(expected, update)\`.\n* **\`synchronized\`:** Mutual exclusion lock with thread blocking.\n\n### Hardware CAS Invariant:\n$$\\text{CAS}(\\text{addr}, \\text{expected}, \\text{new}) = \\begin{cases} \\text{true} & \\text{if } *\\text{addr} == \\text{expected} \\\\ \\text{false} & \\text{otherwise (retry loop)} \\end{cases}$$`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│                 HARDWARE LOCK-FREE ATOMIC CAS                 │\n├───────────────────────────────────────────────────────────────┤\n│ [ Core 1: AtomicCAS ] <─── CPU Bus Lock ───> [ Core 2: Retry ]│\n│                             │                                 │\n│                             ▼                                 │\n│                  [ Shared RAM: Value = 43 ]                   │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `import java.util.concurrent.atomic.AtomicLong;\n\npublic class AtomicBenchmark {\n    private static final AtomicLong counter = new AtomicLong(0);\n    \n    public static void increment() {\n        // Lock-free atomic instruction (CPU CMPXCHG)\n        counter.incrementAndGet();\n    }\n}`,
+          terminalOutput: `[CONCURRENCY BENCHMARK] 16 worker threads executing 10M increments...\n>>> Final Counter: 10,000,000 | Race Conditions: 0 | Time: 18ms.`,
+          dialogue: [
+            { speaker: 'maya', text: `Why is \`volatile int x\` not sufficient for \`x++\` in multithreaded applications?` },
+            { speaker: 'professor', text: `Because \`x++\` is 3 distinct operations: read, increment, and write. Two threads can read the same value simultaneously! Use \`AtomicInteger\` for atomic increments.` }
+          ],
+          quiz: {
+            question: `Why does \`AtomicInteger\` outperform \`synchronized\` under moderate multi-core concurrency?`,
+            options: [
+              `It uses CPU atomic CAS instructions instead of putting threads to sleep with OS kernel context switches`,
+              `It erases memory from RAM`,
+              `It limits execution to a single core`,
+              `It ignores data races completely`
+            ],
+            correct: 0,
+            explanation: `AtomicInteger executes lock-free CPU instructions (like CMPXCHG) directly in user space without heavy OS thread sleep/wake transitions.`
+          }
+        };
+      } else if (slideNum === 9) {
+        return {
+          id: `slide-9-${Date.now()}`,
+          slideNumber: 9,
+          title: `Slide 9: Java 21+ Virtual Threads & Continuation Memory Footprint`,
+          slideSubtitle: `Project Loom, 1KB continuations on Heap vs 1MB Platform threads, and carrier thread scheduling.`,
+          takeaways: [
+            `Platform threads map 1:1 to OS kernel threads, consuming ~1MB of Stack memory each.`,
+            `Virtual threads (Project Loom) are lightweight user-mode threads consuming only ~1KB on the Heap.`,
+            `When a virtual thread executes blocking I/O, it unmounts from its carrier thread without blocking the OS core!`
+          ],
+          whiteboardContent: `# Project Loom: Virtual Threads vs Platform Threads\n\n| Metric | OS Platform Thread | Java Virtual Thread |\n| :--- | :--- | :--- |\n| **Memory Stack** | **~1 MB** (OS fixed) | **~1 KB** (Grows dynamically on Heap) |\n| **Max Capacity** | ~5,000 - 10,000 threads | **1,000,000+ concurrent threads!** |\n| **Context Switch** | ~1-5 microseconds (Kernel) | **~10-50 nanoseconds (JVM Continuation)** |\n| **I/O Model** | Blocks OS kernel thread | **Unmounts from carrier thread instantly** |`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│            PROJECT LOOM VIRTUAL THREAD ARCHITECTURE           │\n├───────────────────────────────────────────────────────────────┤\n│ [ 1,000,000 Virtual Threads (1KB each) ]                      │\n│             │              │              │                   │\n│             ▼              ▼              ▼ (M:N Scheduler)   │\n│   [ Carrier Core 1 ] [ Carrier Core 2 ] [ Carrier Core 3 ]    │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Spawning 100,000 concurrent Virtual Threads in Java 21\ntry (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {\n    for (int i = 0; i < 100_000; i++) {\n        int taskId = i;\n        executor.submit(() -> {\n            Thread.sleep(100); // Unmounts carrier thread during sleep!\n            return taskId;\n        });\n    }\n} // Auto-awaits all 100k tasks with negligible RAM!`,
+          terminalOutput: `[JAVA 21 VIRTUAL THREADS] Spawned 100,000 threads simultaneously.\n>>> Total RAM consumed: 112 MB (vs 100 GB with OS threads) | Completed in 142ms.`,
+          dialogue: [
+            { speaker: 'alex', text: `With Virtual Threads, do we still need reactive frameworks like WebFlux or RxJava for high concurrency?` },
+            { speaker: 'professor', text: `Virtual Threads bring back simple, readable synchronous blocking code (like standard JDBC or HTTP calls) with the extreme scalability of non-blocking event loops!` }
+          ],
+          quiz: {
+            question: `What happens when a Java Virtual Thread performs a blocking I/O network read?`,
+            options: [
+              `The JVM unmounts the virtual thread continuation, freeing the underlying carrier thread for other work`,
+              `The entire operating system freezes`,
+              `The JVM terminates the application`,
+              `The virtual thread is converted into an OS platform thread`
+            ],
+            correct: 0,
+            explanation: `The JVM unmounts the virtual thread from its OS carrier thread during blocking I/O and remounts it seamlessly when data arrives.`
+          }
+        };
+      } else {
+        return {
+          id: `slide-10-${Date.now()}`,
+          slideNumber: slideNum,
+          title: `Slide ${slideNum}: Off-Heap Direct Memory & Low-Latency DirectByteBuffers`,
+          slideSubtitle: `Kernel bypass, Memory-Mapped Files (mmap), and zero-copy off-heap network serialization.`,
+          takeaways: [
+            `DirectByteBuffers allocate memory outside the JVM Garbage Collected Heap using native malloc.`,
+            `Zero-Copy serialization transfers bytes directly from native sockets to NVMe storage without JVM Heap copies.`,
+            `Off-heap memory structures eliminate GC pauses entirely for ultra-low latency trading and messaging engines.`
+          ],
+          whiteboardContent: `# Off-Heap Direct Memory & Kernel Zero-Copy\n\n### Direct Memory vs On-Heap Buffers:\n* **On-Heap Buffer:** Must be copied to temporary native memory before OS \`write()\` syscall $\\implies$ 2x CPU copy penalty.\n* **DirectByteBuffer:** Allocated in native OS memory $\\implies$ Direct DMA (Direct Memory Access) to network card!\n\n### Zero-Copy Pipeline Invariant:\n$$\\text{Socket Buffer} \\xrightarrow{\\text{Direct DMA}} \\text{Off-Heap DirectByteBuffer} \\xrightarrow{\\text{Zero-Copy}} \\text{NVMe File}$$`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│            ZERO-COPY OFF-HEAP DIRECT MEMORY PIPELINE          │\n├───────────────────────────────────────────────────────────────┤\n│ [ NIC Socket ] ──(DMA)──> [ Off-Heap DirectBuffer ] ──> [ Disk ]│\n│                                  (Bypasses JVM GC Heap!)      │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `import java.nio.ByteBuffer;\n\n// Allocate 1GB off-heap memory outside GC pause boundaries\nByteBuffer offHeapBuffer = ByteBuffer.allocateDirect(1024 * 1024 * 1024);\n\n// Write primitive bytes directly\noffHeapBuffer.putLong(1711000000000L);\noffHeapBuffer.putDouble(3.1415926535);\n\nSystem.out.println("Zero-Copy buffer ready with 0 GC overhead.");`,
+          terminalOutput: `[OFF-HEAP DMA] Allocated 1GB Direct Memory.\n>>> Zero-Copy Transfer: 12.8 GB/sec | GC Pauses: 0.00ms.`,
+          dialogue: [
+            { speaker: 'maya', text: `This is how Apache Kafka and Netty achieve multi-gigabyte per second throughput without Garbage Collection spikes!` },
+            { speaker: 'professor', text: `Exactly, Maya! Mastering both on-stack primitives, JVM heap mechanics, and off-heap direct buffers completes your full mastery of Java memory systems.` }
+          ],
+          quiz: {
+            question: `What is the main advantage of using \`ByteBuffer.allocateDirect()\` over standard byte arrays?`,
+            options: [
+              `It allows zero-copy Direct Memory Access (DMA) to network/disk without JVM GC pause pressure`,
+              `It encrypts all data automatically`,
+              `It limits array length to 100 elements`,
+              `It turns off internet networking`
+            ],
+            correct: 0,
+            explanation: `DirectByteBuffers reside in native OS memory, allowing the operating system to perform direct DMA I/O without copying data through the JVM Garbage Collector.`
+          }
+        };
       }
     }
 
-    // Universal default slide fallback
+    // Universal default sequence for general topics
+    const genericCurricula = [
+      {
+        title: `Slide ${slideNum}: Memory Footprint & Resource Lifecycle Management`,
+        sub: `Allocation patterns, memory reclamation, and resource leak prevention.`,
+        eq: `\\text{Memory Footprint} = \\text{Static Working Set} + \\mathcal{O}(\\text{Active Requests})`,
+        takeaways: [
+          `Optimal resource allocation and scoping rules for ${title.split(':')[0]}.`,
+          `Preventing resource leakage through deterministic lifecycle guards.`,
+          `Memory profiling and footprint minimization.`
+        ]
+      },
+      {
+        title: `Slide ${slideNum}: High-Throughput I/O & CPU Cache Locality`,
+        sub: `Cache-line alignment, sequential memory bursts, and batching pipelines.`,
+        eq: `\\text{Bandwidth} = \\frac{\\text{Batch Size}}{\\text{I/O Latency} + \\text{Processing Overhead}}`,
+        takeaways: [
+          `Maximizing CPU cache hit rates through sequential data access.`,
+          `Batching requests to amortize system call and I/O latency.`,
+          `Hardware prefetching optimization.`
+        ]
+      },
+      {
+        title: `Slide ${slideNum}: Concurrency Models & Lock-Free Synchronization`,
+        sub: `Atomic state transitions, thread coordination, and memory visibility.`,
+        eq: `\\text{Speedup} = \\frac{1}{(1 - P) + \\frac{P}{N}} \\quad (\\text{Amdahl's Law})`,
+        takeaways: [
+          `Eliminating lock contention using non-blocking atomic operations.`,
+          `Thread synchronization guarantees and memory ordering.`,
+          `Designing race-free concurrent state machines.`
+        ]
+      },
+      {
+        title: `Slide ${slideNum}: Production Observability & P99 Latency Profiling`,
+        sub: `Telemetry metrics, distributed tracing, and root-cause bottleneck analysis.`,
+        eq: `\\text{P99 Latency} \\le 2.0\\text{ms} \\quad \\text{under } 100\\text{k req/sec}`,
+        takeaways: [
+          `Critical telemetry indicators and performance golden signals.`,
+          `Profiling CPU, memory, and I/O bottlenecks under stress.`,
+          `Production readiness and automated health verification.`
+        ]
+      }
+    ];
+
+    const item = genericCurricula[(slideNum - 5) % genericCurricula.length] || genericCurricula[0];
+
     return {
       id: `slide-${slideNum}-${Date.now()}`,
       slideNumber: slideNum,
-      title: `Slide ${slideNum}: Advanced Architecture & Scaling for ${title.split(':')[0]}`,
-      slideSubtitle: `Deep dive into optimization patterns, reliability invariants, and real-world system architecture.`,
-      takeaways: [
-        `High-throughput execution guarantees for ${title.split(':')[0]}.`,
-        `Defensive guard conditions and edge-case resilience patterns.`,
-        `Sub-millisecond latency and optimal resource utilization.`
-      ],
-      whiteboardContent: `# Advanced Architectural Invariants for ${title.split(':')[0]}\n\n### Core System Equation:\n$$\\text{Throughput} = \\frac{\\text{Concurrency} \\times (1 - \\text{Contention})}{\\text{Mean Latency}}$$\n\n### Principles:\n1. **Deterministic Execution:** Strict invariant preservation.\n2. **Memory Efficiency:** Minimal allocation overhead.\n3. **Fault Tolerance:** Self-healing recovery paths.`,
+      title: item.title,
+      slideSubtitle: item.sub,
+      takeaways: item.takeaways,
+      whiteboardContent: `# ${item.title}\n\n### Core System Invariant:\n$$${item.eq}$$\n\n### Key Principles:\n1. **High Efficiency:** Optimal CPU and memory utilization.\n2. **Deterministic Guarantees:** Strict state consistency under peak load.\n3. **Production Robustness:** Comprehensive observability.`,
       diagram: `┌───────────────────────────────────────────────────────────────┐\n│            PRODUCTION ARCHITECTURE: SLIDE ${slideNum}                 │\n├───────────────────────────────────────────────────────────────┤\n│ [ Request Ingestion ] ──> [ Core Logic Engine ] ──> [ Sink ]  │\n└───────────────────────────────────────────────────────────────┘`,
-      codeSnippet: `// Advanced implementation for Slide ${slideNum}\npublic class AdvancedModule {\n    public static void executeProduction() {\n        System.out.println("Slide ${slideNum} module active.");\n    }\n}`,
-      terminalOutput: `[ENGINE] Slide ${slideNum} initialization complete.\n>>> Verification: 100% test coverage | Ready for scale.`,
+      codeSnippet: `// Advanced module implementation for Slide ${slideNum}\npublic class AdvancedModule${slideNum} {\n    public static void execute() {\n        System.out.println("Executing Slide ${slideNum} curriculum.");\n    }\n}`,
+      terminalOutput: `[ENGINE] Slide ${slideNum} verified.\n>>> Latency: 0.22ms | 100% test coverage | Zero defects.`,
       dialogue: [
-        { speaker: 'professor', text: `In Slide ${slideNum}, we extend our mental model with production-grade scaling patterns.` },
-        { speaker: 'alex', text: `Professor, how do we benchmark these optimizations effectively?` },
-        { speaker: 'professor', text: `By measuring P99 tail latencies under continuous stress workloads!` }
+        { speaker: 'professor', text: `In Slide ${slideNum}, we analyze advanced architectural patterns for ${title.split(':')[0]}.` },
+        { speaker: 'alex', text: `Professor, how does this ensure scalability in mission-critical environments?` },
+        { speaker: 'professor', text: `By enforcing strict memory, concurrency, and observability invariants across all execution paths!` }
       ],
       quiz: {
-        question: `What is the primary indicator of system resilience in ${title.split(':')[0]}?`,
+        question: `What is the primary indicator of architectural excellence in Slide ${slideNum}?`,
         options: [
-          `Consistent P99 latency and zero data loss under peak workload`,
-          `Ignoring hardware performance counters`,
-          `Disabling unit tests before release`,
-          `Using unoptimized data formats`
+          `Consistent P99 latency, zero memory leakage, and deterministic reliability under load`,
+          `Ignoring unit test coverage`,
+          `Increasing manual maintenance overhead`,
+          `Disabling hardware caching`
         ],
         correct: 0,
-        explanation: `Resilience is measured by deterministic performance and zero corruption even during high concurrency or hardware stress.`
+        explanation: `Architectural excellence is defined by deterministic sub-millisecond execution, zero resource leakage, and robust reliability.`
       }
     };
   };
