@@ -737,9 +737,111 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
   const [isAutoSummarizing, setIsAutoSummarizing] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
 
+  // ─── MULTILINGUAL & CUSTOM VOICE SELECTION ENGINE ──────────────────────────
+  const [selectedLanguage, setSelectedLanguage] = useState('en'); // 'en' | 'te' | 'hi'
+  const [allBrowserVoices, setAllBrowserVoices] = useState([]);
+  const [selectedMaleVoiceURI, setSelectedMaleVoiceURI] = useState('');
+  const [selectedFemaleVoiceURI, setSelectedFemaleVoiceURI] = useState('');
+  const [femalePitch, setFemalePitch] = useState(1.18);
+  const [malePitch, setMalePitch] = useState(0.98);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
   const activeScene = activeLesson.scenes[currentSceneIdx] || activeLesson.scenes[0];
   const currentDialogue = activeScene.dialogue[currentDialogueIdx] || activeScene.dialogue[0];
   const chatBottomRef = useRef(null);
+
+  // Helper: Find optimal natural voices per language from browser SpeechSynthesis
+  const findVoicesForLanguage = (lang, voicesList) => {
+    if (!voicesList || voicesList.length === 0) {
+      return { femaleVoice: null, maleVoice: null, filteredVoices: [] };
+    }
+
+    let filtered = [];
+    if (lang === 'te') {
+      filtered = voicesList.filter(v => 
+        (v.lang && v.lang.toLowerCase().includes('te')) || 
+        (v.name && v.name.toLowerCase().includes('telugu')) ||
+        (v.lang && v.lang.toLowerCase().includes('in'))
+      );
+    } else if (lang === 'hi') {
+      filtered = voicesList.filter(v => 
+        (v.lang && v.lang.toLowerCase().includes('hi')) || 
+        (v.name && v.name.toLowerCase().includes('hindi')) ||
+        (v.lang && v.lang.toLowerCase().includes('in'))
+      );
+    } else {
+      filtered = voicesList.filter(v => 
+        (v.lang && v.lang.toLowerCase().includes('in')) ||
+        (v.lang && v.lang.toLowerCase().startsWith('en'))
+      );
+    }
+
+    if (filtered.length === 0) filtered = voicesList;
+
+    const femaleKeywords = ['shruti', 'neerja', 'heera', 'swara', 'kavya', 'veena', 'aditi', 'kalpana', 'geeta', 'ananya', 'priya', 'shreya', 'female', 'zira', 'samantha', 'victoria', 'karen'];
+    const maleKeywords = ['mohan', 'prabhat', 'madhur', 'rishi', 'ravi', 'hemant', 'kiran', 'ajay', 'arun', 'rohan', 'male', 'david', 'george', 'guy'];
+
+    let femaleVoice = filtered.find(v => femaleKeywords.some(k => v.name.toLowerCase().includes(k))) || filtered[0] || voicesList[0];
+    let maleVoice = filtered.find(v => maleKeywords.some(k => v.name.toLowerCase().includes(k)) && v !== femaleVoice) || filtered.find(v => v !== femaleVoice) || filtered[0] || voicesList[0];
+
+    return { femaleVoice, maleVoice, filteredVoices: filtered };
+  };
+
+  // Load and cache all browser voices on mount
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const loadVoices = () => {
+      const v = window.speechSynthesis.getVoices() || [];
+      if (v.length > 0) {
+        setAllBrowserVoices(v);
+        const { femaleVoice, maleVoice } = findVoicesForLanguage(selectedLanguage, v);
+        if (!selectedFemaleVoiceURI && femaleVoice) setSelectedFemaleVoiceURI(femaleVoice.voiceURI || femaleVoice.name);
+        if (!selectedMaleVoiceURI && maleVoice) setSelectedMaleVoiceURI(maleVoice.voiceURI || maleVoice.name);
+      }
+    };
+
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, [selectedLanguage]);
+
+  // Multilingual Speech translation & localization adapter
+  const getLocalizedLectureText = (text, type, lang = selectedLanguage, sceneTitle = activeScene.title, pointIdx = 0) => {
+    if (lang === 'en') return text;
+
+    if (lang === 'te') { // Telugu
+      if (type === 'header') {
+        return `${sceneTitle} కి స్వాగతం! ఈ స్లైడ్‌లోని కీలకమైన కాన్సెప్ట్‌లు, మెమరీ ఆర్కిటెక్చర్ మరియు ప్రాథమిక సూత్రాలను వివరంగా నేర్చుకుందాం.`;
+      }
+      if (type === 'takeaway') {
+        return `ముఖ్యమైన పాయింట్ ${pointIdx + 1}: ${text.replace(/^Point \d+:\s*/, '')}. ఇది ప్రొడక్షన్ సిస్టమ్స్‌లో చాలా కీలకం.`;
+      }
+      if (type === 'visual') {
+        return `ఇప్పుడు కుడివైపు కనిపిస్తున్న ఆర్కిటెక్చర్ ఫ్లో మోడల్ మరియు కోడ్ ఇంప్లిమెంటేషన్‌ను పరిశీలించండి.`;
+      }
+      if (type === 'dialogue') {
+        return `${text}`;
+      }
+    }
+
+    if (lang === 'hi') { // Hindi
+      if (type === 'header') {
+        return `${sceneTitle} में आपका स्वागत है! चलिए इस स्लाइड के मुख्य आर्किटेक्चर और सिद्धांतों को गहराई से समझते हैं।`;
+      }
+      if (type === 'takeaway') {
+        return `मुख्य पॉइंट ${pointIdx + 1}: ${text.replace(/^Point \d+:\s*/, '')}। यह प्रोडक्शन सिस्टम के लिए बेहद महत्वपूर्ण है।`;
+      }
+      if (type === 'visual') {
+        return `अब दाईं ओर दिए गए सिस्टम आर्किटेक्चर और कोड को ध्यान से देखें।`;
+      }
+      if (type === 'dialogue') {
+        return `${text}`;
+      }
+    }
+
+    return text;
+  };
 
   // Helper: Synthesize structured visual lecture steps for current slide
   const getLectureSteps = (scene, lesson) => {
@@ -842,54 +944,8 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, currentDialogueIdx, lectureStepIdx, isAiThinking]);
 
-  const [indianVoices, setIndianVoices] = useState({ female: null, male: null });
-
-  // Helper: Find the sweetest natural Indian Female & Male voices available in the browser
-  const findIndianVoices = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      return { female: null, male: null };
-    }
-    const voices = window.speechSynthesis.getVoices() || [];
-    if (!voices || voices.length === 0) {
-      return { female: null, male: null };
-    }
-
-    // 1. Indian English / Hindi Voices
-    const inVoices = voices.filter(v => 
-      (v.lang && (v.lang.toLowerCase().includes('in') || v.lang.toLowerCase().includes('hi'))) ||
-      (v.name && (v.name.toLowerCase().includes('india') || v.name.toLowerCase().includes('hindi') || v.name.toLowerCase().includes('marathi') || v.name.toLowerCase().includes('bengali') || v.name.toLowerCase().includes('tamil') || v.name.toLowerCase().includes('telugu')))
-    );
-
-    // Female Indian matches: Neerja, Heera, Swara, Kavya, Veena, Aditi, Kalpana, Ananya, Shreya, Priya, Google en-IN Female
-    const femaleIndianKeywords = ['neerja', 'heera', 'swara', 'kavya', 'veena', 'aditi', 'kalpana', 'ananya', 'shreya', 'priya', 'female', 'zira', 'samantha', 'victoria', 'karen', 'serena', 'salli'];
-    let female = inVoices.find(v => femaleIndianKeywords.some(k => v.name.toLowerCase().includes(k)));
-    if (!female && inVoices.length > 0) female = inVoices[0];
-    if (!female) female = voices.find(v => femaleIndianKeywords.some(k => v.name.toLowerCase().includes(k))) || voices[0];
-
-    // Male Indian matches: Prabhat, Madhur, Rishi, Ravi, Hemant, Kiran, Ajay, Arun, Rohan, Google en-IN Male
-    const maleIndianKeywords = ['prabhat', 'madhur', 'rishi', 'ravi', 'hemant', 'kiran', 'ajay', 'arun', 'rohan', 'male', 'david', 'george', 'guy', 'daniel', 'mark'];
-    let male = inVoices.find(v => maleIndianKeywords.some(k => v.name.toLowerCase().includes(k)) && v !== female);
-    if (!male && inVoices.length > 1) male = inVoices.find(v => v !== female) || inVoices[0];
-    if (!male) male = voices.find(v => maleIndianKeywords.some(k => v.name.toLowerCase().includes(k)) && v !== female) || voices[0];
-
-    return { female, male };
-  };
-
-  // Load and cache sweet Indian voices on mount
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const loadVoices = () => {
-      const v = findIndianVoices();
-      setIndianVoices(v);
-    };
-    loadVoices();
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  }, []);
-
-  // Text-To-Speech Synthesis with Sweet Indian Male (Professor/Alex/Dev) & Female (Maya/Sophia) Voices
-  const speakText = (text, speaker) => {
+  // Text-To-Speech Synthesis with Multilingual (Telugu / Hindi / English) & Selected Voice Engine
+  const speakText = (text, speaker, targetLang = selectedLanguage) => {
     if (!isAudioEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
@@ -902,26 +958,36 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
         .replace(/###/g, '')
         .replace(/##/g, '')
         .replace(/#/g, '')
-        .replace(/┌[\s\S]*?┘/g, 'Visual architectural flow model.');
+        .replace(/┌[\s\S]*?┘/g, targetLang === 'te' ? 'విజువల్ మోడల్.' : (targetLang === 'hi' ? 'विजुअल मॉडल।' : 'Visual architectural flow model.'));
 
       const utterance = new SpeechSynthesisUtterance(cleanSpeech);
 
-      // Distinguish female characters (Maya, Sophia) vs male characters (Professor, Alex, Dev)
+      // Determine gender
       const isFemale = speaker === 'maya' || speaker === 'sophia';
 
+      // Pick user explicitly chosen voice or optimal language voice
+      const targetVoiceURI = isFemale ? selectedFemaleVoiceURI : selectedMaleVoiceURI;
+      let chosenVoice = allBrowserVoices.find(v => (v.voiceURI === targetVoiceURI || v.name === targetVoiceURI));
+
+      if (!chosenVoice) {
+        const { femaleVoice, maleVoice } = findVoicesForLanguage(targetLang, allBrowserVoices);
+        chosenVoice = isFemale ? femaleVoice : maleVoice;
+      }
+
+      if (chosenVoice) {
+        utterance.voice = chosenVoice;
+      }
+
+      // Set language BCP-47 tag
+      if (targetLang === 'te') utterance.lang = 'te-IN';
+      else if (targetLang === 'hi') utterance.lang = 'hi-IN';
+      else utterance.lang = 'en-IN';
+
       if (isFemale) {
-        if (indianVoices.female) {
-          utterance.voice = indianVoices.female;
-        }
-        // Sweet, melodic, crystal-clear Indian female pitch & pacing
-        utterance.pitch = 1.18;
+        utterance.pitch = femalePitch;
         utterance.rate = speechRate * 0.98;
       } else {
-        if (indianVoices.male) {
-          utterance.voice = indianVoices.male;
-        }
-        // Warm, respectful, scholarly Indian male pitch & pacing
-        utterance.pitch = speaker === 'professor' ? 0.98 : 1.05;
+        utterance.pitch = malePitch;
         utterance.rate = speechRate * 0.96;
       }
 
@@ -931,31 +997,70 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
     }
   };
 
-  // Test Indian Voices Demo
-  const handleTestIndianVoices = () => {
+  // Preview Voice Sample
+  const handleTestVoice = (gender = 'female', customLang = selectedLanguage) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    
-    // 1. Male Professor Voice
-    const profUtterance = new SpeechSynthesisUtterance("Namaste and welcome scholars! I am your Professor, explaining each concept with absolute technical precision.");
-    if (indianVoices.male) profUtterance.voice = indianVoices.male;
-    profUtterance.pitch = 0.98;
-    profUtterance.rate = 0.96;
 
-    // 2. Female Student Voice (Maya)
-    const mayaUtterance = new SpeechSynthesisUtterance("And I am Maya! I will be asking insightful questions and exploring real-world optimizations with you!");
-    if (indianVoices.female) mayaUtterance.voice = indianVoices.female;
-    mayaUtterance.pitch = 1.18;
-    mayaUtterance.rate = 0.98;
+    let sampleText = "";
+    if (customLang === 'te') {
+      sampleText = gender === 'female' 
+        ? "నమస్కారం! నేను మాయ. మీతో కలిసి ఈ కాన్సెప్ట్‌ను అందమైన తెలుగులో నేర్చుకుంటాను."
+        : "నమస్కారం విద్యార్థులారా! నేను మీ ప్రొఫెసర్‌ని. ప్రతీ పాఠాన్ని మీకు సులభంగా వివరిస్తాను.";
+    } else if (customLang === 'hi') {
+      sampleText = gender === 'female'
+        ? "नमस्ते! मैं माया हूँ। आपके साथ इस कॉन्सेप्ट को मधुर हिंदी में समझेंगे।"
+        : "नमस्ते विद्यार्थियों! मैं आपका प्रोफेसर हूँ। हर सिद्धांत को विस्तार से समझाऊंगा।";
+    } else {
+      sampleText = gender === 'female'
+        ? "Hello scholars! I am Maya, excited to explore real-world architecture and optimizations with you!"
+        : "Welcome scholars! I am your Professor, guiding you through deep computer science mastery.";
+    }
 
-    window.speechSynthesis.speak(profUtterance);
-    profUtterance.onend = () => {
-      window.speechSynthesis.speak(mayaUtterance);
+    speakText(sampleText, gender === 'female' ? 'maya' : 'professor', customLang);
+  };
+
+  const handleTestFullDuet = (lang = selectedLanguage) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+
+    let profMsg = "Welcome scholars to our interactive masterclass!";
+    let mayaMsg = "And I am Maya, ready to explore every detail with you!";
+
+    if (lang === 'te') {
+      profMsg = "నమస్కారం విద్యార్థులారా! ఓపెన్‌మైక్ మాస్టర్‌క్లాస్‌కు స్వాగతం!";
+      mayaMsg = "నమస్కారం ప్రొఫెసర్ గారూ! నేను సిద్ధంగా ఉన్నాను, నేర్చుకుందాం!";
+    } else if (lang === 'hi') {
+      profMsg = "नमस्ते विद्यार्थियों! ओपनमाइक मास्टरक्लास में आपका हार्दिक स्वागत है!";
+      mayaMsg = "नमस्ते प्रोफेसर! मैं पूरी तरह तैयार हूँ, चलिए शुरू करते हैं!";
+    }
+
+    const u1 = new SpeechSynthesisUtterance(profMsg);
+    const { femaleVoice, maleVoice } = findVoicesForLanguage(lang, allBrowserVoices);
+    const mVoice = allBrowserVoices.find(v => v.voiceURI === selectedMaleVoiceURI) || maleVoice;
+    const fVoice = allBrowserVoices.find(v => v.voiceURI === selectedFemaleVoiceURI) || femaleVoice;
+
+    if (mVoice) u1.voice = mVoice;
+    u1.pitch = malePitch;
+    u1.rate = speechRate * 0.96;
+    if (lang === 'te') u1.lang = 'te-IN';
+    else if (lang === 'hi') u1.lang = 'hi-IN';
+
+    const u2 = new SpeechSynthesisUtterance(mayaMsg);
+    if (fVoice) u2.voice = fVoice;
+    u2.pitch = femalePitch;
+    u2.rate = speechRate * 0.98;
+    if (lang === 'te') u2.lang = 'te-IN';
+    else if (lang === 'hi') u2.lang = 'hi-IN';
+
+    window.speechSynthesis.speak(u1);
+    u1.onend = () => {
+      window.speechSynthesis.speak(u2);
     };
 
     addToast?.({
       type: 'info',
-      message: '🇮🇳 Playing Sweet Indian Male (Professor) & Female (Maya) Voice Preview!'
+      message: `🇮🇳 Playing Full ${lang === 'te' ? 'Telugu' : lang === 'hi' ? 'Hindi' : 'Indian English'} Classroom Duet!`
     });
   };
 
@@ -966,7 +1071,10 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
     if (!step) return;
 
     setActiveSpeaker(step.speaker);
-    speakText(step.text, step.speaker);
+
+    // Localize speech text for active language
+    const localizedText = getLocalizedLectureText(step.text, step.type, selectedLanguage, scene.title, step.pointIndex);
+    speakText(localizedText, step.speaker, selectedLanguage);
 
     const senderName = step.speaker === 'professor'
       ? activeLesson.professor.name
@@ -976,7 +1084,7 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
       : (activeLesson.classmates.find(c => c.id === step.speaker)?.avatar || '🧑‍💻');
 
     setChatMessages(prev => {
-      if (prev.some(m => m.text === step.text)) return prev;
+      if (prev.some(m => m.text === localizedText || m.text === step.text)) return prev;
       return [
         ...prev,
         {
@@ -985,7 +1093,7 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
           avatar: avatar,
           role: step.speaker === 'professor' ? 'Professor' : 'AI Classmate',
           color: step.speaker === 'professor' ? 'text-purple-400' : 'text-cyan-400',
-          text: step.text,
+          text: localizedText,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ];
@@ -2373,13 +2481,45 @@ ${classroomNotes || 'No custom notes recorded.'}
             )}
           </button>
 
+          {/* Quick Language Selector */}
+          <div className="flex items-center bg-white/5 rounded-2xl p-1 border border-white/10 text-xs">
+            <button
+              onClick={() => {
+                setSelectedLanguage('en');
+                addToast?.({ type: 'info', message: '🌐 Language switched to English (India)' });
+              }}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1 ${selectedLanguage === 'en' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+            >
+              <span>🇮🇳</span> English
+            </button>
+            <button
+              onClick={() => {
+                setSelectedLanguage('te');
+                addToast?.({ type: 'info', message: '🌐 భాష తెలుగుకు మార్చబడింది (Telugu)' });
+              }}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1 ${selectedLanguage === 'te' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+            >
+              <span>🇮🇳</span> తెలుగు
+            </button>
+            <button
+              onClick={() => {
+                setSelectedLanguage('hi');
+                addToast?.({ type: 'info', message: '🌐 भाषा हिन्दी में बदली गई (Hindi)' });
+              }}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1 ${selectedLanguage === 'hi' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+            >
+              <span>🇮🇳</span> हिन्दी
+            </button>
+          </div>
+
+          {/* Voice Studio Modal Trigger */}
           <button
-            onClick={handleTestIndianVoices}
-            className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-pink-500/20 hover:from-amber-500/30 hover:to-pink-500/30 text-amber-300 text-xs font-bold border border-amber-400/40 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-amber-500/10"
-            title="Preview Sweet Indian Male (Professor) & Female (Maya) Voices"
+            onClick={() => setIsVoiceModalOpen(true)}
+            className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-amber-600/30 hover:from-purple-600/40 hover:to-pink-600/40 text-purple-200 text-xs font-bold border border-purple-400/40 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-purple-500/10"
+            title="Open Voice Studio to Select Custom Voices, Language & Pitch"
           >
-            <span>🇮🇳</span>
-            <span>Test Indian Voice</span>
+            <Sliders className="w-3.5 h-3.5 text-purple-300 animate-spin" />
+            <span>Voice Studio 🎙️</span>
           </button>
           
           <button
@@ -3175,6 +3315,203 @@ ${classroomNotes || 'No custom notes recorded.'}
         </div>
 
       </div>
+
+      {/* ─── VOICE & LANGUAGE STUDIO MODAL ────────────────────────────────────── */}
+      {isVoiceModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0a0f1d] border border-purple-500/40 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-purple-500/30">
+                  🎙️
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white font-sora">
+                    OpenMAIC Voice & Language Studio
+                  </h3>
+                  <p className="text-[11px] text-gray-400">
+                    Select your lecture language, pick custom voices, and adjust pitch sweetness.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsVoiceModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white flex items-center justify-center font-bold text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 1. Language Selection Cards */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                <span>🌐</span> Choose Lecture Language:
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { id: 'en', label: 'English (India)', native: 'English', desc: 'Clear, fluent Indian English delivery', flag: '🇮🇳' },
+                  { id: 'te', label: 'Telugu', native: 'తెలుగు', desc: 'అందమైన తెలుగు గొంతుతో పాఠ్య వివరణ', flag: '🇮🇳' },
+                  { id: 'hi', label: 'Hindi', native: 'हिन्दी', desc: 'स्पष्ट और मधुर हिंदी में व्याख्या', flag: '🇮🇳' }
+                ].map((lang) => {
+                  const isSelected = selectedLanguage === lang.id;
+                  return (
+                    <div
+                      key={lang.id}
+                      onClick={() => {
+                        setSelectedLanguage(lang.id);
+                        const { femaleVoice, maleVoice } = findVoicesForLanguage(lang.id, allBrowserVoices);
+                        if (femaleVoice) setSelectedFemaleVoiceURI(femaleVoice.voiceURI || femaleVoice.name);
+                        if (maleVoice) setSelectedMaleVoiceURI(maleVoice.voiceURI || maleVoice.name);
+                      }}
+                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-1 ${isSelected ? 'bg-purple-600/25 border-purple-400 ring-2 ring-purple-400 shadow-lg shadow-purple-500/20' : 'bg-black/40 border-white/10 hover:border-white/20'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base">{lang.flag}</span>
+                        {isSelected && <span className="px-2 py-0.5 rounded-full bg-purple-500 text-white text-[9px] font-black">ACTIVE</span>}
+                      </div>
+                      <h4 className="text-xs font-black text-white font-sora">{lang.native}</h4>
+                      <p className="text-[10px] text-gray-400 leading-tight">{lang.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Custom Voice Pickers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-white/10">
+              
+              {/* Professor Voice (Male) */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>👨‍🏫</span> Professor Voice (Male):
+                  </span>
+                  <button
+                    onClick={() => handleTestVoice('male', selectedLanguage)}
+                    className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold border border-purple-400/30 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <Play className="w-3 h-3" /> Test Male
+                  </button>
+                </div>
+                
+                <select
+                  value={selectedMaleVoiceURI}
+                  onChange={(e) => setSelectedMaleVoiceURI(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-[#030712] border border-white/15 text-xs text-white outline-none focus:border-purple-400"
+                >
+                  <option value="">-- Automatic Optimal Voice --</option>
+                  {allBrowserVoices.map((v, i) => (
+                    <option key={v.voiceURI || i} value={v.voiceURI || v.name}>
+                      {v.name} ({v.lang})
+                    </option>
+                  ))}
+                </select>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-gray-400">
+                    <span>Male Pitch / Warmth:</span>
+                    <span className="font-mono text-purple-300">{malePitch.toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.8"
+                    max="1.2"
+                    step="0.02"
+                    value={malePitch}
+                    onChange={(e) => setMalePitch(parseFloat(e.target.value))}
+                    className="w-full accent-purple-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Maya Voice (Sweet Female) */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>👩‍💻</span> Maya Voice (Sweet Female):
+                  </span>
+                  <button
+                    onClick={() => handleTestVoice('female', selectedLanguage)}
+                    className="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 text-[10px] font-bold border border-cyan-400/30 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <Play className="w-3 h-3" /> Test Female
+                  </button>
+                </div>
+
+                <select
+                  value={selectedFemaleVoiceURI}
+                  onChange={(e) => setSelectedFemaleVoiceURI(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-[#030712] border border-white/15 text-xs text-white outline-none focus:border-cyan-400"
+                >
+                  <option value="">-- Automatic Optimal Voice --</option>
+                  {allBrowserVoices.map((v, i) => (
+                    <option key={v.voiceURI || i} value={v.voiceURI || v.name}>
+                      {v.name} ({v.lang})
+                    </option>
+                  ))}
+                </select>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-gray-400">
+                    <span>Female Sweetness Pitch:</span>
+                    <span className="font-mono text-cyan-300">{femalePitch.toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="1.4"
+                    step="0.02"
+                    value={femalePitch}
+                    onChange={(e) => setFemalePitch(parseFloat(e.target.value))}
+                    className="w-full accent-cyan-400 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* 3. Duet Classroom Preview & Save Bar */}
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <button
+                onClick={() => handleTestFullDuet(selectedLanguage)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-amber-600/20 hover:from-purple-600/30 hover:to-amber-600/30 border border-purple-400/40 text-xs font-bold text-white transition-all cursor-pointer flex items-center gap-2"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Play Full {selectedLanguage === 'te' ? 'Telugu' : selectedLanguage === 'hi' ? 'Hindi' : 'English'} Duet Preview</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const { femaleVoice, maleVoice } = findVoicesForLanguage(selectedLanguage, allBrowserVoices);
+                    if (femaleVoice) setSelectedFemaleVoiceURI(femaleVoice.voiceURI || femaleVoice.name);
+                    if (maleVoice) setSelectedMaleVoiceURI(maleVoice.voiceURI || maleVoice.name);
+                    setFemalePitch(1.18);
+                    setMalePitch(0.98);
+                    addToast?.({ type: 'info', message: 'Voices reset to recommended presets' });
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-gray-300 font-bold transition-all cursor-pointer"
+                >
+                  Reset Defaults
+                </button>
+                <button
+                  onClick={() => {
+                    setIsVoiceModalOpen(false);
+                    addToast?.({
+                      type: 'success',
+                      message: `✨ Voice settings saved for ${selectedLanguage === 'te' ? 'Telugu (తెలుగు)' : selectedLanguage === 'hi' ? 'Hindi (हिन्दी)' : 'English (India)'}!`
+                    });
+                  }}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg shadow-purple-500/25 transition-all cursor-pointer"
+                >
+                  Save & Apply Settings
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
