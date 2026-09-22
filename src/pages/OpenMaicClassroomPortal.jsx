@@ -715,6 +715,7 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
   const [activeLesson, setActiveLesson] = useState(OPENMAIC_DEFAULT_LESSONS[0]);
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
   const [currentDialogueIdx, setCurrentDialogueIdx] = useState(0);
+  const [lectureStepIdx, setLectureStepIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [speechRate, setSpeechRate] = useState(1.0);
@@ -740,6 +741,80 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
   const currentDialogue = activeScene.dialogue[currentDialogueIdx] || activeScene.dialogue[0];
   const chatBottomRef = useRef(null);
 
+  // Helper: Synthesize structured visual lecture steps for current slide
+  const getLectureSteps = (scene, lesson) => {
+    if (!scene) return [];
+    const steps = [];
+
+    // Step 0: Slide Overview & Title Introduction
+    steps.push({
+      id: `step-header-${scene.id || scene.slideNumber || 1}`,
+      target: 'header',
+      type: 'header',
+      label: 'Overview',
+      speaker: 'professor',
+      title: scene.title || 'Slide Overview',
+      text: `Welcome to ${scene.title || 'this slide'}. ${scene.slideSubtitle || 'Let us master the core architecture and fundamental principles.'}`
+    });
+
+    // Step 1..K: Each Key Takeaway Point
+    if (scene.takeaways && scene.takeaways.length > 0) {
+      scene.takeaways.forEach((point, pIdx) => {
+        const speakerId = pIdx % 2 === 0 ? 'professor' : (lesson?.classmates?.[0]?.id || 'alex');
+        steps.push({
+          id: `step-takeaway-${pIdx}-${scene.id || scene.slideNumber || 1}`,
+          target: `takeaway-${pIdx}`,
+          type: 'takeaway',
+          pointIndex: pIdx,
+          label: `Point ${pIdx + 1}`,
+          speaker: speakerId,
+          title: `Takeaway Point ${pIdx + 1}`,
+          text: `Point ${pIdx + 1}: ${point}`
+        });
+      });
+    }
+
+    // Step K+1: Visual Architecture Model / Code Snippet
+    if (scene.diagram || scene.codeSnippet) {
+      const isDiag = !!scene.diagram;
+      const speakerId = lesson?.classmates?.[1]?.id || lesson?.classmates?.[0]?.id || 'maya';
+      steps.push({
+        id: `step-visual-${scene.id || scene.slideNumber || 1}`,
+        target: 'visual',
+        type: 'visual',
+        label: isDiag ? 'Diagram' : 'Code',
+        speaker: speakerId,
+        title: isDiag ? 'Visual Architecture Model' : 'Source Code Snippet',
+        text: isDiag 
+          ? `Now observe the visual architectural flow model on the right side of the whiteboard.`
+          : `Take a look at the live code snippet on the right demonstrating this implementation.`
+      });
+    }
+
+    // Step K+2...: Socratic Dialogue Discussion
+    if (scene.dialogue && scene.dialogue.length > 0) {
+      scene.dialogue.forEach((d, dIdx) => {
+        steps.push({
+          id: `step-dialogue-${dIdx}-${scene.id || scene.slideNumber || 1}`,
+          target: 'dialogue',
+          type: 'dialogue',
+          dialogueIndex: dIdx,
+          label: `Q&A ${dIdx + 1}`,
+          speaker: d.speaker,
+          title: d.speaker === 'professor' 
+            ? (lesson?.professor?.name || 'Prof. Christopher Lumina') 
+            : (lesson?.classmates?.find(c => c.id === d.speaker)?.name || d.speaker),
+          text: d.text
+        });
+      });
+    }
+
+    return steps;
+  };
+
+  const currentLectureSteps = getLectureSteps(activeScene, activeLesson);
+  const currentLectureStep = currentLectureSteps[lectureStepIdx] || currentLectureSteps[0];
+
   // Initialize chat messages with the first dialogue on lesson / scene switch
   useEffect(() => {
     if (activeScene && activeScene.dialogue) {
@@ -757,7 +832,7 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }));
       setChatMessages(initialMsgs);
-      setActiveSpeaker(currentDialogue?.speaker || 'professor');
+      setActiveSpeaker(currentLectureStep?.speaker || currentDialogue?.speaker || 'professor');
       setCustomTerminalLogs([]);
     }
   }, [currentSceneIdx, activeLesson]);
@@ -765,7 +840,7 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
   // Scroll chat to bottom
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, currentDialogueIdx, isAiThinking]);
+  }, [chatMessages, currentDialogueIdx, lectureStepIdx, isAiThinking]);
 
   // Text-To-Speech Synthesis with tailored voice profiles per agent
   const speakText = (text, speaker) => {
@@ -787,46 +862,96 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
     }
   };
 
-  // Step Dialogue forward in auto-play
+  const executeLectureStep = (stepIdx, sceneIdx = currentSceneIdx) => {
+    const scene = activeLesson.scenes[sceneIdx] || activeLesson.scenes[0];
+    const steps = getLectureSteps(scene, activeLesson);
+    const step = steps[stepIdx] || steps[0];
+    if (!step) return;
+
+    setActiveSpeaker(step.speaker);
+    speakText(step.text, step.speaker);
+
+    const senderName = step.speaker === 'professor'
+      ? activeLesson.professor.name
+      : (activeLesson.classmates.find(c => c.id === step.speaker)?.name || step.speaker);
+    const avatar = step.speaker === 'professor'
+      ? activeLesson.professor.avatar
+      : (activeLesson.classmates.find(c => c.id === step.speaker)?.avatar || '🧑‍💻');
+
+    setChatMessages(prev => {
+      if (prev.some(m => m.text === step.text)) return prev;
+      return [
+        ...prev,
+        {
+          id: 'step-' + sceneIdx + '-' + stepIdx + '-' + Date.now(),
+          sender: senderName,
+          avatar: avatar,
+          role: step.speaker === 'professor' ? 'Professor' : 'AI Classmate',
+          color: step.speaker === 'professor' ? 'text-purple-400' : 'text-cyan-400',
+          text: step.text,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ];
+    });
+
+    if (step.type === 'dialogue' && typeof step.dialogueIndex === 'number') {
+      setCurrentDialogueIdx(step.dialogueIndex);
+    }
+  };
+
+  // Continuous Point-by-Point & Multi-Slide Auto-Lecture Loop
   useEffect(() => {
     let timer;
-    if (isPlaying && currentDialogueIdx < activeScene.dialogue.length - 1) {
+    if (isPlaying && currentLectureSteps.length > 0) {
+      const activeStep = currentLectureSteps[lectureStepIdx] || currentLectureSteps[0];
+      const wordCount = (activeStep?.text || '').split(/\s+/).length;
+      const durationMs = Math.max(3800, Math.round((wordCount / (2.4 * speechRate)) * 1000) + 1200);
+
       timer = setTimeout(() => {
-        const nextIdx = currentDialogueIdx + 1;
-        setCurrentDialogueIdx(nextIdx);
-        const nextDial = activeScene.dialogue[nextIdx];
-        if (nextDial) {
-          setActiveSpeaker(nextDial.speaker);
-          speakText(nextDial.text, nextDial.speaker);
-          setChatMessages(prev => [
-            ...prev,
-            {
-              id: 'dial-' + currentSceneIdx + '-' + nextIdx + '-' + Date.now(),
-              sender: nextDial.speaker === 'professor' 
-                ? activeLesson.professor.name 
-                : (activeLesson.classmates.find(c => c.id === nextDial.speaker)?.name || nextDial.speaker),
-              avatar: nextDial.speaker === 'professor' 
-                ? activeLesson.professor.avatar 
-                : (activeLesson.classmates.find(c => c.id === nextDial.speaker)?.avatar || '🧑‍💻'),
-              role: nextDial.speaker === 'professor' ? 'Professor' : 'AI Classmate',
-              color: nextDial.speaker === 'professor' ? 'text-purple-400' : 'text-cyan-400',
-              text: nextDial.text,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          ]);
+        if (lectureStepIdx < currentLectureSteps.length - 1) {
+          const nextIdx = lectureStepIdx + 1;
+          setLectureStepIdx(nextIdx);
+          executeLectureStep(nextIdx, currentSceneIdx);
+        } else {
+          // Slide Complete! Advance to Next Slide in Deck if Available
+          if (currentSceneIdx < activeLesson.scenes.length - 1) {
+            const nextSceneIdx = currentSceneIdx + 1;
+            setCurrentSceneIdx(nextSceneIdx);
+            setLectureStepIdx(0);
+            setCurrentDialogueIdx(0);
+            setSelectedQuizAnswer(null);
+            setQuizSubmitted(false);
+            setCustomTerminalLogs([]);
+            if (user?.id) awardXP(user.id, 'CLASSROOM_SLIDE_COMPLETE', 40).catch(() => {});
+            addToast?.({
+              type: 'info',
+              message: `⚡ Slide ${currentSceneIdx + 1} Complete! Advancing to Slide ${nextSceneIdx + 1}...`
+            });
+            executeLectureStep(0, nextSceneIdx);
+          } else {
+            // Masterclass Deck Complete!
+            setIsPlaying(false);
+            setLectureStepIdx(0);
+            if (user?.id) awardXP(user.id, 'MASTERCLASS_COMPLETE', 100).catch(() => {});
+            addToast?.({
+              type: 'success',
+              message: '🏆 Masterclass Complete! You have visually mastered all slides in this deck (+100 XP)!'
+            });
+          }
         }
-      }, 7000 / speechRate);
-    } else if (isPlaying && currentDialogueIdx >= activeScene.dialogue.length - 1) {
-      setIsPlaying(false);
+      }, durationMs);
     }
     return () => clearTimeout(timer);
-  }, [isPlaying, currentDialogueIdx, activeScene, speechRate]);
+  }, [isPlaying, lectureStepIdx, currentSceneIdx, activeLesson, speechRate, currentLectureSteps]);
 
   const handlePlayPause = () => {
     if (!isPlaying) {
       setIsPlaying(true);
-      setActiveSpeaker(currentDialogue.speaker);
-      speakText(currentDialogue.text, currentDialogue.speaker);
+      executeLectureStep(lectureStepIdx, currentSceneIdx);
+      addToast?.({
+        type: 'info',
+        message: `▶ Auto Lecture started! Visual laser tracking Slide ${currentSceneIdx + 1}, Point ${lectureStepIdx + 1}.`
+      });
     } else {
       setIsPlaying(false);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -836,52 +961,50 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
   };
 
   const handleNextDialogue = () => {
-    if (currentDialogueIdx < activeScene.dialogue.length - 1) {
-      const nextIdx = currentDialogueIdx + 1;
-      setCurrentDialogueIdx(nextIdx);
-      const nextDial = activeScene.dialogue[nextIdx];
-      if (nextDial) {
-        setActiveSpeaker(nextDial.speaker);
-        speakText(nextDial.text, nextDial.speaker);
-        setChatMessages(prev => [
-          ...prev,
-          {
-            id: 'dial-' + currentSceneIdx + '-' + nextIdx + '-' + Date.now(),
-            sender: nextDial.speaker === 'professor' 
-              ? activeLesson.professor.name 
-              : (activeLesson.classmates.find(c => c.id === nextDial.speaker)?.name || nextDial.speaker),
-            avatar: nextDial.speaker === 'professor' 
-              ? activeLesson.professor.avatar 
-              : (activeLesson.classmates.find(c => c.id === nextDial.speaker)?.avatar || '🧑‍💻'),
-            role: nextDial.speaker === 'professor' ? 'Professor' : 'AI Classmate',
-            color: nextDial.speaker === 'professor' ? 'text-purple-400' : 'text-cyan-400',
-            text: nextDial.text,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
+    if (lectureStepIdx < currentLectureSteps.length - 1) {
+      const nextIdx = lectureStepIdx + 1;
+      setLectureStepIdx(nextIdx);
+      executeLectureStep(nextIdx, currentSceneIdx);
+    } else if (currentSceneIdx < activeLesson.scenes.length - 1) {
+      const nextScene = currentSceneIdx + 1;
+      setCurrentSceneIdx(nextScene);
+      setLectureStepIdx(0);
+      setCurrentDialogueIdx(0);
+      executeLectureStep(0, nextScene);
     }
   };
 
   const handlePrevDialogue = () => {
-    if (currentDialogueIdx > 0) {
-      const prevIdx = currentDialogueIdx - 1;
-      setCurrentDialogueIdx(prevIdx);
-      const prevDial = activeScene.dialogue[prevIdx];
-      if (prevDial) {
-        setActiveSpeaker(prevDial.speaker);
-        speakText(prevDial.text, prevDial.speaker);
-      }
+    if (lectureStepIdx > 0) {
+      const prevIdx = lectureStepIdx - 1;
+      setLectureStepIdx(prevIdx);
+      executeLectureStep(prevIdx, currentSceneIdx);
+    } else if (currentSceneIdx > 0) {
+      const prevScene = currentSceneIdx - 1;
+      const prevSteps = getLectureSteps(activeLesson.scenes[prevScene], activeLesson);
+      const lastStepIdx = Math.max(0, prevSteps.length - 1);
+      setCurrentSceneIdx(prevScene);
+      setLectureStepIdx(lastStepIdx);
+      executeLectureStep(lastStepIdx, prevScene);
     }
+  };
+
+  const handleJumpToStep = (targetStepIdx) => {
+    setLectureStepIdx(targetStepIdx);
+    executeLectureStep(targetStepIdx, currentSceneIdx);
   };
 
   const handleSelectSlide = (idx) => {
     if (idx >= 0 && idx < activeLesson.scenes.length) {
       setCurrentSceneIdx(idx);
+      setLectureStepIdx(0);
       setCurrentDialogueIdx(0);
       setSelectedQuizAnswer(null);
       setQuizSubmitted(false);
       setCustomTerminalLogs([]);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     }
   };
 
@@ -2349,8 +2472,8 @@ ${classroomNotes || 'No custom notes recorded.'}
                 {activeViewMode === 'slides' && (
                   <div className="rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl overflow-hidden space-y-0 relative">
                     
-                    {/* Vivid Colorful Header Banner */}
-                    <div className="p-5 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white relative overflow-hidden">
+                    {/* Vivid Colorful Header Banner with Laser Pointer */}
+                    <div className={`p-5 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white relative overflow-hidden transition-all duration-500 ${currentLectureStep?.target === 'header' ? 'ring-4 ring-amber-300 shadow-2xl' : ''}`}>
                       <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                       <div className="flex flex-wrap items-center justify-between gap-2 relative z-10">
                         <div className="space-y-1">
@@ -2371,6 +2494,45 @@ ${classroomNotes || 'No custom notes recorded.'}
                             </p>
                           )}
                         </div>
+
+                        {currentLectureStep?.target === 'header' && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-black font-extrabold text-[10px] shadow-lg animate-bounce shrink-0">
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></span>
+                            🔴 LASER POINTER: SLIDE OVERVIEW
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Interactive Lecture Step Navigation Pills */}
+                    <div className="bg-slate-100/90 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-indigo-600" /> Points:
+                        </span>
+                        {currentLectureSteps.map((st, sIndex) => {
+                          const isCurrent = lectureStepIdx === sIndex;
+                          return (
+                            <button
+                              key={st.id || sIndex}
+                              onClick={() => handleJumpToStep(sIndex)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0 ${isCurrent ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-300 scale-105' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'}`}
+                              title={`Jump to ${st.title}`}
+                            >
+                              {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>}
+                              <span>{st.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 shrink-0">
+                        <span className="font-bold text-indigo-700">Point {lectureStepIdx + 1}</span> of {currentLectureSteps.length}
+                        {isPlaying && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold border border-emerald-300 flex items-center gap-1 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Explaining
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2389,6 +2551,7 @@ ${classroomNotes || 'No custom notes recorded.'}
                             "Mathematical invariant guarantees safety and linearizability.",
                             "Low-latency execution with zero-copy buffer pools."
                           ]).map((t, tIdx) => {
+                            const isPointActive = currentLectureStep?.target === `takeaway-${tIdx}`;
                             const cardStyles = [
                               { border: 'border-l-violet-600 border-violet-100 bg-gradient-to-r from-violet-50/90 to-indigo-50/40', badge: 'bg-violet-600 text-white', text: 'text-slate-800' },
                               { border: 'border-l-cyan-600 border-cyan-100 bg-gradient-to-r from-cyan-50/90 to-sky-50/40', badge: 'bg-cyan-600 text-white', text: 'text-slate-800' },
@@ -2400,14 +2563,36 @@ ${classroomNotes || 'No custom notes recorded.'}
                             return (
                               <div 
                                 key={tIdx}
-                                className={`p-3.5 rounded-xl border-l-4 border ${currentStyle.border} flex items-start gap-3 shadow-sm hover:shadow-md transition-all`}
+                                onClick={() => {
+                                  const targetIdx = currentLectureSteps.findIndex(s => s.target === `takeaway-${tIdx}`);
+                                  if (targetIdx !== -1) handleJumpToStep(targetIdx);
+                                }}
+                                className={`p-3.5 rounded-xl border-l-4 border transition-all duration-300 cursor-pointer ${isPointActive ? 'ring-4 ring-indigo-500 shadow-2xl scale-[1.025] bg-gradient-to-r from-violet-100 via-indigo-50 to-white border-l-indigo-600' : `${currentStyle.border} shadow-sm hover:shadow-md hover:scale-[1.01]`}`}
                               >
-                                <div className={`w-6 h-6 rounded-lg ${currentStyle.badge} text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
-                                  {tIdx + 1}
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-6 h-6 rounded-lg ${currentStyle.badge} text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
+                                    {tIdx + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className={`text-xs ${currentStyle.text} leading-relaxed font-semibold`}>
+                                      {t}
+                                    </p>
+                                  </div>
+
+                                  {isPointActive && (
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                      <span className="px-2 py-0.5 rounded-full bg-red-600 text-white font-mono font-black text-[9px] flex items-center gap-1 shadow animate-pulse">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-ping"></span>
+                                        🔴 POINT {tIdx + 1}
+                                      </span>
+                                      <div className="flex items-end gap-0.5 h-3 shrink-0">
+                                        <span className="w-1 bg-indigo-600 animate-[bounce_0.8s_infinite] h-2.5 rounded-full"></span>
+                                        <span className="w-1 bg-indigo-600 animate-[bounce_0.6s_infinite_0.2s] h-3 rounded-full"></span>
+                                        <span className="w-1 bg-indigo-600 animate-[bounce_0.7s_infinite_0.4s] h-1.5 rounded-full"></span>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                                <p className={`text-xs ${currentStyle.text} leading-relaxed font-semibold`}>
-                                  {t}
-                                </p>
                               </div>
                             );
                           })}
@@ -2427,29 +2612,48 @@ ${classroomNotes || 'No custom notes recorded.'}
                             </button>
                           </div>
 
-                          {/* Mac-style Window Frame */}
-                          <div className="rounded-xl overflow-hidden border border-slate-700/80 shadow-lg bg-[#0f172a]">
-                            <div className="bg-[#1e293b] px-3 py-1.5 flex items-center justify-between border-b border-slate-700">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
-                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                          {/* Mac-style Window Frame with Active Visual Laser Halo */}
+                          {(() => {
+                            const isVisualActive = currentLectureStep?.target === 'visual';
+                            return (
+                              <div 
+                                onClick={() => {
+                                  const targetIdx = currentLectureSteps.findIndex(s => s.target === 'visual');
+                                  if (targetIdx !== -1) handleJumpToStep(targetIdx);
+                                }}
+                                className={`rounded-xl overflow-hidden border shadow-lg bg-[#0f172a] transition-all duration-300 cursor-pointer ${isVisualActive ? 'ring-4 ring-cyan-400 border-cyan-400 shadow-2xl scale-[1.02]' : 'border-slate-700/80 hover:border-slate-500'}`}
+                              >
+                                <div className="bg-[#1e293b] px-3 py-1.5 flex items-center justify-between border-b border-slate-700">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isVisualActive && (
+                                      <span className="flex items-center gap-1 px-2 py-0.2 rounded bg-cyan-400 text-black font-extrabold text-[9px] shadow animate-pulse">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
+                                        🔴 VISUAL WALKTHROUGH
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] font-mono font-bold text-slate-400">
+                                      {activeScene.diagram ? 'visual-model.txt' : 'source-demo.java'}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {activeScene.diagram ? (
+                                  <div className="p-3.5 text-cyan-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
+                                    <pre>{activeScene.diagram}</pre>
+                                  </div>
+                                ) : (
+                                  <div className="p-3.5 text-amber-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
+                                    <pre>{activeScene.codeSnippet}</pre>
+                                  </div>
+                                )}
                               </div>
-                              <span className="text-[10px] font-mono font-bold text-slate-400">
-                                {activeScene.diagram ? 'visual-model.txt' : 'source-demo.java'}
-                              </span>
-                            </div>
-                            
-                            {activeScene.diagram ? (
-                              <div className="p-3.5 text-cyan-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
-                                <pre>{activeScene.diagram}</pre>
-                              </div>
-                            ) : (
-                              <div className="p-3.5 text-amber-300 font-mono text-[10px] overflow-x-auto max-h-[195px] leading-tight">
-                                <pre>{activeScene.codeSnippet}</pre>
-                              </div>
-                            )}
-                          </div>
+                            );
+                          })()}
                         </div>
                       </div>
 
@@ -2612,18 +2816,18 @@ ${classroomNotes || 'No custom notes recorded.'}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <span className="text-2xl">
-                    {currentDialogue.speaker === 'professor' 
+                    {currentLectureStep?.speaker === 'professor' 
                       ? activeLesson.professor.avatar 
-                      : (activeLesson.classmates.find(c => c.id === currentDialogue.speaker)?.avatar || '🧑‍💻')}
+                      : (activeLesson.classmates.find(c => c.id === currentLectureStep?.speaker)?.avatar || '🧑‍💻')}
                   </span>
                   <div>
                     <span className="text-xs font-bold text-white uppercase tracking-wider block">
-                      {currentDialogue.speaker === 'professor' 
+                      {currentLectureStep?.speaker === 'professor' 
                         ? activeLesson.professor.name 
-                        : (activeLesson.classmates.find(c => c.id === currentDialogue.speaker)?.title || 'Classmate')}
+                        : (activeLesson.classmates.find(c => c.id === currentLectureStep?.speaker)?.title || 'Classmate')}
                     </span>
                     <span className="text-[10px] text-cyan-400 font-mono flex items-center gap-1">
-                      <Activity className="w-3 h-3 text-cyan-400 animate-pulse" /> Speaking Step {currentDialogueIdx + 1}/{activeScene.dialogue.length}
+                      <Activity className="w-3 h-3 text-cyan-400 animate-pulse" /> Point {lectureStepIdx + 1}/{currentLectureSteps.length}: {currentLectureStep?.title || 'Explaining'}
                     </span>
                   </div>
                 </div>
@@ -2640,7 +2844,7 @@ ${classroomNotes || 'No custom notes recorded.'}
 
               <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 shadow-inner">
                 <p className="text-xs md:text-sm text-gray-100 font-medium leading-relaxed">
-                  "{currentDialogue.text}"
+                  "{currentLectureStep?.text || currentDialogue?.text}"
                 </p>
               </div>
 
@@ -2649,10 +2853,10 @@ ${classroomNotes || 'No custom notes recorded.'}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handlePrevDialogue}
-                    disabled={currentDialogueIdx === 0}
+                    disabled={lectureStepIdx === 0 && currentSceneIdx === 0}
                     className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                   >
-                    ◀ Prev Step
+                    ◀ Prev Point
                   </button>
                   <button
                     onClick={handlePlayPause}
@@ -2663,10 +2867,10 @@ ${classroomNotes || 'No custom notes recorded.'}
                   </button>
                   <button
                     onClick={handleNextDialogue}
-                    disabled={currentDialogueIdx >= activeScene.dialogue.length - 1}
+                    disabled={lectureStepIdx >= currentLectureSteps.length - 1 && currentSceneIdx >= activeLesson.scenes.length - 1}
                     className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                   >
-                    Next Step ▶
+                    Next Point ▶
                   </button>
                 </div>
 
