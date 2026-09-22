@@ -842,24 +842,121 @@ export default function OpenMaicClassroomPortal({ user, setActiveTab }) {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, currentDialogueIdx, lectureStepIdx, isAiThinking]);
 
-  // Text-To-Speech Synthesis with tailored voice profiles per agent
+  const [indianVoices, setIndianVoices] = useState({ female: null, male: null });
+
+  // Helper: Find the sweetest natural Indian Female & Male voices available in the browser
+  const findIndianVoices = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      return { female: null, male: null };
+    }
+    const voices = window.speechSynthesis.getVoices() || [];
+    if (!voices || voices.length === 0) {
+      return { female: null, male: null };
+    }
+
+    // 1. Indian English / Hindi Voices
+    const inVoices = voices.filter(v => 
+      (v.lang && (v.lang.toLowerCase().includes('in') || v.lang.toLowerCase().includes('hi'))) ||
+      (v.name && (v.name.toLowerCase().includes('india') || v.name.toLowerCase().includes('hindi') || v.name.toLowerCase().includes('marathi') || v.name.toLowerCase().includes('bengali') || v.name.toLowerCase().includes('tamil') || v.name.toLowerCase().includes('telugu')))
+    );
+
+    // Female Indian matches: Neerja, Heera, Swara, Kavya, Veena, Aditi, Kalpana, Ananya, Shreya, Priya, Google en-IN Female
+    const femaleIndianKeywords = ['neerja', 'heera', 'swara', 'kavya', 'veena', 'aditi', 'kalpana', 'ananya', 'shreya', 'priya', 'female', 'zira', 'samantha', 'victoria', 'karen', 'serena', 'salli'];
+    let female = inVoices.find(v => femaleIndianKeywords.some(k => v.name.toLowerCase().includes(k)));
+    if (!female && inVoices.length > 0) female = inVoices[0];
+    if (!female) female = voices.find(v => femaleIndianKeywords.some(k => v.name.toLowerCase().includes(k))) || voices[0];
+
+    // Male Indian matches: Prabhat, Madhur, Rishi, Ravi, Hemant, Kiran, Ajay, Arun, Rohan, Google en-IN Male
+    const maleIndianKeywords = ['prabhat', 'madhur', 'rishi', 'ravi', 'hemant', 'kiran', 'ajay', 'arun', 'rohan', 'male', 'david', 'george', 'guy', 'daniel', 'mark'];
+    let male = inVoices.find(v => maleIndianKeywords.some(k => v.name.toLowerCase().includes(k)) && v !== female);
+    if (!male && inVoices.length > 1) male = inVoices.find(v => v !== female) || inVoices[0];
+    if (!male) male = voices.find(v => maleIndianKeywords.some(k => v.name.toLowerCase().includes(k)) && v !== female) || voices[0];
+
+    return { female, male };
+  };
+
+  // Load and cache sweet Indian voices on mount
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const loadVoices = () => {
+      const v = findIndianVoices();
+      setIndianVoices(v);
+    };
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  // Text-To-Speech Synthesis with Sweet Indian Male (Professor/Alex/Dev) & Female (Maya/Sophia) Voices
   const speakText = (text, speaker) => {
     if (!isAudioEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (speaker === 'professor') {
-        utterance.pitch = activeLesson.professor.voicePitch || 0.95;
-        utterance.rate = speechRate;
+
+      // Clean syntax, markdown & latex markers before vocalizing
+      const cleanSpeech = text
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\$([^$]+)\$/g, '$1')
+        .replace(/\*\*/g, '')
+        .replace(/###/g, '')
+        .replace(/##/g, '')
+        .replace(/#/g, '')
+        .replace(/┌[\s\S]*?┘/g, 'Visual architectural flow model.');
+
+      const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+
+      // Distinguish female characters (Maya, Sophia) vs male characters (Professor, Alex, Dev)
+      const isFemale = speaker === 'maya' || speaker === 'sophia';
+
+      if (isFemale) {
+        if (indianVoices.female) {
+          utterance.voice = indianVoices.female;
+        }
+        // Sweet, melodic, crystal-clear Indian female pitch & pacing
+        utterance.pitch = 1.18;
+        utterance.rate = speechRate * 0.98;
       } else {
-        const classmate = activeLesson.classmates.find(c => c.id === speaker);
-        utterance.pitch = classmate?.pitch || 1.2;
-        utterance.rate = speechRate * 1.05;
+        if (indianVoices.male) {
+          utterance.voice = indianVoices.male;
+        }
+        // Warm, respectful, scholarly Indian male pitch & pacing
+        utterance.pitch = speaker === 'professor' ? 0.98 : 1.05;
+        utterance.rate = speechRate * 0.96;
       }
+
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn("TTS Notice:", e);
     }
+  };
+
+  // Test Indian Voices Demo
+  const handleTestIndianVoices = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    // 1. Male Professor Voice
+    const profUtterance = new SpeechSynthesisUtterance("Namaste and welcome scholars! I am your Professor, explaining each concept with absolute technical precision.");
+    if (indianVoices.male) profUtterance.voice = indianVoices.male;
+    profUtterance.pitch = 0.98;
+    profUtterance.rate = 0.96;
+
+    // 2. Female Student Voice (Maya)
+    const mayaUtterance = new SpeechSynthesisUtterance("And I am Maya! I will be asking insightful questions and exploring real-world optimizations with you!");
+    if (indianVoices.female) mayaUtterance.voice = indianVoices.female;
+    mayaUtterance.pitch = 1.18;
+    mayaUtterance.rate = 0.98;
+
+    window.speechSynthesis.speak(profUtterance);
+    profUtterance.onend = () => {
+      window.speechSynthesis.speak(mayaUtterance);
+    };
+
+    addToast?.({
+      type: 'info',
+      message: '🇮🇳 Playing Sweet Indian Male (Professor) & Female (Maya) Voice Preview!'
+    });
   };
 
   const executeLectureStep = (stepIdx, sceneIdx = currentSceneIdx) => {
@@ -2274,6 +2371,15 @@ ${classroomNotes || 'No custom notes recorded.'}
                 <span>Voice OFF</span>
               </>
             )}
+          </button>
+
+          <button
+            onClick={handleTestIndianVoices}
+            className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-pink-500/20 hover:from-amber-500/30 hover:to-pink-500/30 text-amber-300 text-xs font-bold border border-amber-400/40 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-amber-500/10"
+            title="Preview Sweet Indian Male (Professor) & Female (Maya) Voices"
+          >
+            <span>🇮🇳</span>
+            <span>Test Indian Voice</span>
           </button>
           
           <button
