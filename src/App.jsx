@@ -68,8 +68,8 @@ function App() {
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
-      if (hash && ['openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal'].includes(hash)) {
-        if (hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'openmaic';
+      if (hash && ['boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal'].includes(hash)) {
+        if (hash === 'boloclass' || hash === 'bolo-class' || hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'openmaic';
         if (hash === 'courses-portal' || hash === 'all-courses') return 'courses';
         if (hash === 'academic-tracker' || hash === 'marks' || hash === 'academics') return 'my-academics';
         return hash;
@@ -438,7 +438,7 @@ function App() {
             <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-gray-300 leading-relaxed text-left">
               <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wide block mb-1">What's New in v{updateInfo.latestVersion}:</span>
               • Real-time Supabase integration across all portals.<br/>
-              • OpenMAIC multi-agent classroom v1.0.0 engine.<br/>
+              • BoloClass multi-agent AI classroom v1.0.0 engine.<br/>
               • Live test scorecards and founder analytics.
             </div>
 
@@ -924,8 +924,8 @@ function App() {
       );
     }
 
-    // Direct standalone access to OpenMAIC AI Classroom
-    if (lowerHash.includes('openmaic') || lowerHash.includes('ai-classroom')) {
+    // Direct standalone access to BoloClass AI Classroom
+    if (lowerHash.includes('boloclass') || lowerHash.includes('openmaic') || lowerHash.includes('ai-classroom')) {
       return (
         <ThemeProvider>
           <ToastProvider>
@@ -935,9 +935,9 @@ function App() {
                 <div className="flex items-center gap-3">
                   <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
                   <div>
-                    <span className="text-sm font-black text-white font-sora">Lumixora OpenMAIC</span>
+                    <span className="text-sm font-black text-white font-sora">Lumixora BoloClass</span>
                     <span className="ml-2 px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-black border border-purple-500/30 uppercase">
-                      Interactive Classroom
+                      AI Classroom
                     </span>
                   </div>
                 </div>

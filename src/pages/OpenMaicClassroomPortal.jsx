@@ -80,7 +80,7 @@ const OPENMAIC_DEFAULT_LESSONS = [
         ],
         whiteboardContent: `# JVM Memory: Stack vs Heap Allocation\n\n### Primitives vs References:\n* **Stack Memory:** Fast, thread-private, stores primitive values directly and object references (pointers).\n* **Heap Memory:** Shared across threads, stores all actual Objects and Array instances.\n\n### String Constant Pool (SCP):\n$$\\text{String } s1 = \\text{\"Java\"}; \\quad \\text{String } s2 = \\text{\"Java\"}; \\implies s1 == s2 \\text{ (True)}$$\n$$\\text{String } s3 = \\text{new String(\"Java\")}; \\implies s1 == s3 \\text{ (False, distinct Heap obj)}$$`,
         diagram: `┌───────────────────────────┬───────────────────────────────────┐\n│     STACK (Thread Local)  │          HEAP (Shared Space)      │\n├───────────────────────────┼───────────────────────────────────┤\n│ [ int x = 42 ]            │                                   │\n│ [ String ref1 ] --------->│ [ String Pool: "Hello" ]          │\n│ [ User userRef ] -------->│ [ User Object { id: 101, name } ] │\n│ [ int[] arrRef ] -------->│ [ Array: [ 10, 20, 30, 40 ] ]     │\n└───────────────────────────┴───────────────────────────────────┘`,
-        codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "OpenMAIC";\n        String s2 = new String("OpenMAIC");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
+        codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "BoloClass";\n        String s2 = new String("BoloClass");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
         terminalOutput: `[EXECUTION] ReferenceTypesDemo.main()\n>>> a = 10, b = 20\n>>> arr1[0] = 99 (shared heap object)\n>>> s1 == s2 : false | s1.equals(s2) : true`,
         dialogue: [
           { speaker: 'maya', text: 'So when we pass an object into a Java method, are we passing by reference or value?' },
@@ -253,7 +253,7 @@ type RequestVoteReply struct {
         dialogue: [
           {
             speaker: 'professor',
-            text: "Welcome scholars to our OpenMAIC interactive masterclass! Today we are dissecting the Raft Distributed Consensus Protocol. When servers across the globe must agree on an immutable ledger, how do we guarantee consistency without a single point of failure?"
+            text: "Welcome scholars to our BoloClass interactive masterclass! Today we are dissecting the Raft Distributed Consensus Protocol. When servers across the globe must agree on an immutable ledger, how do we guarantee consistency without a single point of failure?"
           },
           {
             speaker: 'alex',
@@ -1452,7 +1452,7 @@ Generate a realistic 2-turn multi-agent response as JSON:
             ],
             whiteboardContent: `# JVM Memory: Stack vs Heap Allocation\n\n### Primitives vs References:\n* **Stack Memory:** Fast, thread-private, stores primitive values directly and object references (pointers).\n* **Heap Memory:** Shared across threads, stores all actual Objects and Array instances.\n\n### String Constant Pool (SCP):\n$$\\text{String } s1 = \\text{\"Java\"}; \\quad \\text{String } s2 = \\text{\"Java\"}; \\implies s1 == s2 \\text{ (True)}$$\n$$\\text{String } s3 = \\text{new String(\"Java\")}; \\implies s1 == s3 \\text{ (False, distinct Heap obj)}$$`,
             diagram: `┌───────────────────────────┬───────────────────────────────────┐\n│     STACK (Thread Local)  │          HEAP (Shared Space)      │\n├───────────────────────────┼───────────────────────────────────┤\n│ [ int x = 42 ]            │                                   │\n│ [ String ref1 ] --------->│ [ String Pool: "Hello" ]          │\n│ [ User userRef ] -------->│ [ User Object { id: 101, name } ] │\n│ [ int[] arrRef ] -------->│ [ Array: [ 10, 20, 30, 40 ] ]     │\n└───────────────────────────┴───────────────────────────────────┘`,
-            codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "OpenMAIC";\n        String s2 = new String("OpenMAIC");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
+            codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "BoloClass";\n        String s2 = new String("BoloClass");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
             terminalOutput: `[EXECUTION] ReferenceTypesDemo.main()\n>>> a = 10, b = 20\n>>> arr1[0] = 99 (shared heap object)\n>>> s1 == s2 : false | s1.equals(s2) : true`,
             dialogue: [
               { speaker: 'maya', text: 'So when we pass an object into a Java method, are we passing by reference or value?' },
@@ -1697,7 +1697,7 @@ Generate a realistic 2-turn multi-agent response as JSON:
     const topic = customTopicInput.trim();
 
     try {
-      const prompt = `You are OpenMAIC (Tsinghua Multi-Agent Interactive Classroom Slide Deck Generator).
+      const prompt = `You are BoloClass (Multi-Agent Interactive AI Classroom Slide Deck Generator).
 Your task is to generate a comprehensive, highly accurate, and rigorous 4-SLIDE presentation curriculum on the computer science topic: "${topic}".
 
 CRITICAL REQUIREMENTS:
@@ -2157,7 +2157,7 @@ Return ONLY valid JSON.`;
     const lessonTitle = activeLesson.title || 'Masterclass';
 
     try {
-      const prompt = `You are OpenMAIC (Tsinghua AI Classroom).
+      const prompt = `You are BoloClass (Interactive AI Classroom).
 The current masterclass topic is: "${lessonTitle}".
 Currently there are ${activeLesson.scenes.length} slides.
 
@@ -2364,15 +2364,10 @@ ${activeScene.whiteboardContent}`;
         : `- Key concept: ${activeScene.title}\n- Deep mastery and optimal memory/performance design.\n- Verified boundary conditions and production readiness.`;
       setClassroomNotes(prev => (prev ? prev + '\n\n---\n\n' : '') + `### Slide ${activeScene.slideNumber || currentSceneIdx + 1} Notes:\n` + bulletPoints);
     }
-    setIsAutoSummarizing(false);
-  };
-
-  // Export Notes & Slides to Markdown (.md)
-  const handleExportNotes = () => {
-    const notesContent = `# ${activeLesson.title} - OpenMAIC Slide Deck Notes
+const notesContent = `# ${activeLesson.title} - BoloClass Slide Deck Notes
 **Date:** ${new Date().toLocaleDateString()}
 **Professor:** ${activeLesson.professor.name} (${activeLesson.professor.role})
-**Curriculum Protocol:** Tsinghua OpenMAIC Protocol
+**Curriculum Protocol:** BoloClass AI Classroom Protocol
 
 ---
 
@@ -2383,33 +2378,27 @@ ${activeLesson.scenes.map((sc, i) => `
 ### Key Takeaways:
 ${sc.takeaways ? sc.takeaways.map(t => `- ${t}`).join('\n') : ''}
 
-### Whiteboard Notes:
-${sc.whiteboardContent}
+### Whiteboard / Lecture Notes:
+${sc.whiteboardContent || 'N/A'}
 
-### Code Snippet:
+### Visual Model / Diagram:
 \`\`\`
-${sc.codeSnippet || '// No code'}
+${sc.visualAscii || 'N/A'}
 \`\`\`
-`).join('\n---\n\n')}
 
----
-
-## Student Masterclass Notes
-${classroomNotes || 'No custom notes recorded.'}
+### Reference Implementation Code:
+\`\`\`
+${sc.codeSnippet || 'N/A'}
+\`\`\`
+`).join('\n---\n')}
 `;
-
-    const blob = new Blob([notesContent], { type: 'text/markdown;charset=utf-8;' });
+    const blob = new Blob([notesContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${activeLesson.id}-slides-notes.md`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    addToast?.({
-      type: 'success',
-      message: '📥 Complete Slide Deck & Notes exported (.md)'
-    });
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeLesson.title.replace(/\s+/g, '_')}_BoloClass_Notes.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -2426,10 +2415,10 @@ ${classroomNotes || 'No custom notes recorded.'}
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl md:text-2xl font-black tracking-tight text-white font-sora">
-                OpenMAIC Multi-Agent Interactive Classroom
+                BoloClass Multi-Agent AI Classroom
               </h1>
               <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-400/40 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-cyan-400 animate-spin" /> Tsinghua OpenMAIC Protocol
+                <Sparkles className="w-3 h-3 text-cyan-400 animate-spin" /> BoloClass AI Protocol
               </span>
             </div>
             <p className="text-xs text-gray-300 mt-1 max-w-3xl leading-relaxed">
@@ -3002,13 +2991,13 @@ ${classroomNotes || 'No custom notes recorded.'}
                     {customTerminalLogs.map((log) => (
                       <div key={log.id} className="space-y-1 border-t border-white/5 pt-2">
                         <div className="text-cyan-400">
-                          lumixora-openmaic@cluster:~$ <span className="text-white font-bold">{log.cmd}</span>
+                          lumixora-boloclass@cluster:~$ <span className="text-white font-bold">{log.cmd}</span>
                         </div>
                         <pre className="text-emerald-300 leading-relaxed whitespace-pre-wrap">{log.output}</pre>
                       </div>
                     ))}
                     <form onSubmit={handleTerminalSubmit} className="flex items-center gap-2 pt-2 border-t border-emerald-500/20">
-                      <span className="text-emerald-400 font-bold">lumixora-openmaic@cluster:~$</span>
+                      <span className="text-emerald-400 font-bold">lumixora-boloclass@cluster:~$</span>
                       <input
                         type="text"
                         value={terminalInput}
@@ -3327,7 +3316,7 @@ ${classroomNotes || 'No custom notes recorded.'}
                 </div>
                 <div>
                   <h3 className="text-base font-black text-white font-sora">
-                    OpenMAIC Voice & Language Studio
+                    BoloClass Voice & Language Studio
                   </h3>
                   <p className="text-[11px] text-gray-400">
                     Select your lecture language, pick custom voices, and adjust pitch sweetness.
