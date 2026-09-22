@@ -2363,15 +2363,21 @@ ${activeScene.whiteboardContent}`;
         ? activeScene.takeaways.map(t => `- ${t}`).join('\n')
         : `- Key concept: ${activeScene.title}\n- Deep mastery and optimal memory/performance design.\n- Verified boundary conditions and production readiness.`;
       setClassroomNotes(prev => (prev ? prev + '\n\n---\n\n' : '') + `### Slide ${activeScene.slideNumber || currentSceneIdx + 1} Notes:\n` + bulletPoints);
+    } finally {
+      setIsAutoSummarizing(false);
     }
-const notesContent = `# ${activeLesson.title} - BoloClass Slide Deck Notes
+  };
+
+  // Export Notes & Slides to Markdown (.md)
+  const handleExportNotes = () => {
+    const notesContent = `# ${activeLesson.title} - BoloClass Slide Deck Notes
 **Date:** ${new Date().toLocaleDateString()}
-**Professor:** ${activeLesson.professor.name} (${activeLesson.professor.role})
+**Professor:** ${activeLesson.professor?.name || 'Professor'} (${activeLesson.professor?.role || 'Lead Instructor'})
 **Curriculum Protocol:** BoloClass AI Classroom Protocol
 
 ---
 
-${activeLesson.scenes.map((sc, i) => `
+${activeLesson.scenes?.map((sc, i) => `
 ## Slide ${sc.slideNumber || i + 1}: ${sc.title}
 *${sc.slideSubtitle || ''}*
 
@@ -2383,22 +2389,26 @@ ${sc.whiteboardContent || 'N/A'}
 
 ### Visual Model / Diagram:
 \`\`\`
-${sc.visualAscii || 'N/A'}
+${sc.visualAscii || sc.diagram || 'N/A'}
 \`\`\`
 
 ### Reference Implementation Code:
 \`\`\`
 ${sc.codeSnippet || 'N/A'}
 \`\`\`
-`).join('\n---\n')}
+`).join('\n---\n') || ''}
 `;
     const blob = new Blob([notesContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${activeLesson.title.replace(/\s+/g, '_')}_BoloClass_Notes.md`;
+    a.download = `${(activeLesson.title || 'BoloClass').replace(/\s+/g, '_')}_Notes.md`;
     a.click();
     URL.revokeObjectURL(url);
+    addToast?.({
+      type: 'success',
+      message: '📥 Complete Slide Deck & Notes exported (.md)'
+    });
   };
 
   return (
