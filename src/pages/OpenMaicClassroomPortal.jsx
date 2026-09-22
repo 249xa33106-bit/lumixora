@@ -890,6 +890,322 @@ Generate a realistic 2-turn multi-agent response as JSON:
     }
   };
 
+  // ─── DOMAIN-AWARE CURRICULUM SYNTHESIZER (FALLBACK & SMART TEMPLATES) ────────
+  const generateTopicSpecificCurriculum = (rawTopic) => {
+    const topic = rawTopic.trim();
+    const tLower = topic.toLowerCase();
+
+    // Check specific domains
+    const isJava = tLower.includes('java');
+    const isDataTypes = tLower.includes('data type') || tLower.includes('datatype') || tLower.includes('primitive') || tLower.includes('type system') || tLower.includes('variable');
+    const isPython = tLower.includes('python');
+    const isCpp = tLower.includes('c++') || tLower.includes('cpp') || tLower.includes('pointer');
+    const isJs = tLower.includes('javascript') || tLower.includes('js') || tLower.includes('typescript') || tLower.includes('react');
+    const isDatabase = tLower.includes('sql') || tLower.includes('database') || tLower.includes('postgres') || tLower.includes('mongo') || tLower.includes('index') || tLower.includes('dbms');
+    const isDSA = tLower.includes('tree') || tLower.includes('graph') || tLower.includes('sort') || tLower.includes('search') || tLower.includes('array') || tLower.includes('stack') || tLower.includes('queue') || tLower.includes('hash') || tLower.includes('dynamic programming') || tLower.includes('binary');
+    const isAI = tLower.includes('ai') || tLower.includes('ml') || tLower.includes('neural') || tLower.includes('machine learning') || tLower.includes('transformer') || tLower.includes('deep learning') || tLower.includes('llm');
+
+    // 1. JAVA DATA TYPES SPECIALIZED MASTERCLASS
+    if (isJava && (isDataTypes || tLower.includes('data') || tLower.includes('type'))) {
+      return {
+        id: 'custom-' + Date.now(),
+        title: `Masterclass: ${topic}`,
+        subject: 'Java Core & Memory Model',
+        difficulty: 'Foundational to Advanced',
+        duration: '25 mins',
+        tags: ['Java', 'Data Types', 'JVM Memory', 'Primitives', 'Type Casting'],
+        professor: {
+          name: 'Prof. Christopher Lumina',
+          role: 'Lead AI Professor of Computer Science',
+          avatar: '👨‍🏫',
+          voicePitch: 0.95,
+          voiceRate: 0.98
+        },
+        classmates: [
+          { id: 'alex', name: 'Alex', title: 'Alex (Curious Skeptic)', avatar: '🧑‍💻', color: 'text-amber-400', role: 'Edge-Case Specialist', pitch: 1.2 },
+          { id: 'maya', name: 'Maya', title: 'Maya (Performance Hacker)', avatar: '👩‍💻', color: 'text-cyan-400', role: 'Memory & Low-Level', pitch: 1.3 }
+        ],
+        scenes: [
+          {
+            id: 'slide-1',
+            slideNumber: 1,
+            title: 'Slide 1: Java Primitive Data Types & Byte Allocation',
+            slideSubtitle: 'The 8 primitive types, memory footprints, bit ranges, and default values.',
+            takeaways: [
+              'Java defines 8 primitive types: byte (1B), short (2B), int (4B), long (8B), float (4B), double (8B), char (2B Unicode UTF-16), and boolean (1-bit logical).',
+              'Primitives are stored directly on the Thread Call Stack without heap object header overhead.',
+              'Default values: numeric types default to 0 / 0.0, boolean to false, and char to \\u0000.'
+            ],
+            whiteboardContent: `# Java 8 Primitive Data Types\n\n| Type | Size | Min Value | Max Value | Default |\n| :--- | :--- | :--- | :--- | :--- |\n| \`byte\` | 8 bits (1B) | -128 | 127 | \`0\` |\n| \`short\` | 16 bits (2B) | -32,768 | 32,767 | \`0\` |\n| \`int\` | 32 bits (4B) | $-2^{31}$ | $2^{31}-1$ (2.14B) | \`0\` |\n| \`long\` | 64 bits (8B) | $-2^{63}$ | $2^{63}-1$ | \`0L\` |\n| \`float\` | 32 bits (4B) | $\\approx 1.4\\times 10^{-45}$ | $\\approx 3.4\\times 10^{38}$ | \`0.0f\` |\n| \`double\`| 64 bits (8B) | $\\approx 4.9\\times 10^{-324}$ | $\\approx 1.8\\times 10^{308}$ | \`0.0d\` |\n| \`char\` | 16 bits (2B) | \`\\u0000\` (0) | \`\\uffff\` (65,535) | \`\\u0000\` |\n| \`boolean\`| 1 bit JVM | \`false\` | \`true\` | \`false\` |`,
+            diagram: `┌───────────────────────────────────────────────────────────────┐\n│               JAVA PRIMITIVE MEMORY FOOTPRINT                 │\n├───────────────────────────────────────────────────────────────┤\n│ [byte: 1B]  [short: 2B]  [int: 4B]    [long: 8B]              │\n│ [float: 4B] [double: 8B] [char: 2B]   [boolean: 1b]           │\n│                                                               │\n│ Stack Frame: [ int age = 25 ]  --> Directly holds 32-bit val │\n└───────────────────────────────────────────────────────────────┘`,
+            codeSnippet: `public class JavaDataTypesDemo {\n    public static void main(String[] args) {\n        // Integral primitives\n        byte smallCount = 127;\n        short port = 8080;\n        int userCount = 1_000_000;\n        long epochMillis = 1711000000000L; // Suffix 'L' required\n\n        // Floating point primitives\n        float piFloat = 3.14159f;           // Suffix 'f' required\n        double precision = 3.141592653589793;\n\n        // Character and Boolean\n        char grade = 'A'; // 16-bit Unicode\n        boolean isEnrolled = true;\n\n        System.out.println("Primitives initialized in Stack successfully!");\n    }\n}`,
+            terminalOutput: `[JVM COMPILE & RUN] JavaDataTypesDemo.java\n>>> Primitives initialized in Stack successfully!\n>>> Memory footprint: 0 Heap allocations.`,
+            dialogue: [
+              { speaker: 'professor', text: 'Welcome scholars! In Java, data types are strictly split into two main families: Primitives and Reference types. Let us master the 8 primitives first.' },
+              { speaker: 'alex', text: 'Professor, why does Java allocate 2 bytes (16 bits) for char when C only uses 1 byte (8 bits)?' },
+              { speaker: 'professor', text: 'Brilliant question, Alex! C used 8-bit ASCII. Java was designed from inception for internationalization using 16-bit UTF-16 Unicode, allowing it to represent global scripts.' }
+            ],
+            quiz: {
+              question: 'Which of the following is an 8-byte (64-bit) primitive data type in Java?',
+              options: [
+                'long and double',
+                'int and float',
+                'short and char',
+                'String and Integer'
+              ],
+              correct: 0,
+              explanation: 'In Java, both `long` (64-bit integer) and `double` (64-bit IEEE 754 floating point) occupy exactly 8 bytes (64 bits) of memory.'
+            }
+          },
+          {
+            id: 'slide-2',
+            slideNumber: 2,
+            title: 'Slide 2: Reference Types, Strings & Memory Layout (Stack vs Heap)',
+            slideSubtitle: 'How objects, arrays, and classes differ from primitives in JVM memory.',
+            takeaways: [
+              'Reference types (Classes, Interfaces, Arrays, Enums) store memory addresses (pointers) on the Stack pointing to objects on the Heap.',
+              'String is a reference type (an immutable object) backed by the JVM String Constant Pool to optimize memory.',
+              'Unreferenced objects on the Heap are automatically reclaimed by the JVM Garbage Collector (GC).'
+            ],
+            whiteboardContent: `# JVM Memory: Stack vs Heap Allocation\n\n### Primitives vs References:\n* **Stack Memory:** Fast, thread-private, stores primitive values directly and object references (pointers).\n* **Heap Memory:** Shared across threads, stores all actual Objects and Array instances.\n\n### String Constant Pool (SCP):\n$$\\text{String } s1 = \\text{\"Java\"}; \\quad \\text{String } s2 = \\text{\"Java\"}; \\implies s1 == s2 \\text{ (True)}$$\n$$\\text{String } s3 = \\text{new String(\"Java\")}; \\implies s1 == s3 \\text{ (False, distinct Heap obj)}$$`,
+            diagram: `┌───────────────────────────┬───────────────────────────────────┐\n│     STACK (Thread Local)  │          HEAP (Shared Space)      │\n├───────────────────────────┼───────────────────────────────────┤\n│ [ int x = 42 ]            │                                   │\n│ [ String ref1 ] --------->│ [ String Pool: "Hello" ]          │\n│ [ User userRef ] -------->│ [ User Object { id: 101, name } ] │\n│ [ int[] arrRef ] -------->│ [ Array: [ 10, 20, 30, 40 ] ]     │\n└───────────────────────────┴───────────────────────────────────┘`,
+            codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "OpenMAIC";\n        String s2 = new String("OpenMAIC");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
+            terminalOutput: `[EXECUTION] ReferenceTypesDemo.main()\n>>> a = 10, b = 20\n>>> arr1[0] = 99 (shared heap object)\n>>> s1 == s2 : false | s1.equals(s2) : true`,
+            dialogue: [
+              { speaker: 'maya', text: 'So when we pass an object into a Java method, are we passing by reference or value?' },
+              { speaker: 'professor', text: 'Java is strictly Pass-By-Value! When you pass an object, the value being copied and passed is the memory reference (address pointer).' }
+            ],
+            quiz: {
+              question: 'Why does `s1 == s2` return false when comparing `String s1 = "Hi";` and `String s2 = new String("Hi");`?',
+              options: [
+                '`==` compares memory addresses, and `new` allocates a distinct object outside the String Constant Pool',
+                '`==` is not supported on Strings in Java',
+                '`s1` contains uppercase letters while `s2` is lowercase',
+                'Strings cannot be stored on the Heap'
+              ],
+              correct: 0,
+              explanation: 'The `==` operator compares reference memory addresses. `s1` refers to the String Constant Pool instance, while `new String()` forces a separate Heap allocation.'
+            }
+          },
+          {
+            id: 'slide-3',
+            slideNumber: 3,
+            title: 'Slide 3: Type Casting & Conversion (Widening vs Narrowing)',
+            slideSubtitle: 'Implicit automatic conversions, explicit type casts, and integer overflow traps.',
+            takeaways: [
+              'Widening Casting (Implicit/Automatic): Converting a smaller type to a larger type (e.g., int -> double) is safe and automatic.',
+              'Narrowing Casting (Explicit): Converting a larger type to a smaller type requires explicit syntax `(int) d` and risks data loss/truncation.',
+              'Numeric Promotion: In arithmetic operations (`byte a + byte b`), operands are automatically promoted to `int`.'
+            ],
+            whiteboardContent: `# Java Type Casting Rules\n\n### Widening (Automatic, No Loss):\n$$\\text{byte} \\rightarrow \\text{short} \\rightarrow \\text{int} \\rightarrow \\text{long} \\rightarrow \\text{float} \\rightarrow \\text{double}$$\n\n### Narrowing (Explicit, Risk of Truncation & Overflow):\n$$\\text{double} \\xrightarrow{(\\text{long})} \\text{long} \\xrightarrow{(\\text{int})} \\text{int} \\xrightarrow{(\\text{short})} \\text{short} \\xrightarrow{(\\text{byte})} \\text{byte}$$\n\n### Boundary Overflow Invariant:\n$$\\text{Integer.MAX\\_VALUE} + 1 = \\text{Integer.MIN\\_VALUE} \\quad (2147483647 + 1 = -2147483648)$$`,
+            diagram: `┌───────────────────────────────────────────────────────────────┐\n│                     JAVA CASTING HIERARCHY                    │\n├───────────────────────────────────────────────────────────────┤\n│ [ Widening: Automatic ]                                       │\n│ byte(1B) ──> short(2B) ──> int(4B) ──> long(8B) ──> double(8B)│\n│                                                               │\n│ [ Narrowing: Explicit '(targetType)' Required ]               │\n│ double ──────(cast)──────> int ──────(cast)──────> byte       │\n│ (3.99)                     (3)                    (Truncated) │\n└───────────────────────────────────────────────────────────────┘`,
+            codeSnippet: `public class TypeCastingDemo {\n    public static void main(String[] args) {\n        // 1. Widening Casting (Implicit)\n        int myInt = 100;\n        double myDouble = myInt; // Automatically converted to 100.0\n\n        // 2. Narrowing Casting (Explicit)\n        double pi = 3.999;\n        int truncatedPi = (int) pi; // Explicit cast: truncated to 3\n\n        // 3. Overflow Pitfall\n        int max = Integer.MAX_VALUE; // 2,147,483,647\n        int overflowed = max + 1;    // Wraps around to -2,147,483,648\n\n        // 4. Type promotion in expressions\n        byte b1 = 10;\n        byte b2 = 20;\n        // byte sum = b1 + b2; // COMPILE ERROR: (b1+b2) evaluates to int!\n        byte sum = (byte)(b1 + b2); // Correct\n\n        System.out.println("Truncated: " + truncatedPi + " | Overflow: " + overflowed);\n    }\n}`,
+            terminalOutput: `[EXECUTION] TypeCastingDemo.main()\n>>> Truncated: 3\n>>> Overflow: -2147483648 (Two's complement wrap-around)\n>>> Byte sum cast: 30`,
+            dialogue: [
+              { speaker: 'alex', text: 'Why did `(int) 3.999` evaluate to 3 instead of rounding to 4?' },
+              { speaker: 'professor', text: 'In Java, casting floating-point types to integer types performs direct truncation towards zero, not mathematical rounding. Use Math.round() if rounding is needed!' }
+            ],
+            quiz: {
+              question: 'What happens when you evaluate `byte b = (byte) 130;` in Java?',
+              options: [
+                'It wraps around using two\'s complement to -126',
+                'It throws a runtime OverflowException',
+                'It automatically promotes `b` to `int`',
+                'It sets `b` to 127 (the max byte value)'
+              ],
+              correct: 0,
+              explanation: 'Because byte ranges from -128 to 127, casting 130 (which is 128 + 2) wraps around in 8-bit two\'s complement representation to -126.'
+            }
+          },
+          {
+            id: 'slide-4',
+            slideNumber: 4,
+            title: 'Slide 4: Wrapper Classes, Autoboxing & Performance Best Practices',
+            slideSubtitle: 'Primitives vs Wrapper objects (Integer, Double), autoboxing overhead, and NullPointer traps.',
+            takeaways: [
+              'Every primitive has a corresponding Wrapper class: int -> Integer, char -> Character, double -> Double, boolean -> Boolean.',
+              'Autoboxing and Unboxing allow seamless syntax, but unboxing a null wrapper throws NullPointerException.',
+              'Wrapper objects add 16–24 bytes of object header overhead per instance; prefer primitives for high-performance loops and collections (e.g. primitive arrays).'
+            ],
+            whiteboardContent: `# Primitives vs Wrapper Objects\n\n| Primitive | Wrapper Class | Object Overhead | Cache Range |\n| :--- | :--- | :--- | :--- |\n| \`int\` | \`Integer\` | 16-24 bytes | -128 to 127 |\n| \`char\` | \`Character\` | 16 bytes | 0 to 127 |\n| \`boolean\`| \`Boolean\` | 16 bytes | \`TRUE\` / \`FALSE\` |\n| \`double\` | \`Double\` | 24 bytes | None |\n\n### Autoboxing Invariant:\n$$\\text{Integer } a = 100; \\quad \\text{Integer } b = 100; \\implies a == b \\text{ (True: IntegerCache)}$$\n$$\\text{Integer } x = 200; \\quad \\text{Integer } y = 200; \\implies x == y \\text{ (False: outside cache!)}$$`,
+            diagram: `┌───────────────────────────────────────────────────────────────┐\n│                 AUTOBOXING & INTEGER CACHE                    │\n├───────────────────────────────────────────────────────────────┤\n│ int primitive (4 Bytes) ──[Autoboxing]──> Integer Object      │\n│                                           ├── Object Header   │\n│                                           └── int value (16B) │\n│                                                               │\n│ Integer.valueOf(v) caches values in range [-128, 127]         │\n└───────────────────────────────────────────────────────────────┘`,
+            codeSnippet: `public class WrapperPerformanceDemo {\n    public static void main(String[] args) {\n        // Integer Cache Demonstration (-128 to 127)\n        Integer a = 100;\n        Integer b = 100;\n        System.out.println(a == b); // true (cached)\n\n        Integer c = 200;\n        Integer d = 200;\n        System.out.println(c == d); // FALSE! (different objects outside cache)\n        System.out.println(c.equals(d)); // true (value comparison)\n\n        // Dangerous NullPointer Trap in Unboxing\n        Integer nullWrapper = null;\n        try {\n            int unboxed = nullWrapper; // Throws NullPointerException!\n        } catch (NullPointerException e) {\n            System.out.println("Caught NullPointerException during automatic unboxing!");\n        }\n    }\n}`,
+            terminalOutput: `[EXECUTION] WrapperPerformanceDemo.main()\n>>> a == b : true\n>>> c == d : false | c.equals(d) : true\n>>> Caught NullPointerException during automatic unboxing!`,
+            dialogue: [
+              { speaker: 'maya', text: 'In performance-critical financial or game engines, should we avoid Wrapper classes in loops?' },
+              { speaker: 'professor', text: 'Absolutely, Maya! Using `Long sum = 0L` in a billion-iteration loop creates 1 billion temporary objects on the Heap, causing massive GC pause times. Always use primitive `long sum = 0L`!' }
+            ],
+            quiz: {
+              question: 'Why does `Integer a = 100; Integer b = 100; a == b` evaluate to true, while `Integer c = 500; Integer d = 500; c == d` evaluates to false?',
+              options: [
+                'Java caches Integer objects in the range -128 to 127, reusing references for small values',
+                'Integers above 128 are automatically converted to Doubles',
+                '`==` is broken for numbers greater than 255',
+                'Memory addresses are only 8-bit in Java'
+              ],
+              correct: 0,
+              explanation: 'Java includes an `IntegerCache` that reuses object instances for values between -128 and 127. Values outside this range instantiate new distinct heap objects.'
+            }
+          }
+        ]
+      };
+    }
+
+    // 2. UNIVERSAL DOMAIN-AWARE CURRICULUM BUILDER
+    let subject = 'Computer Science & Engineering';
+    let lang = 'java';
+    if (isJava) { subject = 'Java Programming & JVM Architecture'; lang = 'java'; }
+    else if (isPython) { subject = 'Python Programming & Data Science'; lang = 'python'; }
+    else if (isCpp) { subject = 'C++ Systems Programming & Memory'; lang = 'cpp'; }
+    else if (isJs) { subject = 'Fullstack JavaScript & Web Architecture'; lang = 'javascript'; }
+    else if (isDatabase) { subject = 'Database Management & Data Modeling'; lang = 'sql'; }
+    else if (isDSA) { subject = 'Data Structures & Algorithmic Analysis'; lang = 'java'; }
+    else if (isAI) { subject = 'Artificial Intelligence & Deep Learning'; lang = 'python'; }
+
+    return {
+      id: 'custom-' + Date.now(),
+      title: `Masterclass: ${topic}`,
+      subject,
+      difficulty: 'Advanced',
+      duration: '20 mins',
+      tags: [topic, subject.split(' ')[0], 'Architecture', 'Engineering'],
+      professor: {
+        name: 'Prof. Christopher Lumina',
+        role: 'Lead AI Professor of Advanced Computing',
+        avatar: '👨‍🏫',
+        voicePitch: 0.95,
+        voiceRate: 0.98
+      },
+      classmates: [
+        { id: 'alex', name: 'Alex', title: 'Alex (Curious Skeptic)', avatar: '🧑‍💻', color: 'text-amber-400', role: 'Edge-Case Specialist', pitch: 1.2 },
+        { id: 'maya', name: 'Maya', title: 'Maya (Performance Hacker)', avatar: '👩‍💻', color: 'text-cyan-400', role: 'Optimization Specialist', pitch: 1.3 }
+      ],
+      scenes: [
+        {
+          id: 'slide-1',
+          slideNumber: 1,
+          title: `Slide 1: Core Foundations & Mechanics of ${topic}`,
+          slideSubtitle: `Problem formulation, core definitions, and primary mental models.`,
+          takeaways: [
+            `Core foundational principles and purpose of ${topic}.`,
+            `Key abstractions, terminology, and operational workflow.`,
+            `How ${topic} solves fundamental engineering trade-offs.`
+          ],
+          whiteboardContent: `# ${topic}: Core Foundations & Architecture\n\n### Key Concepts:\n1. **Fundamental Definition:** Core role and mental model of ${topic}.\n2. **State & Execution:** How ${topic} processes inputs, transforms data, and produces deterministic outputs.\n3. **Trade-off Analysis:** Efficiency vs complexity comparison.`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│            CONCEPTUAL FLOW: ${topic.toUpperCase().slice(0, 30)}           │\n├───────────────────────────────────────────────────────────────┤\n│ [ Input / Ingestion ] ──> [ ${topic.slice(0, 18)} Logic ] ──> [ Output ] │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Foundation example for ${topic}\npublic class ${topic.replace(/[^a-zA-Z0-9]/g, '') || 'Topic'}Demo {\n    public static void main(String[] args) {\n        System.out.println("Initializing: ${topic}");\n        // Core execution logic\n    }\n}`,
+          terminalOutput: `[SYSTEM] Initialized ${topic} module... OK\n>>> Verification complete: Ready for production.`,
+          dialogue: [
+            { speaker: 'professor', text: `Welcome scholars! Today we delve deeply into ${topic}, starting from first principles.` },
+            { speaker: 'alex', text: `Professor, what is the most fundamental concept beginners overlook when studying ${topic}?` },
+            { speaker: 'professor', text: `The key is understanding the underlying data flow and operational guarantees before writing code.` }
+          ],
+          quiz: {
+            question: `What is the primary objective of mastering ${topic}?`,
+            options: [
+              `To understand its core mechanics, memory/runtime implications, and best practices`,
+              `To memorize syntax without understanding performance`,
+              `To bypass compiler type checks completely`,
+              `To increase runtime memory overhead`
+            ],
+            correct: 0,
+            explanation: `Gaining a deep mental model of ${topic} allows engineers to write scalable, robust, and optimized software.`
+          }
+        },
+        {
+          id: 'slide-2',
+          slideNumber: 2,
+          title: `Slide 2: Deep Implementation, Data Structures & Internals`,
+          slideSubtitle: `Under-the-hood algorithms, memory representations, and execution flow.`,
+          takeaways: [
+            `Low-level memory layout and internal state representation for ${topic}.`,
+            `Algorithmic complexity and throughput analysis.`,
+            `Step-by-step execution lifecycle.`
+          ],
+          whiteboardContent: `# ${topic}: Implementation & Complexity Analysis\n\n### Asymptotic Complexity:\n* **Time Complexity:** $\\mathcal{O}(\\log N)$ or $\\mathcal{O}(N)$ depending on access patterns.\n* **Space Complexity:** $\\mathcal{O}(1)$ auxiliary space optimization.\n* **Invariant:** Preserves data consistency across all operations.`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│                 INTERNAL EXECUTION PIPELINE                   │\n├───────────────────────────────────────────────────────────────┤\n│ [ Component A ] <───> [ ${topic.slice(0, 14)} Engine ] <───> [ Storage/State ]│\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Implementation details for ${topic}\npublic void process${topic.replace(/[^a-zA-Z0-9]/g, '') || 'Task'}() {\n    // Optimal algorithmic execution\n    long startTime = System.nanoTime();\n    // Processing...\n    long elapsed = System.nanoTime() - startTime;\n}`,
+          terminalOutput: `[BENCHMARK] Executed 10,000 operations for ${topic} in 1.4ms.\n>>> Zero memory leaks detected.`,
+          dialogue: [
+            { speaker: 'maya', text: `How do we ensure optimal runtime performance when implementing ${topic}?` },
+            { speaker: 'professor', text: `By choosing the right underlying data structures and minimizing unnecessary memory allocations.` }
+          ],
+          quiz: {
+            question: `How does optimizing internal memory layout benefit ${topic}?`,
+            options: [
+              `It reduces CPU cache misses and minimizes garbage collection overhead`,
+              `It slows down compilation intentionally`,
+              `It duplicates variables across all threads`,
+              `It disables hardware branch prediction`
+            ],
+            correct: 0,
+            explanation: `Efficient memory layout ensures data locality in CPU caches and eliminates redundant allocations.`
+          }
+        },
+        {
+          id: 'slide-3',
+          slideNumber: 3,
+          title: `Slide 3: Edge Cases, Error Handling & Failure Modes`,
+          slideSubtitle: `Handling boundary conditions, null/overflow traps, and concurrency races.`,
+          takeaways: [
+            `Common pitfalls and runtime traps encountered with ${topic}.`,
+            `Defensive programming strategies and validation guards.`,
+            `Graceful degradation and resilience under stress.`
+          ],
+          whiteboardContent: `# Edge Cases & Guard Conditions in ${topic}\n\n### Key Invariants to Verify:\n1. **Boundary Limits:** Check null, 0-length, min/max values.\n2. **Type Safety:** Ensure explicit cast safety and range bounds.\n3. **Exception Safety:** Implement robust try-catch and cleanup logic.`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│                     ERROR & RESILIENCE MATRIX                 │\n├───────────────────────────────────────────────────────────────┤\n│ [ Input Validation ] ──> [ Safe Execution ] ──> [ Result ]   │\n│         │                                                     │\n│         └──[ Invalid Bounds ] ──> [ Guard / Fallback ]        │\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Robust error handling for ${topic}\ntry {\n    validateInputs();\n    executeCoreLogic();\n} catch (IllegalArgumentException ex) {\n    System.err.println("Handled edge case gracefully: " + ex.getMessage());\n}`,
+          terminalOutput: `[TEST SUITE] Running edge-case suite for ${topic}...\n>>> Passed 48/48 unit tests including boundary conditions.`,
+          dialogue: [
+            { speaker: 'alex', text: `What is the most common bug that occurs with ${topic} in production?` },
+            { speaker: 'professor', text: `Unchecked boundary conditions and failing to handle null or empty states are the most frequent culprits.` }
+          ],
+          quiz: {
+            question: `What is the best practice for preventing runtime failures in ${topic}?`,
+            options: [
+              `Implement strict input validation, boundary checks, and explicit exception handling`,
+              `Ignore all error logs and suppress warnings`,
+              `Disable unit tests in production builds`,
+              `Hardcode return values to avoid dynamic calculations`
+            ],
+            correct: 0,
+            explanation: `Defensive validation guards against unexpected inputs and boundary overflow errors before they reach core execution.`
+          }
+        },
+        {
+          id: 'slide-4',
+          slideNumber: 4,
+          title: `Slide 4: Industry Best Practices & Production Scale`,
+          slideSubtitle: `Real-world patterns, benchmarking, profiling, and architectural mastery.`,
+          takeaways: [
+            `How leading technology companies design and scale ${topic}.`,
+            `Profiling and telemetry metrics to monitor in production.`,
+            `Mastery roadmap: from intermediate developer to senior architect.`
+          ],
+          whiteboardContent: `# Production Architecture & Best Practices\n\n### Core Tenets for ${topic}:\n* **Clean Code:** Adhere to SOLID and idiomatic patterns.\n* **Observability:** Track latency, throughput, and error rates.\n* **Continuous Profiling:** Eliminate CPU and memory bottlenecks early.`,
+          diagram: `┌───────────────────────────────────────────────────────────────┐\n│                 PRODUCTION ARCHITECTURE DECK                  │\n├───────────────────────────────────────────────────────────────┤\n│ [ Client Requests ] ──> [ ${topic.slice(0, 16)} Module ] ──> [ Metrics & Telemetry ]│\n└───────────────────────────────────────────────────────────────┘`,
+          codeSnippet: `// Production-grade pattern for ${topic}\npublic class Production${topic.replace(/[^a-zA-Z0-9]/g, '') || 'Service'} {\n    // Thread-safe, observable, and highly optimized implementation\n    public static void run() {\n        System.out.println("Production module for ${topic} operating at peak efficiency.");\n    }\n}`,
+          terminalOutput: `[PRODUCTION DEPLOY] ${topic} active.\n>>> Latency: 0.28ms | Health: 100% | Zero defects.`,
+          dialogue: [
+            { speaker: 'maya', text: `Now we have a complete 360-degree mental model of ${topic} across all 4 slides!` },
+            { speaker: 'professor', text: `Precisely! You are now equipped to apply ${topic} with mastery in real-world software engineering.` }
+          ],
+          quiz: {
+            question: `What is the ultimate mark of mastery when working with ${topic}?`,
+            options: [
+              `Writing clean, maintainable code with deep awareness of memory, performance, and edge cases`,
+              `Copying code without understanding its internal workings`,
+              `Using complex syntax where simple code suffices`,
+              `Never profiling execution speed`
+            ],
+            correct: 0,
+            explanation: `Mastery means balancing elegance, correctness, low latency, and robust error resilience in production.`
+          }
+        }
+      ]
+    };
+  };
+
   // ─── AI MULTI-SLIDE FULL DECK GENERATOR ──────────────────────────────────────
   const handleGenerateCustomClassroom = async () => {
     if (!customTopicInput.trim()) return;
@@ -899,146 +1215,133 @@ Generate a realistic 2-turn multi-agent response as JSON:
 
     try {
       const prompt = `You are OpenMAIC (Tsinghua Multi-Agent Interactive Classroom Slide Deck Generator).
-Generate a comprehensive 4-SLIDE presentation curriculum on the computer science topic: "${topic}".
+Your task is to generate a comprehensive, highly accurate, and rigorous 4-SLIDE presentation curriculum on the computer science topic: "${topic}".
+
+CRITICAL REQUIREMENTS:
+1. Every slide's title, subtitle, takeaways, whiteboard markdown, ASCII diagram, code snippet, dialogue between professor and classmates, and quiz question MUST BE 100% SPECIFIC TO "${topic}".
+2. If "${topic}" is a programming topic (e.g. "DATA TYPES IN JAVA", "POINTERS IN C++", "REACT HOOKS"), write actual valid code snippets in that programming language, diagram actual memory/data structures (e.g. Stack vs Heap, Primitives vs Objects), whiteboard formulas/tables of types and ranges, and have dialogue discussing that specific language's mechanics.
+3. If "${topic}" is an algorithm or data structure (e.g. "BINARY SEARCH", "DIJKSTRA", "AVL TREE"), explain the algorithm invariants, Big-O complexities (O(N), O(log N)), real code, and step-by-step logic.
+4. If "${topic}" is a database, web, AI, or systems topic, provide accurate domain-specific architecture, queries, math formulas, or models.
+5. DO NOT output generic distributed systems or lock-free queue text UNLESS the topic is specifically about distributed systems or concurrency!
 
 Generate a JSON object with this exact structure:
 {
   "title": "Masterclass: ${topic}",
-  "subject": "Computer Science & Advanced Systems",
-  "difficulty": "Advanced",
+  "subject": "<Precise Academic Subject of ${topic}>",
+  "difficulty": "Intermediate to Advanced",
   "duration": "20 mins",
-  "tags": ["${topic}", "Architecture", "Engineering"],
+  "tags": ["${topic}", "Engineering", "Architecture"],
   "professor": {
     "name": "Prof. Christopher Lumina",
-    "role": "Lead AI Professor of Advanced Systems",
+    "role": "Lead AI Professor",
     "avatar": "👨‍🏫",
     "voicePitch": 0.95,
     "voiceRate": 0.98
   },
   "classmates": [
     { "id": "alex", "name": "Alex", "title": "Alex (Curious Skeptic)", "avatar": "🧑‍💻", "color": "text-amber-400", "role": "Edge-Case Specialist", "pitch": 1.2 },
-    { "id": "maya", "name": "Maya", "title": "Maya (Performance Hacker)", "avatar": "👩‍💻", "color": "text-cyan-400", "role": "Latency & Scale", "pitch": 1.3 }
+    { "id": "maya", "name": "Maya", "title": "Maya (Performance Hacker)", "avatar": "👩‍💻", "color": "text-cyan-400", "role": "Optimization Specialist", "pitch": 1.3 }
   ],
   "scenes": [
     {
       "id": "slide-1",
       "slideNumber": 1,
-      "title": "Slide 1: Core Foundations & Motivation of ${topic}",
-      "slideSubtitle": "Problem formulation, high-level architecture, and design goals.",
+      "title": "Slide 1: <Core Foundations & Definitions of ${topic}>",
+      "slideSubtitle": "<Clear subtitle explaining core problem & mental model>",
       "takeaways": [
-        "Core design goal and fundamental mechanism of ${topic}.",
-        "Primary architectural trade-offs vs naive alternatives.",
-        "Key performance and throughput constraints."
+        "<Key takeaway 1 specifically about ${topic}>",
+        "<Key takeaway 2 specifically about ${topic}>",
+        "<Key takeaway 3 specifically about ${topic}>"
       ],
-      "whiteboardContent": "# ${topic}: Core Architecture & Tenets\\n\\n### Key Principles:\\n1. **High Concurrency:** Lock-free state machine transitions.\\n2. **Zero-Copy Serialization:** Non-blocking I/O buffers.\\n3. **Safety Guarantee:** Deterministic replication invariants.",
-      "diagram": "┌───────────────────────────────────────────────────────────────┐\\n│             FLOW DIAGRAM: ${topic.toUpperCase()}             │\\n├───────────────────────────────────────────────────────────────┤\\n│ [ Client Ingestion ] ---> [ Event Loop ] ---> [ State Machine ]│\\n└───────────────────────────────────────────────────────────────┘",
-      "codeSnippet": "// Contract for ${topic}\\npublic class ${topic.replace(/[^a-zA-Z0-9]/g, '')}Engine {\\n    public void execute() {\\n        // High throughput processing\\n    }\\n}",
-      "terminalOutput": "[ENGINE] Initializing ${topic} sandbox... OK\\n>>> Latency: 0.32ms | All invariants satisfied.",
+      "whiteboardContent": "# ${topic}: Core Foundations\\n\\n### Key Concepts:\\n1. <Point 1 with real math/syntax for ${topic}>\\n2. <Point 2 with real details>\\n3. <Point 3>",
+      "diagram": "┌───────────────────────────────────────────┐\\n│       ${topic.toUpperCase()} FLOW DIAGRAM       │\\n└───────────────────────────────────────────┘",
+      "codeSnippet": "// Real code demonstrating ${topic}",
+      "terminalOutput": "[OUTPUT] Execution trace for ${topic}... OK",
       "dialogue": [
-        { "speaker": "professor", "text": "Welcome scholars! In this slide we explore the fundamental tenets and motivations behind ${topic}." },
-        { "speaker": "alex", "text": "Professor, what is the single biggest bottleneck engineers encounter when deploying ${topic} in production?" },
-        { "speaker": "professor", "text": "The primary bottleneck is state contention, which is eliminated by partitioned non-blocking event loops." }
+        { "speaker": "professor", "text": "<Professor introduces ${topic} with technical precision>" },
+        { "speaker": "alex", "text": "<Alex asks an insightful question about ${topic}>" },
+        { "speaker": "professor", "text": "<Professor answers accurately about ${topic}>" }
       ],
       "quiz": {
-        "question": "What is the primary architectural advantage of ${topic} in modern systems?",
-        "options": [
-          "Optimal throughput, deterministic safety invariants, and fault tolerance",
-          "Increasing disk fragmentation",
-          "Disabling CPU cache buffers",
-          "Removing network encryption"
-        ],
+        "question": "<Specific multiple-choice question testing understanding of ${topic}>",
+        "options": ["<Correct option>", "<Distractor 1>", "<Distractor 2>", "<Distractor 3>"],
         "correct": 0,
-        "explanation": "Mastering core architectural foundations allows engineers to build resilient, ultra-scalable systems."
+        "explanation": "<Clear technical explanation of why the correct option is right>"
       }
     },
     {
       "id": "slide-2",
       "slideNumber": 2,
-      "title": "Slide 2: Deep Implementation, Data Structures & Memory Layout",
-      "slideSubtitle": "Low-level structures, memory pinning, and cache-line alignment.",
+      "title": "Slide 2: <Deep Implementation, Memory & Mechanics of ${topic}>",
+      "slideSubtitle": "<Internal data representation and step-by-step logic>",
       "takeaways": [
-        "Memory layout optimization and cache line alignment.",
-        "Concurrency controls and atomic pointer swaps.",
-        "Asymptotic complexity breakdown across read/write operations."
+        "<Internal mechanic 1>",
+        "<Internal mechanic 2>",
+        "<Internal mechanic 3>"
       ],
-      "whiteboardContent": "# Data Structures & Memory Layout for ${topic}\\n\\n### Computational Complexity:\\n* **Lookup:** $O(1)$ amortized memory access.\\n* **Write Pipeline:** Monotonically increasing ring buffers.",
-      "diagram": "┌───────────────────────────────────────────────────────────────┐\\n│               MEMORY LAYOUT & RING BUFFER PIPELINE            │\\n├───────────────────────────────────────────────────────────────┤\\n│ [ Cache Line 64B ] <---> [ Atomic AtomicCAS ] <---> [ Storage ]│\\n└───────────────────────────────────────────────────────────────┘",
-      "codeSnippet": "// Memory structure\\nstruct StateBlock {\\n    uint64_t sequenceID;\\n    uint8_t payload[4096];\\n};",
-      "terminalOutput": "[MEMORY] Allocated 64MB ring buffer... Cache hits: 99.4%.",
+      "whiteboardContent": "# ${topic}: Internals & Memory\\n\\n### Mechanics:\\n* <Low-level details and Big-O / memory formula>",
+      "diagram": "┌───────────────────────────────────────────┐\\n│       ${topic.toUpperCase()} INTERNALS          │\\n└───────────────────────────────────────────┘",
+      "codeSnippet": "// In-depth code snippet for ${topic}",
+      "terminalOutput": "[BENCHMARK] Executed operation for ${topic}... OK",
       "dialogue": [
-        { "speaker": "maya", "text": "How do we prevent CPU cache thrashing when multiple worker threads access this state simultaneously?" },
-        { "speaker": "professor", "text": "We use cache-line padding (64 bytes) to avoid false sharing between concurrent thread cores." }
+        { "speaker": "maya", "text": "<Maya asks about performance or edge cases in ${topic}>" },
+        { "speaker": "professor", "text": "<Professor explains memory layout and performance for ${topic}>" }
       ],
       "quiz": {
-        "question": "How does cache-line padding prevent performance degradation in concurrent systems?",
-        "options": [
-          "It eliminates false sharing between CPU cores",
-          "It compresses data into gzip format",
-          "It lowers RAM speed",
-          "It deletes unused memory pages"
-        ],
+        "question": "<Question testing internal mechanics of ${topic}>",
+        "options": ["<Correct option>", "<Distractor 1>", "<Distractor 2>", "<Distractor 3>"],
         "correct": 0,
-        "explanation": "Cache-line padding aligns data structures to 64-byte boundaries, preventing false sharing across CPU L1/L2 caches."
+        "explanation": "<Explanation of internal mechanics>"
       }
     },
     {
       "id": "slide-3",
       "slideNumber": 3,
-      "title": "Slide 3: Failure Modes, Network Partitions & Edge Cases",
-      "slideSubtitle": "Handling split-brain, packet drops, race conditions, and self-healing.",
+      "title": "Slide 3: <Edge Cases, Failure Modes & Common Pitfalls in ${topic}>",
+      "slideSubtitle": "<Boundary limits, type safety, exceptions, and defensive coding>",
       "takeaways": [
-        "Quorum intersection prevents dual-master split brain.",
-        "Idempotent message retries prevent duplicate state execution.",
-        "Automatic leader lease expiration protects linearizability."
+        "<Edge case 1>",
+        "<Common pitfall 2>",
+        "<Mitigation strategy 3>"
       ],
-      "whiteboardContent": "# Failure Modes & Self-Healing Resilience\\n\\n### Quorum Intersection Invariant:\\n$$\\\\forall Q_1, Q_2 \\\\subset \\\\text{Nodes}, \\\\quad Q_1 \\\\cap Q_2 \\\\neq \\\\emptyset$$",
-      "diagram": "┌───────────────────────────────────────────────────────────────┐\\n│               NETWORK PARTITION RESILIENCE MATRIX             │\\n├───────────────────────────────────────────────────────────────┤\\n│ [ Majority Quorum (3 Nodes) ]  <-- OK   [ Minority (2 Nodes) ]│\\n└───────────────────────────────────────────────────────────────┘",
-      "codeSnippet": "// Failure recovery\\nif (networkPartitionDetected) {\\n    stepDownToFollower();\\n}",
-      "terminalOutput": "[FAULT TEST] Injected 40% packet loss -> Self-healing triggered -> Zero data loss.",
+      "whiteboardContent": "# ${topic}: Edge Cases & Guard Conditions\\n\\n### Pitfalls:\\n1. <Specific pitfall with ${topic}>",
+      "diagram": "┌───────────────────────────────────────────┐\\n│       ${topic.toUpperCase()} ERROR MATRIX        │\\n└───────────────────────────────────────────┘",
+      "codeSnippet": "// Edge-case handling code for ${topic}",
+      "terminalOutput": "[TEST] Edge-case verification for ${topic}... Passed",
       "dialogue": [
-        { "speaker": "alex", "text": "What happens if a node crashes right in the middle of a state transition?" },
-        { "speaker": "professor", "text": "Write-Ahead Logging (WAL) ensures the state is recovered and replayed during startup." }
+        { "speaker": "alex", "text": "<Alex asks about common bugs with ${topic}>" },
+        { "speaker": "professor", "text": "<Professor explains how to guard against pitfalls in ${topic}>" }
       ],
       "quiz": {
-        "question": "What mechanism ensures atomic state recovery after an abrupt power loss?",
-        "options": [
-          "Write-Ahead Logging (WAL) with fsync persistence",
-          "Random memory wiping",
-          "Deleting log files on startup",
-          "Disabling disk storage"
-        ],
+        "question": "<Question testing edge cases of ${topic}>",
+        "options": ["<Correct option>", "<Distractor 1>", "<Distractor 2>", "<Distractor 3>"],
         "correct": 0,
-        "explanation": "A Write-Ahead Log (WAL) ensures every transaction is persisted to disk before modifying in-memory state."
+        "explanation": "<Explanation of edge cases>"
       }
     },
     {
       "id": "slide-4",
       "slideNumber": 4,
-      "title": "Slide 4: Production Scale, Benchmarks & Industry Case Studies",
-      "slideSubtitle": "How Netflix, Google, and cloud architectures scale ${topic} in production.",
+      "title": "Slide 4: <Industry Best Practices & Production Scale for ${topic}>",
+      "slideSubtitle": "<Real-world architectures, profiling, and best practices>",
       "takeaways": [
-        "Sub-millisecond P99 latency via kernel bypass and eBPF.",
-        "Horizontal sharding across global availability zones.",
-        "Automated telemetry, observability, and chaos engineering."
+        "<Best practice 1>",
+        "<Scalability guideline 2>",
+        "<Production optimization 3>"
       ],
-      "whiteboardContent": "# Production Scale & P99 Latency Optimization\\n\\n### Benchmark Results:\\n* **Throughput:** 120,000 requests/sec per node\\n* **P99 Latency:** 0.65ms with zero-copy I/O",
-      "diagram": "┌───────────────────────────────────────────────────────────────┐\\n│              GLOBAL PRODUCTION DEPLOYMENT TOPOLOGY            │\\n├───────────────────────────────────────────────────────────────┤\\n│ [ Global Edge CDN ] ---> [ Microservices ] ---> [ Clustered ${topic.toUpperCase()} ]│\\n└───────────────────────────────────────────────────────────────┘",
-      "codeSnippet": "// Production config\\nconst config = { maxConnections: 100000, zeroCopy: true };",
-      "terminalOutput": "[PRODUCTION BENCHMARK] 100,000 requests/sec | P99: 0.65ms | CPU: 38%.",
+      "whiteboardContent": "# ${topic}: Production Best Practices\\n\\n### Architectural Guidelines:\\n* <Best practice summary>",
+      "diagram": "┌───────────────────────────────────────────┐\\n│       ${topic.toUpperCase()} PRODUCTION ARCH     │\\n└───────────────────────────────────────────┘",
+      "codeSnippet": "// Production-grade code snippet for ${topic}",
+      "terminalOutput": "[PRODUCTION] Deployed ${topic} successfully.",
       "dialogue": [
-        { "speaker": "maya", "text": "These benchmark numbers demonstrate why major tech companies standardize on this architecture." },
-        { "speaker": "professor", "text": "Indeed! You now have a complete, production-grade mental model of ${topic} across all 4 slides." }
+        { "speaker": "maya", "text": "<Maya summarizes key architectural takeaways for ${topic}>" },
+        { "speaker": "professor", "text": "<Professor provides concluding mastery advice for ${topic}>" }
       ],
       "quiz": {
-        "question": "What is the primary benefit of zero-copy I/O in high-throughput network services?",
-        "options": [
-          "Avoiding CPU memory copy between kernel space and user space",
-          "Doubling storage disk requirements",
-          "Forcing manual RAM allocation",
-          "Slowing down network sockets"
-        ],
+        "question": "<Question testing industry best practices for ${topic}>",
+        "options": ["<Correct option>", "<Distractor 1>", "<Distractor 2>", "<Distractor 3>"],
         "correct": 0,
-        "explanation": "Zero-copy I/O allows data to transfer directly from network buffers to storage without redundant kernel-to-user memory copies."
+        "explanation": "<Explanation of best practices>"
       }
     }
   ]
@@ -1048,8 +1351,8 @@ Return ONLY valid JSON.`;
 
       const aiRes = await callAICompletion({
         prompt,
-        temperature: 0.3,
-        maxTokens: 2500
+        temperature: 0.2,
+        maxTokens: 3000
       });
 
       let customLesson = null;
@@ -1076,90 +1379,8 @@ Return ONLY valid JSON.`;
       }
     } catch (e) {
       console.warn("AI Slide Generation fallback:", e);
-      // Fallback: Generate robust 4-Slide Deck
-      const fallbackLesson = {
-        id: 'custom-' + Date.now(),
-        title: 'Masterclass: ' + topic,
-        subject: 'Advanced Computing',
-        difficulty: 'Advanced',
-        duration: '20 mins',
-        tags: [topic, 'Architecture'],
-        professor: {
-          name: 'Prof. Christopher Lumina',
-          role: 'Lead AI Professor of Advanced Systems',
-          avatar: '👨‍🏫',
-          voicePitch: 0.95,
-          voiceRate: 0.98
-        },
-        classmates: [
-          { id: 'alex', name: 'Alex', title: 'Alex (Curious Skeptic)', avatar: '🧑‍💻', color: 'text-amber-400', role: 'Edge-Case Specialist', pitch: 1.2 },
-          { id: 'maya', name: 'Maya', title: 'Maya (Performance Hacker)', avatar: '👩‍💻', color: 'text-cyan-400', role: 'Latency & Scale', pitch: 1.3 }
-        ],
-        scenes: [
-          {
-            id: 'slide-1',
-            slideNumber: 1,
-            title: `Slide 1: Core Foundations & Invariants of ${topic}`,
-            slideSubtitle: `Foundational mechanisms, high-throughput execution, and architecture.`,
-            takeaways: [
-              `Core principles and system invariants of ${topic}.`,
-              `High concurrency state machines and non-blocking I/O.`,
-              `Sub-millisecond execution guarantees.`
-            ],
-            whiteboardContent: `# ${topic}: Architectural Invariants\n\n### Core Tenets:\n1. **Deterministic Execution:** Strict state transitions.\n2. **Low Latency:** Zero-copy memory buffers.\n3. **Fault Tolerance:** Self-healing recovery.`,
-            diagram: `┌───────────────────────────────────────────────────────────────┐\n│             FLOW DIAGRAM: ${topic.toUpperCase()}             │\n├───────────────────────────────────────────────────────────────┤\n│ [ Ingestion Gate ] ---> [ State Machine ] ---> [ Storage ]   │\n└───────────────────────────────────────────────────────────────┘`,
-            codeSnippet: `// Sandbox implementation\npublic class ${topic.replace(/[^a-zA-Z0-9]/g, '')}Engine {\n    public static void main(String[] args) {\n        System.out.println("Executing OpenMAIC Module: ${topic}");\n    }\n}`,
-            terminalOutput: `[SYSTEM] Initialized ${topic} sandbox... OK | Latency: 0.42ms.`,
-            dialogue: [
-              { speaker: 'professor', text: `Welcome scholars! In this slide we explore the core architecture of ${topic}.` },
-              { speaker: 'alex', text: `Professor, how does ${topic} scale horizontally under massive concurrency?` },
-              { speaker: 'professor', text: `It scales through partitioned event loops and lock-free memory rings.` }
-            ],
-            quiz: {
-              question: `What is the primary advantage of mastering ${topic}?`,
-              options: [
-                "Achieving optimal algorithmic efficiency, fault tolerance, and high throughput",
-                "Increasing manual maintenance overhead",
-                "Disabling CPU cache buffers",
-                "Restricting API interoperability"
-              ],
-              correct: 0,
-              explanation: "Mastering core architectural foundations allows engineers to build resilient, ultra-scalable systems."
-            }
-          },
-          {
-            id: 'slide-2',
-            slideNumber: 2,
-            title: `Slide 2: Implementation & Concurrency Deep Dive`,
-            slideSubtitle: `Memory layout, ring buffers, and thread synchronization.`,
-            takeaways: [
-              `Cache-line alignment to eliminate false sharing.`,
-              `Atomic compare-and-swap (CAS) memory instructions.`,
-              `Zero-copy socket streaming.`
-            ],
-            whiteboardContent: `# Memory Layout & Concurrency in ${topic}\n\n### Invariant:\n$$\\text{Latency}_{P99} \\le 1.0\\text{ms}$$`,
-            diagram: `┌───────────────────────────────────────────────────────────────┐\n│               RING BUFFER CONCURRENCY PIPELINE                │\n├───────────────────────────────────────────────────────────────┤\n│ [ Thread 1 ] ---> [ Lock-Free Queue ] ---> [ Worker Core ]    │\n└───────────────────────────────────────────────────────────────┘`,
-            codeSnippet: `// Lock-free queue\ntemplate <typename T>\nclass LockFreeQueue {\n    std::atomic<Node*> head;\n};`,
-            terminalOutput: `[BENCHMARK] Executed 100k operations in 12ms.`,
-            dialogue: [
-              { speaker: 'maya', text: `Lock-free queues avoid kernel context switching entirely!` },
-              { speaker: 'professor', text: `Exactly, Maya! That allows us to saturate modern NVMe and 100GbE networks.` }
-            ],
-            quiz: {
-              question: "Why do lock-free data structures outperform mutex locks?",
-              options: [
-                "They avoid costly kernel thread context switches",
-                "They turn off CPU power saving",
-                "They erase data from RAM",
-                "They duplicate all variables"
-              ],
-              correct: 0,
-              explanation: "Lock-free structures use atomic CPU instructions (like CAS) to avoid heavy OS kernel context switches."
-            }
-          }
-        ]
-      };
-
+      // Domain-aware fallback deck
+      const fallbackLesson = generateTopicSpecificCurriculum(topic);
       setLessons(prev => [fallbackLesson, ...prev]);
       setActiveLesson(fallbackLesson);
       setCurrentSceneIdx(0);
@@ -1167,7 +1388,7 @@ Return ONLY valid JSON.`;
       setActiveViewMode('slides');
       addToast?.({
         type: 'success',
-        message: `🎓 Generated Slide Deck for "${topic}"!`
+        message: `🎓 Generated Masterclass Deck for "${topic}"!`
       });
     }
 
@@ -1179,37 +1400,38 @@ Return ONLY valid JSON.`;
   const handleGenerateNextSlide = async () => {
     setIsGeneratingNextSlide(true);
     const nextSlideNum = activeLesson.scenes.length + 1;
+    const lessonTitle = activeLesson.title || 'Masterclass';
 
     try {
       const prompt = `You are OpenMAIC (Tsinghua AI Classroom).
-The current masterclass is: "${activeLesson.title}".
+The current masterclass topic is: "${lessonTitle}".
 Currently there are ${activeLesson.scenes.length} slides.
 
 Generate the NEXT SLIDE (Slide ${nextSlideNum}) as a JSON object with this structure:
 {
   "id": "slide-${nextSlideNum}",
   "slideNumber": ${nextSlideNum},
-  "title": "Slide ${nextSlideNum}: Advanced Topic Exploration",
-  "slideSubtitle": "Key takeaway and deep-dive focus.",
+  "title": "Slide ${nextSlideNum}: <Specific Advanced Exploration of ${lessonTitle}>",
+  "slideSubtitle": "<Key takeaway and deep-dive focus for ${lessonTitle}>",
   "takeaways": [
-    "Takeaway point 1",
-    "Takeaway point 2",
-    "Takeaway point 3"
+    "<Takeaway point 1 specific to ${lessonTitle}>",
+    "<Takeaway point 2 specific to ${lessonTitle}>",
+    "<Takeaway point 3 specific to ${lessonTitle}>"
   ],
-  "whiteboardContent": "# Slide ${nextSlideNum} Content\\n\\n### Key Invariant:\\n$$\\\\text{Invariant Formula}$$",
-  "diagram": "┌───────────────────────────────────────────┐\\n│              SLIDE ${nextSlideNum} DIAGRAM              │\\n└───────────────────────────────────────────┘",
-  "codeSnippet": "// Code example for Slide ${nextSlideNum}",
-  "terminalOutput": "[SLIDE ${nextSlideNum}] Execution trace... OK",
+  "whiteboardContent": "# Slide ${nextSlideNum}: Advanced Mechanics for ${lessonTitle}\\n\\n### Key Invariant:\\n$$\\\\text{Invariant Formula for ${lessonTitle}}$$",
+  "diagram": "┌───────────────────────────────────────────┐\\n│        SLIDE ${nextSlideNum} DIAGRAM: ${lessonTitle.slice(0, 18).toUpperCase()}       │\\n└───────────────────────────────────────────┘",
+  "codeSnippet": "// Code example for Slide ${nextSlideNum} (${lessonTitle})",
+  "terminalOutput": "[SLIDE ${nextSlideNum}] Execution trace for ${lessonTitle}... OK",
   "dialogue": [
-    { "speaker": "professor", "text": "Let us examine Slide ${nextSlideNum}." },
-    { "speaker": "alex", "text": "Professor, how does this relate to the previous slide?" },
-    { "speaker": "professor", "text": "This builds directly on our previous invariants." }
+    { "speaker": "professor", "text": "Let us examine Slide ${nextSlideNum} covering advanced aspects of ${lessonTitle}." },
+    { "speaker": "alex", "text": "Professor, how does this relate to what we covered previously?" },
+    { "speaker": "professor", "text": "This builds directly on our foundational mental model." }
   ],
   "quiz": {
-    "question": "Question for Slide ${nextSlideNum}?",
-    "options": ["Option A (Correct)", "Option B", "Option C", "Option D"],
+    "question": "<Accurate multiple choice question specifically for ${lessonTitle}>?",
+    "options": ["<Option A (Correct)>", "<Option B>", "<Option C>", "<Option D>"],
     "correct": 0,
-    "explanation": "Explanation for Slide ${nextSlideNum}."
+    "explanation": "<Technical explanation for ${lessonTitle}>."
   }
 }
 
@@ -1217,7 +1439,7 @@ Return ONLY valid JSON.`;
 
       const aiRes = await callAICompletion({
         prompt,
-        temperature: 0.3,
+        temperature: 0.2,
         maxTokens: 1200
       });
 
