@@ -16,8 +16,150 @@ import { useGamification } from '../context/GamificationContext';
 import { callAICompletion } from '../services/aiService';
 import { saveQuizScoreToSupabase } from '../services/supabaseDataSyncService';
 
-// ─── 3 Curated Multi-Slide OpenMAIC Masterclasses ─────────────────────────────
+// ─── 4 Curated Multi-Slide OpenMAIC Masterclasses ─────────────────────────────
 const OPENMAIC_DEFAULT_LESSONS = [
+  {
+    id: 'java-data-types',
+    title: 'Java Core: Data Types, JVM Memory & Type Casting',
+    subject: 'Java Programming & JVM Architecture',
+    difficulty: 'Foundational to Advanced',
+    duration: '25 mins',
+    tags: ['Java', 'Data Types', 'JVM Memory', 'Primitives', 'Type Casting'],
+    professor: {
+      name: 'Prof. Christopher Lumina',
+      role: 'Lead AI Professor of Computer Science & JVM Architecture',
+      avatar: '👨‍🏫',
+      voicePitch: 0.95,
+      voiceRate: 0.98
+    },
+    classmates: [
+      { id: 'alex', name: 'Alex', title: 'Alex (Curious Skeptic)', avatar: '🧑‍💻', color: 'text-amber-400', role: 'Edge-Case Specialist', pitch: 1.2 },
+      { id: 'maya', name: 'Maya', title: 'Maya (Performance Hacker)', avatar: '👩‍💻', color: 'text-cyan-400', role: 'Memory & Low-Level', pitch: 1.3 }
+    ],
+    scenes: [
+      {
+        id: 'scene-java-1',
+        slideNumber: 1,
+        title: 'Slide 1: Java Primitive Data Types & Byte Allocation',
+        slideSubtitle: 'The 8 primitive types, memory footprints, bit ranges, and default values.',
+        takeaways: [
+          'Java defines 8 primitive types: byte (1B), short (2B), int (4B), long (8B), float (4B), double (8B), char (2B Unicode UTF-16), and boolean (1-bit logical).',
+          'Primitives are stored directly on the Thread Call Stack without heap object header overhead.',
+          'Default values: numeric types default to 0 / 0.0, boolean to false, and char to \\u0000.'
+        ],
+        whiteboardContent: `# Java 8 Primitive Data Types\n\n| Type | Size | Min Value | Max Value | Default |\n| :--- | :--- | :--- | :--- | :--- |\n| \`byte\` | 8 bits (1B) | -128 | 127 | \`0\` |\n| \`short\` | 16 bits (2B) | -32,768 | 32,767 | \`0\` |\n| \`int\` | 32 bits (4B) | $-2^{31}$ | $2^{31}-1$ (2.14B) | \`0\` |\n| \`long\` | 64 bits (8B) | $-2^{63}$ | $2^{63}-1$ | \`0L\` |\n| \`float\` | 32 bits (4B) | $\\approx 1.4\\times 10^{-45}$ | $\\approx 3.4\\times 10^{38}$ | \`0.0f\` |\n| \`double\`| 64 bits (8B) | $\\approx 4.9\\times 10^{-324}$ | $\\approx 1.8\\times 10^{308}$ | \`0.0d\` |\n| \`char\` | 16 bits (2B) | \`\\u0000\` (0) | \`\\uffff\` (65,535) | \`\\u0000\` |\n| \`boolean\`| 1 bit JVM | \`false\` | \`true\` | \`false\` |`,
+        diagram: `┌───────────────────────────────────────────────────────────────┐\n│               JAVA PRIMITIVE MEMORY FOOTPRINT                 │\n├───────────────────────────────────────────────────────────────┤\n│ [byte: 1B]  [short: 2B]  [int: 4B]    [long: 8B]              │\n│ [float: 4B] [double: 8B] [char: 2B]   [boolean: 1b]           │\n│                                                               │\n│ Stack Frame: [ int age = 25 ]  --> Directly holds 32-bit val │\n└───────────────────────────────────────────────────────────────┘`,
+        codeSnippet: `public class JavaDataTypesDemo {\n    public static void main(String[] args) {\n        // Integral primitives\n        byte smallCount = 127;\n        short port = 8080;\n        int userCount = 1_000_000;\n        long epochMillis = 1711000000000L; // Suffix 'L' required\n\n        // Floating point primitives\n        float piFloat = 3.14159f;           // Suffix 'f' required\n        double precision = 3.141592653589793;\n\n        // Character and Boolean\n        char grade = 'A'; // 16-bit Unicode\n        boolean isEnrolled = true;\n\n        System.out.println("Primitives initialized in Stack successfully!");\n    }\n}`,
+        terminalOutput: `[JVM COMPILE & RUN] JavaDataTypesDemo.java\n>>> Primitives initialized in Stack successfully!\n>>> Memory footprint: 0 Heap allocations.`,
+        dialogue: [
+          { speaker: 'professor', text: 'Welcome scholars! In Java, data types are strictly split into two main families: Primitives and Reference types. Let us master the 8 primitives first.' },
+          { speaker: 'alex', text: 'Professor, why does Java allocate 2 bytes (16 bits) for char when C only uses 1 byte (8 bits)?' },
+          { speaker: 'professor', text: 'Brilliant question, Alex! C used 8-bit ASCII. Java was designed from inception for internationalization using 16-bit UTF-16 Unicode, allowing it to represent global scripts.' }
+        ],
+        quiz: {
+          question: 'Which of the following is an 8-byte (64-bit) primitive data type in Java?',
+          options: [
+            'long and double',
+            'int and float',
+            'short and char',
+            'String and Integer'
+          ],
+          correct: 0,
+          explanation: 'In Java, both `long` (64-bit integer) and `double` (64-bit IEEE 754 floating point) occupy exactly 8 bytes (64 bits) of memory.'
+        }
+      },
+      {
+        id: 'scene-java-2',
+        slideNumber: 2,
+        title: 'Slide 2: Reference Types, Strings & Memory Layout (Stack vs Heap)',
+        slideSubtitle: 'How objects, arrays, and classes differ from primitives in JVM memory.',
+        takeaways: [
+          'Reference types (Classes, Interfaces, Arrays, Enums) store memory addresses (pointers) on the Stack pointing to objects on the Heap.',
+          'String is a reference type (an immutable object) backed by the JVM String Constant Pool to optimize memory.',
+          'Unreferenced objects on the Heap are automatically reclaimed by the JVM Garbage Collector (GC).'
+        ],
+        whiteboardContent: `# JVM Memory: Stack vs Heap Allocation\n\n### Primitives vs References:\n* **Stack Memory:** Fast, thread-private, stores primitive values directly and object references (pointers).\n* **Heap Memory:** Shared across threads, stores all actual Objects and Array instances.\n\n### String Constant Pool (SCP):\n$$\\text{String } s1 = \\text{\"Java\"}; \\quad \\text{String } s2 = \\text{\"Java\"}; \\implies s1 == s2 \\text{ (True)}$$\n$$\\text{String } s3 = \\text{new String(\"Java\")}; \\implies s1 == s3 \\text{ (False, distinct Heap obj)}$$`,
+        diagram: `┌───────────────────────────┬───────────────────────────────────┐\n│     STACK (Thread Local)  │          HEAP (Shared Space)      │\n├───────────────────────────┼───────────────────────────────────┤\n│ [ int x = 42 ]            │                                   │\n│ [ String ref1 ] --------->│ [ String Pool: "Hello" ]          │\n│ [ User userRef ] -------->│ [ User Object { id: 101, name } ] │\n│ [ int[] arrRef ] -------->│ [ Array: [ 10, 20, 30, 40 ] ]     │\n└───────────────────────────┴───────────────────────────────────┘`,
+        codeSnippet: `public class ReferenceTypesDemo {\n    public static void main(String[] args) {\n        // Primitive: Stores value directly\n        int a = 10;\n        int b = a; // Copied by value: b is 10\n        b = 20;    // 'a' remains 10\n\n        // Reference Type: Stores pointer to Heap object\n        int[] arr1 = { 1, 2, 3 };\n        int[] arr2 = arr1; // Copied by reference!\n        arr2[0] = 99;      // arr1[0] is NOW 99!\n\n        // String Equality\n        String s1 = "OpenMAIC";\n        String s2 = new String("OpenMAIC");\n        System.out.println(s1 == s2);      // false (different memory addresses)\n        System.out.println(s1.equals(s2));  // true  (identical character content)\n    }\n}`,
+        terminalOutput: `[EXECUTION] ReferenceTypesDemo.main()\n>>> a = 10, b = 20\n>>> arr1[0] = 99 (shared heap object)\n>>> s1 == s2 : false | s1.equals(s2) : true`,
+        dialogue: [
+          { speaker: 'maya', text: 'So when we pass an object into a Java method, are we passing by reference or value?' },
+          { speaker: 'professor', text: 'Java is strictly Pass-By-Value! When you pass an object, the value being copied and passed is the memory reference (address pointer).' }
+        ],
+        quiz: {
+          question: 'Why does `s1 == s2` return false when comparing `String s1 = "Hi";` and `String s2 = new String("Hi");`?',
+          options: [
+            '`==` compares memory addresses, and `new` allocates a distinct object outside the String Constant Pool',
+            '`==` is not supported on Strings in Java',
+            '`s1` contains uppercase letters while `s2` is lowercase',
+            'Strings cannot be stored on the Heap'
+          ],
+          correct: 0,
+          explanation: 'The `==` operator compares reference memory addresses. `s1` refers to the String Constant Pool instance, while `new String()` forces a separate Heap allocation.'
+        }
+      },
+      {
+        id: 'scene-java-3',
+        slideNumber: 3,
+        title: 'Slide 3: Type Casting & Conversion (Widening vs Narrowing)',
+        slideSubtitle: 'Implicit automatic conversions, explicit type casts, and integer overflow traps.',
+        takeaways: [
+          'Widening Casting (Implicit/Automatic): Converting a smaller type to a larger type (e.g., int -> double) is safe and automatic.',
+          'Narrowing Casting (Explicit): Converting a larger type to a smaller type requires explicit syntax `(int) d` and risks data loss/truncation.',
+          'Numeric Promotion: In arithmetic operations (`byte a + byte b`), operands are automatically promoted to `int`.'
+        ],
+        whiteboardContent: `# Java Type Casting Rules\n\n### Widening (Automatic, No Loss):\n$$\\text{byte} \\rightarrow \\text{short} \\rightarrow \\text{int} \\rightarrow \\text{long} \\rightarrow \\text{float} \\rightarrow \\text{double}$$\n\n### Narrowing (Explicit, Risk of Truncation & Overflow):\n$$\\text{double} \\xrightarrow{(\\text{long})} \\text{long} \\xrightarrow{(\\text{int})} \\text{int} \\xrightarrow{(\\text{short})} \\text{short} \\xrightarrow{(\\text{byte})} \\text{byte}$$\n\n### Boundary Overflow Invariant:\n$$\\text{Integer.MAX\\_VALUE} + 1 = \\text{Integer.MIN\\_VALUE} \\quad (2147483647 + 1 = -2147483648)$$`,
+        diagram: `┌───────────────────────────────────────────────────────────────┐\n│                     JAVA CASTING HIERARCHY                    │\n├───────────────────────────────────────────────────────────────┤\n│ [ Widening: Automatic ]                                       │\n│ byte(1B) ──> short(2B) ──> int(4B) ──> long(8B) ──> double(8B)│\n│                                                               │\n│ [ Narrowing: Explicit '(targetType)' Required ]               │\n│ double ──────(cast)──────> int ──────(cast)──────> byte       │\n│ (3.99)                     (3)                    (Truncated) │\n└───────────────────────────────────────────────────────────────┘`,
+        codeSnippet: `public class TypeCastingDemo {\n    public static void main(String[] args) {\n        // 1. Widening Casting (Implicit)\n        int myInt = 100;\n        double myDouble = myInt; // Automatically converted to 100.0\n\n        // 2. Narrowing Casting (Explicit)\n        double pi = 3.999;\n        int truncatedPi = (int) pi; // Explicit cast: truncated to 3\n\n        // 3. Overflow Pitfall\n        int max = Integer.MAX_VALUE; // 2,147,483,647\n        int overflowed = max + 1;    // Wraps around to -2,147,483,648\n\n        // 4. Type promotion in expressions\n        byte b1 = 10;\n        byte b2 = 20;\n        // byte sum = b1 + b2; // COMPILE ERROR: (b1+b2) evaluates to int!\n        byte sum = (byte)(b1 + b2); // Correct\n\n        System.out.println("Truncated: " + truncatedPi + " | Overflow: " + overflowed);\n    }\n}`,
+        terminalOutput: `[EXECUTION] TypeCastingDemo.main()\n>>> Truncated: 3\n>>> Overflow: -2147483648 (Two's complement wrap-around)\n>>> Byte sum cast: 30`,
+        dialogue: [
+          { speaker: 'alex', text: 'Why did `(int) 3.999` evaluate to 3 instead of rounding to 4?' },
+          { speaker: 'professor', text: 'In Java, casting floating-point types to integer types performs direct truncation towards zero, not mathematical rounding. Use Math.round() if rounding is needed!' }
+        ],
+        quiz: {
+          question: 'What happens when you evaluate `byte b = (byte) 130;` in Java?',
+          options: [
+            'It wraps around using two\'s complement to -126',
+            'It throws a runtime OverflowException',
+            'It automatically promotes `b` to `int`',
+            'It sets `b` to 127 (the max byte value)'
+          ],
+          correct: 0,
+          explanation: 'Because byte ranges from -128 to 127, casting 130 (which is 128 + 2) wraps around in 8-bit two\'s complement representation to -126.'
+        }
+      },
+      {
+        id: 'scene-java-4',
+        slideNumber: 4,
+        title: 'Slide 4: Wrapper Classes, Autoboxing & Performance Best Practices',
+        slideSubtitle: 'Primitives vs Wrapper objects (Integer, Double), autoboxing overhead, and NullPointer traps.',
+        takeaways: [
+          'Every primitive has a corresponding Wrapper class: int -> Integer, char -> Character, double -> Double, boolean -> Boolean.',
+          'Autoboxing and Unboxing allow seamless syntax, but unboxing a null wrapper throws NullPointerException.',
+          'Wrapper objects add 16–24 bytes of object header overhead per instance; prefer primitives for high-performance loops and collections (e.g. primitive arrays).'
+        ],
+        whiteboardContent: `# Primitives vs Wrapper Objects\n\n| Primitive | Wrapper Class | Object Overhead | Cache Range |\n| :--- | :--- | :--- | :--- |\n| \`int\` | \`Integer\` | 16-24 bytes | -128 to 127 |\n| \`char\` | \`Character\` | 16 bytes | 0 to 127 |\n| \`boolean\`| \`Boolean\` | 16 bytes | \`TRUE\` / \`FALSE\` |\n| \`double\` | \`Double\` | 24 bytes | None |\n\n### Autoboxing Invariant:\n$$\\text{Integer } a = 100; \\quad \\text{Integer } b = 100; \\implies a == b \\text{ (True: IntegerCache)}$$\n$$\\text{Integer } x = 200; \\quad \\text{Integer } y = 200; \\implies x == y \\text{ (False: outside cache!)}$$`,
+        diagram: `┌───────────────────────────────────────────────────────────────┐\n│                 AUTOBOXING & INTEGER CACHE                    │\n├───────────────────────────────────────────────────────────────┤\n│ int primitive (4 Bytes) ──[Autoboxing]──> Integer Object      │\n│                                           ├── Object Header   │\n│                                           └── int value (16B) │\n│                                                               │\n│ Integer.valueOf(v) caches values in range [-128, 127]         │\n└───────────────────────────────────────────────────────────────┘`,
+        codeSnippet: `public class WrapperPerformanceDemo {\n    public static void main(String[] args) {\n        // Integer Cache Demonstration (-128 to 127)\n        Integer a = 100;\n        Integer b = 100;\n        System.out.println(a == b); // true (cached)\n\n        Integer c = 200;\n        Integer d = 200;\n        System.out.println(c == d); // FALSE! (different objects outside cache)\n        System.out.println(c.equals(d)); // true (value comparison)\n\n        // Dangerous NullPointer Trap in Unboxing\n        Integer nullWrapper = null;\n        try {\n            int unboxed = nullWrapper; // Throws NullPointerException!\n        } catch (NullPointerException e) {\n            System.out.println("Caught NullPointerException during automatic unboxing!");\n        }\n    }\n}`,
+        terminalOutput: `[EXECUTION] WrapperPerformanceDemo.main()\n>>> a == b : true\n>>> c == d : false | c.equals(d) : true\n>>> Caught NullPointerException during automatic unboxing!`,
+        dialogue: [
+          { speaker: 'maya', text: 'In performance-critical financial or game engines, should we avoid Wrapper classes in loops?' },
+          { speaker: 'professor', text: 'Absolutely, Maya! Using `Long sum = 0L` in a billion-iteration loop creates 1 billion temporary objects on the Heap, causing massive GC pause times. Always use primitive `long sum = 0L`!' }
+        ],
+        quiz: {
+          question: 'Why does `Integer a = 100; Integer b = 100; a == b` evaluate to true, while `Integer c = 500; Integer d = 500; c == d` evaluates to false?',
+          options: [
+            'Java caches Integer objects in the range -128 to 127, reusing references for small values',
+            'Integers above 128 are automatically converted to Doubles',
+            '`==` is broken for numbers greater than 255',
+            'Memory addresses are only 8-bit in Java'
+          ],
+          correct: 0,
+          explanation: 'Java includes an `IntegerCache` that reuses object instances for values between -128 and 127. Values outside this range instantiate new distinct heap objects.'
+        }
+      }
+    ]
+  },
   {
     id: 'raft-consensus',
     title: 'Distributed Systems: Raft Consensus & Byzantine Fault Tolerance',
@@ -811,14 +953,27 @@ Generate a realistic 2-turn multi-agent response as JSON:
         maxTokens: 1000
       });
 
-      let parsed = null;
-      try {
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
-      } catch (err) {}
+      let defaultProfAnswer = `Excellent inquiry on ${activeScene.title}! `;
+      let defaultClassmateAnswer = `That makes sense, Professor! But what edge case should we watch out for in this implementation?`;
 
-      const profText = parsed?.professor?.text || `Insightful question! In ${activeLesson.title.split(':')[0]}, this is resolved through deterministic state replication, idempotent retry handshakes, and quorum safety invariants.`;
-      const classmateText = parsed?.classmate?.text || `That makes sense, Professor! But what happens if network jitter spikes right when we transition states?`;
+      if (activeLesson.id.includes('java') || activeLesson.title.toLowerCase().includes('java')) {
+        defaultProfAnswer += `In Java, primitive variables are stored directly on the Stack, whereas objects and reference types reside on the Heap with their memory references passed by value.`;
+        defaultClassmateAnswer = `Professor, does this mean wrapper classes like Integer incur extra garbage collection pressure compared to primitive int?`;
+      } else if (activeLesson.id.includes('raft') || activeLesson.title.toLowerCase().includes('raft')) {
+        defaultProfAnswer += `In Raft consensus, consistency is guaranteed through leader heartbeats, monotonic log terms, and majority quorum disk persistence.`;
+        defaultClassmateAnswer = `Professor, what happens if network latency delays heartbeats beyond the minimum election timeout?`;
+      } else if (activeLesson.id.includes('btree') || activeLesson.title.toLowerCase().includes('tree') || activeLesson.title.toLowerCase().includes('database')) {
+        defaultProfAnswer += `Database page fan-out optimizes storage I/O by fitting hundreds of keys per 8KB disk page, minimizing tree height.`;
+        defaultClassmateAnswer = `Professor, how do B+ Tree leaf node pointer chains speed up range queries like BETWEEN?`;
+      } else if (activeLesson.id.includes('transformer') || activeLesson.title.toLowerCase().includes('attention') || activeLesson.title.toLowerCase().includes('llm')) {
+        defaultProfAnswer += `Multi-Head Attention computes pairwise dot-product alignment between query and key projections, scaled by sqrt(d_k) to prevent Softmax saturation.`;
+        defaultClassmateAnswer = `Professor, how does FlashAttention avoid high GPU High-Bandwidth Memory (HBM) round-trips during inference?`;
+      } else {
+        defaultProfAnswer += `Understanding this mechanism ensures high performance, memory safety, and correct algorithmic invariants for ${activeLesson.title}.`;
+      }
+
+      const profText = parsed?.professor?.text || defaultProfAnswer;
+      const classmateText = parsed?.classmate?.text || defaultClassmateAnswer;
 
       // 1. Director Turn 1 (Rule 13): Professor speaks FIRST with direct authoritative answer
       setTimeout(() => {
@@ -1467,6 +1622,7 @@ Return ONLY valid JSON.`;
   };
 
   // Interactive Terminal Command Execution
+  // Interactive Terminal Command Execution
   const handleTerminalSubmit = (e) => {
     e?.preventDefault();
     if (!terminalInput.trim()) return;
@@ -1475,15 +1631,61 @@ Return ONLY valid JSON.`;
 
     let output = '';
     const lower = cmd.toLowerCase();
+    const isJava = activeLesson.id.includes('java') || activeLesson.title.toLowerCase().includes('java');
+    const isRaft = activeLesson.id.includes('raft') || activeLesson.title.toLowerCase().includes('raft');
 
     if (lower === 'help') {
-      output = `Available Sandbox Commands:
+      if (isJava) {
+        output = `Available Java Sandbox Commands:
+  • help                 - Display this interactive command reference
+  • run                  - Compile & execute current slide code in JVM sandbox
+  • types / status       - Inspect 8 primitive memory sizes & JVM Stack allocations
+  • cast-test            - Test implicit widening vs explicit narrowing casting & overflow
+  • string-pool          - Inspect String Constant Pool vs Heap object allocations
+  • clear                - Clear the interactive sandbox console`;
+      } else if (isRaft) {
+        output = `Available Raft Sandbox Commands:
   • help                 - Display this interactive command reference
   • status               - Inspect live cluster / node topologies & heartbeat latencies
   • kill-leader          - Simulate leader crash & trigger immediate quorum election
   • replicate <data>     - Append entry across quorum & observe commit index advancing
   • benchmark            - Run micro-benchmark on P99 latency & throughput
   • clear                - Clear the interactive sandbox console`;
+      } else {
+        output = `Available Sandbox Commands:
+  • help                 - Display this interactive command reference
+  • run                  - Execute current slide code module
+  • status / inspect     - Inspect runtime state and memory layout
+  • benchmark            - Run micro-benchmark on latency & throughput
+  • clear                - Clear the interactive sandbox console`;
+      }
+    } else if (lower === 'run' || lower === 'exec') {
+      output = `[EXECUTION ENGINE] Running code for Slide ${activeScene.slideNumber || 1} (${activeLesson.title})...\n>>> Output: ${activeScene.terminalOutput || 'Code executed successfully with zero runtime errors.'}`;
+      if (user?.id) awardXP(user.id, 'TERMINAL_EXPERIMENT', 15).catch(() => {});
+    } else if (lower === 'types' || (isJava && lower === 'status')) {
+      output = `[JVM PRIMITIVE MEMORY TABLE]
+• byte:    1 Byte  (8-bit)  | Range: [-128, 127]
+• short:   2 Bytes (16-bit) | Range: [-32768, 32767]
+• int:     4 Bytes (32-bit) | Range: [-2^31, 2^31 - 1]
+• long:    8 Bytes (64-bit) | Range: [-2^63, 2^63 - 1]
+• float:   4 Bytes (32-bit) | IEEE 754 Floating Point
+• double:  8 Bytes (64-bit) | IEEE 754 High Precision
+• char:    2 Bytes (16-bit) | UTF-16 Unicode Range [0, 65535]
+• boolean: 1 bit JVM (true / false)`;
+      if (user?.id) awardXP(user.id, 'TERMINAL_EXPERIMENT', 15).catch(() => {});
+    } else if (lower === 'cast-test') {
+      output = `[JAVA TYPE CASTING EXPERIMENT]
+1. Widening: (double) 100            -> 100.0 (Safe, automatic)
+2. Narrowing: (int) 3.999            -> 3 (Direct truncation towards zero)
+3. Overflow: (byte) 130              -> -126 (8-bit two's complement wrap)
+4. Integer.MAX_VALUE + 1             -> -2147483648 (Overflow wrap)`;
+      if (user?.id) awardXP(user.id, 'TERMINAL_EXPERIMENT', 15).catch(() => {});
+    } else if (lower === 'string-pool') {
+      output = `[JVM STRING CONSTANT POOL INSPECTION]
+String s1 = "Java";               -> SCP Address: 0x7F01 (Reused)
+String s2 = "Java";               -> SCP Address: 0x7F01 (s1 == s2 : TRUE)
+String s3 = new String("Java");   -> Heap Address: 0x8A12 (s1 == s3 : FALSE, s1.equals(s3) : TRUE)`;
+      if (user?.id) awardXP(user.id, 'TERMINAL_EXPERIMENT', 15).catch(() => {});
     } else if (lower === 'status') {
       output = `[CLUSTER TOPOLOGY METRICS]
 Node-01: FOLLOWER | Term: 2 | Latency: 1.2ms | MatchIndex: 42 | Health: OK
@@ -1501,8 +1703,8 @@ Node-03: FOLLOWER | Term: 2 | Latency: 1.8ms | MatchIndex: 42 | Health: OK`;
 >>> [NEW LEADER ELECTED] Node-03 ascended to LEADER for Term 3!`;
       if (user?.id) awardXP(user.id, 'TERMINAL_EXPERIMENT', 15).catch(() => {});
     } else if (lower === 'benchmark') {
-      output = `[BENCHMARK] Executing 10,000 parallel operations...
-Throughput:       52,400 ops/sec | P99 Latency: 0.72 ms | All invariants satisfied.`;
+      output = `[BENCHMARK] Executing 10,000 parallel operations for ${activeLesson.title}...
+Throughput:       68,400 ops/sec | P99 Latency: 0.48 ms | All invariants satisfied.`;
     } else if (lower === 'clear') {
       setCustomTerminalLogs([]);
       return;
@@ -1517,7 +1719,7 @@ Throughput:       52,400 ops/sec | P99 Latency: 0.72 ms | All invariants satisfi
   const handleAutoSummarizeNotes = async () => {
     setIsAutoSummarizing(true);
     try {
-      const summaryPrompt = `Summarize Slide ${activeScene.slideNumber || currentSceneIdx + 1} (${activeScene.title}) into concise, beautifully bulleted Markdown revision notes:
+      const summaryPrompt = `Summarize Slide ${activeScene.slideNumber || currentSceneIdx + 1} (${activeScene.title}) of "${activeLesson.title}" into concise, beautifully bulleted Markdown revision notes:
 Whiteboard:
 ${activeScene.whiteboardContent}`;
 
@@ -1533,7 +1735,10 @@ ${activeScene.whiteboardContent}`;
         message: '⚡ AI Slide Notes Auto-Generated into your scratchpad!'
       });
     } catch (e) {
-      setClassroomNotes(prev => (prev ? prev + '\n\n---\n\n' : '') + `### Slide ${activeScene.slideNumber || currentSceneIdx + 1} Notes:\n- Core Invariant: Majority Quorum > N/2.\n- Randomized timeouts prevent split votes.\n- Deterministic state machine replication.`);
+      const bulletPoints = activeScene.takeaways && activeScene.takeaways.length > 0
+        ? activeScene.takeaways.map(t => `- ${t}`).join('\n')
+        : `- Key concept: ${activeScene.title}\n- Deep mastery and optimal memory/performance design.\n- Verified boundary conditions and production readiness.`;
+      setClassroomNotes(prev => (prev ? prev + '\n\n---\n\n' : '') + `### Slide ${activeScene.slideNumber || currentSceneIdx + 1} Notes:\n` + bulletPoints);
     }
     setIsAutoSummarizing(false);
   };
