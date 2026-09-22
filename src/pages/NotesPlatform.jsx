@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw } from 'lucide-react';
+import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw, Building2 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
@@ -11,12 +11,14 @@ import { marked } from 'marked';
 import mermaid from 'mermaid';
 // Use the legacy worker which is compatible with Vite's standard bundler config for ES modules
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import CompanyPlacementPapers from './CompanyPlacementPapers';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 mermaid.initialize({ startOnLoad: false, theme: 'dark' });
 
-export default function NotesPlatform({ user }) {
+export default function NotesPlatform({ user, setActiveTab }) {
   // ── All state hooks first ──────────────────────────────────────────
+  const [subPortal, setSubPortal] = useState('semester'); // 'semester' | 'company_drives'
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBranch, setFilterBranch] = useState('All');
   const [filterSem, setFilterSem] = useState('All');
@@ -174,7 +176,7 @@ export default function NotesPlatform({ user }) {
       fileUrl: fileUrl,
       aiEnhancement: {
         status: 'generating',
-        summary: 'Newly uploaded file. Summary is being generated automatically by Lumixora AI. Please wait a moment...',
+        summary: 'Newly uploaded file. Summary is being generated automatically by Vyomra AI. Please wait a moment...',
         concepts: ['Analyzing text content...', 'Extracting core key terms...'],
         questions: [{ q: 'AI is thinking...', a: 'Generating practice material.' }]
       }
@@ -285,7 +287,7 @@ export default function NotesPlatform({ user }) {
     const { title } = note;
     const { summary, concepts, questions } = note.aiEnhancement;
     
-    let content = `LUMIXORA AI STUDY SET: ${title}\n`;
+    let content = `VYOMRA AI STUDY SET: ${title}\n`;
     content += `Generated on: ${new Date().toLocaleDateString()}\n`;
     content += `=====================================================\n\n`;
     
@@ -422,8 +424,41 @@ export default function NotesPlatform({ user }) {
   return (
     <div className="space-y-6 animate-fade-in">
       
-      {/* Search and Filters Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl">
+      {/* Top Subportal Toggle Switch: Semester Mid/End Papers vs Company Placement Drives */}
+      <div className="flex flex-wrap items-center gap-3 p-1.5 bg-black/40 border border-white/10 rounded-2xl w-fit">
+        <button
+          onClick={() => setSubPortal('semester')}
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+            subPortal === 'semester'
+              ? 'bg-brand-teal text-black shadow-md'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" /> 🎓 Semester Mid & End Exam Papers
+        </button>
+        <button
+          onClick={() => setSubPortal('company_drives')}
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+            subPortal === 'company_drives'
+              ? 'bg-brand-teal text-black shadow-md'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Building2 className="w-4 h-4 text-purple-400" /> 🏢 Company Placement Drives (TCS, Accenture, etc.)
+          <span className="text-[9px] bg-brand-pink/20 text-brand-pink border border-brand-pink/40 px-1.5 py-0.2 rounded font-black uppercase">HOT</span>
+        </button>
+      </div>
+
+      {/* SUBPORTAL 2: COMPANY PLACEMENT DRIVES */}
+      {subPortal === 'company_drives' && (
+        <CompanyPlacementPapers user={user} setActiveTab={setActiveTab} />
+      )}
+
+      {/* SUBPORTAL 1: SEMESTER PAPERS & NOTES */}
+      {subPortal === 'semester' && (
+        <>
+          {/* Search and Filters Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl">
         <div className="flex flex-wrap items-center gap-2">
           
           {/* View Toggle (Library vs Trash) - Founders Only */}
@@ -608,7 +643,7 @@ export default function NotesPlatform({ user }) {
                 <button 
                   onClick={() => handleEnhanceClick(note)}
                   className="p-2 rounded-lg bg-brand-purple/10 border border-white/10 text-brand-pink hover:bg-brand-purple hover:text-white transition-all duration-300 flex items-center justify-center cursor-pointer relative group/btn"
-                  title="Enhance notes with Lumixora AI"
+                  title="Enhance notes with Vyomra AI"
                 >
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                 </button>
@@ -703,7 +738,7 @@ export default function NotesPlatform({ user }) {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-100 tracking-tight">Lumixora AI Notes Enhancer</h3>
+                  <h3 className="text-base font-bold text-gray-100 tracking-tight">Vyomra AI Notes Enhancer</h3>
                   <span className="text-[10px] text-gray-400 truncate max-w-[280px] block font-medium">{activeNoteForEnhance.title}</span>
                 </div>
               </div>
@@ -909,6 +944,8 @@ export default function NotesPlatform({ user }) {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
 
       {/* Document Preview Modal */}

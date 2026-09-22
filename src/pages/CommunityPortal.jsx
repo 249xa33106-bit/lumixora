@@ -423,7 +423,7 @@ export default function CommunityPortal({ user }) {
 
   const triggerAiBotResponse = async (queryText, collectionPath, chatInfo) => {
     try {
-      const systemPrompt = `You are Lumixora AI Assistant, a world-class academic mentor and coding expert in a university class chat room.
+      const systemPrompt = `You are Vyomra AI Assistant, a world-class academic mentor and coding expert in a university class chat room.
 Answer the user's question with extreme clarity, step-by-step logic, code blocks (wrap code in \`\`\`language ... \`\`\`), and concise formatting. Keep responses focused and readable under 300 words.`;
 
       const aiText = await callAICompletion({
@@ -438,7 +438,7 @@ Answer the user's question with extreme clarity, step-by-step logic, code blocks
       const aiMsg = {
         text: aiText,
         senderId: 'lumixora-ai-assistant',
-        senderName: 'Lumixora AI Assistant',
+        senderName: 'Vyomra AI Assistant',
         senderRole: 'ai',
         isAi: true,
         timestamp: serverTimestamp(),
@@ -996,7 +996,7 @@ Answer the user's question with extreme clarity, step-by-step logic, code blocks
                           </span>
                           {msg.isAi || msg.senderRole === 'ai' ? (
                             <span className="text-[9px] font-black uppercase tracking-wider text-black bg-gradient-to-r from-[#00f5d4] to-brand-blue px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                              <Sparkles className="w-2.5 h-2.5" /> Lumixora AI
+                              <Sparkles className="w-2.5 h-2.5" /> Vyomra AI
                             </span>
                           ) : activeChat?.type === 'group' ? (
                             <>

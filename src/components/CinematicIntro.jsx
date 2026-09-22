@@ -1,406 +1,705 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import Dashboard3DBackground from './Dashboard3DBackground';
 import { 
   Bot, FileText, Rocket, Award, Code2, Map, Users, BarChart3, 
-  Calendar, CheckSquare, Zap, GraduationCap, ArrowRight, SkipForward, Volume2, VolumeX, Sparkles
+  Calendar, CheckSquare, Zap, GraduationCap, ArrowRight, SkipForward, Volume2, VolumeX, Sparkles, Trophy, BookOpen,
+  Play, Pause, RotateCcw, Compass, Star, ChevronRight, Eye, ShieldCheck, Flame, Music, Disc, Palette
 } from 'lucide-react';
 
-const ALL_LUMIXORA_FEATURES = [
-  { id: 'twin', name: 'AI Academic Twin™', category: 'NEURAL MENTOR', icon: Bot, color: '#00f5d4', hex: 0x00f5d4 },
-  { id: 'notes', name: 'Smart Notes Platform', category: 'KNOWLEDGE REPO', icon: FileText, color: '#38bdf8', hex: 0x38bdf8 },
-  { id: 'pyq', name: 'PYQ Question Bank', category: 'EXAM VAULT', icon: Award, color: '#fbbf24', hex: 0xfbbf24 },
-  { id: 'planner', name: 'AI Study Planner', category: 'ADAPTIVE TIMELINE', icon: Calendar, color: '#a855f7', hex: 0xa855f7 },
-  { id: 'tasks', name: 'Task Manager', category: 'STUDY SPRINTS', icon: CheckSquare, color: '#10b981', hex: 0x10b981 },
-  { id: 'coding', name: 'Live Coding Lab', category: 'COMPILER & DSA', icon: Code2, color: '#ec4899', hex: 0xec4899 },
-  { id: 'courses', name: 'Learning Hub & Courses', category: 'CURRICULUM', icon: GraduationCap, color: '#6366f1', hex: 0x6366f1 },
-  { id: 'projects', name: 'Student Project Expo', category: 'INNOVATION', icon: Rocket, color: '#f43f5e', hex: 0xf43f5e },
-  { id: 'roadmaps', name: '18+ Tech Roadmaps', category: 'CAREER MATRIX', icon: Map, color: '#06b6d4', hex: 0x06b6d4 },
-  { id: 'attendance', name: 'Official Attendance', category: 'RADAR & SAFETY', icon: BarChart3, color: '#e11d48', hex: 0xe11d48 },
-  { id: 'productivity', name: 'Streaks & Leaderboard', category: 'GAMIFICATION', icon: Zap, color: '#f59e0b', hex: 0xf59e0b },
-  { id: 'clubs', name: 'Campus Clubs & Peers', category: 'COLLABORATION', icon: Users, color: '#8b5cf6', hex: 0x8b5cf6 }
+import tomAndJerryImg from '../assets/tom_and_jerry_intro.png';
+import doraemonImg from '../assets/doraemon.png';
+import bheemImg from '../assets/bheem.png';
+import shinchanImg from '../assets/shinchan.png';
+import pikachuImg from '../assets/pikachu.png';
+import ben10Img from '../assets/ben10.png';
+
+// ─── AUTHENTIC CARTOON MULTIVERSE ROSTER ───
+const CARTOON_MASCOTS = [
+  {
+    id: 'tom_and_jerry',
+    name: 'Tom & Jerry',
+    emoji: '🐱🐭',
+    universe: 'MGM Classics',
+    quote: 'Welcome to Vyomra! The ultimate study & placement OS is finally here!',
+    color: '#ffd166',
+    collectible: '🧀 Golden Swiss Cheese',
+    tag: 'Official Mentors',
+    image: tomAndJerryImg
+  },
+  {
+    id: 'doraemon',
+    name: 'Doraemon & Nobita',
+    emoji: '🐱🔔',
+    universe: '22nd Century Gadgets',
+    quote: 'Nobita! With Vyomra’s 4D AI Future Twin, your exams and placements are 100% sorted!',
+    color: '#00a0e9',
+    collectible: '🛸 Bamboo Copter & Dorayaki',
+    tag: 'Gadget AI Twin',
+    image: doraemonImg
+  },
+  {
+    id: 'chhota_bheem',
+    name: 'Chhota Bheem',
+    emoji: '💪🟡',
+    universe: 'Dholakpur Kingdom',
+    quote: 'Tun Tun Mausi ke Ladoo + Vyomra Coding Lab = Unstoppable 28 LPA Placement Power!',
+    color: '#ff9933',
+    collectible: '🟡 Super Energizing Ladoo',
+    tag: 'Dholakpur Champion',
+    image: bheemImg
+  },
+  {
+    id: 'shinchan',
+    name: 'Shinchan Nohara',
+    emoji: '👦🍫',
+    universe: 'Kasukabe Defense Force',
+    quote: 'Action Kamen zindabad! Vyomra is so fun, Shiro is also solving DSA challenges!',
+    color: '#e74c3c',
+    collectible: '🍫 Chocobi & Action Kamen',
+    tag: 'Kasukabe Hero',
+    image: shinchanImg
+  },
+  {
+    id: 'pikachu',
+    name: 'Pikachu',
+    emoji: '⚡🔮',
+    universe: 'Pokémon Master',
+    quote: 'Pika-Pikachu! Powering your study streaks with 100,000 Volts of Placement Energy!',
+    color: '#f1c40f',
+    collectible: '⚡ Thunderstone Badge',
+    tag: 'Electric Streaks',
+    image: pikachuImg
+  },
+  {
+    id: 'ben10',
+    name: 'Ben 10',
+    emoji: '⌚👽',
+    universe: 'Omniverse Hero',
+    quote: 'It’s Hero Time! Transforming your college journey into a Tier-1 Dream Placement!',
+    color: '#2ecc71',
+    collectible: '🟢 Omnitrix Core',
+    tag: 'Omniverse Leader',
+    image: ben10Img
+  }
+];
+
+const ALL_VYOMRA_FEATURES = [
+  { 
+    id: 'twin', 
+    name: 'AI Academic Twin™ & Placement Forecaster', 
+    category: 'NEURAL CAREER MATRIX', 
+    icon: Bot, 
+    color: '#00f5d4', 
+    desc: 'Monte Carlo simulated CTC prediction (₹18.5 – ₹28.2+ LPA) with dynamic micro-interventions & skill graph tracking.',
+    stats: 'Tier-1 FAANG Probability: 84.6%',
+    badge: 'Neural Placement Core',
+    liveMetric: '₹24.8 LPA Target'
+  },
+  { 
+    id: 'coding', 
+    name: 'Interactive Multi-Language Coding Lab', 
+    category: 'SANDBOX & DSA LAB', 
+    icon: Code2, 
+    color: '#ec4899', 
+    desc: 'Full-stack in-browser IDE for Java 17, Python 3, C++, Go, and C with automated complexity evaluators & Monaco editor.',
+    stats: 'Instant Execution & AI Copilot',
+    badge: 'Real-Time Compiler',
+    liveMetric: '6 Languages Supported'
+  },
+  { 
+    id: 'pyq', 
+    name: 'Autonomous PYQ & Exam Vault', 
+    category: 'EXAMINATION VAULT', 
+    icon: Award, 
+    color: '#fbbf24', 
+    desc: 'Complete past 5-year question papers, verified answer keys, and exam blue-prints mapped to university regulations.',
+    stats: '100+ Verified Solution Dossiers',
+    badge: 'University Regulations',
+    liveMetric: '100% Syllabus Coverage'
+  },
+  { 
+    id: 'notes', 
+    name: 'Smart Notes & AI Knowledge Repo', 
+    category: 'CURATED KNOWLEDGE', 
+    icon: BookOpen, 
+    color: '#38bdf8', 
+    desc: 'Peer-shared and faculty-verified study notes, AI-generated summary sheets, and interactive formula cheat codes.',
+    stats: 'Instant PDF / LaTeX Generation',
+    badge: 'Smart Revision',
+    liveMetric: 'AI Instant Flashcards'
+  },
+  { 
+    id: 'attendance', 
+    name: 'Official Attendance Radar & Compliance', 
+    category: 'STUDENT SAFETY RADAR', 
+    icon: BarChart3, 
+    color: '#e11d48', 
+    desc: 'Subject-wise 75% threshold safety radar, condonation calculator, and automated timetable scheduling.',
+    stats: 'Real-time Safety Margin Alerts',
+    badge: 'Zero Backlog Shield',
+    liveMetric: 'Safe Zone Guaranteed'
+  },
+  { 
+    id: 'productivity', 
+    name: 'Global Resonance AP & Leaderboard', 
+    category: 'CAMPUS GAMIFICATION', 
+    icon: Zap, 
+    color: '#f59e0b', 
+    desc: 'Earn Aura Resonance Points (AP) and Synaptic Coins (SC) by solving daily tasks, coding labs, and study sprints.',
+    stats: 'Live Inter-College Ranks',
+    badge: 'Campus Prestige',
+    liveMetric: 'Level 14 Scholar'
+  }
+];
+
+const BACKGROUND_THEMES = [
+  { id: 'cosmic_aurora', name: '🌌 Cosmic Aurora', bg: '#060614', topGlow: '#6938ef', bottomGlow: '#00f5d4' },
+  { id: 'gold_studio', name: '✨ Gold Dreamstage', bg: '#0a0804', topGlow: '#f59e0b', bottomGlow: '#fbbf24' },
+  { id: 'cyber_violet', name: '💜 Cyber Violet', bg: '#080410', topGlow: '#d946ef', bottomGlow: '#3b82f6' }
 ];
 
 export default function CinematicIntro({ onComplete }) {
-  // Timeline State: 'awakening' -> 'features_materialize' -> 'singularity_merge' -> 'lumixora_reveal' -> 'tagline_settle'
-  const [sceneState, setSceneState] = useState('awakening');
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState(-1);
+  const [selectedMascotIndex, setSelectedMascotIndex] = useState(0);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
+  const [currentBgThemeIndex, setCurrentBgThemeIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [audioStarted, setAudioStarted] = useState(false);
+  const [dialogueText, setDialogueText] = useState(CARTOON_MASCOTS[0].quote);
+  const [progress, setProgress] = useState(0);
 
-  const audioCtxRef = useRef(null);
+  // Mouse Parallax
+  const [mouseNorm, setMouseNorm] = useState({ x: 0, y: 0 });
+  const [interactiveSparks, setInteractiveSparks] = useState([]);
 
-  // ─── CONTINUOUS 135 BPM TELUGU MASS BGM ENGINE (Kuthu Dappu + Brass Hero Riff) ──
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) audioCtxRef.current = new AudioCtx();
-    }
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  };
+  const threeMountRef = useRef(null);
+  const audioElementRef = useRef(null);
 
-  const playMassDappuBeat = (time, accent = false) => {
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
+  const currentMascot = CARTOON_MASCOTS[selectedMascotIndex];
+  const currentBgTheme = BACKGROUND_THEMES[currentBgThemeIndex];
 
-    // 1. Thavil / Dhol Heavy Sub Impact
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(accent ? 160 : 120, time);
-    osc.frequency.exponentialRampToValueAtTime(32, time + (accent ? 0.35 : 0.22));
-
-    gain.gain.setValueAtTime(accent ? 0.7 : 0.45, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + (accent ? 0.38 : 0.25));
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(time);
-    osc.stop(time + (accent ? 0.38 : 0.25));
-
-    // 2. High-Frequency Dappu / Marfa Rim Snap
-    const bufferSize = ctx.sampleRate * 0.08;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.015));
-    }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(accent ? 2400 : 1600, time);
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(accent ? 0.35 : 0.2, time);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(ctx.destination);
-    noise.start(time);
-    noise.stop(time + 0.08);
-  };
-
-  const playMassBrassNote = (time, freq, dur = 0.25) => {
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
-
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-
-    osc1.type = 'sawtooth';
-    osc2.type = 'square';
-    osc1.frequency.setValueAtTime(freq, time);
-    osc2.frequency.setValueAtTime(freq * 1.006, time);
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000, time);
-    filter.frequency.linearRampToValueAtTime(3200, time + 0.06);
-    filter.frequency.exponentialRampToValueAtTime(600, time + dur);
-
-    gain.gain.setValueAtTime(0.24, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
-
-    osc1.connect(filter);
-    osc2.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc1.start(time);
-    osc2.start(time);
-    osc1.stop(time + dur);
-    osc2.stop(time + dur);
-  };
-
-  // Start 135 BPM Telugu Mass Kuthu Beat Loop
+  // ─── 3D THREE.JS LUXURY CINEMATIC DREAMSTAGE ───
   useEffect(() => {
-    let intervalId;
-    if (soundEnabled) {
-      initAudio();
-      let step = 0;
-      const heroRiff = [293.66, 0, 369.99, 440.00, 293.66, 369.99, 440.00, 587.33];
+    const mount = threeMountRef.current;
+    if (!mount) return;
 
-      intervalId = setInterval(() => {
-        if (!audioCtxRef.current) return;
-        const now = audioCtxRef.current.currentTime;
-        
-        if (step === 0 || step === 4 || step === 5) {
-          playMassDappuBeat(now, step === 0);
-        } else if (step === 2 || step === 6) {
-          playMassDappuBeat(now, true);
-        }
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x04040d, 0.015);
 
-        const note = heroRiff[step];
-        if (note > 0) {
-          playMassBrassNote(now + 0.02, note, 0.2);
-        }
+    const camera = new THREE.PerspectiveCamera(50, mount.clientWidth / mount.clientHeight, 0.1, 1000);
+    camera.position.set(0, 0, 28);
 
-        step = (step + 1) % 8;
-      }, 220); // ~135 BPM
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    mount.appendChild(renderer.domElement);
+
+    // 1. Studio Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    mainLight.position.set(0, 20, 20);
+    scene.add(mainLight);
+
+    // 2. 3D Floating Luminous Fireflies / Golden Stardust (1200 Bokeh Stars)
+    const particleCount = 1200;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    const color1 = new THREE.Color(currentMascot.color || '#00f5d4');
+    const color2 = new THREE.Color('#ffd166');
+    const color3 = new THREE.Color('#a855f7');
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 75;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 55;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+
+      const c = i % 3 === 0 ? color1 : (i % 3 === 1 ? color2 : color3);
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
     }
 
-    return () => {
-      if (intervalId) clearInterval(intervalId);
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.28,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+
+    const starParticles = new THREE.Points(geometry, material);
+    scene.add(starParticles);
+
+    // 3. Elegant Glowing Pedestal Ring Underneath Mascot
+    const ringGeo = new THREE.TorusGeometry(6.5, 0.05, 16, 100);
+    const ringMat = new THREE.MeshBasicMaterial({ 
+      color: new THREE.Color(currentMascot.color || '#00f5d4'), 
+      transparent: true, 
+      opacity: 0.45 
+    });
+    const stageRing = new THREE.Mesh(ringGeo, ringMat);
+    stageRing.rotation.x = Math.PI / 2.2;
+    stageRing.position.set(-6, -6, 0);
+    scene.add(stageRing);
+
+    const ringGeo2 = new THREE.TorusGeometry(8.5, 0.03, 16, 100);
+    const ringMat2 = new THREE.MeshBasicMaterial({ 
+      color: 0xffffff, 
+      transparent: true, 
+      opacity: 0.2 
+    });
+    const stageRing2 = new THREE.Mesh(ringGeo2, ringMat2);
+    stageRing2.rotation.x = Math.PI / 2.2;
+    stageRing2.position.set(-6, -6, 0);
+    scene.add(stageRing2);
+
+    // 4. Smooth Animation Loop
+    let reqId;
+    let clock = new THREE.Clock();
+
+    const animate = () => {
+      reqId = requestAnimationFrame(animate);
+      const time = clock.getElapsedTime();
+
+      // Gentle Stardust Flow
+      starParticles.rotation.y = time * 0.02;
+      starParticles.rotation.x = time * 0.01;
+
+      // Subtle Pedestal Spin
+      stageRing.rotation.z = time * 0.4;
+      stageRing2.rotation.z = -time * 0.25;
+
+      // Smooth Camera Drift with Mouse Parallax
+      camera.position.x = mouseNorm.x * 2.8;
+      camera.position.y = -mouseNorm.y * 2.2;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
     };
-  }, [soundEnabled]);
 
-  // ─── MASTER TIMELINE ───────────────────────────────────────────────────────
-  useEffect(() => {
-    const tScene2 = setTimeout(() => {
-      setSceneState('features_materialize');
-    }, 1800);
+    animate();
 
-    const featureInterval = 350;
-    let currentIdx = 0;
-    let featTimer;
+    const handleResize = () => {
+      if (!mount) return;
+      camera.aspect = mount.clientWidth / mount.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mount.clientWidth, mount.clientHeight);
+    };
 
-    const startFeatureLoop = setTimeout(() => {
-      featTimer = setInterval(() => {
-        setActiveFeatureIndex(currentIdx);
-        currentIdx++;
-
-        if (currentIdx >= ALL_LUMIXORA_FEATURES.length) {
-          clearInterval(featTimer);
-        }
-      }, featureInterval);
-    }, 1800);
-
-    const tScene3 = setTimeout(() => {
-      setSceneState('singularity_merge');
-    }, 6000);
-
-    const tScene4 = setTimeout(() => {
-      setSceneState('lumixora_reveal');
-      if (soundEnabled && audioCtxRef.current) {
-        const now = audioCtxRef.current.currentTime;
-        for (let i = 0; i < 8; i++) {
-          playMassDappuBeat(now + (i * 0.08), true);
-        }
-        setTimeout(() => {
-          if (!audioCtxRef.current) return;
-          const cTime = audioCtxRef.current.currentTime;
-          playMassDappuBeat(cTime, true);
-          playMassBrassNote(cTime, 146.83, 1.8);
-          playMassBrassNote(cTime, 220.00, 1.8);
-          playMassBrassNote(cTime, 293.66, 1.8);
-          playMassBrassNote(cTime, 440.00, 1.8);
-        }, 640);
-      }
-    }, 7800);
-
-    const tScene5 = setTimeout(() => {
-      setSceneState('tagline_settle');
-    }, 9800);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      clearTimeout(tScene2);
-      clearTimeout(startFeatureLoop);
-      if (featTimer) clearInterval(featTimer);
-      clearTimeout(tScene3);
-      clearTimeout(tScene4);
-      clearTimeout(tScene5);
+      cancelAnimationFrame(reqId);
+      window.removeEventListener('resize', handleResize);
+      if (mount && renderer.domElement) {
+        mount.removeChild(renderer.domElement);
+      }
+      geometry.dispose();
+      material.dispose();
+      ringGeo.dispose();
+      ringMat.dispose();
+      ringGeo2.dispose();
+      ringMat2.dispose();
+      renderer.dispose();
+    };
+  }, [mouseNorm, currentMascot]);
+
+  // ─── EXACT STUDIO AUDIO PLAYBACK ENGINE (HTML5 AUDIO) ───
+  const startAudioPlayback = () => {
+    if (audioElementRef.current) {
+      audioElementRef.current.play().then(() => {
+        setAudioStarted(true);
+        setSoundEnabled(true);
+      }).catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    startAudioPlayback();
+    const handleGlobalInteraction = () => {
+      startAudioPlayback();
+      window.removeEventListener('pointerdown', handleGlobalInteraction);
+      window.removeEventListener('keydown', handleGlobalInteraction);
+    };
+    window.addEventListener('pointerdown', handleGlobalInteraction);
+    window.addEventListener('keydown', handleGlobalInteraction);
+    return () => {
+      window.removeEventListener('pointerdown', handleGlobalInteraction);
+      window.removeEventListener('keydown', handleGlobalInteraction);
     };
   }, []);
 
+  const toggleSound = () => {
+    if (!audioElementRef.current) return;
+    if (soundEnabled) {
+      audioElementRef.current.pause();
+      setSoundEnabled(false);
+    } else {
+      audioElementRef.current.play();
+      setSoundEnabled(true);
+      setAudioStarted(true);
+    }
+  };
+
+  // Switch Background Theme
+  const handleSwitchBgTheme = () => {
+    setCurrentBgThemeIndex(prev => (prev + 1) % BACKGROUND_THEMES.length);
+  };
+
+  // Auto-Cycle Mascots & Features
+  useEffect(() => {
+    let cycleTimer;
+    if (isPlaying) {
+      cycleTimer = setInterval(() => {
+        setActiveFeatureIndex(prev => {
+          const nextFeat = (prev + 1) % ALL_VYOMRA_FEATURES.length;
+          const feat = ALL_VYOMRA_FEATURES[nextFeat];
+          
+          setSelectedMascotIndex(mIdx => {
+            const nextMascot = (mIdx + 1) % CARTOON_MASCOTS.length;
+            const mascot = CARTOON_MASCOTS[nextMascot];
+            setDialogueText(`${mascot.emoji} ${mascot.name}: "${feat.name} — ${feat.desc}" ✨`);
+            return nextMascot;
+          });
+
+          return nextFeat;
+        });
+      }, 4500);
+    }
+    return () => clearInterval(cycleTimer);
+  }, [isPlaying]);
+
+  // 5-Second Duration Timer & Automatic Finish
+  useEffect(() => {
+    const totalDuration = 5000; // Exactly 5 seconds
+    const interval = 50;
+    const progressTimer = setInterval(() => {
+      if (isPlaying) {
+        setProgress(prev => {
+          const next = prev + (interval / totalDuration) * 100;
+          if (next >= 100) {
+            clearInterval(progressTimer);
+            handleFinish();
+            return 100;
+          }
+          return next;
+        });
+      }
+    }, interval);
+    return () => clearInterval(progressTimer);
+  }, [isPlaying]);
+
+  const handleMouseMove = (e) => {
+    const normX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+    const normY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+    setMouseNorm({ x: normX, y: normY });
+  };
+
+  const handleScreenClick = (e) => {
+    if (!audioStarted) {
+      startAudioPlayback();
+    }
+    const newStar = {
+      id: Date.now() + Math.random(),
+      x: e.clientX,
+      y: e.clientY
+    };
+    setInteractiveSparks(prev => [...prev.slice(-15), newStar]);
+    setTimeout(() => {
+      setInteractiveSparks(prev => prev.filter(s => s.id !== newStar.id));
+    }, 900);
+  };
+
   const handleFinish = () => {
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+    }
     setIsFadingOut(true);
     setTimeout(() => {
-      onComplete?.();
+      if (onComplete) onComplete();
     }, 600);
   };
 
-  const activeFeat = ALL_LUMIXORA_FEATURES[activeFeatureIndex] || ALL_LUMIXORA_FEATURES[0];
-  const ActiveIcon = activeFeat.icon;
-
   return (
     <div 
-      className={`fixed inset-0 z-[999999] bg-[#020308] select-none overflow-hidden transition-all duration-1000 flex flex-col justify-between ${
-        isFadingOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
-      }`}
-      onClick={initAudio}
+      className={`fixed inset-0 z-[999999] text-white flex flex-col justify-between overflow-hidden select-none transition-all duration-700 ${isFadingOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100'}`}
+      style={{ backgroundColor: currentBgTheme.bg }}
+      onMouseMove={handleMouseMove}
+      onClick={handleScreenClick}
     >
-      {/* ─── 1. EXACT 3D DASHBOARD BACKGROUND (SHARED FOR INTRO & DASHBOARD) ──── */}
-      <Dashboard3DBackground />
+      {/* ─── REAL STUDIO HTML5 AUDIO ELEMENT ─── */}
+      <audio 
+        ref={audioElementRef}
+        src="/anirudh_mass_bgm.wav"
+        loop
+        preload="auto"
+      />
+      
+      {/* ─── REAL-TIME THREE.JS 3D WEBGL ENGINE MOUNT ─── */}
+      <div ref={threeMountRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* ─── 2. ANAMORPHIC HORIZONTAL CYBER LENS FLARE ──────────────────────── */}
-      <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00f5d4] via-[#38bdf8] to-transparent blur-[1px] pointer-events-none z-10 shadow-[0_0_35px_#00f5d4]" />
-
-      {/* ─── 3. TOP BAR: AUDIO & SKIP CONTROLS ──────────────────────────────── */}
-      <div className="relative z-30 w-full flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-black/90 border border-cyan-400/40 overflow-hidden flex items-center justify-center p-1 shadow-2xl backdrop-blur-2xl">
-            <img src="/lumixora_logo.jpg" alt="LUMIXORA" className="w-full h-full object-contain" />
-          </div>
-          <span className="text-[11px] font-mono tracking-[0.3em] text-[#00f5d4] uppercase font-bold flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-            LUMIXORA // 3D INTRO
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSoundEnabled(!soundEnabled);
-            }}
-            className="p-2.5 rounded-xl bg-black/70 hover:bg-white/10 text-cyan-300 hover:text-white border border-cyan-500/30 transition-all cursor-pointer backdrop-blur-xl shadow-lg"
-            title={soundEnabled ? "Mute Mass BGM" : "Enable Mass BGM"}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-[#00f5d4]" /> : <VolumeX className="w-4 h-4 text-gray-500" />}
-          </button>
-
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleFinish();
-            }}
-            className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 hover:text-white font-mono text-xs tracking-widest flex items-center gap-2 backdrop-blur-2xl border border-cyan-500/40 shadow-xl hover:scale-105 transition-all cursor-pointer"
-          >
-            <span>SKIP INTRO</span>
-            <SkipForward className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {/* ─── ULTRA-CLEAN VOLUMETRIC GLOWS (SMOOTH CINEMATIC LIGHTING) ─── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div 
+          className="absolute -top-40 -left-20 w-[700px] h-[700px] rounded-full opacity-35 blur-[160px] transition-all duration-1000"
+          style={{ background: `radial-gradient(circle, ${currentBgTheme.topGlow} 0%, transparent 70%)` }}
+        />
+        <div 
+          className="absolute -bottom-40 -right-20 w-[750px] h-[750px] rounded-full opacity-30 blur-[160px] transition-all duration-1000"
+          style={{ background: `radial-gradient(circle, ${currentBgTheme.bottomGlow} 0%, transparent 70%)` }}
+        />
       </div>
 
-      {/* ─── CENTRAL MASTER CINEMA STAGE (100% DEAD-CENTERED) ───────────────── */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-4 pointer-events-none">
+      {/* ─── INTERACTIVE TAP SPARKS ─── */}
+      {interactiveSparks.map(s => (
+        <div 
+          key={s.id} 
+          className="pointer-events-none fixed z-50 text-3xl animate-bounce"
+          style={{ left: s.x - 16, top: s.y - 16 }}
+        >
+          ✨🌟⭐
+        </div>
+      ))}
+
+      {/* ─── TOP HEADER BAR ─── */}
+      <header className="relative z-30 flex flex-wrap items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40 backdrop-blur-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3.5">
+          <div 
+            className="w-11 h-11 rounded-2xl border flex items-center justify-center text-2xl shadow-2xl transition-all"
+            style={{ 
+              backgroundColor: `${currentMascot.color}20`, 
+              borderColor: `${currentMascot.color}60`,
+              boxShadow: `0 0 20px ${currentMascot.color}30`
+            }}
+          >
+            {currentMascot.emoji}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xs sm:text-sm font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-[#00f5d4] to-pink-500 uppercase font-mono">
+                VYOMRA 3D // CARTOON MULTIVERSE
+              </h1>
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#00f5d4]/20 text-[#00f5d4] font-bold border border-[#00f5d4]/40 uppercase tracking-widest">
+                {currentMascot.universe}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400 font-mono tracking-wider mt-0.5">🎸 BGM: ANIRUDH MASS THEME · CLICK ANYWHERE TO PLAY</p>
+          </div>
+        </div>
+
+        {/* Action Controls & Theme Switcher */}
+        <div className="flex items-center gap-2.5 mt-2 sm:mt-0">
+          {/* Background Theme Switcher */}
+          <button
+            onClick={handleSwitchBgTheme}
+            className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-cyan-300 flex items-center gap-2 transition-all cursor-pointer shadow-lg backdrop-blur-md hover:scale-105"
+            title="Click to Switch Background Theme"
+          >
+            <Palette className="w-4 h-4 text-cyan-400" />
+            <span className="hidden sm:inline">{currentBgTheme.name}</span>
+          </button>
+
+          <button
+            onClick={toggleSound}
+            className="w-10 h-10 rounded-2xl bg-white/5 border border-white/15 hover:bg-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all cursor-pointer shadow-lg backdrop-blur-md"
+            title={soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
+          >
+            {soundEnabled && audioStarted ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
+          </button>
+
+          <button
+            onClick={() => {
+              if (!audioStarted) startAudioPlayback();
+              if (isPlaying) {
+                if (audioElementRef.current) audioElementRef.current.pause();
+                setIsPlaying(false);
+              } else {
+                if (audioElementRef.current) audioElementRef.current.play();
+                setIsPlaying(true);
+              }
+            }}
+            className="w-10 h-10 rounded-2xl bg-white/5 border border-white/15 hover:bg-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all cursor-pointer shadow-lg backdrop-blur-md"
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? <Pause className="w-4 h-4 text-amber-400" /> : <Play className="w-4 h-4 text-emerald-400" />}
+          </button>
+
+          <button
+            onClick={handleFinish}
+            className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-black font-black text-xs tracking-wider transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-xl shadow-amber-400/25 hover:scale-105 active:scale-95"
+          >
+            <span>ENTER PLATFORM</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* ─── MAIN STAGE DISPLAY ─── */}
+      <main className="relative z-20 flex-1 flex flex-col lg:flex-row items-center justify-between px-6 lg:px-20 max-w-7xl mx-auto w-full gap-8">
         
-        {/* ─── SCENE 1: DIGITAL AWAKENING (0.0s - 1.8s) ────────────────────────── */}
-        {sceneState === 'awakening' && (
-          <div className="flex flex-col items-center text-center animate-fade-in">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-[#00f5d4] to-cyan-400 animate-ping shadow-[0_0_60px_#00f5d4]" />
-            <div className="mt-8 text-xs font-mono tracking-[0.6em] text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] via-cyan-300 to-blue-300 uppercase font-black animate-pulse">
-              INITIALIZING PLATFORM
+        {/* 🌟 100% REAL AUTHENTIC HIGH-RES TRANSPARENT CARTOON HERO (FLOATING IN 3D) */}
+        <div 
+          className="relative flex items-center justify-center shrink-0 w-full lg:w-1/2 h-[320px] sm:h-[440px] select-none"
+          style={{ 
+            transform: `perspective(1000px) rotateY(${mouseNorm.x * 12}deg) rotateX(${-mouseNorm.y * 8}deg)` 
+          }}
+        >
+          {/* Glowing 3D Base Platform Glow */}
+          <div 
+            className="absolute bottom-2 w-[340px] sm:w-[420px] h-24 rounded-full blur-3xl pointer-events-none animate-pulse transition-all duration-700"
+            style={{ 
+              background: `radial-gradient(circle, ${currentMascot.color}70 0%, #00f5d4 50%, transparent 80%)` 
+            }}
+          />
+
+          {/* Render Real Authentic Transparent Image */}
+          <div className="relative group cursor-pointer animate-fade-in flex items-center justify-center">
+            <img 
+              src={currentMascot.image} 
+              alt={currentMascot.name}
+              className="w-full max-h-[360px] sm:max-h-[420px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.9)] transition-transform duration-300 group-hover:scale-105"
+            />
+
+            {/* Mascot Tag Badge */}
+            <div 
+              className="absolute -top-3 right-4 px-3.5 py-1.5 rounded-full bg-black/85 border text-xs font-bold shadow-2xl backdrop-blur-md flex items-center gap-2 animate-bounce"
+              style={{ borderColor: `${currentMascot.color}60`, color: currentMascot.color }}
+            >
+              <span>{currentMascot.emoji} {currentMascot.tag}</span>
+            </div>
+
+            {/* Floating Collectible Tag */}
+            <div className="absolute -bottom-2 left-4 px-3.5 py-1 rounded-full bg-black/85 border border-white/15 text-[11px] font-mono text-amber-300 shadow-xl backdrop-blur-md">
+              <span>{currentMascot.collectible}</span>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* ─── SCENE 2: FEATURES MATERIALIZE ONE BY ONE (1.8s - 6.0s) ─────────── */}
-        {sceneState === 'features_materialize' && (
-          <div className="flex flex-col items-center text-center px-4 max-w-xl animate-in zoom-in-95 fade-in duration-300">
+        {/* 🌟 3D HOLOGRAPHIC FEATURE MATRIX CARD (RIGHT SIDE) */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start space-y-4" onClick={(e) => e.stopPropagation()}>
+          
+          <div className="w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl border border-white/20 bg-[#08081a]/90 backdrop-blur-2xl shadow-2xl space-y-5 animate-fade-in">
             
-            {/* Active 3D Holographic Colorful Feature Card */}
-            <div 
-              key={activeFeat.id}
-              className="relative flex flex-col items-center p-8 sm:p-10 rounded-3xl bg-[#020b1b]/90 border-2 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,245,212,0.4)]"
-              style={{ borderColor: `${activeFeat.color}80` }}
-            >
-              {/* Category Tag */}
-              <div 
-                className="px-4 py-1 rounded-full text-[10px] font-mono tracking-[0.3em] uppercase mb-4 font-bold border shadow-md"
+            {/* Top Category & Live Metric Badge */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3.5">
+              <span 
+                className="text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border flex items-center gap-2 shadow-sm"
                 style={{ 
-                  backgroundColor: `${activeFeat.color}20`,
-                  borderColor: `${activeFeat.color}60`,
-                  color: activeFeat.color 
+                  backgroundColor: `${ALL_VYOMRA_FEATURES[activeFeatureIndex].color}20`, 
+                  borderColor: `${ALL_VYOMRA_FEATURES[activeFeatureIndex].color}60`, 
+                  color: ALL_VYOMRA_FEATURES[activeFeatureIndex].color 
                 }}
               >
-                {activeFeat.category}
+                <Sparkles className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
+                {ALL_VYOMRA_FEATURES[activeFeatureIndex].category}
+              </span>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-white/10 text-emerald-300 font-bold border border-white/10">
+                  {ALL_VYOMRA_FEATURES[activeFeatureIndex].liveMetric}
+                </span>
+                <span className="text-xs text-gray-400 font-mono font-bold">
+                  {activeFeatureIndex + 1} / {ALL_VYOMRA_FEATURES.length}
+                </span>
               </div>
-
-              {/* Glowing Icon Emblem */}
-              <div 
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center mb-5 shadow-2xl"
-                style={{ 
-                  background: `radial-gradient(circle, ${activeFeat.color}40 0%, rgba(2,11,27,0.95) 100%)`,
-                  border: `2px solid ${activeFeat.color}`,
-                  boxShadow: `0 0 40px ${activeFeat.color}70`
-                }}
-              >
-                <ActiveIcon className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]" style={{ color: activeFeat.color }} />
-              </div>
-
-              {/* Feature Title */}
-              <h2 className="text-2xl sm:text-4xl font-black tracking-wider text-white mb-1 drop-shadow-md">
-                {activeFeat.name}
-              </h2>
-
-              <p className="text-xs font-mono text-cyan-200/80 tracking-widest mt-1">
-                MODULE {activeFeatureIndex + 1} OF {ALL_LUMIXORA_FEATURES.length}
-              </p>
             </div>
 
-            {/* Colorful Feature Micro-Indicator */}
-            <div className="flex items-center gap-1.5 mt-8">
-              {ALL_LUMIXORA_FEATURES.map((f, idx) => (
-                <div 
-                  key={idx} 
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+            {/* Feature Content */}
+            {(() => {
+              const feat = ALL_VYOMRA_FEATURES[activeFeatureIndex];
+              const IconComp = feat.icon;
+              return (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div 
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 border shadow-2xl mt-0.5"
+                      style={{ 
+                        backgroundColor: `${feat.color}20`, 
+                        borderColor: `${feat.color}50`, 
+                        color: feat.color,
+                        boxShadow: `0 0 35px ${feat.color}40`
+                      }}
+                    >
+                      <IconComp className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/10 text-amber-300">
+                        {feat.badge}
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white font-sora leading-tight">{feat.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">{feat.desc}</p>
+                    </div>
+                  </div>
+
+                  {/* Highlight Stat Pill */}
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 text-xs font-mono text-amber-300 font-bold">
+                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                      <span>{feat.stats}</span>
+                    </div>
+                    <button 
+                      className="text-[11px] text-[#00f5d4] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Feature</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Clickable Feature Selector Pills */}
+            <div className="flex items-center gap-2 pt-1">
+              {ALL_VYOMRA_FEATURES.map((f, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setActiveFeatureIndex(idx);
+                    setDialogueText(`${currentMascot.emoji} ${currentMascot.name}: "Superpower #${idx + 1}: ${f.name} — ${f.desc}" ✨`);
+                  }}
+                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                     idx === activeFeatureIndex 
-                      ? 'w-8 shadow-[0_0_12px_#00f5d4]' 
+                      ? 'w-12 bg-amber-400 shadow-lg shadow-amber-400/50' 
                       : idx < activeFeatureIndex 
-                      ? 'w-2 opacity-80' 
-                      : 'w-1.5 opacity-25'
+                      ? 'w-4 bg-emerald-400/60' 
+                      : 'w-2.5 bg-white/20 hover:bg-white/50'
                   }`}
-                  style={{ backgroundColor: f.color }}
+                  title={f.name}
                 />
               ))}
             </div>
+
           </div>
-        )}
+        </div>
 
-        {/* ─── SCENE 3: DIRECT MERGE (6.0s - 7.8s) ───────────────────────────── */}
-        {sceneState === 'singularity_merge' && (
-          <div className="flex flex-col items-center justify-center">
-            <div className="w-48 h-[2px] bg-gradient-to-r from-transparent via-[#00f5d4] to-transparent shadow-[0_0_40px_#00f5d4] animate-pulse" />
-            <div className="mt-8 text-[11px] font-mono tracking-[0.5em] text-[#00f5d4] uppercase font-bold">
-              CONVERGING INTELLIGENCE MATRIX...
-            </div>
-          </div>
-        )}
+      </main>
 
-        {/* ─── SCENE 4 & FINAL: DIAMOND LUMIXORA & TAGLINE (7.8s - 12.0s) ──────── */}
-        {(sceneState === 'lumixora_reveal' || sceneState === 'tagline_settle') && (
-          <div className="flex flex-col items-center text-center px-6 max-w-4xl animate-in zoom-in-90 fade-in duration-1000">
-            
-            {/* Pristine Glowing Logo Badge */}
-            <div className="relative mb-6 group">
-              <div className="absolute -inset-6 bg-gradient-to-r from-[#00f5d4] via-[#38bdf8] to-[#a855f7] rounded-3xl blur-3xl opacity-90 animate-pulse" />
-              <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-[#020b1b]/95 border-2 border-cyan-400/50 overflow-hidden shadow-[0_0_60px_rgba(0,245,212,0.8)] p-3 backdrop-blur-3xl flex items-center justify-center">
-                <img 
-                  src="/lumixora_logo.jpg" 
-                  alt="LUMIXORA" 
-                  className="w-full h-full object-contain rounded-2xl drop-shadow-[0_0_30px_rgba(0,245,212,0.9)]"
-                />
-              </div>
-            </div>
+      {/* ─── FOOTER PROGRESS & DIALOGUE BAR ─── */}
+      <footer className="relative z-30 px-6 py-5 space-y-3" onClick={(e) => e.stopPropagation()}>
+        {/* Progress Bar */}
+        <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden max-w-4xl mx-auto">
+          <div 
+            className="h-full bg-gradient-to-r from-amber-400 via-[#00f5d4] to-brand-purple transition-all duration-200"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
 
-            {/* Ultra-Attractive 3D Cyber LUMIXORA Typography */}
-            <div className="relative mb-4">
-              <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-[0.2em] text-white drop-shadow-[0_0_40px_#00f5d4] drop-shadow-[0_0_80px_rgba(56,189,248,0.9)] drop-shadow-[0_0_120px_rgba(0,245,212,0.6)] font-sans">
-                LUMIXORA
-              </h1>
-              {/* L -> A Cyber Light Sweep Beam */}
-              <div className="absolute -inset-x-8 top-1/2 h-[2.5px] bg-gradient-to-r from-transparent via-white via-[#00f5d4] to-transparent opacity-95 blur-[1px] animate-[pulse_1.5s_infinite]" />
-            </div>
+        {/* Dialogue Card */}
+        <div className="max-w-2xl mx-auto bg-black/85 backdrop-blur-2xl border border-white/15 px-6 py-3 rounded-2xl text-center shadow-2xl">
+          <p className="text-xs sm:text-sm font-bold text-amber-300 tracking-wide leading-relaxed animate-fade-in">
+            {dialogueText}
+          </p>
+        </div>
+      </footer>
 
-            {/* Minimalist Sophisticated Tagline: LEARN • CONNECT • GROW */}
-            <div className={`transition-all duration-1000 ${
-              sceneState === 'tagline_settle' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}>
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="h-[2px] w-12 sm:w-20 bg-gradient-to-r from-transparent to-[#00f5d4]" />
-                <p className="text-xs sm:text-base font-black tracking-[0.5em] uppercase text-white drop-shadow-[0_0_15px_#00f5d4]">
-                  LEARN • CONNECT • GROW
-                </p>
-                <div className="h-[2px] w-12 sm:w-20 bg-gradient-to-l from-transparent to-[#00f5d4]" />
-              </div>
-
-              {/* Seamless Launch Action */}
-              <button
-                onClick={handleFinish}
-                className="px-10 py-4.5 rounded-2xl bg-gradient-to-r from-[#00f5d4] via-[#38bdf8] to-[#60a5fa] text-[#020817] font-black text-sm sm:text-base tracking-[0.25em] uppercase shadow-[0_0_50px_rgba(0,245,212,0.85)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer mx-auto group pointer-events-auto"
-              >
-                <span>ENTER WORKSPACE</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform text-[#020817]" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

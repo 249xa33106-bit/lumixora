@@ -31,7 +31,7 @@ export default function ClubsPortal({ user }) {
   const [feedbackList, setFeedbackList] = useState([]);
 
   const [newFeedback, setNewFeedback] = useState({
-    clubOrEvent: 'Lumixora CodeSprint 2026',
+    clubOrEvent: 'Vyomra CodeSprint 2026',
     rating: 5,
     category: 'Hackathon & Coding Sprint',
     comment: ''
@@ -315,7 +315,7 @@ export default function ClubsPortal({ user }) {
     }
 
     setNewFeedback({
-      clubOrEvent: 'Lumixora CodeSprint 2026',
+      clubOrEvent: 'Vyomra CodeSprint 2026',
       rating: 5,
       category: 'Hackathon & Coding Sprint',
       comment: ''
@@ -354,7 +354,7 @@ export default function ClubsPortal({ user }) {
       tags: newClubForm.tagsText.split(',').map(t => t.trim()).filter(Boolean),
       scoreXP: 3500,
       upcomingEvents: [],
-      announcements: ['Welcome to our newly launched campus organization on Lumixora Portal!']
+      announcements: ['Welcome to our newly launched campus organization on Vyomra Portal!']
     };
 
     const updated = [formattedClub, ...clubsList];
@@ -815,7 +815,7 @@ export default function ClubsPortal({ user }) {
                     onChange={e => setNewFeedback({...newFeedback, clubOrEvent: e.target.value})}
                     className="w-full bg-[#0c0c16] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-semibold outline-none focus:border-brand-teal"
                   >
-                    <option value="Lumixora CodeSprint 2026">Lumixora CodeSprint 2026 - Hackathon</option>
+                    <option value="Vyomra CodeSprint 2026">Vyomra CodeSprint 2026 - Hackathon</option>
                     <option value="RoboAI Innovation Workshop">RoboAI Autonomous Drone Workshop</option>
                     <option value="CodeCraft Society Sprints">CodeCraft Dynamic Programming Sprint</option>
                     <option value="NexusAI LLM RAG Workshop">NexusAI LLM RAG Workshop</option>
@@ -961,7 +961,7 @@ export default function ClubsPortal({ user }) {
                 </div>
                 <div>
                   <h2 className="text-base md:text-lg font-black text-white">Register New Campus Club</h2>
-                  <p className="text-xs text-gray-400">Add an official society to Lumixora College Portal.</p>
+                  <p className="text-xs text-gray-400">Add an official society to Vyomra College Portal.</p>
                 </div>
               </div>
               <button 

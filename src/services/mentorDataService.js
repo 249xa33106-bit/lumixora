@@ -1,4 +1,4 @@
-// Real-Time Student Data Fetcher Service for Lumixora Intelligent Mentor
+// Real-Time Student Data Fetcher Service for Vyomra Intelligent Mentor
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 

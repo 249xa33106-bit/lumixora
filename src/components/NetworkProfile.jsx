@@ -15,14 +15,14 @@ export default function NetworkProfile({ user }) {
       name = name.split('{')[0].trim();
     }
     name = name.replace(/[\{\}":;]/g, '').trim() || 'Scholar';
-    return { name, dept: user?.department || 'CSE', year: user?.year || '3rd Year', college: user?.college || 'GPREC' };
+    return { name, dept: user?.department || 'CSE', year: user?.year || '3rd Year', college: user?.college || 'Campus Institution' };
   }, [user]);
 
-  const [name] = useState(parsed.name);
-  const [dept] = useState(parsed.dept);
-  const [year] = useState(parsed.year);
-  const [college] = useState(parsed.college);
-  const [bio, setBio] = useState('Passionate scholar & software engineering student building innovative projects on LUMIXORA.');
+  const [name, setName] = useState(parsed.name);
+  const [dept, setDept] = useState(parsed.dept);
+  const [year, setYear] = useState(parsed.year);
+  const [college, setCollege] = useState(parsed.college);
+  const [bio, setBio] = useState('Passionate scholar & software engineering student building innovative projects on VYOMRA.');
   const [skills, setSkills] = useState('React, JavaScript, Python, Data Structures');
   const [interests, setInterests] = useState('Web Development, AI/ML, Cloud Computing');
   const [github, setGithub] = useState('https://github.com');
@@ -31,6 +31,16 @@ export default function NetworkProfile({ user }) {
 
   const handleSave = () => {
     setIsEditing(false);
+    const updatedUser = {
+      ...user,
+      name,
+      displayName: name,
+      department: dept,
+      year,
+      college
+    };
+    localStorage.setItem('lumixora_user', JSON.stringify(updatedUser));
+    window.dispatchEvent(new CustomEvent('lumixora_user_updated', { detail: updatedUser }));
     addToast({ message: 'Profile updated successfully!', type: 'success' });
   };
 
@@ -245,7 +255,7 @@ export default function NetworkProfile({ user }) {
           <div className="glass-panel p-6 rounded-3xl space-y-4">
             <h3 className="text-xs font-bold text-gray-200 tracking-wide flex items-center gap-1.5">
               <Award className="w-4 h-4 text-brand-teal" />
-              <span>LUMIXORA Achievements</span>
+              <span>VYOMRA Achievements</span>
             </h3>
             
             <div className="grid grid-cols-2 gap-3">

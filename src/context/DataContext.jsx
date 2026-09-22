@@ -13,9 +13,12 @@ export function DataProvider({ children }) {
 
   // Default Mock Data for Seeding
   const defaultSubjects = [
-    { id: "cs301", branch: 'CSE', semester: 'Sem 3', name: 'Data Structures & Algorithms', credits: 4, difficulty: 'Hard', code: 'CS301' },
-    { id: "cs302", branch: 'CSE', semester: 'Sem 3', name: 'Object Oriented Programming', credits: 3, difficulty: 'Medium', code: 'CS302' },
-    { id: "cs303", branch: 'CSE', semester: 'Sem 3', name: 'Digital Logic Design', credits: 3, difficulty: 'Medium', code: 'CS303' },
+    { id: "hsm202", branch: 'CSE', semester: 'Sem 3', name: 'Managerial Economics and Financial Analysis (MEFA)', credits: 2, difficulty: 'Medium', code: 'HSM 202' },
+    { id: "hsm201", branch: 'CSE', semester: 'Sem 3', name: 'Universal Human Values (UHV)', credits: 3, difficulty: 'Easy', code: 'HSM 201' },
+    { id: "cs301", branch: 'CSE', semester: 'Sem 3', name: 'Advanced Data Structures & Algorithms (ADSA)', credits: 4, difficulty: 'Hard', code: 'CS202' },
+    { id: "cs302", branch: 'CSE', semester: 'Sem 3', name: 'Object Oriented Programming through Java (OOPJ)', credits: 3, difficulty: 'Medium', code: 'CS203' },
+    { id: "cs303", branch: 'CSE', semester: 'Sem 3', name: 'Database Management Systems (DBMS)', credits: 3, difficulty: 'Medium', code: 'CS401' },
+    { id: "cs402", branch: 'CSE', semester: 'Sem 4', name: 'Operating Systems (OS)', credits: 3, difficulty: 'Hard', code: 'CS402' },
     { id: "ai301", branch: 'AI & ML', semester: 'Sem 3', name: 'Intro to Machine Learning', credits: 4, difficulty: 'Hard', code: 'AI301' },
     { id: "ec401", branch: 'ECE', semester: 'Sem 4', name: 'Analog Electronics', credits: 4, difficulty: 'Hard', code: 'EC401' }
   ];
@@ -176,14 +179,14 @@ export function DataProvider({ children }) {
 
       // 2. Trigger standard Web Notification API if permitted
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('LUMIXORA Notes Update', {
+        new Notification('VYOMRA Notes Update', {
           body: text,
           icon: '/lumixora_logo.jpg'
         });
       } else if ('Notification' in window && Notification.permission !== 'denied') {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
-            new Notification('LUMIXORA Notes Update', {
+            new Notification('VYOMRA Notes Update', {
               body: text,
               icon: '/lumixora_logo.jpg'
             });
@@ -445,5 +448,26 @@ export function DataProvider({ children }) {
 }
 
 export function useData() {
-  return useContext(DataContext);
+  const context = useContext(DataContext);
+  return context || {
+    tasks: [],
+    addTask: () => Promise.resolve(),
+    updateTask: () => Promise.resolve(),
+    deleteTask: () => Promise.resolve(),
+    notes: [],
+    addNote: () => Promise.resolve(),
+    updateNote: () => Promise.resolve(),
+    deleteNote: () => Promise.resolve(),
+    doubts: [],
+    addDoubt: () => Promise.resolve(),
+    updateDoubt: () => Promise.resolve(),
+    hubSubjects: [],
+    addHubSubject: () => Promise.resolve(),
+    updateHubSubject: () => Promise.resolve(),
+    deleteHubSubject: () => Promise.resolve(),
+    hubMaterials: [],
+    updateHubMaterials: () => Promise.resolve(),
+    uploadFile: () => Promise.resolve(''),
+    loading: false
+  };
 }

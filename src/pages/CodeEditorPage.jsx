@@ -1,12 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor, { DiffEditor } from '@monaco-editor/react';
-import { ArrowLeft, Play, Send, RefreshCw, Cpu, Sparkles, BookOpen, Clock, Award, HelpCircle, LayoutGrid, CheckCircle2, XCircle, Terminal, Minimize2, Maximize2, Download, Upload, Copy, BookOpenCheck, Settings2, Code } from 'lucide-react';
+import { 
+  ArrowLeft, Play, Send, RefreshCw, Sparkles, BookOpen, Clock, 
+  HelpCircle, XCircle, Terminal, Minimize2, Maximize2, 
+  Download, Copy, BookOpenCheck, Settings2, Code, Video, ExternalLink 
+} from 'lucide-react';
 import { executeCode, runPiston } from '../services/compilerService';
 import { getAICodingAssistantHelp, getPostSubmissionFeedback, getQuickComplexity } from '../services/aiCodingService';
+import { saveCodingSubmissionToSupabase } from '../services/supabaseDataSyncService';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
 
+const DEFAULT_SANDBOX_PROBLEM = {
+  id: 'sandbox',
+  title: 'Multi-Language Cloud IDE & Code Playground',
+  difficulty: 'Easy',
+  category: 'Multi-Lang IDE',
+  timeLimit: '2s',
+  memoryLimit: '256MB',
+  statement: `Welcome to the Multi-Language Cloud IDE & Code Playground!\n\nYou can write, compile, and run any program in JavaScript, Python, C++, Java, Go, or C.\n\nUse the Monaco editor to craft your code and click "Run Code" to compile in the cloud in real-time.`,
+  starterTemplates: {
+    javascript: `// Multi-Language Cloud IDE - JavaScript\nconsole.log("Hello from Vyomra Multi-Language Cloud IDE!");\n\nfunction main() {\n  let a = 5;\n  let b = 10;\n  console.log("Sum is:", a + b);\n}\nmain();`,
+    python: `# Multi-Language Cloud IDE - Python\nprint("Hello from Vyomra Multi-Language Cloud IDE!")\n\ndef main():\n    a = 5\n    b = 10\n    print(f"Sum is: {a + b}")\n\nmain()`,
+    cpp: `// Multi-Language Cloud IDE - C++\n#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from Vyomra Multi-Language Cloud IDE!" << endl;\n    int a = 5, b = 10;\n    cout << "Sum is: " << (a + b) << endl;\n    return 0;\n}`,
+    java: `// Multi-Language Cloud IDE - Java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Vyomra Multi-Language Cloud IDE!");\n        int a = 5, b = 10;\n        System.out.println("Sum is: " + (a + b));\n    }\n}`,
+    go: `// Multi-Language Cloud IDE - Go\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Vyomra Multi-Language Cloud IDE!")\n    a, b := 5, 10\n    fmt.Printf("Sum is: %d\\n", a+b)\n}`,
+    c: `// Multi-Language Cloud IDE - C\n#include <stdio.h>\n\nint main() {\n    printf("Hello from Vyomra Multi-Language Cloud IDE!\\n");\n    int a = 5, b = 10;\n    printf("Sum is: %d\\n", a + b);\n    return 0;\n}`
+  },
+  testCases: [],
+  hiddenTestCases: [],
+  editorial: "Use this multi-language IDE to practice coding exercises, experiment with algorithms, and test scripts across multiple programming languages."
+};
+
 export default function CodeEditorPage({ problem, setActiveTab, user }) {
+  const activeProblem = problem || DEFAULT_SANDBOX_PROBLEM;
   const { awardXP } = useGamification();
   const { addToast } = useToast();
 
@@ -15,8 +42,8 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
   const [fontSize, setFontSize] = useState(14);
   const [code, setCode] = useState('');
   
-  // Left Panel Tab: 'description', 'editorial', 'submissions'
-  const [leftTab, setLeftTab] = useState('description');
+  // Left Panel Tab: 'description', 'video', 'editorial', 'submissions'
+  const [leftTab, setLeftTab] = useState(activeProblem?.initialTab || 'description');
   // Right Panel Tab: 'console', 'ai-feedback', 'custom-input'
   const [rightTab, setRightTab] = useState('console');
   
@@ -87,38 +114,38 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
   };
 
   // Auto-save key generator
-  const getDraftKey = () => `lumixora_draft_${user?.id || 'guest'}_${problem?.id}_${language}`;
+  const getDraftKey = () => `lumixora_draft_${user?.id || 'guest'}_${activeProblem?.id}_${language}`;
 
   // Initialize Code template on language or problem change
   useEffect(() => {
-    if (problem && problem.starterTemplates) {
+    if (activeProblem && activeProblem.starterTemplates) {
       const savedDraft = localStorage.getItem(getDraftKey());
       if (savedDraft) {
         setCode(savedDraft);
       } else {
-        setCode(problem.starterTemplates[language] || '');
+        setCode(activeProblem.starterTemplates[language] || '');
       }
       lastLoadedLang.current = language;
     }
-  }, [problem, language, user]);
+  }, [activeProblem, language, user]);
 
   // Save to local storage on code change
   useEffect(() => {
-    if (code && problem && problem.starterTemplates && language === lastLoadedLang.current) {
-      if (code !== problem.starterTemplates[language]) {
+    if (code && activeProblem && activeProblem.starterTemplates && language === lastLoadedLang.current) {
+      if (code !== activeProblem.starterTemplates[language]) {
         localStorage.setItem(getDraftKey(), code);
       }
     }
-  }, [code, language, problem, user]);
+  }, [code, language, activeProblem, user]);
 
   // Load submissions from localStorage
   useEffect(() => {
-    if (user && problem) {
+    if (user && activeProblem) {
       const logs = (() => { try { const item = localStorage.getItem(`lumixora_submissions_${user.id}`); return item ? JSON.parse(item) : []; } catch (e) { return []; } })();
-      const filtered = logs.filter(s => s.problemId === problem.id).sort((a, b) => b.id - a.id);
+      const filtered = logs.filter(s => s.problemId === activeProblem.id).sort((a, b) => b.id - a.id);
       setSubmissions(filtered);
     }
-  }, [user, problem]);
+  }, [user, activeProblem]);
 
   const handleRunCode = async () => {
     setRunning(true);
@@ -167,7 +194,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
     setRightTab('console');
 
     try {
-      const res = await executeCode(problem, code, language, true);
+      const res = await executeCode(activeProblem, code, language, true);
       setRunResult(res);
 
       if (res.success) {
@@ -176,10 +203,10 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
         // Award XP via Gamification Context:
         let xpGained = 50;
         let coinsGained = 10;
-        if (problem.difficulty === 'Medium') {
+        if (activeProblem.difficulty === 'Medium') {
           xpGained = 75;
           coinsGained = 20;
-        } else if (problem.difficulty === 'Hard') {
+        } else if (activeProblem.difficulty === 'Hard') {
           xpGained = 100;
           coinsGained = 35;
         }
@@ -193,14 +220,14 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
         setRightTab('ai-feedback');
         setAiLoading(true);
         try {
-          const aiFeedback = await getPostSubmissionFeedback(problem, code, language, res.status, res.runtime, res.memory);
+          const aiFeedback = await getPostSubmissionFeedback(activeProblem, code, language, res.status, res.runtime, res.memory);
           setSubmissionFeedback(aiFeedback);
           
           // Save submission history log
           const newSub = {
             id: Date.now(),
-            problemId: problem.id,
-            problemTitle: problem.title,
+            problemId: activeProblem.id,
+            problemTitle: activeProblem.title,
             language,
             code,
             status: res.status,
@@ -214,6 +241,11 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
           const updatedLogs = [newSub, ...oldLogs];
           localStorage.setItem(`lumixora_submissions_${user.id}`, JSON.stringify(updatedLogs));
           setSubmissions(prev => [newSub, ...prev]);
+
+          // Persist directly to Supabase
+          if (user) {
+            saveCodingSubmissionToSupabase(user, newSub).catch(e => console.warn("Supabase sub sync:", e));
+          }
 
         } catch (aiErr) {
           console.error(aiErr);
@@ -238,7 +270,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
     setAiResponse('');
     
     try {
-      const response = await getAICodingAssistantHelp(actionType, problem, code, language);
+      const response = await getAICodingAssistantHelp(actionType, activeProblem, code, language);
       setAiResponse(response);
     } catch (err) {
       setAiResponse(`### AI Copilot Error\n\nFailed to invoke assistant: ${err.message}`);
@@ -258,7 +290,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
     const link = document.createElement('a');
     link.href = url;
     const fileExt = language === 'python' ? 'py' : language === 'javascript' ? 'js' : language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : language === 'go' ? 'go' : 'c';
-    link.download = `${problem.id}_solution.${fileExt}`;
+    link.download = `${activeProblem.id}_solution.${fileExt}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -269,7 +301,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
   const resetCode = () => {
     if (window.confirm('Reset code to default template? This will erase your current draft.')) {
       localStorage.removeItem(getDraftKey());
-      setCode(problem?.starterTemplates?.[language] || '');
+      setCode(activeProblem?.starterTemplates?.[language] || '');
       addToast({ message: 'Code reset successful.', type: 'success' });
     }
   };
@@ -304,16 +336,16 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
           </button>
           <div>
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span>{problem.title}</span>
+              <span>{activeProblem.title}</span>
               <span className={`text-[9px] uppercase font-semibold px-2 py-0.5 rounded leading-none ${
-                problem.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                problem.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                activeProblem.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                activeProblem.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
                 'bg-red-500/10 text-red-400 border border-red-500/20'
               }`}>
-                {problem.difficulty}
+                {activeProblem.difficulty}
               </span>
             </h2>
-            <span className="text-[10px] text-gray-500 font-bold uppercase">{problem.category}</span>
+            <span className="text-[10px] text-gray-500 font-bold uppercase">{activeProblem.category}</span>
           </div>
         </div>
 
@@ -409,6 +441,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
           <div className="flex border-b border-white/5 bg-black/25">
             {[
               { id: 'description', label: 'Description', icon: HelpCircle },
+              { id: 'video', label: 'Video Solution', icon: Video, badge: 'HD' },
               { id: 'editorial', label: 'Editorial Solution', icon: BookOpen },
               { id: 'submissions', label: 'My Submissions', icon: Clock }
             ].map(tab => {
@@ -417,7 +450,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 <button
                   key={tab.id}
                   onClick={() => setLeftTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-6 py-4.5 text-xs font-bold tracking-wide border-b-2 transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-5 py-4.5 text-xs font-bold tracking-wide border-b-2 transition-all cursor-pointer ${
                     leftTab === tab.id 
                       ? 'border-brand-teal text-brand-teal bg-white/[0.01]' 
                       : 'border-transparent text-gray-500 hover:text-white'
@@ -425,6 +458,11 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span className="text-[9px] bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.2 rounded font-black uppercase">
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -433,13 +471,118 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
           {/* Tab Body */}
           <div className="p-6 overflow-y-auto flex-1 leading-relaxed text-xs text-gray-300 space-y-6 max-h-[550px] custom-scrollbar">
             
+            {/* Tab: VIDEO SOLUTIONS */}
+            {leftTab === 'video' && (
+              <div className="space-y-5 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-extrabold text-white uppercase tracking-wide flex items-center gap-2">
+                      <Video className="w-4 h-4 text-red-500" />
+                      Video Explanation & Algorithmic Breakdown
+                    </h3>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      Visual line-by-line concept breakdown by verified competitive programmers.
+                    </p>
+                  </div>
+                  {activeProblem.duration && (
+                    <span className="px-2.5 py-1 rounded-full bg-white/10 text-gray-300 text-[10px] font-mono font-bold">
+                      ⏱️ {activeProblem.duration}
+                    </span>
+                  )}
+                </div>
+
+                {/* 16:9 Video Embed Player */}
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/60 border border-white/10 shadow-2xl group">
+                  <iframe
+                    src={
+                      activeProblem.videoUrl
+                        ? (activeProblem.videoUrl.includes('youtube.com/embed')
+                            ? activeProblem.videoUrl
+                            : activeProblem.videoUrl.includes('watch?v=')
+                            ? `https://www.youtube.com/embed/${activeProblem.videoUrl.split('watch?v=')[1]?.split('&')[0]}`
+                            : `https://www.youtube.com/embed/${activeProblem.videoUrl.split('youtu.be/')[1]?.split('?')[0]}`)
+                        : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent((activeProblem.title || 'DSA problem') + ' leetcode dsa solution')}`
+                    }
+                    title={`${activeProblem.title} Video Solution`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                  />
+                </div>
+
+                {/* Video Info Card */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">
+                        {activeProblem.videoTitle || `${activeProblem.title} - Complete Walkthrough`}
+                      </h4>
+                      <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
+                        Educator: <span className="text-brand-teal font-extrabold">{activeProblem.channelName || 'Top DSA Instructor'}</span>
+                      </p>
+                    </div>
+
+                    <a
+                      href={
+                        activeProblem.videoUrl || 
+                        `https://www.youtube.com/results?search_query=${encodeURIComponent((activeProblem.title || 'DSA problem') + ' leetcode solution')}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-400 text-[11px] font-bold border border-red-500/30 transition-all cursor-pointer shrink-0"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" /> Watch on YouTube
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+
+                  {/* Key Takeaways */}
+                  {activeProblem.videoKeyTakeaways && activeProblem.videoKeyTakeaways.length > 0 && (
+                    <div className="pt-2 border-t border-white/5 space-y-1.5">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        🎯 Key Concepts Covered:
+                      </span>
+                      <div className="space-y-1">
+                        {activeProblem.videoKeyTakeaways.map((point, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-[11px] text-gray-300">
+                            <span className="text-brand-teal font-bold">•</span>
+                            <span>{point}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Language specific search buttons */}
+                  <div className="pt-2 border-t border-white/5 space-y-1.5">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                      Explore Other Language Explanations:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Python', 'Java', 'C++', 'JavaScript'].map((lang) => (
+                        <a
+                          key={lang}
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent((activeProblem.title || 'DSA problem') + ' ' + lang + ' leetcode solution')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-semibold text-gray-300 border border-white/5 hover:text-white transition-all flex items-center gap-1"
+                        >
+                          <Play className="w-2.5 h-2.5 text-brand-teal" /> {lang} Solution
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Tab: DESCRIPTION */}
             {leftTab === 'description' && (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-extrabold text-white mb-2 uppercase tracking-wide">Problem Statement</h3>
                   <div className="whitespace-pre-wrap leading-relaxed font-normal text-gray-300">
-                    {problem.statement}
+                    {activeProblem.statement}
                   </div>
                 </div>
 
@@ -447,18 +590,18 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 <div className="bg-[#030712]/40 rounded-2xl border border-white/5 p-4 space-y-2">
                   <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Constraints</span>
                   <ul className="list-disc pl-4 space-y-1 text-gray-400">
-                    {(Array.isArray(problem.constraints) ? problem.constraints : (problem.constraints || '').split('\n').filter(Boolean)).map((c, i) => (
+                    {(Array.isArray(activeProblem.constraints) ? activeProblem.constraints : (activeProblem.constraints || '').split('\n').filter(Boolean)).map((c, i) => (
                       <li key={i}>{c}</li>
                     ))}
-                    <li>Time Limit: {problem.timeLimit}</li>
-                    <li>Memory Limit: {problem.memoryLimit}</li>
+                    <li>Time Limit: {activeProblem.timeLimit}</li>
+                    <li>Memory Limit: {activeProblem.memoryLimit}</li>
                   </ul>
                 </div>
 
                 {/* Examples */}
                 <div className="space-y-4">
                   <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Examples</span>
-                  {(Array.isArray(problem.examples) ? problem.examples : []).map((ex, idx) => (
+                  {(Array.isArray(activeProblem.examples) ? activeProblem.examples : []).map((ex, idx) => (
                     <div key={idx} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-2">
                       <span className="text-[10px] font-bold text-brand-teal uppercase">Example {idx + 1}:</span>
                       <div className="font-mono text-[11px] space-y-1">
@@ -475,11 +618,11 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 </div>
 
                 {/* Hints dropdown */}
-                {problem.hints && (Array.isArray(problem.hints) ? problem.hints.length > 0 : Object.keys(problem.hints).length > 0) && (
+                {activeProblem.hints && (Array.isArray(activeProblem.hints) ? activeProblem.hints.length > 0 : Object.keys(activeProblem.hints).length > 0) && (
                   <div className="space-y-2">
                     <span className="text-[10px] font-semibold text-gray-500 tracking-wide block">Need a nudge? (Hints)</span>
                     <div className="space-y-2">
-                      {(Array.isArray(problem.hints) ? problem.hints : (problem.hints || '').split('\n').filter(Boolean)).map((hint, idx) => (
+                      {(Array.isArray(activeProblem.hints) ? activeProblem.hints : (activeProblem.hints || '').split('\n').filter(Boolean)).map((hint, idx) => (
                         <details key={idx} className="bg-white/5 border border-white/5 rounded-xl p-3 text-xs cursor-pointer group">
                           <summary className="font-bold text-brand-blue flex items-center justify-between list-none">
                             <span>Hint {idx + 1}</span>
@@ -493,11 +636,11 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 )}
 
                 {/* Companies list */}
-                {problem.companies && (
+                {activeProblem.companies && (
                   <div>
                     <span className="text-[10px] font-semibold text-gray-500 tracking-wide block mb-2">Company Tags</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {(Array.isArray(problem.companies) ? problem.companies : (typeof problem.companies === 'string' ? problem.companies.split(',') : [])).map((c, i) => (
+                      {(Array.isArray(activeProblem.companies) ? activeProblem.companies : (typeof activeProblem.companies === 'string' ? activeProblem.companies.split(',') : [])).map((c, i) => (
                         <span key={i} className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/5 text-[9px] font-semibold text-gray-400 tracking-wide">{String(c).trim()}</span>
                       ))}
                     </div>
@@ -511,7 +654,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
               <div className="space-y-4">
                 <h3 className="text-sm font-extrabold text-white mb-2 uppercase tracking-wide">AI Editorial Walkthrough</h3>
                 <div className="whitespace-pre-wrap leading-relaxed text-gray-300 prose prose-invert max-w-none text-xs">
-                  {problem.editorial}
+                  {activeProblem.editorial}
                 </div>
               </div>
             )}
@@ -989,7 +1132,7 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 <span>Run Code</span>
               </button>
               
-              {problem.id === 'sandbox' ? (
+              {activeProblem.id === 'sandbox' ? (
                 <button
                   onClick={() => triggerAICopilot('explain')}
                   className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-pink to-brand-purple hover:brightness-110 text-white text-xs font-semibold transition-all shadow-sm cursor-pointer"

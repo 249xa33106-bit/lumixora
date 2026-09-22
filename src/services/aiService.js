@@ -24,8 +24,8 @@ export const callAICompletion = async (params) => {
     messages = [{ role: 'user', content: params.prompt }];
   }
 
-  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   // Sanitize messages so content is always a clean string for text models
@@ -38,8 +38,50 @@ export const callAICompletion = async (params) => {
     return m;
   });
 
-  // 1. Try Gemini API first if available
-  if (geminiKey) {
+  // 1. Primary High-Speed Engine: Groq API (qwen/qwen3.8-27b, openai/gpt-oss-120b, openai/gpt-oss-20b)
+  if (groqKey) {
+    const hasImage = messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'image_url'));
+    // Prioritize high-accuracy conversational and multimodal model qwen/qwen3.8-27b first
+    const groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+
+    for (const model of groqModels) {
+      try {
+        const payloadMessages = (model === 'qwen/qwen3.8-27b' && hasImage) ? messages : sanitizedMessages;
+        const body = {
+          model,
+          messages: payloadMessages,
+          temperature,
+          max_tokens: Math.min(maxTokens, 2048)
+        };
+        if (responseFormat) body.response_format = responseFormat;
+
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${groqKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+            const rawContent = data.choices[0].message.content.trim();
+            // Reject empty or safety false-positive refusal responses
+            if (rawContent && !rawContent.toLowerCase().startsWith("i'm sorry, but i can't help with that") && rawContent.length > 5) {
+              return rawContent;
+            }
+          }
+        }
+      } catch (groqErr) {
+        console.warn(`Groq (${model}) request error:`, groqErr);
+      }
+    }
+  }
+
+  // 2. Secondary Engine: Gemini API (if key is valid AIzaSy... format)
+  if (geminiKey && geminiKey.startsWith('AIzaSy')) {
     try {
       const genAI = new GoogleGenerativeAI(geminiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -52,7 +94,7 @@ export const callAICompletion = async (params) => {
     }
   }
 
-  // 2. Try OpenRouter API
+  // 3. Fallback: OpenRouter API
   if (openRouterKey) {
     try {
       const body = {
@@ -68,8 +110,8 @@ export const callAICompletion = async (params) => {
         headers: {
           "Authorization": `Bearer ${openRouterKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": window.location.origin,
-          "X-Title": "Lumixora"
+          "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : 'https://lumixora-93cca.web.app',
+          "X-Title": "Vyomra"
         },
         body: JSON.stringify(body)
       });
@@ -82,37 +124,6 @@ export const callAICompletion = async (params) => {
       }
     } catch (orErr) {
       console.warn("OpenRouter request error:", orErr);
-    }
-  }
-
-  // 3. Try Groq API
-  if (groqKey) {
-    try {
-      const body = {
-        model: "openai/gpt-oss-120b",
-        messages: sanitizedMessages,
-        temperature,
-        max_tokens: Math.min(maxTokens, 1500)
-      };
-      if (responseFormat) body.response_format = responseFormat;
-
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${groqKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          return data.choices[0].message.content;
-        }
-      }
-    } catch (groqErr) {
-      console.warn("Groq request error:", groqErr);
     }
   }
 
@@ -175,58 +186,104 @@ export async function generateDoubtResolution(questionOrContext, subject = 'Gene
     const rawQuery = typeof questionOrContext === 'string' ? questionOrContext : JSON.stringify(questionOrContext);
     const queryStr = rawQuery.trim();
 
-    const systemPrompt = `You are an expert AI academic tutor for ${subject}. 
-The student is asking a doubt or seeking mentorship.
-If the student asks a question (or inputs short terms like "explain", "detail", "solve", or a subject name), provide a MASSIVE, crystal-clear, textbook-grade academic explanation.
-Include:
-1. Core Concept Overview & Definition
-2. Key Principles, Equations, & Code/Logic Examples
-3. Step-by-Step Problem Solving & Real-World Application.
-Be direct, supportive, and extremely clear.`;
+    const systemPrompt = `You are Vyomra AI Academic Master Tutor — an elite, world-class doubt solver for ${subject} with deep mastery across Computer Science, Mathematics, Physics, Chemistry, and Engineering.
+
+Formatting Rules:
+1. Use Standard LaTeX Math Delimiters:
+   - For inline math, wrap formulas in single dollar signs: $x^2 + y^2 = r^2$, $\\frac{d}{dx}[f(x)]$.
+   - For standalone display equations, wrap in double dollar signs:
+     $$\\int_a^b f(x)\\,dx = F(b) - F(a)$$
+     $$\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$$
+2. Structured Academic Layout:
+   - Use ## for main section headers and ### for sub-sections.
+   - Use Step 1, Step 2, Step 3 (or 1., 2., 3.) for step-by-step problem solving.
+   - Use markdown tables (| Column 1 | Column 2 |) for comparisons and variable definitions.
+   - Wrap all code snippets in \`\`\`language blocks with clear comments.
+   - Highlight key takeaways using blockquotes: > **Key Principle / Formula:** ...
+3. Provide crystal-clear explanations, derived formulas, intuition, and edge-case verifications.
+4. If the student provides a short response (e.g. 'y', 'yes', 'ok', 'continue', 'more'), proceed with the next concept, practice problem, or deeper mathematical derivation related to the previous topic.`;
 
     let messages = [{ role: "system", content: systemPrompt }];
     if (isContext && Array.isArray(questionOrContext)) {
-      messages = messages.concat(questionOrContext);
+      // Map and clean context messages
+      const cleanedContext = questionOrContext.map((m, idx) => {
+        if (idx === questionOrContext.length - 1 && m.role === 'user') {
+          const content = (m.content || '').trim();
+          if (content.length <= 3) {
+            return {
+              role: 'user',
+              content: `Please continue and provide the next step, practice problem, or deeper explanation for the above topic (${content}).`
+            };
+          }
+        }
+        return m;
+      });
+      messages = messages.concat(cleanedContext);
     } else {
       let promptContent = queryStr;
       if (!promptContent || promptContent.toLowerCase() === 'explain' || promptContent.length < 3) {
-        promptContent = `Can you explain the key fundamental concepts, algorithms, code syntax, and practical applications of ${subject}?`;
+        promptContent = `Can you explain the key fundamental concepts, algorithms, formulas, and practical applications of ${subject}?`;
       }
-      messages.push({ role: "user", content: promptContent });
+      
+      if (imageBase64) {
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: promptContent },
+            { type: "image_url", image_url: { url: imageBase64 } }
+          ]
+        });
+      } else {
+        messages.push({ role: "user", content: promptContent });
+      }
     }
 
-    let aiResponse = await callAICompletion({ messages, temperature: 0.5 });
+    let aiResponse = await callAICompletion({ messages, temperature: 0.3, maxTokens: 2048 });
     
     if (!aiResponse) {
       const topicName = (queryStr && queryStr.length > 2 && queryStr.toLowerCase() !== 'explain') ? queryStr : subject;
       aiResponse = `### 📚 Academic Mastery Guide: ${topicName}
 
-#### 1. Core Concept & Overview
-**${topicName}** represents a fundamental pillar in ${subject}. It encompasses core theoretical models, algorithmic rules, and system architecture.
+#### 1. Core Concept & Intuition
+**${topicName}** is a cornerstone topic in **${subject}**. It enables systematic problem solving through rigorous mathematical and algorithmic models.
 
-#### 2. Key Principles & Implementation Example
-- **Foundational Architecture**: Efficient memory management, explicit data structures, and predictable execution loops.
-- **Code & Logic Structure**:
-\`\`\`c
-/* Academic Demonstration for ${topicName} */
-#include <stdio.h>
+> **Key Principle:** Always decompose the problem into standard boundary conditions, analyze invariants, and verify step-by-step.
 
-int main() {
-    printf("Mastering ${topicName} - Step-by-Step Logical Execution\\n");
-    return 0;
-}
-\`\`\`
+#### 2. Mathematical Formulation & Key Equations
+For academic evaluation, standard mathematical models follow:
+$$\\sum_{i=1}^{n} X_i = \\text{Total System State}$$
+$$\\lim_{n \\to \\infty} \\frac{f(n)}{g(n)} = L$$
 
 #### 3. Step-by-Step Problem Solving Approach
-1. **Understand Input Constraints**: Analyze variable boundaries, types, and operational requirements.
-2. **Formulate Solution Strategy**: Apply deterministic algorithms with minimal time complexity.
-3. **Verify Output Integrity**: Validate against edge cases, unit tests, and system benchmarks.`;
+Step 1: **Identify the given variables and constraints**: Extract known values, target outputs, and coordinate systems.
+Step 2: **Apply the governing formulas**: Substitute known values into the primary theoretical equation.
+Step 3: **Derive the final solution**: Simplify algebraic terms, verify units, and test edge conditions.
+
+#### 4. Practical Implementation / Code
+\`\`\`python
+# Vyomra Academic Demonstration for ${topicName}
+def solve_problem(inputs):
+    """
+    Computes optimal solution with O(1) auxiliary space complexity.
+    """
+    result = {"status": "Verified", "domain": "${subject}", "topic": "${topicName}"}
+    return result
+
+# Example Execution
+output = solve_problem({"param": 42})
+print("Solution Output:", output)
+\`\`\`
+
+> **Summary:** Always verify dimensional consistency and review edge-case behavior before final submission.`;
     }
 
     return aiResponse;
   } catch (error) {
     console.error("Error generating doubt resolution:", error);
-    return `Here is a clear academic resolution for your doubt in ${subject}: Apply core formulas step-by-step, verify boundary conditions, and check unit consistency.`;
+    return `### 📚 Resolution for ${subject} Doubt
+Step 1: **Identify Parameters**: Clarify the inputs and required outputs.
+Step 2: **Apply Theoretical Model**: Use standard domain formulas step-by-step.
+Step 3: **Verify Edge Cases**: Double-check boundary constraints and algebraic signs.`;
   }
 }
 
@@ -258,7 +315,7 @@ Note: The answer MUST be a single word, exact, lowercase noun. Keep the riddles 
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -316,7 +373,7 @@ or
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -491,7 +548,7 @@ ${Object.entries(pyqs).map(([sub, qList]) => {
 }).join('\n\n')}
 `;
 
-    const systemPrompt = `You are Lumixora's wise, highly supportive, and expert Real-Time AI Personal Mentor.
+    const systemPrompt = `You are Vyomra's wise, highly supportive, and expert Real-Time AI Personal Mentor.
 Your role is to act as a dedicated personal coach for the student, whose profile and live data snapshot are given below.
 
 IMPORTANT: You are connected to live databases. You MUST read this fresh information before every response and use it to personalize your coaching. Do NOT rely only on generic pre-trained knowledge. If the student asks about their performance, schedule, progress, deadlines, or career listings, analyze these statistics in real time and reference them explicitly in your answers.
@@ -538,7 +595,7 @@ REAL-TIME BEHAVIOURAL COACHING DIRECTIVES:
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -587,7 +644,7 @@ Note: Generate exactly 3 highly relevant and interesting questions. The "correct
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -667,7 +724,7 @@ Note: Generate exactly 4 useful flashcards.`;
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -749,7 +806,7 @@ Note: Generate exactly 4 sequential phases.`;
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": window.location.origin,
-        "X-Title": "Lumixora"
+        "X-Title": "Vyomra"
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
@@ -841,7 +898,7 @@ STUDENT INTEL SUMMARY:
 - Completed Tasks: ${twinData?.tasksStats?.completed || 0}/${twinData?.tasksStats?.total || 0}
 `;
 
-    const systemPrompt = `You are the Lumixora AI Academic Twin™, an advanced real-time study coach and academic mentor representing the cognitive double of the student.
+    const systemPrompt = `You are the Vyomra AI Academic Twin™, an advanced real-time study coach and academic mentor representing the cognitive double of the student.
 ${studentSummary}
 
 Guidelines:

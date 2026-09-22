@@ -1,5 +1,9 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, Filter, Briefcase, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Shuffle, Brain } from 'lucide-react';
+import { 
+  Search, Flame, Award, ArrowRight, CheckCircle2, Circle, Code, Sparkles, 
+  Filter, Briefcase, GraduationCap, Edit3, Trash2, Plus, Upload, X, Loader2, 
+  ArrowUpDown, ArrowUp, ArrowDown, Shuffle, Brain, Video, Play 
+} from 'lucide-react';
 import { PROBLEMS, CATEGORIES } from '../config/problemsData';
 import { useData } from '../context/DataContext';
 import { supabase } from '../config/supabase';
@@ -16,12 +20,12 @@ const sandboxProblem = {
   memoryLimit: '256MB',
   statement: `Welcome to the Code Playground!\n\nYou can write, compile, and run any program of your choice in Javascript, Python, C++, Java, Go, or C.\n\nUse the console below to check compilation outputs, print statements, and runtime details.\n\nType your program in the editor and click "Run Code" to compile.`,
   starterTemplates: {
-    javascript: `// Write any JavaScript program here\nconsole.log("Hello, Lumixora World!");\n\nfunction main() {\n  let a = 5;\n  let b = 10;\n  console.log("Sum is:", a + b);\n}\nmain();`,
-    python: `# Write any Python program here\nprint("Hello, Lumixora World!")\n\ndef main():\n    a = 5\n    b = 10\n    print(f"Sum is: {a + b}")\n\nmain()`,
-    cpp: `// Write any C++ program here\n#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, Lumixora World!" << endl;\n    int a = 5, b = 10;\n    cout << "Sum is: " << (a + b) << endl;\n    return 0;\n}`,
-    java: `// Write any Java program here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Lumixora World!");\n        int a = 5, b = 10;\n        System.out.println("Sum is: " + (a + b));\n    }\n}`,
-    go: `// Write any Go program here\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, Lumixora World!")\n    a, b := 5, 10\n    fmt.Printf("Sum is: %d\\n", a+b)\n}`,
-    c: `// Write any C program here\n#include <stdio.h>\n\nint main() {\n    printf("Hello, Lumixora World!\\n");\n    int a = 5, b = 10;\n    printf("Sum is: %d\\n", a + b);\n    return 0;\n}`
+    javascript: `// Write any JavaScript program here\nconsole.log("Hello, Vyomra World!");\n\nfunction main() {\n  let a = 5;\n  let b = 10;\n  console.log("Sum is:", a + b);\n}\nmain();`,
+    python: `# Write any Python program here\nprint("Hello, Vyomra World!")\n\ndef main():\n    a = 5\n    b = 10\n    print(f"Sum is: {a + b}")\n\nmain()`,
+    cpp: `// Write any C++ program here\n#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, Vyomra World!" << endl;\n    int a = 5, b = 10;\n    cout << "Sum is: " << (a + b) << endl;\n    return 0;\n}`,
+    java: `// Write any Java program here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Vyomra World!");\n        int a = 5, b = 10;\n        System.out.println("Sum is: " + (a + b));\n    }\n}`,
+    go: `// Write any Go program here\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, Vyomra World!")\n    a, b := 5, 10\n    fmt.Printf("Sum is: %d\\n", a+b)\n}`,
+    c: `// Write any C program here\n#include <stdio.h>\n\nint main() {\n    printf("Hello, Vyomra World!\\n");\n    int a = 5, b = 10;\n    printf("Sum is: %d\\n", a + b);\n    return 0;\n}`
   },
   testCases: [
     {
@@ -77,6 +81,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
     hiddenTestCases: '[]',
     hints: '',
     editorial: '',
+    videoUrl: '',
     starterTemplates: {
       javascript: 'function solve() {\n  \n}',
       python: 'def solve():\n    pass',
@@ -112,6 +117,11 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
           hiddenTestCases: n.hiddenTestCases || [],
           hints: n.hints || [],
           editorial: n.editorial || '',
+          videoUrl: n.videoUrl || '',
+          videoTitle: n.videoTitle || '',
+          channelName: n.channelName || '',
+          duration: n.duration || '',
+          videoKeyTakeaways: n.videoKeyTakeaways || [],
           starterTemplates: n.starterTemplates || initialFormState.starterTemplates,
           companies: Array.isArray(n.companies) ? n.companies : (typeof n.companies === 'string' ? n.companies.split(',').map(c => c.trim()) : ['Custom']),
           functionName: n.functionName || 'solve',
@@ -560,6 +570,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         hiddenTestCases: parsedHiddenTestCases,
         hints: parsedHints,
         editorial: formState.editorial.trim(),
+        videoUrl: formState.videoUrl.trim(),
         starterTemplates: formState.starterTemplates,
         type: 'code_arena_problem',
         frequency: 50,
@@ -620,6 +631,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
       hiddenTestCases: JSON.stringify(p.hiddenTestCases || [], null, 2),
       hints: Array.isArray(p.hints) ? p.hints.join('\n') : '',
       editorial: p.editorial || '',
+      videoUrl: p.videoUrl || '',
       starterTemplates: p.starterTemplates || initialFormState.starterTemplates
     });
     setIsModalOpen(true);
@@ -655,7 +667,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Code className="w-8 h-8 text-brand-teal" />
-            <span>Lumixora Code Arena</span>
+            <span>Vyomra Code Arena</span>
           </h1>
           <p className="text-xs text-gray-400 mt-1 font-medium">
             Practice programming challenges, trace step-by-step loops with AI visualizers, and ace your technical interviews!
@@ -1206,13 +1218,14 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                     {sortBy === 'acceptance' && <span className="text-brand-teal ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                   </div>
                 </th>
+                <th className="p-4 text-center w-28">Video Solution</th>
                 <th className="p-4 text-center w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredProblems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-xs text-gray-500 italic">
+                  <td colSpan={8} className="p-12 text-center text-xs text-gray-500 italic">
                     No coding problems found matching your filters.
                   </td>
                 </tr>
@@ -1298,6 +1311,24 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                       {problem.acceptanceRate}
                     </td>
 
+                    {/* Video Solution column */}
+                    <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => {
+                          setSelectedProblem({ ...problem, initialTab: 'video' });
+                          setActiveTab('code-editor');
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/25 text-[10px] font-extrabold transition-all cursor-pointer shadow-sm group"
+                        title={`Watch video explanation for ${problem.title}`}
+                      >
+                        <Play className="w-3 h-3 text-red-500 fill-current group-hover:scale-110 transition-transform" />
+                        <span>Watch</span>
+                        {problem.duration && (
+                          <span className="text-[9px] opacity-75 font-mono">({problem.duration})</span>
+                        )}
+                      </button>
+                    </td>
+
                     <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
                       {problem.type === 'code_arena_problem' && isFounder ? (
                         <div className="flex items-center justify-center gap-2">
@@ -1357,7 +1388,7 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                 <span>Upload Program File to Auto-Generate Question</span>
               </h3>
               <p className="text-[11px] text-gray-400 leading-normal">
-                Upload a completed solution file (in Javascript, Python, C++, Java, or Go) and Lumixora AI will automatically parse it, generate a complete question, statement, test cases, and starter templates!
+                Upload a completed solution file (in Javascript, Python, C++, Java, or Go) and Vyomra AI will automatically parse it, generate a complete question, statement, test cases, and starter templates!
               </p>
               
               <div className="flex items-center gap-4 pt-1">
@@ -1622,6 +1653,19 @@ export default function CodingPractice({ setSelectedProblem, setActiveTab, user 
                   onChange={e => setFormState({ ...formState, editorial: e.target.value })}
                   placeholder="Explain the optimal solution and details..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-red-400 font-bold tracking-wide flex items-center gap-1.5">
+                  <Video className="w-3.5 h-3.5 text-red-500" /> YouTube Video Walkthrough URL (Optional)
+                </label>
+                <input 
+                  type="url"
+                  value={formState.videoUrl}
+                  onChange={e => setFormState({ ...formState, videoUrl: e.target.value })}
+                  placeholder="e.g. https://www.youtube.com/watch?v=KLlXCFG5TnA or embed URL"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-red-500/40"
                 />
               </div>
 

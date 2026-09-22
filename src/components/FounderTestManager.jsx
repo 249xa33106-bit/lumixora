@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Plus, Trash2, Edit2, Play, Save, X, PlusCircle, AlignLeft, Code, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Target, Plus, Trash2, Edit2, Play, Save, X, PlusCircle, AlignLeft, Code, FileText, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 import { db } from '../config/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, writeBatch, setDoc } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 import { generateTestQuestions } from '../services/aiService';
+import { DEFAULT_TESTS } from '../data/defaultTestsData';
 
 export default function FounderTestManager() {
   const { addToast } = useToast();
@@ -36,18 +37,62 @@ export default function FounderTestManager() {
     questions: []
   });
 
+  const [isRestoring, setIsRestoring] = useState(false);
+
   const loadTests = async () => {
     setLoading(true);
     try {
-      const testsRef = collection(db, 'tests');
-      const snap = await getDocs(testsRef);
-      const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_test_ids') || '[]'));
+      let fetched = [];
+      if (db) {
+        const testsRef = collection(db, 'tests');
+        const snap = await getDocs(testsRef);
+        if (!snap.empty) {
+          fetched = snap.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(t => !deletedIds.has(t.id));
+        }
+      }
+      
+      if (fetched.length === 0 && deletedIds.size === 0) {
+        fetched = DEFAULT_TESTS;
+        // Seed default tests in background
+        if (db) {
+          try {
+            const seedPromises = DEFAULT_TESTS.map(t => 
+              setDoc(doc(db, 'tests', t.id), { ...t, createdAt: new Date().toISOString() }).catch(() => {})
+            );
+            Promise.allSettled(seedPromises).then(() => {});
+          } catch (e) {}
+        }
+      }
       setTests(fetched);
     } catch (err) {
       console.error(err);
-      addToast({ message: 'Failed to load assessments.', type: 'error' });
+      setTests(DEFAULT_TESTS);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRestoreDefaults = async () => {
+    setIsRestoring(true);
+    try {
+      localStorage.removeItem('lumixora_deleted_test_ids');
+      if (db) {
+        const seedPromises = DEFAULT_TESTS.map(t => 
+          setDoc(doc(db, 'tests', t.id), { ...t, active: true, createdAt: new Date().toISOString() })
+        );
+        await Promise.allSettled(seedPromises);
+      }
+      localStorage.setItem('lumixora_custom_tests', JSON.stringify(DEFAULT_TESTS));
+      await loadTests();
+      addToast({ message: `Successfully restored ${DEFAULT_TESTS.length} default assessments!`, type: 'success' });
+    } catch (e) {
+      console.error(e);
+      addToast({ message: 'Failed to restore default tests.', type: 'error' });
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -231,11 +276,25 @@ export default function FounderTestManager() {
   };
 
   const handleDeleteTest = async (id) => {
-    if (!confirm('Are you sure you want to delete this assessment?')) return;
+    if (!confirm('Are you sure you want to permanently delete this assessment?')) return;
     try {
-      await deleteDoc(doc(db, 'tests', id));
-      setTests(tests.filter(t => t.id !== id));
-      addToast({ message: 'Assessment deleted.', type: 'success' });
+      if (db) {
+        await deleteDoc(doc(db, 'tests', String(id))).catch(() => {});
+      }
+
+      // Record in permanent deleted test IDs
+      const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_test_ids') || '[]'));
+      deletedIds.add(String(id));
+      localStorage.setItem('lumixora_deleted_test_ids', JSON.stringify(Array.from(deletedIds)));
+
+      // Remove from local cache
+      try {
+        const local = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
+        localStorage.setItem('lumixora_custom_tests', JSON.stringify(local.filter(t => t.id !== id)));
+      } catch (e) {}
+
+      setTests(prev => prev.filter(t => t.id !== id));
+      addToast({ message: 'Assessment permanently deleted.', type: 'success' });
     } catch (err) {
       addToast({ message: 'Failed to delete assessment.', type: 'error' });
     }
@@ -297,6 +356,16 @@ export default function FounderTestManager() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <button 
+            onClick={handleRestoreDefaults}
+            disabled={isRestoring}
+            className="bg-white/5 text-amber-400 border border-white/10 px-3.5 py-2.5 rounded-xl font-bold text-xs tracking-wide flex items-center gap-1.5 hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-50"
+            title="Restore and seed pre-loaded default assessment tests"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${isRestoring ? 'animate-spin' : ''}`} />
+            <span>{isRestoring ? 'Restoring...' : 'Restore Defaults'}</span>
+          </button>
+          
           <button 
             onClick={handleResetPortal}
             className="bg-red-500/10 text-red-400 border border-red-500/30 px-3.5 py-2.5 rounded-xl font-bold text-xs tracking-wide flex items-center gap-1.5 hover:bg-red-500/20 transition-colors cursor-pointer"

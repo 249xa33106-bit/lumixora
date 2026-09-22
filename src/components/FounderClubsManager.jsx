@@ -172,7 +172,7 @@ export default function FounderClubsManager() {
       bannerColor: 'from-purple-600 via-indigo-600 to-blue-600',
       tags: newClub.tagsText.split(',').map(t => t.trim()),
       upcomingEvents: [],
-      announcements: ['New official college club registered on Lumixora!']
+      announcements: ['New official college club registered on Vyomra!']
     };
 
     const updated = [formattedClub, ...clubs];

@@ -346,7 +346,7 @@ export default function LifeReplay({ user }) {
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-gray-100 uppercase tracking-tight flex items-center gap-2">
             <Film className="w-8 h-8 text-brand-pink animate-pulse" />
-            <span>LUMIXORA Life Replay™</span>
+            <span>VYOMRA Life Replay™</span>
           </h1>
           <p className="text-xs text-gray-400 mt-1 font-medium text-left">
             Chronological memory timeline, AI story generator, graduation script movie, and career readiness projections.

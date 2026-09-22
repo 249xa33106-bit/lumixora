@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, PlayCircle, Download, CheckCircle, Code, GraduationCap, ArrowRight, MonitorPlay, Zap, Shield, Sparkles, Mail, HelpCircle, Flame, Brain, Cpu, Trophy, Target, Activity, Star, CheckCircle2, X } from 'lucide-react';
+import { ChevronDown, PlayCircle, Download, CheckCircle, Code, GraduationCap, ArrowRight, MonitorPlay, Zap, Shield, Sparkles, Mail, HelpCircle, Flame, Brain, Cpu, Trophy, Target, Activity, Star, CheckCircle2, X, Users, Heart, BookOpen, Award, Sun, Send, Bell, ExternalLink, Globe } from 'lucide-react';
+import OurTeamPortal from './OurTeamPortal';
 
 const teamMembersDetails = {
   vamsika: {
@@ -11,7 +12,7 @@ const teamMembersDetails = {
     color: "amber",
     gradient: "from-amber-400 to-orange-500",
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Key driver in Lumixora's Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research to make learning seamless.",
+    bio: "Key driver in Vyomra's Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research to make learning seamless.",
     highlights: [
       "Conducts in-depth qualitative & quantitative campus surveys to uncover real student pain points.",
       "Researches and benchmarks top-tier EdTech solutions to ideate intuitive platform features.",
@@ -29,12 +30,12 @@ const teamMembersDetails = {
     color: "amber",
     gradient: "from-amber-400 to-orange-500",
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Specializes in identifying high-friction obstacles in the student learning experience, performing rigorous end-to-end user beta tests, and verifying problem-solution fit across Lumixora.",
+    bio: "Specializes in identifying high-friction obstacles in the student learning experience, performing rigorous end-to-end user beta tests, and verifying problem-solution fit across Vyomra.",
     highlights: [
       "Pinpoints critical friction points and edge cases across student navigation and study flows.",
-      "Organizes and facilitates interactive student beta testing sessions for new Lumixora releases.",
+      "Organizes and facilitates interactive student beta testing sessions for new Vyomra releases.",
       "Gathers bug reports, performance bottlenecks, and UX feedback to drive iterative refinements.",
-      "Ensures every Lumixora feature delivers immediate, tangible value for daily student life."
+      "Ensures every Vyomra feature delivers immediate, tangible value for daily student life."
     ],
     skills: ["Problem Identification", "User Beta Testing", "Usability Heuristics", "Feedback Synthesis", "Quality Validation"]
   },
@@ -47,7 +48,7 @@ const teamMembersDetails = {
     color: "amber",
     gradient: "from-amber-400 to-orange-500",
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Leads the feature ideation engine at Lumixora. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
+    bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
     highlights: [
       "Directs the Feature Strategy team (including Peram Vamsika & Raavi Yaswitha) in discovering student pain points.",
       "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
@@ -65,14 +66,50 @@ const teamMembersDetails = {
     color: "teal",
     gradient: "from-brand-teal to-brand-blue",
     borderBadge: "border-brand-teal/30 text-brand-teal bg-brand-teal/10",
-    bio: "Visionary founder and chief software architect behind Lumixora. Leading system architecture, AI model integrations, scalable cloud infrastructure, and the core platform vision.",
+    bio: "Visionary founder and chief software architect behind Vyomra. Leading system architecture, AI model integrations, scalable cloud infrastructure, and the core platform vision.",
     highlights: [
-      "Architected the entire Lumixora Student OS full-stack ecosystem from concept to production.",
+      "Architected the entire Vyomra Student OS full-stack ecosystem from concept to production.",
       "Engineered the AI Future Twin, automated code execution engines, and smart academic portfolios.",
       "Directs cross-functional engineering, infrastructure scaling, and real-time security protocols.",
       "Drives the mission to democratize state-of-the-art AI tooling for every university student."
     ],
     skills: ["System Architecture", "Full-Stack Development", "AI/ML Integration", "Cloud Infrastructure", "Product Vision"]
+  },
+  ishrath: {
+    name: "ISHRATH JAHAN",
+    role: "Under Founder",
+    department: "Executive Core Team",
+    lead: "Directly Under Founder (Shaik Sowban)",
+    image: "/team_ishrath.png",
+    color: "teal",
+    gradient: "from-teal-400 to-emerald-500",
+    borderBadge: "border-teal-400/30 text-teal-400 bg-teal-400/10",
+    bio: "Core executive team member working directly under the Founder, assisting in platform execution, operations, and ecosystem strategy across Vyomra.",
+    highlights: [
+      "Works directly under the Founder to coordinate strategic platform initiatives and milestones.",
+      "Assists in cross-department operations, student support, and academic workflow management.",
+      "Maintains direct communication channels with the Founder to execute product improvements.",
+      "Supports core community growth and student engagement across universities."
+    ],
+    skills: ["Under Founder", "Executive Support", "Core Operations", "Platform Strategy", "Team Coordination"]
+  },
+  arshiya: {
+    name: "ARSHIYA SULTANA",
+    role: "Under Founder",
+    department: "Executive Core Team",
+    lead: "Directly Under Founder (Shaik Sowban)",
+    image: "/team_arshiya.png",
+    color: "pink",
+    gradient: "from-pink-400 to-rose-500",
+    borderBadge: "border-pink-400/30 text-pink-400 bg-pink-400/10",
+    bio: "Core executive team member working directly under the Founder, assisting in platform research, quality assurance, and core feature initiatives across Vyomra.",
+    highlights: [
+      "Works directly under the Founder on key academic research and platform quality standards.",
+      "Coordinates with the Founder to evaluate and refine student learning tools.",
+      "Assists in resource structuring, verified content curation, and feature feedback.",
+      "Drives student experience optimization directly aligned with the Founder's vision."
+    ],
+    skills: ["Under Founder", "Executive Support", "Academic Research", "Quality Assurance", "Feature Strategy"]
   },
   ushasree: {
     name: "Y. USHA SREE",
@@ -85,7 +122,7 @@ const teamMembersDetails = {
     borderBadge: "border-violet-400/30 text-violet-400 bg-violet-400/10",
     bio: "Pioneers cutting-edge artificial intelligence architectures, personalized learning models, automated academic evaluation pipelines, and next-gen smart tools.",
     highlights: [
-      "Designs and fine-tunes specialized prompt engineering pipelines for Lumixora AI.",
+      "Designs and fine-tunes specialized prompt engineering pipelines for Vyomra AI.",
       "Develops adaptive learning algorithms that tailor content difficulty to individual student progress.",
       "Researches emerging neural architectures and multimodal AI agents for academic coaching.",
       "Ensures high-accuracy, hallucination-free AI assistance across STEM subjects."
@@ -119,7 +156,7 @@ const teamMembersDetails = {
     color: "cyan",
     gradient: "from-cyan-400 to-blue-600",
     borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
-    bio: "Manages Lumixora's extensive human mentor network and 24/7 student doubt resolution infrastructure to ensure zero learning roadblocks.",
+    bio: "Manages Vyomra's extensive human mentor network and 24/7 student doubt resolution infrastructure to ensure zero learning roadblocks.",
     highlights: [
       "Oversees peer mentor recruitment, onboarding, and quality assurance processes.",
       "Maintains rapid doubt resolution SLAs across engineering and science disciplines.",
@@ -163,6 +200,42 @@ const teamMembersDetails = {
       "Accelerates developer velocity through automated code generation and workflow scripts."
     ],
     skills: ["Rapid Prototyping", "AI Experimentation", "POC Engineering", "Demo Development", "Developer Tooling"]
+  },
+  riyaz: {
+    name: "SYED RIYAZ",
+    role: "AI Solutions & Prototyping Member",
+    department: "AI Solutions & Prototyping Team",
+    lead: "AI Solutions & Prototyping Team (under Shaik Tousif Basha)",
+    image: "/team_riyaz.png",
+    color: "cyan",
+    gradient: "from-cyan-400 via-blue-500 to-indigo-500",
+    borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
+    bio: "Core AI solutions developer and rapid prototyping member. Specializes in building proof-of-concept AI modules, intelligent automation pipelines, and model evaluation.",
+    highlights: [
+      "Develops rapid AI prototypes and experimental feature proof-of-concepts under the AI Solutions division.",
+      "Collaborates on LLM integration, prompt design, and automated workflow pipelines.",
+      "Tests and optimizes AI-powered student tools for performance, accuracy, and latency.",
+      "Works alongside team leads to translate cutting-edge AI research into working platform prototypes."
+    ],
+    skills: ["AI Prototyping", "Prompt Engineering", "Python", "Proof of Concepts", "Model Evaluation"]
+  },
+  ushaeswari: {
+    name: "USHA ESWARI",
+    role: "Product Testing & Quality Assurance Lead",
+    department: "Product Testing & Quality Assurance",
+    lead: "Lead — Product Testing & Quality Assurance",
+    image: "/team_ushaeswari.jpg",
+    color: "rose",
+    gradient: "from-rose-400 via-pink-500 to-indigo-500",
+    borderBadge: "border-rose-400/30 text-rose-400 bg-rose-400/10",
+    bio: "Directs comprehensive product testing workflows, quality benchmarks, automated test suites, and defect tracking across the Vyomra ecosystem.",
+    highlights: [
+      "Leads end-to-end product testing pipelines and quality assurance standards across all student features.",
+      "Designs and executes robust functional, regression, and user acceptance test suites.",
+      "Collaborates with product and engineering teams to identify defects, edge cases, and performance bottlenecks.",
+      "Ensures seamless, bug-free releases and optimal stability for thousands of active university users."
+    ],
+    skills: ["Product Testing", "Quality Assurance", "Test Automation", "Bug Tracking & QA", "User Acceptance Testing"]
   }
 };
 
@@ -173,9 +246,136 @@ const freedomFighters = [
   { name: "Sardar Vallabhbhai Patel", src: "/images/fighters/patel_portrait_1786791149012.jpg" },
   { name: "B. R. Ambedkar", src: "/images/fighters/ambedkar_portrait_1786791272300.jpg" },
   { name: "Rani Lakshmibai", src: "/images/fighters/lakshmibai_portrait_1786791406245.jpg" },
-  { name: "Chandra Shekhar Azad", src: "/images/fighters/azad_portrait_1786791463756.jpg" },
-  { name: "Jawaharlal Nehru", src: "/images/fighters/nehru_portrait_1786791478740.jpg" }
 ];
+
+const sessionalExamImages = [
+  {
+    title: "Deep Focus & Sessional Mastery",
+    subtitle: "Turn focused study hours into top engineering CGPA & distinction.",
+    src: "/images/exams/library_focus.jpg",
+    tip: "Review previous year papers, master unit formulas, and practice code hands-on.",
+    tag: "Exam Mode Active 🎯",
+    gradient: "from-amber-400 to-orange-500",
+    quote: "Success in exams isn't about last-minute panic, it's about calm focus, clear fundamentals, and believing in your hard work."
+  },
+  {
+    title: "All The Best For Your Sessionals!",
+    subtitle: "Confidence, calm mind, and clear answers guarantee victory.",
+    src: "/images/exams/exam_success.jpg",
+    tip: "Stay energized, write answers neatly with neat diagrams, and manage your time smartly.",
+    tag: "High Score Mindset ⚡",
+    gradient: "from-emerald-400 to-teal-500",
+    quote: "You have prepared and worked hard. Walk into the exam hall with your head high and conquer every question!"
+  },
+  {
+    title: "Smart AI Revision & Doubt Solving",
+    subtitle: "Instant concept summaries and formulas right when you need them.",
+    src: "/images/exams/desk_revision.jpg",
+    tip: "Use Vyomra AI to clarify doubts, review code logic, and test yourself with flash quizzes.",
+    tag: "Late Night Revision 🚀",
+    gradient: "from-cyan-400 to-blue-500",
+    quote: "Small consistent revisions turn tough syllabus units into effortless high scores."
+  }
+];
+
+export const checkIsSessionalExams = () => {
+  return false;
+};
+
+function SessionalExamsBackgroundAnimation() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sessionalExamImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const floatingSymbols = [
+    { symbol: "🎯", left: "6%", delay: "0s", dur: "14s", size: "text-2xl" },
+    { symbol: "📚", left: "20%", delay: "3s", dur: "16s", size: "text-xl" },
+    { symbol: "⚡", left: "35%", delay: "1.5s", dur: "12s", size: "text-lg" },
+    { symbol: "💡", left: "50%", delay: "4s", dur: "18s", size: "text-xl" },
+    { symbol: "✨", left: "65%", delay: "2s", dur: "15s", size: "text-2xl" },
+    { symbol: "🔥", left: "80%", delay: "5s", dur: "13s", size: "text-lg" },
+    { symbol: "🏆", left: "92%", delay: "0.5s", dur: "17s", size: "text-xl" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black">
+      <style>{`
+        @keyframes floatExamSymbols {
+          0% {
+            transform: translateY(110vh) rotate(0deg) scale(0.8);
+            opacity: 0;
+          }
+          15% {
+            opacity: 0.65;
+          }
+          85% {
+            opacity: 0.65;
+          }
+          100% {
+            transform: translateY(-20vh) rotate(360deg) scale(1.1);
+            opacity: 0;
+          }
+        }
+      `}</style>
+
+      {/* Background Images Slideshow */}
+      {sessionalExamImages.map((item, idx) => (
+        <div 
+          key={item.title}
+          className={`absolute inset-0 transition-opacity duration-2000 ${idx === currentIndex ? 'opacity-40' : 'opacity-0'}`}
+        >
+          <img 
+            src={item.src} 
+            alt={item.title}
+            className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000"
+          />
+        </div>
+      ))}
+
+      {/* Subtle Dark Gradient Overlay for Readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/85 via-[#0a0a0f]/60 to-[#0a0a0f]/95 pointer-events-none"></div>
+
+      {/* Radiant Floating Symbols */}
+      {floatingSymbols.map((item, idx) => (
+        <div
+          key={idx}
+          className={`absolute bottom-0 select-none ${item.size} opacity-40`}
+          style={{
+            left: item.left,
+            animation: `floatExamSymbols ${item.dur} infinite linear`,
+            animationDelay: item.delay
+          }}
+        >
+          {item.symbol}
+        </div>
+      ))}
+
+      {/* Ambient Glows */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[350px] bg-gradient-to-br from-amber-500/15 via-emerald-500/10 to-transparent rounded-full blur-[140px]"></div>
+      <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-gradient-to-bl from-teal-500/15 via-blue-500/10 to-transparent rounded-full blur-[130px]"></div>
+
+      {/* Bottom Motivation Nametag */}
+      <div className="absolute bottom-6 left-6 md:left-10 z-10 bg-black/80 backdrop-blur-md px-5 py-3 rounded-2xl border border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.25)] max-w-sm sm:max-w-md pointer-events-auto">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 rounded-b-2xl"></div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm">🎯</span>
+          <span className="text-[11px] font-black tracking-widest text-amber-400 uppercase">Sessional Exams 2026</span>
+        </div>
+        <p className="text-xs md:text-sm font-bold text-white tracking-wide">
+          {sessionalExamImages[currentIndex].title}
+        </p>
+        <p className="text-[11px] text-amber-200/80 mt-0.5 line-clamp-1">
+          {sessionalExamImages[currentIndex].tip}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function IndependenceDayAnimation() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -216,13 +416,63 @@ function IndependenceDayAnimation() {
   );
 }
 
+function TeamAvatar({ src, name, gradient = "from-teal-400 to-emerald-500", size = "w-24 h-24", textSize = "text-2xl" }) {
+  const [imgError, setImgError] = useState(false);
+  
+  const getInitials = (n) => {
+    if (!n) return 'T';
+    const clean = n.replace(/[^a-zA-Z\s]/g, '').trim();
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  return (
+    <div className={`relative ${size} mx-auto mb-5 shrink-0`}>
+      <div className={`absolute inset-0 bg-gradient-to-tr ${gradient} rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity`}></div>
+      {src && !imgError ? (
+        <img 
+          src={src} 
+          alt="" 
+          onError={() => setImgError(true)}
+          className={`${size} rounded-full object-cover relative z-10 border-2 border-white/20 group-hover:scale-105 transition-transform duration-500 shadow-xl`} 
+        />
+      ) : (
+        <div className={`${size} rounded-full bg-gradient-to-tr ${gradient} flex items-center justify-center font-black ${textSize} text-white border-2 border-white/20 relative z-10 shadow-xl select-none group-hover:scale-105 transition-transform duration-500`}>
+          {getInitials(name)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LandingPage({ onLoginClick }) {
   const [selectedMember, setSelectedMember] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [evalState, setEvalState] = useState('idle');
+  const [showTeamPortal, setShowTeamPortal] = useState(false);
+  const [isSessionalExams, setIsSessionalExams] = useState(checkIsSessionalExams);
+  const [examCheerCount, setExamCheerCount] = useState(() => {
+    try { return parseInt(localStorage.getItem('lumixora_exam_cheers') || '342'); } catch(e) { return 342; }
+  });
+  const [hasCheered, setHasCheered] = useState(false);
+  const [showCheerToast, setShowCheerToast] = useState(false);
+  const [activeQuoteIdx, setActiveQuoteIdx] = useState(0);
 
   const today = new Date();
   const isIndependenceDay = today.getMonth() === 7 && today.getDate() === 15;
+
+  const handleSendCheer = () => {
+    if (hasCheered) return;
+    const newCount = examCheerCount + 1;
+    setExamCheerCount(newCount);
+    setHasCheered(true);
+    setShowCheerToast(true);
+    try {
+      localStorage.setItem('lumixora_exam_cheers', newCount.toString());
+    } catch(e) {}
+    setTimeout(() => setShowCheerToast(false), 4000);
+  };
 
   const handleRunCode = () => {
     if (evalState === 'running') return;
@@ -232,12 +482,38 @@ export default function LandingPage({ onLoginClick }) {
     }, 2000);
   };
 
+  if (showTeamPortal) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-brand-teal/30 selection:text-brand-teal relative p-4 sm:p-8 force-dark">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowTeamPortal(false)}
+              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs flex items-center gap-2 border border-white/10 transition-all cursor-pointer shadow-lg"
+            >
+              &larr; Back to Home
+            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => { setShowTeamPortal(false); onLoginClick('student'); }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs shadow-md cursor-pointer"
+              >
+                Student Login
+              </button>
+            </div>
+          </div>
+          <OurTeamPortal user={null} setActiveTab={() => {}} />
+        </div>
+      </div>
+    );
+  }
+
   const faqs = [
-    { q: "What is Lumixora?", a: "Lumixora is an advanced AI-powered educational ecosystem that combines an AI Future Twin, personal mentoring, interactive coding practice, and peer collaboration to supercharge your academic journey." },
+    { q: "What is Vyomra?", a: "Vyomra is an advanced AI-powered educational ecosystem that combines an AI Future Twin, personal mentoring, interactive coding practice, and peer collaboration to supercharge your academic journey." },
     { q: "How does the AI Future Twin work?", a: "Your Future Twin analyzes your current skills, goals, and academic performance to simulate your career trajectory, providing step-by-step guidance to achieve your dream placements." },
-    { q: "Can I use Lumixora for coding practice?", a: "Yes! Lumixora features a built-in code editor, personalized problem sets, and an AI mentor to help you debug and learn multiple programming languages hands-on." },
-    { q: "Is Lumixora available for faculty members?", a: "Absolutely. Faculty members can use the Admin portal to track student attendance, monitor academic progress, evaluate assignments using AI, and manage classroom activities." },
-    { q: "Does Lumixora support collaborative learning?", a: "We strongly encourage it! With features like 'Study With Me', Doubt Solving forums, and a centralized Learning Hub, you can collaborate with peers seamlessly." },
+    { q: "Can I use Vyomra for coding practice?", a: "Yes! Vyomra features a built-in code editor, personalized problem sets, and an AI mentor to help you debug and learn multiple programming languages hands-on." },
+    { q: "Is Vyomra available for faculty members?", a: "Absolutely. Faculty members can use the Admin portal to track student attendance, monitor academic progress, evaluate assignments using AI, and manage classroom activities." },
+    { q: "Does Vyomra support collaborative learning?", a: "We strongly encourage it! With features like 'Study With Me', Doubt Solving forums, and a centralized Learning Hub, you can collaborate with peers seamlessly." },
     { q: "Are my notes and study materials secure?", a: "Yes, all your contributed notes, tasks, and private data are securely stored using enterprise-grade encryption. You have full control over what you share with the community." },
     { q: "How do I get started?", a: "Simply click on 'Student Login' or 'Faculty Login' above using your institutional email address to access your personalized dashboard." }
   ];
@@ -245,13 +521,36 @@ export default function LandingPage({ onLoginClick }) {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-brand-teal/30 selection:text-brand-teal relative overflow-hidden force-dark">
       
-      {isIndependenceDay && <IndependenceDayAnimation />}
+      {/* Sessional Exams High-Energy Background Slideshow with Real Study Focus Photos */}
+      {isSessionalExams ? (
+        <SessionalExamsBackgroundAnimation />
+      ) : isIndependenceDay ? (
+        <IndependenceDayAnimation />
+      ) : null}
+
+      {/* Sessional Exams High-Energy Top Ribbon Banner */}
+      {isSessionalExams && (
+        <div className="relative z-50 bg-gradient-to-r from-amber-600/95 via-orange-600/95 to-emerald-700/95 text-white text-xs font-black py-2.5 px-4 text-center shadow-2xl border-b border-amber-400/40 flex items-center justify-center gap-2 sm:gap-4 flex-wrap backdrop-blur-md">
+          <span className="flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-full text-[11px] uppercase tracking-wider font-black border border-white/20 shadow-inner">
+            <span className="text-sm">🎯</span> Sessional Exams 2026
+          </span>
+          <span className="font-bold text-white tracking-wide text-xs sm:text-sm">
+            All the best to all college students! Stay calm, write with confidence & score top grades! ⚡
+          </span>
+          <a 
+            href="#sessional-wishes"
+            className="px-3.5 py-1 rounded-full bg-white text-gray-900 text-[11px] font-black hover:bg-amber-100 transition-all shadow-md cursor-pointer uppercase tracking-wider inline-flex items-center gap-1"
+          >
+            Exam Motivation & Tips 🚀
+          </a>
+        </div>
+      )}
 
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] ${isIndependenceDay ? 'bg-orange-500/20' : 'bg-brand-teal/10'} rounded-full blur-[120px]`}></div>
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] ${isIndependenceDay ? 'bg-green-500/20' : 'bg-brand-purple/10'} rounded-full blur-[120px]`}></div>
-        <div className={`absolute top-[40%] left-[50%] translate-x-[-50%] w-[60%] h-[20%] ${isIndependenceDay ? 'bg-white/10' : 'bg-brand-pink/5'} rounded-full blur-[150px]`}></div>
+        <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] ${isSessionalExams ? 'bg-amber-500/15' : isIndependenceDay ? 'bg-orange-500/20' : 'bg-brand-teal/10'} rounded-full blur-[120px]`}></div>
+        <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] ${isSessionalExams ? 'bg-emerald-500/15' : isIndependenceDay ? 'bg-green-500/20' : 'bg-brand-purple/10'} rounded-full blur-[120px]`}></div>
+        <div className={`absolute top-[40%] left-[50%] translate-x-[-50%] w-[60%] h-[20%] ${isSessionalExams ? 'bg-cyan-500/10' : isIndependenceDay ? 'bg-white/10' : 'bg-brand-pink/5'} rounded-full blur-[150px]`}></div>
         {/* Subtle Grid */}
         <div className="absolute inset-0 opacity-50" style={{ backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djIwaC0ydi0yMGgtMjB2LTJoMjB2LTIwaDJ2MjBoMjB2MnoiLz48L2c+PC9nPjwvc3ZnPg==')` }}></div>
       </div>
@@ -259,16 +558,31 @@ export default function LandingPage({ onLoginClick }) {
       {/* Navigation */}
       <nav className="relative z-50 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/lumixora_logo.jpg" alt="Lumixora Logo" className="w-14 h-14 rounded-full object-cover shadow-lg shadow-brand-teal/20" />
-          <span className="text-2xl font-black text-white tracking-tight">Lumixora</span>
+          <img src="/lumixora_logo.jpg" alt="VYOMRA Logo" className="w-14 h-14 rounded-full object-cover shadow-lg shadow-brand-teal/20 border border-cyan-500/30" />
+          <div className="flex flex-col">
+            <span className="text-2xl font-black text-white tracking-tight leading-none">Lumixora</span>
+            <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest mt-0.5">by VYOMRA</span>
+          </div>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-300">
-          <a href="#team" className="hover:text-brand-teal transition-colors">Team</a>
+        <div className="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
+          <button 
+            onClick={() => setShowTeamPortal(true)} 
+            className="hover:text-brand-teal transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none text-gray-300 font-bold"
+          >
+            <Users className="w-4 h-4 text-brand-teal" />
+            <span>Team Portal</span>
+          </button>
           <button onClick={() => onLoginClick('student')} className="hover:text-brand-teal transition-colors cursor-pointer">Student Login</button>
           <button onClick={() => onLoginClick('faculty')} className="hover:text-brand-purple transition-colors cursor-pointer">Faculty Login</button>
           <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </div>
         <div className="md:hidden flex items-center gap-2">
+          <button 
+            onClick={() => setShowTeamPortal(true)} 
+            className="px-3 py-1.5 bg-brand-teal/10 border border-brand-teal/30 rounded-lg text-xs font-bold text-brand-teal hover:bg-brand-teal/20 transition-colors"
+          >
+            Team
+          </button>
           <button onClick={() => onLoginClick('student')} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors">
             Login
           </button>
@@ -276,8 +590,12 @@ export default function LandingPage({ onLoginClick }) {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 pt-24 md:pt-32 pb-20 text-center">
-        {isIndependenceDay ? (
+      <section className="relative z-10 max-w-5xl mx-auto px-6 pt-16 md:pt-24 pb-16 text-center">
+        {isSessionalExams ? (
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-emerald-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-8 uppercase tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.25)] animate-pulse">
+            <span className="text-base">🎯</span> Sessional Exams Active • All The Best to All Students! <span className="text-base">⚡</span>
+          </div>
+        ) : isIndependenceDay ? (
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 via-white/20 to-green-500/20 border border-white/20 text-white text-xs font-bold mb-8 uppercase tracking-widest">
             <span className="text-base">🇮🇳</span> Happy Independence Day <span className="text-base">🇮🇳</span>
           </div>
@@ -289,18 +607,33 @@ export default function LandingPage({ onLoginClick }) {
         
         <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.1] mb-8 drop-shadow-2xl">
           Supercharge Your <br/>
-          <span className={`text-transparent bg-clip-text ${isIndependenceDay ? 'bg-gradient-to-r from-orange-400 via-white to-green-500' : 'bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple'}`}>
+          <span className={`text-transparent bg-clip-text ${
+            isSessionalExams
+              ? 'bg-gradient-to-r from-amber-400 via-emerald-300 to-teal-300'
+              : isIndependenceDay 
+                ? 'bg-gradient-to-r from-orange-400 via-white to-green-500' 
+                : 'bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple'
+          }`}>
             Academic Journey
           </span>
         </h1>
         
-        <p className="text-lg md:text-xl font-medium text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-          The ultimate student ecosystem to master coding, collaborate with peers, and track your progress with an advanced AI mentor—designed to help you achieve your dream placements.
+        <p className="text-lg md:text-xl font-medium text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+          {isSessionalExams 
+            ? "Conquer your college sessional exams with laser focus, quick AI doubt solving, syllabus mastery, and calm confidence. We believe in your success!"
+            : "The ultimate student ecosystem to master coding, collaborate with peers, and track your progress with an advanced AI mentor—designed to help you achieve your dream placements."
+          }
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-          <button onClick={() => onLoginClick('demo')} className={`w-full sm:w-auto px-8 py-4 bg-[#6938EF] hover:bg-[#5425D6] text-white shadow-[0_0_30px_rgba(105,56,239,0.3)] font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer`}>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button onClick={() => onLoginClick('demo')} className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(105,56,239,0.4)] font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105">
             Start Exploring <ArrowRight className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => onLoginClick('student')} 
+            className="w-full sm:w-auto px-7 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <BookOpen className="w-5 h-5 text-amber-400" /> Student Login
           </button>
         </div>
 
@@ -309,7 +642,7 @@ export default function LandingPage({ onLoginClick }) {
           <HelpCircle className="w-4 h-4 text-brand-teal shrink-0" />
           <span>If you face any login / register issues or queries, contact</span>
           <a 
-            href="mailto:249xa33106@gprec.ac.in?subject=Lumixora%20Login%20/%20Register%20Support%20Query" 
+            href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Login%20/%20Register%20Support%20Query" 
             className="font-bold text-brand-teal hover:underline flex items-center gap-1.5 bg-brand-teal/10 px-2.5 py-1 rounded-lg border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors"
           >
             <Mail className="w-3.5 h-3.5" />
@@ -318,12 +651,149 @@ export default function LandingPage({ onLoginClick }) {
         </div>
       </section>
 
+      {/* Sessional Exams Wishes & Motivation Showcase Card */}
+      {isSessionalExams && (
+        <section id="sessional-wishes" className="relative z-10 max-w-6xl mx-auto px-6 py-10">
+          <div className="bg-gradient-to-br from-[#12121e]/90 via-[#0e1626]/90 to-[#101b15]/90 rounded-3xl p-6 sm:p-10 border-2 border-amber-500/30 shadow-[0_20px_60px_rgba(245,158,11,0.15)] relative overflow-hidden backdrop-blur-xl">
+            {/* Corner Decorative Aura */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div className="relative z-10 space-y-8">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider mb-2">
+                    <Trophy className="w-3.5 h-3.5" /> Sessional Exams 2026 Motivation
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                    All The Best To Every Engineering & College Student! 🎯
+                  </h2>
+                  <p className="text-gray-300 text-sm sm:text-base mt-1">
+                    Your preparation, hard work, and calm focus will turn this sessional into an outstanding score!
+                  </p>
+                </div>
+
+                {/* Interactive Cheer / Wish Button */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={handleSendCheer}
+                    className={`px-5 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-xl transition-all cursor-pointer ${
+                      hasCheered 
+                        ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300' 
+                        : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-105'
+                    }`}
+                  >
+                    <Heart className={`w-4 h-4 ${hasCheered ? 'fill-emerald-400 text-emerald-400' : 'fill-black text-black'}`} />
+                    <span>{hasCheered ? '✨ Best Wishes Sent!' : 'Send Good Luck Cheer'}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-black/20 text-[11px] font-extrabold">
+                      {examCheerCount}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Toast Notification */}
+              {showCheerToast && (
+                <div className="bg-emerald-500/20 border border-emerald-500/40 p-3 rounded-xl text-emerald-300 text-xs font-bold flex items-center gap-2 animate-bounce">
+                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Your warm wishes have been sent to all students preparing for sessionals! All the very best! 🏆</span>
+                </div>
+              )}
+
+              {/* 3 Interactive Motivational Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {sessionalExamImages.map((exam, idx) => (
+                  <div 
+                    key={exam.title}
+                    onClick={() => setActiveQuoteIdx(idx)}
+                    className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group ${
+                      activeQuoteIdx === idx 
+                        ? 'bg-white/10 border-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.2)] scale-[1.02]' 
+                        : 'bg-black/40 border-white/10 hover:border-white/20 hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-black text-amber-400 tracking-wider">
+                        {exam.tag}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-mono">0{idx + 1}/03</span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-white mb-2 group-hover:text-amber-300 transition-colors">
+                      {exam.title}
+                    </h3>
+                    <p className="text-xs text-gray-300 leading-relaxed mb-4">
+                      "{exam.quote}"
+                    </p>
+
+                    <div className="pt-3 border-t border-white/10 flex items-center gap-2 text-[11px] text-amber-200/90 font-medium">
+                      <Target className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>{exam.tip}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* High Yield Sessional Exam Golden Rules */}
+              <div className="bg-black/50 p-5 rounded-2xl border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400 font-black text-xs">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Time Strategy</h4>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Scan paper for 2 mins, start with questions you know best to build rock-solid confidence.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 font-black text-xs">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Diagrams & Equations</h4>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Draw neat labeled block diagrams and box final numerical answers with units.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0 text-cyan-400 font-black text-xs">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Calm & Sharp Mind</h4>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Take a deep breath before tough questions. Your continuous hard work will yield great results!</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom CTAs */}
+              <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Vyomra AI & Peer Notes Ready for Fast 1-Click Revision</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => onLoginClick('student')}
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-black text-xs hover:from-emerald-400 hover:to-teal-400 transition-all cursor-pointer shadow-lg"
+                  >
+                    Open Student Portal &rarr;
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Interactive Demo Section */}
       <section id="demo" className="relative z-10 max-w-6xl mx-auto px-6 py-12">
         <div className="glass-panel rounded-3xl p-2 border border-white/10 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-teal/5 rounded-full blur-3xl pointer-events-none group-hover:bg-brand-teal/10 transition-colors"></div>
           <div className="w-full relative overflow-hidden rounded-2xl shadow-2xl bg-black">
-             <img src="/infographic.jpg" alt="Lumixora Student OS Features" className="w-full h-auto object-contain rounded-2xl" />
+              <img src="/infographic.jpg" alt="Vyomra Student OS Features" className="w-full h-auto object-contain rounded-2xl" />
           </div>
         </div>
       </section>
@@ -337,7 +807,7 @@ export default function LandingPage({ onLoginClick }) {
               <span className="text-brand-purple">Student OS.</span>
             </h2>
             <p className="text-lg text-gray-400 mb-10 font-medium leading-relaxed">
-              Lumixora transforms your educational journey by combining an intelligent AI mentor with a gamified learning ecosystem designed exclusively for students.
+              Vyomra transforms your educational journey by combining an intelligent AI mentor with a gamified learning ecosystem designed exclusively for students.
             </p>
             
             <div className="space-y-6 mb-10">
@@ -362,8 +832,18 @@ export default function LandingPage({ onLoginClick }) {
               </div>
 
               <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">My Academics & Marks Engine</h3>
+                  <p className="text-sm text-gray-400 mt-1">Track Mid-1, Mid-2, End-Sem marks, SGPA progression, and subject-wise attendance with zero clutter.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
                 <div className="w-12 h-12 rounded-xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-6 h-6 text-brand-pink" />
+                  <BookOpen className="w-6 h-6 text-brand-pink" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">Integrated Workspaces</h3>
@@ -492,6 +972,16 @@ export default function LandingPage({ onLoginClick }) {
             <p className="text-gray-400 font-medium text-base">
               The passionate leaders, marketing strategists, and tech innovators building the future of student academic operating systems.
             </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setShowTeamPortal(true)}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-teal via-[#0d9488] to-brand-blue text-black font-extrabold text-xs shadow-xl hover:opacity-95 transition-all inline-flex items-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Open Dedicated Team Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -503,14 +993,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-teal/10 rounded-full blur-2xl group-hover:bg-brand-teal/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-teal to-brand-blue rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/founder_sowban.png" 
-                    alt="SHAIK SOWBAN" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-brand-teal/50 group-hover:scale-105 transition-transform duration-500 shadow-xl" 
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/founder_sowban.png" 
+                  name="SHAIK SOWBAN" 
+                  gradient="from-brand-teal to-brand-blue" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-brand-teal bg-brand-teal/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-teal/20 inline-block mb-2">
@@ -529,6 +1016,66 @@ export default function LandingPage({ onLoginClick }) {
               </div>
             </div>
 
+            {/* Team Member: ISHRATH JAHAN (Founder's Core Team) */}
+            <div 
+              onClick={() => setSelectedMember(teamMembersDetails.ishrath)}
+              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-teal-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-400/10 rounded-full blur-2xl group-hover:bg-teal-400/20 transition-all"></div>
+              
+              <div>
+                <TeamAvatar 
+                  src="/team_ishrath.png" 
+                  name="ISHRATH JAHAN" 
+                  gradient="from-teal-400 to-emerald-500" 
+                />
+
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-black text-teal-400 bg-teal-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-teal-400/20 inline-block mb-2">
+                    Under Founder
+                  </span>
+                  <h3 className="text-lg font-extrabold text-white group-hover:text-teal-300 transition-colors">ISHRATH JAHAN</h3>
+                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
+                    Working directly under the Founder, assisting in platform execution, operations, and ecosystem strategy.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 mt-5 text-center">
+                <span className="text-[11px] font-extrabold text-teal-400 group-hover:underline">View Profile & Details &rarr;</span>
+              </div>
+            </div>
+
+            {/* Team Member: ARSHIYA SULTANA (Under Founder) */}
+            <div 
+              onClick={() => setSelectedMember(teamMembersDetails.arshiya)}
+              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-pink-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-400/10 rounded-full blur-2xl group-hover:bg-pink-400/20 transition-all"></div>
+              
+              <div>
+                <TeamAvatar 
+                  src="/team_arshiya.png" 
+                  name="ARSHIYA SULTANA" 
+                  gradient="from-pink-400 to-rose-500" 
+                />
+
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-black text-pink-400 bg-pink-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-pink-400/20 inline-block mb-2">
+                    Under Founder
+                  </span>
+                  <h3 className="text-lg font-extrabold text-white group-hover:text-pink-300 transition-colors">ARSHIYA SULTANA</h3>
+                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
+                    Working directly under the Founder, assisting in academic research, quality assurance, and learning feature design.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 mt-5 text-center">
+                <span className="text-[11px] font-extrabold text-pink-400 group-hover:underline">View Profile & Details &rarr;</span>
+              </div>
+            </div>
+
             {/* Team Member 2: C. MANASA (Team Lead • Feature Strategy) */}
             <div 
               onClick={() => setSelectedMember(teamMembersDetails.manasa)}
@@ -537,14 +1084,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_manasa.jpg" 
-                    alt="C. MANASA" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-amber-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_manasa.jpg" 
+                  name="C. MANASA" 
+                  gradient="from-amber-400 to-orange-500" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
@@ -571,14 +1115,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_vamsika.png" 
-                    alt="PERAM VAMSIKA" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-amber-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_vamsika.png" 
+                  name="PERAM VAMSIKA" 
+                  gradient="from-amber-400 to-orange-500" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
@@ -605,14 +1146,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_yaswitha.jpg" 
-                    alt="RAAVI YASWITHA" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-amber-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_yaswitha.jpg" 
+                  name="RAAVI YASWITHA" 
+                  gradient="from-amber-400 to-orange-500" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
@@ -639,14 +1177,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-violet-400/10 rounded-full blur-2xl group-hover:bg-violet-400/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-violet-400 via-purple-500 to-indigo-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_ushasree.jpg" 
-                    alt="Y. USHA SREE" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-violet-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_ushasree.jpg" 
+                  name="Y. USHA SREE" 
+                  gradient="from-violet-400 via-purple-500 to-indigo-500" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-violet-400 bg-violet-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-violet-400/20 inline-block mb-2">
@@ -673,14 +1208,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-purple/10 rounded-full blur-2xl group-hover:bg-brand-purple/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-purple to-brand-pink rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_akhil.jpg" 
-                    alt="M. AKHIL" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-brand-purple/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_akhil.jpg" 
+                  name="M. AKHIL" 
+                  gradient="from-brand-purple to-brand-pink" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-brand-purple bg-brand-purple/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-purple/20 inline-block mb-2">
@@ -707,14 +1239,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl group-hover:bg-cyan-400/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_pooja.jpg" 
-                    alt="A. POOJA REDDY" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-cyan-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_pooja.jpg" 
+                  name="A. POOJA REDDY" 
+                  gradient="from-cyan-400 to-blue-600" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-cyan-400/20 inline-block mb-2">
@@ -741,14 +1270,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400 to-teal-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_chandrika.jpg" 
-                    alt="C. CHANDRIKA" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-emerald-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_chandrika.jpg" 
+                  name="C. CHANDRIKA" 
+                  gradient="from-emerald-400 to-teal-600" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-500/20 inline-block mb-2">
@@ -775,14 +1301,11 @@ export default function LandingPage({ onLoginClick }) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
               
               <div>
-                <div className="relative w-24 h-24 mx-auto mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-400 via-indigo-500 to-cyan-400 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                  <img 
-                    src="/team_tousif.jpg" 
-                    alt="SHAIK TOUSIF BASHA" 
-                    className="w-24 h-24 rounded-full object-cover relative z-10 border-2 border-blue-400/50 group-hover:scale-105 transition-transform duration-500 shadow-xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src="/team_tousif.jpg" 
+                  name="SHAIK TOUSIF BASHA" 
+                  gradient="from-blue-400 via-indigo-500 to-cyan-400" 
+                />
 
                 <div className="text-center space-y-1">
                   <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-500/20 inline-block mb-2">
@@ -791,13 +1314,75 @@ export default function LandingPage({ onLoginClick }) {
                   <h3 className="text-lg font-extrabold text-white group-hover:text-blue-300 transition-colors">SHAIK TOUSIF BASHA</h3>
                   <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Lead</p>
                   <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Uses AI tools to rapidly build demos, prototypes, and proof-of-concepts for new LUMIXORA features.
+                    Uses AI tools to rapidly build demos, prototypes, and proof-of-concepts for new VYOMRA features.
                   </p>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-white/5 mt-5 text-center">
                 <span className="text-[11px] font-extrabold text-blue-400 group-hover:underline">View Profile & Details &rarr;</span>
+              </div>
+            </div>
+
+            {/* Team Member: SYED RIYAZ - AI Solutions & Prototyping Member */}
+            <div 
+              onClick={() => setSelectedMember(teamMembersDetails.riyaz)}
+              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
+              
+              <div>
+                <TeamAvatar 
+                  src="/team_riyaz.png" 
+                  name="SYED RIYAZ" 
+                  gradient="from-cyan-400 via-blue-500 to-indigo-500" 
+                />
+
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-black text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-cyan-500/20 inline-block mb-2">
+                    AI Solutions Member
+                  </span>
+                  <h3 className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">SYED RIYAZ</h3>
+                  <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Member</p>
+                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
+                    Builds rapid AI-driven prototypes, proofs-of-concept, and intelligent automation workflows.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 mt-5 text-center">
+                <span className="text-[11px] font-extrabold text-cyan-400 group-hover:underline">View Profile & Details &rarr;</span>
+              </div>
+            </div>
+
+            {/* Team Member: USHA ESWARI - Product Testing & QA Lead */}
+            <div 
+              onClick={() => setSelectedMember(teamMembersDetails.ushaeswari)}
+              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-rose-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-400/10 rounded-full blur-2xl group-hover:bg-rose-400/20 transition-all"></div>
+              
+              <div>
+                <TeamAvatar 
+                  src="/team_ushaeswari.jpg" 
+                  name="USHA ESWARI" 
+                  gradient="from-rose-400 via-pink-500 to-indigo-500" 
+                />
+
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-black text-rose-400 bg-rose-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-rose-400/20 inline-block mb-2">
+                    Product Testing & QA Lead
+                  </span>
+                  <h3 className="text-lg font-extrabold text-white group-hover:text-rose-300 transition-colors">USHA ESWARI</h3>
+                  <p className="text-xs font-bold text-gray-400">Quality Assurance Lead</p>
+                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
+                    Directs product testing workflows, automated test suites, quality benchmarks, and defect tracking across Vyomra.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 mt-5 text-center">
+                <span className="text-[11px] font-extrabold text-rose-400 group-hover:underline">View Profile & Details &rarr;</span>
               </div>
             </div>
           </div>
@@ -815,7 +1400,7 @@ export default function LandingPage({ onLoginClick }) {
             If you face any login / register issues or queries,<br/>
             please contact us directly at:{' '}
             <a 
-              href="mailto:249xa33106@gprec.ac.in?subject=Lumixora%20Support%20Query" 
+              href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Support%20Query" 
               className="text-brand-teal font-bold hover:underline inline-flex items-center gap-1 bg-brand-teal/10 px-3 py-1 rounded-lg border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors ml-1"
             >
               <Mail className="w-4 h-4" /> 249xa33106@gprec.ac.in
@@ -845,17 +1430,21 @@ export default function LandingPage({ onLoginClick }) {
 
       {/* Footer */}
       <footer id="contact" className="bg-[#050508] py-12 text-center border-t border-white/5 relative z-10">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <img src="/lumixora_logo.jpg" alt="Lumixora Logo" className="w-8 h-8 rounded-full object-cover opacity-80" />
-          <span className="text-xl font-black text-white tracking-tight">Lumixora</span>
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <img src="/lumixora_logo.jpg" alt="VYOMRA Logo" className="w-10 h-10 rounded-full object-cover shadow-md border border-cyan-500/30" />
+          <div className="flex flex-col text-left">
+            <span className="text-xl font-black text-white tracking-tight leading-none">Lumixora</span>
+            <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest mt-0.5">A Project of VYOMRA</span>
+          </div>
         </div>
-        <p className="text-gray-500 text-sm font-medium mb-2">Empowering students with AI-driven academic excellence.</p>
-        <p className="text-gray-400 text-sm font-bold mb-4 tracking-wide">Founded by SHAIK SOWBAN</p>
+        <p className="text-cyan-400/90 text-xs font-black tracking-widest uppercase mb-2">IDEAS TODAY • IMPACT TOMORROW</p>
+        <p className="text-gray-500 text-xs font-medium mb-1">Autonomous Multi-Campus Student OS & Placement Twin Ecosystem.</p>
+        <p className="text-gray-400 text-xs font-bold mb-4 tracking-wide">Founded & Led by SHAIK SOWBAN</p>
         
         {/* Workable Contact Email in Footer */}
         <div className="my-6">
           <a 
-            href="mailto:249xa33106@gprec.ac.in?subject=Lumixora%20Login%20/%20Register%20Support%20Query"
+            href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Login%20/%20Register%20Support%20Query"
             className="inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all shadow-md"
           >
             <Mail className="w-4 h-4 text-brand-teal shrink-0" />
@@ -864,7 +1453,7 @@ export default function LandingPage({ onLoginClick }) {
           </a>
         </div>
 
-        <p className="text-gray-600 text-xs font-bold tracking-widest">&copy; 2026 LUMIXORA. ALL RIGHTS RESERVED.</p>
+        <p className="text-gray-600 text-xs font-bold tracking-widest">&copy; 2026 VYOMRA. ALL RIGHTS RESERVED.</p>
       </footer>
 
       {/* Fixed Founder Cinematic Badge */}
@@ -913,14 +1502,13 @@ export default function LandingPage({ onLoginClick }) {
             <div className="overflow-y-auto pr-1 space-y-6">
               {/* Header Info */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-white/10 text-center sm:text-left">
-                <div className="relative w-28 h-28 shrink-0">
-                  <div className={`absolute inset-0 bg-gradient-to-tr ${selectedMember.gradient} rounded-full blur-md opacity-60`}></div>
-                  <img 
-                    src={selectedMember.image} 
-                    alt={selectedMember.name} 
-                    className="w-28 h-28 rounded-full object-cover relative z-10 border-2 border-white/20 shadow-2xl"
-                  />
-                </div>
+                <TeamAvatar 
+                  src={selectedMember.image} 
+                  name={selectedMember.name} 
+                  gradient={selectedMember.gradient} 
+                  size="w-28 h-28" 
+                  textSize="text-3xl" 
+                />
                 <div className="space-y-1.5 flex-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${selectedMember.borderBadge}`}>
@@ -982,7 +1570,7 @@ export default function LandingPage({ onLoginClick }) {
 
             {/* Modal Bottom Actions */}
             <div className="pt-4 border-t border-white/10 mt-4 flex items-center justify-between">
-              <span className="text-[11px] font-bold text-gray-500">LUMIXORA Student OS Leadership</span>
+              <span className="text-[11px] font-bold text-gray-500">VYOMRA Student OS Leadership</span>
               <button 
                 onClick={() => setSelectedMember(null)}
                 className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors"

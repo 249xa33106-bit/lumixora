@@ -1,4 +1,4 @@
-// Compiler & Sandbox Execution Service for Lumixora Code Arena
+// Compiler & Sandbox Execution Service for Vyomra Code Arena
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**

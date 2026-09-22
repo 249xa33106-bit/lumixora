@@ -29,7 +29,7 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-const newVersion = '1.1.11';
+const newVersion = '1.1.15';
 
 async function updateDatabases() {
   console.log(`Bumping version to ${newVersion} in databases...`);
@@ -44,7 +44,7 @@ async function updateDatabases() {
     
     const { data, error } = await supabase
       .from('app_config')
-      .upsert({ key: 'latest_version', value: newVersion }, { onConflict: 'key' });
+      .upsert({ id: 'global', latest_version: newVersion, min_version: '1.0.0' }, { onConflict: 'id' });
       
     if (error) {
       console.warn("Supabase update error:", error.message);

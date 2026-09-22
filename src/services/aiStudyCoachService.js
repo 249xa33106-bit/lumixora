@@ -1,68 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const originalFetch = window.fetch;
-const fetch = async (url, options) => {
-  if (url === 'https://api.groq.com/openai/v1/chat/completions') {
-    try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) throw new Error('Gemini API Key is missing');
-      
-      const body = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
-      const genAI = new GoogleGenerativeAI(apiKey);
-      
-      let hasImage = false;
-      let promptParts = [];
-      let systemInstruction = '';
-      
-      for (const msg of body.messages) {
-        if (msg.role === 'system') {
-          systemInstruction += msg.content + '\n';
-        } else {
-          if (typeof msg.content === 'string') {
-            promptParts.push(msg.content);
-          } else if (Array.isArray(msg.content)) {
-            for (const part of msg.content) {
-              if (part.type === 'text') promptParts.push(part.text);
-              if (part.type === 'image_url') {
-                const b64 = part.image_url.url.split(',')[1] || part.image_url.url;
-                promptParts.push({ inlineData: { data: b64, mimeType: 'image/jpeg' } });
-                hasImage = true;
-              }
-            }
-          }
-        }
-      }
-      
-      if (systemInstruction) {
-        promptParts.unshift('System Instructions:\n' + systemInstruction + '\n\nUser Request:');
-      }
-      
-      const modelName = 'gemini-1.5-flash';
-      const model = genAI.getGenerativeModel({ model: modelName });
-      
-      const result = await model.generateContent(promptParts);
-      const text = result.response.text();
-      
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({
-          choices: [{ message: { content: text } }]
-        })
-      };
-    } catch (e) {
-      console.error('Gemini Adapter Error:', e);
-      return {
-        ok: false,
-        status: 500,
-        json: async () => ({ error: { message: e.message } })
-      };
-    }
-  }
-  return originalFetch(url, options);
-};
-
-// AI Study Coach Service for Lumixora Study With Me
+// AI Study Coach Service for Vyomra Study With Me
 
 // ─── Local Coaching Message Banks ───────────────────────────────────────────
 
@@ -314,14 +250,14 @@ function getMonthKey() {
 
 export async function getAISessionFeedback({ subject, goal, focusScore, totalMinutes, distractions, completed }) {
   try {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     if (!apiKey) throw new Error('No API key');
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         messages: [
           {
             role: 'system',

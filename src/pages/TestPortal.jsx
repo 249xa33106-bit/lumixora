@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Target, Trophy, AlertTriangle, Monitor, Play, CheckCircle, Code, List, 
-  ArrowLeft, XCircle, Edit2, Trash2, Save, X, Clock, Sparkles, Loader2, FileText,
+  ArrowLeft, XCircle, Edit2, Trash2, Save, X, Clock, FileText,
   Filter, Download, Search, RotateCcw
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { db } from '../config/firebase';
-import { collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { supabase } from '../config/supabase';
 import { awardXP } from '../services/gamificationService';
-import { generateTestQuestions } from '../services/aiService';
 import { generateTestResultsPDF } from '../utils/pdfGenerator';
+import { notifyFounderTestSubmission } from '../services/founderNotificationService';
+import { DEFAULT_TESTS } from '../data/defaultTestsData';
+import { DEFAULT_SUBMISSIONS } from '../data/defaultSubmissionsData';
+import { saveQuizScoreToSupabase } from '../services/supabaseDataSyncService';
 
 export default function TestPortal({ user, setActiveTab }) {
   const userEmail = (user?.email || '').toLowerCase().trim();
@@ -177,68 +180,155 @@ If there is a compilation or runtime error, set "error" to true and put the erro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, timeLeft]);
 
-  // Load tests from Firestore & Supabase
-  useEffect(() => {
-    const fetchTests = async () => {
+  const [testTabFilter, setTestTabFilter] = useState('all'); // 'all', 'coding', 'quiz', 'assignment'
+  const [isSyncingTests, setIsSyncingTests] = useState(false);
+
+  // Load tests from Firestore, Supabase, LocalStorage & Default Core Assessments
+  const fetchTests = async () => {
+    try {
+      let allTests = [];
+      let fbTests = [];
+      
+      // 1. Fetch from Firestore
       try {
-        let allTests = [];
-        
-        // 1. Fetch from Firestore
-        try {
-          const testsRef = collection(db, 'tests');
-          const snap = await getDocs(testsRef);
-          const fbTests = snap.docs.map(doc => ({ 
-            ...doc.data(), 
-            id: doc.id,
-            active: doc.data().active !== false 
+        const testsRef = collection(db, 'tests');
+        const snap = await getDocs(testsRef);
+        if (!snap.empty) {
+          fbTests = snap.docs.map(d => ({ 
+            ...d.data(), 
+            id: d.id,
+            active: d.data().active !== false 
           }));
           allTests = [...allTests, ...fbTests];
-        } catch (fbErr) {
-          console.warn("Firestore tests load note:", fbErr);
         }
-
-        // 2. Fetch from Supabase
-        try {
-          const { data: sbData } = await supabase.from('tests').select('*');
-          if (sbData && sbData.length > 0) {
-            const sbTests = sbData.map(t => ({
-              ...t,
-              id: t.id ? String(t.id) : `sb_${Date.now()}`,
-              active: t.active !== false,
-              questions: typeof t.questions === 'string' ? JSON.parse(t.questions || '[]') : (t.questions || [])
-            }));
-            allTests = [...allTests, ...sbTests];
-          }
-        } catch (sbErr) {
-          console.warn("Supabase tests load note:", sbErr);
-        }
-
-        // 3. Fallback from LocalStorage
-        try {
-          const localTests = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
-          if (Array.isArray(localTests)) {
-            allTests = [...allTests, ...localTests];
-          }
-        } catch (lErr) {}
-
-        // Deduplicate by ID
-        const uniqueTestsMap = new Map();
-        allTests.forEach(t => {
-          if (t && (t.id || t.title)) {
-            uniqueTestsMap.set(t.id || t.title, t);
-          }
-        });
-
-        setTests(Array.from(uniqueTestsMap.values()));
-      } catch (_err) {
-        console.error("Error in TestPortal fetchTests:", _err);
-      } finally {
-        setLoadingTests(false);
+      } catch (fbErr) {
+        console.warn("Firestore tests load note:", fbErr);
       }
-    };
+
+      // 2. Fetch from Supabase
+      try {
+        const { data: sbData } = await supabase.from('tests').select('*');
+        if (sbData && sbData.length > 0) {
+          const sbTests = sbData.map(t => ({
+            ...t,
+            id: t.id ? String(t.id) : `sb_${Date.now()}`,
+            active: t.active !== false,
+            questions: typeof t.questions === 'string' ? JSON.parse(t.questions || '[]') : (t.questions || [])
+          }));
+          allTests = [...allTests, ...sbTests];
+        }
+      } catch (sbErr) {
+        console.warn("Supabase tests load note:", sbErr);
+      }
+
+      // 3. Fetch from LocalStorage
+      try {
+        const localTests = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
+        if (Array.isArray(localTests) && localTests.length > 0) {
+          allTests = [...allTests, ...localTests];
+        }
+      } catch (lErr) {}
+
+      const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_test_ids') || '[]'));
+
+      // 4. Merge with DEFAULT_TESTS only for non-deleted tests
+      const nonDeletedDefaults = DEFAULT_TESTS.filter(t => !deletedIds.has(t.id));
+      allTests = [...allTests, ...nonDeletedDefaults];
+
+      // Deduplicate by ID
+      const uniqueTestsMap = new Map();
+      allTests.forEach(t => {
+        if (t && (t.id || t.title)) {
+          const key = t.id || t.title;
+          if (!deletedIds.has(t.id) && !uniqueTestsMap.has(key)) {
+            uniqueTestsMap.set(key, t);
+          }
+        }
+      });
+
+      const finalTests = Array.from(uniqueTestsMap.values());
+      setTests(finalTests);
+
+      // 5. If Firestore was empty and founder hasn't intentionally deleted tests, auto-seed
+      if (fbTests.length === 0 && deletedIds.size === 0 && db) {
+        try {
+          const seedPromises = DEFAULT_TESTS.map(t => 
+            setDoc(doc(db, 'tests', t.id), { ...t, createdAt: new Date().toISOString() }).catch(() => {})
+          );
+          Promise.allSettled(seedPromises).then(() => {});
+        } catch (e) {}
+      }
+    } catch (_err) {
+      console.error("Error in TestPortal fetchTests:", _err);
+      setTests(DEFAULT_TESTS);
+    } finally {
+      setLoadingTests(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTests();
+
+    let unsubTests = () => {};
+    let unsubLeaderboard = () => {};
+
+    if (db) {
+      try {
+        const testsRef = collection(db, 'tests');
+        unsubTests = onSnapshot(testsRef, (snap) => {
+          if (!snap.empty) {
+            const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_test_ids') || '[]'));
+            const fbTests = snap.docs
+              .map(d => ({ 
+                ...d.data(), 
+                id: d.id,
+                active: d.data().active !== false 
+              }))
+              .filter(t => !deletedIds.has(t.id));
+
+            const uniqueMap = new Map();
+            fbTests.forEach(t => {
+              const k = t.id || t.title;
+              if (!uniqueMap.has(k)) uniqueMap.set(k, t);
+            });
+            setTests(Array.from(uniqueMap.values()));
+          }
+        }, () => {});
+
+        const resultsRef = collection(db, 'test_results');
+        unsubLeaderboard = onSnapshot(resultsRef, () => {
+          loadLeaderboard();
+        }, () => {});
+      } catch (e) {}
+    }
+
+    return () => {
+      unsubTests();
+      unsubLeaderboard();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleRestoreDefaultTests = async () => {
+    setIsSyncingTests(true);
+    try {
+      localStorage.removeItem('lumixora_deleted_test_ids');
+      if (db) {
+        const seedPromises = DEFAULT_TESTS.map(t => 
+          setDoc(doc(db, 'tests', t.id), { ...t, active: true, createdAt: new Date().toISOString() })
+        );
+        await Promise.allSettled(seedPromises);
+      }
+      localStorage.setItem('lumixora_custom_tests', JSON.stringify(DEFAULT_TESTS));
+      await fetchTests();
+      addToast({ message: `Restored ${DEFAULT_TESTS.length} default assessments!`, type: 'success' });
+    } catch (e) {
+      console.error("Restore tests error:", e);
+      addToast({ message: 'Failed to restore default tests.', type: 'error' });
+    } finally {
+      setIsSyncingTests(false);
+    }
+  };
 
   // Load leaderboard on mount
   useEffect(() => {
@@ -257,44 +347,56 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       });
 
       // 2. Fetch test results
-      const resultsRef = collection(db, 'test_results');
-      const snap = await getDocs(resultsRef);
-      const data = snap.docs.map(docSnap => {
-        const d = docSnap.data();
-        const userEmail = (d.userEmail || '').toLowerCase().trim();
-        const userObj = uMap[userEmail] || {};
-        
-        let rawName = d.user || userObj.name || 'Anonymous';
-        let parsedMeta = {};
-        if (rawName.includes('{')) {
-          try {
-            parsedMeta = JSON.parse(rawName.substring(rawName.indexOf('{')));
-          } catch (_e) {}
-        }
+      let data = [];
+      if (db) {
+        try {
+          const resultsRef = collection(db, 'test_results');
+          const snap = await getDocs(resultsRef);
+          if (!snap.empty) {
+            data = snap.docs.map(docSnap => {
+              const d = docSnap.data();
+              const userEmail = (d.userEmail || '').toLowerCase().trim();
+              const userObj = uMap[userEmail] || {};
+              
+              let rawName = d.user || userObj.name || 'Anonymous';
+              let parsedMeta = {};
+              if (rawName.includes('{')) {
+                try {
+                  parsedMeta = JSON.parse(rawName.substring(rawName.indexOf('{')));
+                } catch (_e) {}
+              }
 
-        const cleanUserName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
-        const department = d.department || d.branch || userObj.department || userObj.branch || parsedMeta.department || parsedMeta.branch || 'CSE';
-        const year = d.year || userObj.year || parsedMeta.year || '1st Year';
-        const sem = d.sem || d.semester || userObj.sem || userObj.semester || parsedMeta.sem || parsedMeta.semester || '1-1';
-        const sec = d.sec || d.section || userObj.sec || userObj.section || parsedMeta.sec || parsedMeta.section || 'A';
-        const rollNumber = d.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
+              const cleanUserName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
+              const department = d.department || d.branch || userObj.department || userObj.branch || parsedMeta.department || parsedMeta.branch || 'CSE';
+              const year = d.year || userObj.year || parsedMeta.year || '1st Year';
+              const sem = d.sem || d.semester || userObj.sem || userObj.semester || parsedMeta.sem || parsedMeta.semester || '1-1';
+              const sec = d.sec || d.section || userObj.sec || userObj.section || parsedMeta.sec || parsedMeta.section || 'A';
+              const rollNumber = d.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
 
-        return {
-          ...d,
-          id: docSnap.id,
-          user: cleanUserName,
-          userEmail,
-          department,
-          branch: department,
-          year,
-          sem,
-          sec,
-          rollNumber
-        };
-      });
+              return {
+                ...d,
+                id: docSnap.id,
+                user: cleanUserName,
+                userEmail,
+                department,
+                branch: department,
+                year,
+                sem,
+                sec,
+                rollNumber
+              };
+            });
+          }
+        } catch (_dbErr) {}
+      }
+
+      if (data.length === 0) {
+        data = DEFAULT_SUBMISSIONS;
+      }
       setLeaderboard(data);
     } catch (e) {
       console.error('Failed to load leaderboard:', e);
+      setLeaderboard(DEFAULT_SUBMISSIONS);
     }
   };
 
@@ -325,11 +427,24 @@ If there is a compilation or runtime error, set "error" to true and put the erro
   };
 
   const deleteTest = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this test?")) return;
+    if (!window.confirm("Are you sure you want to permanently delete this test?")) return;
     try {
-      await deleteDoc(doc(db, 'tests', id));
+      if (db) {
+        await deleteDoc(doc(db, 'tests', String(id))).catch(() => {});
+      }
+      // Record deleted test ID in permanent deleted set
+      const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_test_ids') || '[]'));
+      deletedIds.add(String(id));
+      localStorage.setItem('lumixora_deleted_test_ids', JSON.stringify(Array.from(deletedIds)));
+
+      // Remove from custom local tests
+      try {
+        const local = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
+        localStorage.setItem('lumixora_custom_tests', JSON.stringify(local.filter(t => t.id !== id)));
+      } catch (e) {}
+
       setTests(prev => prev.filter(test => test.id !== id));
-      addToast({ message: 'Test deleted', type: 'success' });
+      addToast({ message: 'Test permanently deleted.', type: 'success' });
     } catch (e) {
       console.error(e);
       addToast({ message: 'Failed to delete test', type: 'error' });
@@ -340,10 +455,24 @@ If there is a compilation or runtime error, set "error" to true and put the erro
     try {
       const numDuration = parseInt(editingTestVals.duration, 10);
       if (isNaN(numDuration) || !editingTestVals.title.trim()) return;
-      await updateDoc(doc(db, 'tests', id), { title: editingTestVals.title, duration: numDuration });
-      setTests(prev => prev.map(test => test.id === id ? { ...test, title: editingTestVals.title, duration: numDuration } : test));
+
+      if (db) {
+        await updateDoc(doc(db, 'tests', String(id)), { 
+          title: editingTestVals.title.trim(), 
+          duration: numDuration 
+        }).catch(() => {});
+      }
+
+      // Update in local cache
+      try {
+        const local = JSON.parse(localStorage.getItem('lumixora_custom_tests') || '[]');
+        const updated = local.map(t => t.id === id ? { ...t, title: editingTestVals.title.trim(), duration: numDuration } : t);
+        localStorage.setItem('lumixora_custom_tests', JSON.stringify(updated));
+      } catch (e) {}
+
+      setTests(prev => prev.map(test => test.id === id ? { ...test, title: editingTestVals.title.trim(), duration: numDuration } : test));
       setEditingTestId(null);
-      addToast({ message: 'Test updated', type: 'success' });
+      addToast({ message: 'Test updated and saved permanently.', type: 'success' });
     } catch (e) {
       console.error(e);
       addToast({ message: 'Failed to update test', type: 'error' });
@@ -353,27 +482,36 @@ If there is a compilation or runtime error, set "error" to true and put the erro
   // Handle Fullscreen & Visibility/Blur events
   const violationLockRef = useRef(false);
 
+  // Auto-submit test immediately when warnings reach 3
+  useEffect(() => {
+    if (view === 'taking' && warnings >= 3) {
+      addToast({ message: 'Maximum warnings (3/3) reached. Auto-submitting test now.', type: 'error' });
+      if (submitTestRef.current) {
+        submitTestRef.current(true); // Forced auto-submit
+      }
+    }
+  }, [warnings, view]);
+
   useEffect(() => {
     const handleViolation = (reason) => {
       if (view !== 'taking') return;
       if (violationLockRef.current) return;
       
       violationLockRef.current = true;
-      const newWarnings = warnings + 1;
-      setWarnings(newWarnings);
+      setWarnings(prev => {
+        const newCount = prev + 1;
+        if (newCount < 3) {
+          addToast({ message: `⚠️ WARNING (${newCount}/3): ${reason}`, type: 'warning' });
+        } else {
+          addToast({ message: `🚨 Maximum warnings (3/3) reached: ${reason}. Auto-submitting...`, type: 'error' });
+        }
+        return newCount;
+      });
       
-      if (newWarnings >= 3) {
-        addToast({ message: 'Maximum warnings reached. Auto-submitting test.', type: 'error' });
-        if (submitTestRef.current) submitTestRef.current(true); // Forced submit
-      } else {
-        addToast({ message: `WARNING: ${reason} (${newWarnings}/3 warnings)`, type: 'warning' });
-        alert(`WARNING: ${reason}\n\nThis is warning ${newWarnings} of 3. If you receive 3 warnings, your test will be automatically submitted.`);
-      }
-      
-      // Unlock after a short delay so that a single action (e.g., exiting fullscreen and switching tab simultaneously) doesn't count twice
+      // Unlock after a short delay so that rapid duplicate events don't falsely stack
       setTimeout(() => {
         violationLockRef.current = false;
-      }, 2000);
+      }, 1500);
     };
 
     const handleFullscreenChange = () => {
@@ -381,7 +519,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       setIsFullscreen(currentlyFullscreen);
 
       if (!currentlyFullscreen && view === 'taking') {
-        handleViolation("You exited full-screen mode!");
+        handleViolation("Exited full-screen mode!");
       }
     };
 
@@ -475,11 +613,15 @@ If there is a compilation or runtime error, set "error" to true and put the erro
   };
 
   const startTest = async (test) => {
-    if (!confirm(`Are you ready to start the ${test.title}? You MUST remain in full-screen mode.`)) return;
-    
     try {
-      await enterFullscreen();
-      setIsFullscreen(true);
+      try {
+        await enterFullscreen();
+        setIsFullscreen(true);
+      } catch (_fsErr) {
+        console.warn("Fullscreen permission note:", _fsErr);
+        setIsFullscreen(false);
+      }
+      
       setActiveTest(test);
       
       // Calculate exact time left, enforcing the scheduled end time if applicable
@@ -496,9 +638,10 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       setWarnings(0);
       setAnswers({});
       setView('taking');
-      addToast({ message: 'Test started! Do not exit full-screen mode.', type: 'info' });
-    } catch (_err) { console.error("Error in TestPortal:", _err);
-      addToast({ message: 'Failed to enter full-screen mode. Please try again.', type: 'error' });
+      addToast({ message: `${test.title} started!`, type: 'info' });
+    } catch (_err) {
+      console.error("Error starting test in TestPortal:", _err);
+      addToast({ message: 'Failed to start test. Please try again.', type: 'error' });
     }
   };
 
@@ -507,129 +650,155 @@ If there is a compilation or runtime error, set "error" to true and put the erro
   };
 
   const submitTest = async (forced = false) => {
-    // Removed confirm() because it gets blocked by the browser in fullscreen mode
-    
-    // Calculate Score
-    let score = 0;
-    let totalScoreable = 0;
-    
-    (activeTest?.questions || []).forEach((q, idx) => {
-      if (q.type === 'mcq') {
-        totalScoreable++;
-        if (answers[idx] === q.correct) {
-          score++;
-        }
-      }
-    });
+    if (!activeTest) return;
+    const currentActiveTest = activeTest;
+    const currentAnswers = answers;
 
-    const codeQuestions = (activeTest?.questions || []).map((q, idx) => ({ q, idx })).filter(item => item.q?.type === 'code');
-    if (codeQuestions.length > 0) {
-      addToast({ message: 'Evaluating coding solutions...', type: 'info' });
-      for (const item of codeQuestions) {
-        totalScoreable++;
-        const userCode = answers[item.idx] || item.q.initialCode;
-        const output = await executeCode(item.idx, userCode, true, codeLanguages[item.idx] || item.q.language || 'java'); 
-        const outStr = typeof output === 'string' ? output : (output?.output || '');
-        const hasErr = outStr.toLowerCase().includes('error');
-        const expectedOut = item.q.expectedOutput;
-        const isSuccess = !hasErr && (!expectedOut || outStr.trim() === expectedOut.trim());
-        if (isSuccess) {
-          score++;
-        }
-      }
-    }
-
-    const rawName = user?.name || 'Anonymous';
-    let parsedMeta = {};
-    if (rawName.includes('{')) {
-      try {
-        parsedMeta = JSON.parse(rawName.substring(rawName.indexOf('{')));
-      } catch (_err) {}
-    }
-
-    const result = {
-      id: Date.now(),
-      testId: activeTest.id || 'unknown',
-      testTitle: activeTest.title || 'Untitled Test',
-      user: rawName.split('{')[0].trim() || 'Scholar',
-      userId: user?.id || user?.uid || null,
-      userEmail: user?.email || '',
-      department: user?.department || user?.branch || parsedMeta.department || parsedMeta.branch || 'CSE',
-      branch: user?.department || user?.branch || parsedMeta.department || parsedMeta.branch || 'CSE',
-      year: user?.year || parsedMeta.year || '1st Year',
-      sem: user?.sem || user?.semester || parsedMeta.sem || parsedMeta.semester || '1-1',
-      sec: user?.sec || user?.section || parsedMeta.sec || parsedMeta.section || 'A',
-      college: user?.college || parsedMeta.college || 'GPREC',
-      rollNumber: user?.rollNumber || (user?.email?.endsWith('@gprec.ac.in') ? user.email.split('@')[0].toUpperCase() : ''),
-      score: score,
-      total: totalScoreable,
-      type: activeTest.type || 'standard',
-      date: new Date().toISOString(),
-      test: activeTest,
-      answers: answers,
-      flaggedForTabSwitch: forced
-    };
-
-    // Clean undefined values for Firestore
-    const cleanResult = JSON.parse(JSON.stringify(result));
-
-    // Save to Firestore and Supabase
     try {
-      await addDoc(collection(db, 'test_results'), cleanResult);
+      // Calculate Score
+      let score = 0;
+      let totalScoreable = 0;
       
-      // Dispatch real-time notification to founder control deck
-      try {
-        await addDoc(collection(db, 'founder_notifications'), {
-          type: 'submission',
-          name: cleanResult.user || user?.name || 'Scholar',
-          email: cleanResult.userEmail || user?.email || '',
-          role: `${cleanResult.testTitle} (${cleanResult.score}/${cleanResult.total})`,
-          createdAt: new Date().toISOString(),
-          read: false
-        });
-      } catch (_notifErr) {}
-      
-      if (user && (user.id || user.uid)) {
-        const uid = user.id || user.uid;
-        const todayStr = new Date().toISOString().split('T')[0];
-        
-        // Award 10 XP for writing a test
-        try {
-          await awardXP(uid, 'FINISH_QUIZ', 10);
-        } catch (xpErr) {
-          console.warn('Error awarding XP:', xpErr);
+      (currentActiveTest?.questions || []).forEach((q, idx) => {
+        if (q.type === 'mcq') {
+          totalScoreable++;
+          if (currentAnswers[idx] === q.correct) {
+            score++;
+          }
         }
+      });
 
-        try {
-          const { data: userData } = await supabase.from('users').select('tests_written').eq('id', uid).single();
-          const currentTestsWritten = userData?.tests_written || 0;
-          await supabase.from('users').update({ 
-            last_test_date: todayStr,
-            tests_written: currentTestsWritten + 1
-          }).eq('id', uid);
-        } catch (sbErr) {
-          console.warn('Error updating last_test_date in Supabase:', sbErr);
+      const codeQuestions = (currentActiveTest?.questions || []).map((q, idx) => ({ q, idx })).filter(item => item.q?.type === 'code');
+      if (codeQuestions.length > 0) {
+        for (const item of codeQuestions) {
+          totalScoreable++;
+          const userCode = currentAnswers[item.idx] || item.q.initialCode;
+          try {
+            const output = await executeCode(item.idx, userCode, true, codeLanguages[item.idx] || item.q.language || 'java'); 
+            const outStr = typeof output === 'string' ? output : (output?.output || '');
+            const hasErr = outStr.toLowerCase().includes('error');
+            const expectedOut = item.q.expectedOutput;
+            const isSuccess = !hasErr && (!expectedOut || outStr.trim() === expectedOut.trim());
+            if (isSuccess) {
+              score++;
+            }
+          } catch (_e) {}
         }
       }
 
-      await loadLeaderboard();
-    } catch (e) {
-      console.error('Error saving test result:', e);
-      addToast({ message: 'Failed to save test result.', type: 'error' });
-    }
+      const rawName = user?.name || 'Anonymous';
+      let parsedMeta = {};
+      if (rawName.includes('{')) {
+        try {
+          parsedMeta = JSON.parse(rawName.substring(rawName.indexOf('{')));
+        } catch (_err) {}
+      }
 
-    addToast({ message: 'Test submitted successfully!', type: 'success' });
-    
-    await exitFullscreen();
-    setTestResult({
-      test: activeTest,
-      answers: answers,
-      score: score,
-      total: totalScoreable,
-      flaggedForTabSwitch: forced
-    });
-    setActiveTest(null);
-    setView('result');
+      const result = {
+        id: Date.now(),
+        testId: currentActiveTest.id || 'unknown',
+        testTitle: currentActiveTest.title || 'Untitled Test',
+        user: rawName.split('{')[0].trim() || 'Scholar',
+        userId: user?.id || user?.uid || null,
+        userEmail: user?.email || '',
+        department: user?.department || user?.branch || parsedMeta.department || parsedMeta.branch || 'CSE',
+        branch: user?.department || user?.branch || parsedMeta.department || parsedMeta.branch || 'CSE',
+        year: user?.year || parsedMeta.year || '1st Year',
+        sem: user?.sem || user?.semester || parsedMeta.sem || parsedMeta.semester || '1-1',
+        sec: user?.sec || user?.section || parsedMeta.sec || parsedMeta.section || 'A',
+        college: user?.college || parsedMeta.college || 'GPREC',
+        rollNumber: user?.rollNumber || (user?.email?.endsWith('@gprec.ac.in') ? user.email.split('@')[0].toUpperCase() : ''),
+        score: score,
+        total: totalScoreable || (currentActiveTest?.questions || []).length || 1,
+        type: currentActiveTest.type || 'standard',
+        date: new Date().toISOString(),
+        test: currentActiveTest,
+        answers: currentAnswers,
+        flaggedForTabSwitch: forced
+      };
+
+      // Clean undefined values for Firestore
+      const cleanResult = JSON.parse(JSON.stringify(result));
+
+      // Save test result persistently and dispatch real-time founder notification
+      try {
+        notifyFounderTestSubmission(cleanResult);
+        if (db) {
+          addDoc(collection(db, 'test_results'), cleanResult).catch(() => {});
+        }
+
+        const rawUid = user?.id || user?.uid || (user?.email ? user.email.replace(/[@.]/g, '_') : 'guest');
+        if (rawUid) {
+          try {
+            const subKey = `lumixora_test_submissions_${rawUid}`;
+            const existingSubs = JSON.parse(localStorage.getItem(subKey) || '[]');
+            existingSubs.unshift({
+              testId: cleanResult.testId,
+              testTitle: cleanResult.testTitle,
+              score: cleanResult.score,
+              total: cleanResult.total,
+              passed: (cleanResult.score / (cleanResult.total || 1)) >= 0.5,
+              date: new Date().toISOString()
+            });
+            localStorage.setItem(subKey, JSON.stringify(existingSubs));
+
+            // If score is passing (>= 50%), also record in grand tests registry
+            const scorePct = Math.round((cleanResult.score / (cleanResult.total || 1)) * 100);
+            if (scorePct >= 50) {
+              const grandKey = `lumixora_grand_tests_${rawUid}`;
+              const existingGrand = JSON.parse(localStorage.getItem(grandKey) || '[]');
+              existingGrand.unshift({
+                testId: cleanResult.testId,
+                testTitle: cleanResult.testTitle,
+                scorePercentage: scorePct,
+                passedAt: new Date().toISOString(),
+                verified: true
+              });
+              localStorage.setItem(grandKey, JSON.stringify(existingGrand));
+            }
+          } catch (_lsErr) {}
+        }
+        
+        if (user && (user.id || user.uid || user.email)) {
+          const uid = user.id || user.uid;
+          const todayStr = new Date().toISOString().split('T')[0];
+          awardXP(uid, 'FINISH_QUIZ', 10).catch(() => {});
+          if (uid) {
+            supabase.from('users').update({ 
+              last_test_date: todayStr,
+              tests_written: (user.tests_written || 0) + 1
+            }).eq('id', uid).then(() => {}).catch(() => {});
+          }
+          saveQuizScoreToSupabase(user, {
+            topic: cleanResult.testTitle,
+            score: cleanResult.score,
+            total: cleanResult.total,
+            testId: cleanResult.testId
+          }).catch(e => console.warn('Supabase test sync:', e));
+        }
+
+        loadLeaderboard().catch(() => {});
+      } catch (e) {
+        console.error('Error recording test result:', e);
+      }
+
+      addToast({ message: forced ? 'Test auto-submitted due to violations.' : 'Test submitted successfully!', type: forced ? 'warning' : 'success' });
+      
+      try {
+        await exitFullscreen();
+      } catch (_e) {}
+
+      setTestResult({
+        test: currentActiveTest,
+        answers: currentAnswers,
+        score: score,
+        total: totalScoreable || (currentActiveTest?.questions || []).length || 1,
+        flaggedForTabSwitch: forced
+      });
+    } finally {
+      setActiveTest(null);
+      setView('result');
+    }
   };
 
   // Always keep the ref updated with the latest submitTest function
@@ -696,7 +865,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
           <div className="space-y-6">
             {(activeTest?.questions || []).map((q, idx) => (
               <div key={q.id || idx} className="glass-panel p-6 rounded-2xl border border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4">
+                <h3 className="text-lg font-bold text-white mb-4 test-question-text" data-question-text>
                   <span className="text-brand-teal mr-2">Q{idx + 1}.</span>
                   {q.question}
                 </h3>
@@ -706,7 +875,8 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                     {(q.options || []).map((opt, optIdx) => (
                       <label 
                         key={optIdx} 
-                        className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-colors border ${
+                        data-option-idx={optIdx}
+                        className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-colors border test-option-btn ${
                           answers[idx] === optIdx 
                             ? 'bg-brand-teal/20 border-brand-teal' 
                             : 'bg-white/5 border-white/10 hover:bg-white/10'
@@ -970,8 +1140,18 @@ If there is a compilation or runtime error, set "error" to true and put the erro
 
   const renderList = () => {
     const availableTests = tests.filter(test => {
-      if (isFounder) return true;
+      if (isFounder) {
+        if (testTabFilter === 'coding') return test.type === 'coding' || test.type === 'both';
+        if (testTabFilter === 'quiz') return test.type === 'quiz' && test.category !== 'assignment';
+        if (testTabFilter === 'assignment') return test.category === 'assignment';
+        return true;
+      }
       if (test.active === false) return false;
+
+      // Category tab filter
+      if (testTabFilter === 'coding' && test.type !== 'coding' && test.type !== 'both') return false;
+      if (testTabFilter === 'quiz' && (test.type !== 'quiz' || test.category === 'assignment')) return false;
+      if (testTabFilter === 'assignment' && test.category !== 'assignment') return false;
 
       const userBranch = (user?.department || user?.branch || '').toLowerCase().trim();
       const userSem = String(user?.sem || user?.semester || '').toLowerCase().trim();
@@ -981,42 +1161,102 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       const testSem = String(test.targetSem || 'All').toLowerCase().trim();
       const testSec = (test.targetSec || 'All').toUpperCase().trim();
 
-      const matchBranch = testBranch === 'all' || !test.targetBranch || testBranch === userBranch || !userBranch;
+      const matchBranch = testBranch === 'all' || !test.targetBranch || testBranch === userBranch || !userBranch || userBranch.includes(testBranch) || testBranch.includes(userBranch);
       const matchSem = testSem === 'all' || !test.targetSem || testSem === userSem || userSem.includes(testSem) || !userSem;
       const matchSec = testSec === 'all' || !test.targetSec || testSec === userSec || !userSec;
       
-      let isExpired = false;
-      if (test.dueDate) {
-        isExpired = Date.now() > new Date(test.dueDate).getTime();
-      }
-      return matchBranch && matchSem && matchSec && !isExpired;
+      return matchBranch && matchSem && matchSec;
     });
+
+    const codingCount = tests.filter(t => t.type === 'coding' || t.type === 'both').length;
+    const quizCount = tests.filter(t => t.type === 'quiz' && t.category !== 'assignment').length;
+    const assignCount = tests.filter(t => t.category === 'assignment').length;
 
     return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-wide mb-2">Test Portal <Target className="inline w-6 h-6 text-brand-teal ml-2" /></h2>
-          <p className="text-sm text-gray-400 font-medium">Take quizzes and coding assessments in a secure environment.</p>
+          <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-wide mb-1 flex items-center gap-2">
+            Test Portal <Target className="inline w-6 h-6 text-brand-teal" />
+          </h2>
+          <p className="text-sm text-gray-400 font-medium">Take quizzes, coding assessments, and timeline assignments in a secure environment.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {isFounder && (
-            <button 
-              onClick={() => setActiveTab && setActiveTab('founder-portal')}
-              className="bg-brand-teal hover:opacity-90 text-black px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-opacity cursor-pointer shadow-sm"
-            >
-              <Target className="w-4 h-4" />
-              Post Test
-            </button>
+            <>
+              <button 
+                onClick={handleRestoreDefaultTests}
+                disabled={isSyncingTests}
+                className="bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                title="Restore default pre-loaded test database"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 ${isSyncingTests ? 'animate-spin' : ''}`} />
+                <span>{isSyncingTests ? 'Syncing...' : 'Sync Default Tests'}</span>
+              </button>
+              <button 
+                onClick={() => setActiveTab && setActiveTab('founder-portal')}
+                className="bg-brand-teal hover:opacity-90 text-black px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-opacity cursor-pointer shadow-sm"
+              >
+                <Target className="w-4 h-4" />
+                Post Test
+              </button>
+            </>
           )}
           <button 
             onClick={() => setView('leaderboard')}
-            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition-colors cursor-pointer"
+            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer"
           >
             <Trophy className="w-4 h-4 text-brand-pink" />
-            View Leaderboard
+            Leaderboard
           </button>
         </div>
+      </div>
+
+      {/* Category Tabs Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+        <button
+          onClick={() => setTestTabFilter('all')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            testTabFilter === 'all'
+              ? 'bg-brand-teal text-black shadow-md'
+              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+          }`}
+        >
+          All Assessments ({tests.length})
+        </button>
+        <button
+          onClick={() => setTestTabFilter('coding')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+            testTabFilter === 'coding'
+              ? 'bg-brand-blue text-black shadow-md'
+              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+          }`}
+        >
+          <Code className="w-3.5 h-3.5" />
+          Coding ({codingCount})
+        </button>
+        <button
+          onClick={() => setTestTabFilter('quiz')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+            testTabFilter === 'quiz'
+              ? 'bg-brand-pink text-black shadow-md'
+              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+          }`}
+        >
+          <List className="w-3.5 h-3.5" />
+          MCQ Quizzes ({quizCount})
+        </button>
+        <button
+          onClick={() => setTestTabFilter('assignment')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+            testTabFilter === 'assignment'
+              ? 'bg-purple-500 text-white shadow-md'
+              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Assignments ({assignCount})
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -1026,9 +1266,17 @@ If there is a compilation or runtime error, set "error" to true and put the erro
             <p className="text-xs font-bold tracking-wide">Fetching Active Tests...</p>
           </div>
         ) : availableTests.length === 0 ? (
-          <div className="col-span-full py-12 text-center glass-panel rounded-3xl border border-white/5 border-dashed">
-            <Target className="w-12 h-12 text-gray-500 mx-auto mb-3 opacity-50" />
-            <p className="text-sm text-gray-400 font-medium">No tests are currently active. Check back later!</p>
+          <div className="col-span-full py-12 text-center glass-panel rounded-3xl border border-white/5 border-dashed space-y-3">
+            <Target className="w-12 h-12 text-gray-500 mx-auto opacity-50" />
+            <p className="text-sm text-gray-300 font-medium">No tests found for this category.</p>
+            {isFounder && (
+              <button 
+                onClick={handleRestoreDefaultTests}
+                className="px-4 py-2 rounded-xl bg-brand-teal text-black text-xs font-bold hover:opacity-90 transition-opacity"
+              >
+                Load Default Assessment Suite
+              </button>
+            )}
           </div>
         ) : (
           availableTests.map(test => {
@@ -1041,37 +1289,12 @@ If there is a compilation or runtime error, set "error" to true and put the erro
               isAssignment ? 'border-purple-500/20' : 'border-white/10'
             }`}>
               
-              {/* Founder Actions */}
-              {isFounder && (
-                <div className="absolute top-4 right-1/2 translate-x-1/2 sm:right-4 sm:translate-x-0 flex gap-2">
-                  {editingTestId === test.id ? (
-                    <>
-                      <button onClick={() => saveTest(test.id)} className="p-1.5 bg-green-500/20 text-green-500 hover:bg-green-500/30 rounded z-10" title="Save">
-                        <Save className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setEditingTestId(null)} className="p-1.5 bg-white/5 text-gray-400 hover:text-white rounded z-10" title="Cancel">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => { setEditingTestId(test.id); setEditingTestVals({ title: test.title, duration: test.duration }); }} className="p-1.5 icon-3d-blue hover:bg-brand-blue/20 rounded z-10" title="Edit Assessment">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => deleteTest(test.id)} className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded z-10" title="Delete Assessment">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-4 gap-2">
                 <div className="flex items-center gap-2">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border ${
                     isAssignment ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-white/5 border-white/10 text-brand-teal'
                   }`}>
-                    {isAssignment ? <FileText className="w-6 h-6" /> : test.type === 'coding' ? <Code className="w-6 h-6 text-brand-blue" /> : <List className="w-6 h-6" />}
+                    {isAssignment ? <FileText className="w-5 h-5" /> : test.type === 'coding' ? <Code className="w-5 h-5 text-brand-blue" /> : <List className="w-5 h-5" />}
                   </div>
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide border ${
                     isAssignment ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-brand-teal/15 text-brand-teal border-brand-teal/30'
@@ -1080,16 +1303,36 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                   </span>
                 </div>
 
-                {editingTestId === test.id ? (
-                  <div className="flex items-center gap-1 z-10">
-                    <input type="number" value={editingTestVals.duration} onChange={e => setEditingTestVals({...editingTestVals, duration: e.target.value})} className="w-12 text-[10px] font-bold text-center bg-white/10 px-1 py-1 rounded-md text-white border border-white/20 outline-none" />
-                    <span className="text-[10px] text-gray-400 font-bold">MIN</span>
-                  </div>
-                ) : (
-                  <span className="text-[10px] font-bold tracking-wide bg-white/10 px-2.5 py-1 rounded-full text-gray-300">
-                    {test.duration} MIN
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {editingTestId === test.id ? (
+                    <div className="flex items-center gap-1">
+                      <input type="number" value={editingTestVals.duration} onChange={e => setEditingTestVals({...editingTestVals, duration: e.target.value})} className="w-12 text-[10px] font-bold text-center bg-white/10 px-1 py-1 rounded-md text-white border border-white/20 outline-none" />
+                      <span className="text-[10px] text-gray-400 font-bold">MIN</span>
+                      <button onClick={() => saveTest(test.id)} className="p-1.5 bg-green-500/20 text-green-500 hover:bg-green-500/30 rounded" title="Save">
+                        <Save className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => setEditingTestId(null)} className="p-1.5 bg-white/5 text-gray-400 hover:text-white rounded" title="Cancel">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-bold tracking-wide bg-white/10 px-2.5 py-1 rounded-full text-gray-300">
+                        {test.duration} MIN
+                      </span>
+                      {isFounder && (
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => { setEditingTestId(test.id); setEditingTestVals({ title: test.title, duration: test.duration }); }} className="p-1.5 icon-3d-blue hover:bg-brand-blue/20 rounded" title="Edit Assessment">
+                            <Edit2 className="w-3.5 h-3.5 text-brand-blue" />
+                          </button>
+                          <button onClick={() => deleteTest(test.id)} className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded" title="Delete Assessment">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             
             {editingTestId === test.id ? (

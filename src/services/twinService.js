@@ -1,5 +1,5 @@
 /**
- * Harvesting and aggregation engine for Lumixora AI Academic Twin™
+ * Harvesting and aggregation engine for Vyomra AI Academic Twin™
  */
 
 export function harvestStudentIntelligence(userId, tasks = [], timetable = []) {

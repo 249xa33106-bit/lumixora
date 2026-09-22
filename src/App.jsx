@@ -18,9 +18,11 @@ import { ThemeProvider } from './context/ThemeContext';
 import CodingPractice from './pages/CodingPractice';
 import CodeEditorPage from './pages/CodeEditorPage';
 import PersonalMentor from './pages/PersonalMentor';
+import MyAcademics from './pages/MyAcademics';
 import { isValidInstitutionalEmail } from './data/collegesData';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
-import { auth } from './config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from './config/firebase';
 import { supabase } from './config/supabase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
 import StudyWithMe from './pages/StudyWithMe';
@@ -44,12 +46,35 @@ import ProjectShowcase from './pages/ProjectShowcase';
 import ResumeCreator from './pages/ResumeCreator';
 import VideoPortal from './pages/VideoPortal';
 import TeamPortal from './pages/TeamPortal';
+import OurTeamPortal from './pages/OurTeamPortal';
+import AlumniReferralBridge from './pages/AlumniReferralBridge';
+import CompanyPlacementPapers from './pages/CompanyPlacementPapers';
+import AptitudeArena from './components/AptitudeArena';
 import PlatformTourModal from './components/PlatformTourModal';
 import CinematicIntro from './components/CinematicIntro';
+import TomAndJerryIntro from './components/TomAndJerryIntro';
+import CursorGlow from './components/CursorGlow';
+import CadEnglishClubPortal from './components/CadEnglishClubPortal';
+import PublicCadMemberPass from './pages/PublicCadMemberPass';
+import AiMockInterviewRoom from './pages/AiMockInterviewRoom';
+import ProofOfSkillCertificates from './pages/ProofOfSkillCertificates';
+import PublicCertificateVerification from './pages/PublicCertificateVerification';
+import CoursesPortal from './pages/CoursesPortal';
+import OpenMaicClassroomPortal from './pages/OpenMaicClassroomPortal';
 
 function App() {
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
+  const [showTomAndJerryIntro, setShowTomAndJerryIntro] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+      if (hash && ['openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal'].includes(hash)) {
+        if (hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'openmaic';
+        if (hash === 'courses-portal' || hash === 'all-courses') return 'courses';
+        if (hash === 'academic-tracker' || hash === 'marks' || hash === 'academics') return 'my-academics';
+        return hash;
+      }
+    }
     const savedUser = localStorage.getItem('lumixora_user');
     if (savedUser) {
       try {
@@ -68,13 +93,24 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('lumixora_isAuthenticated') === 'true';
   });
+  const [currentHash, setCurrentHash] = useState(() => typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '');
+
+  useEffect(() => {
+    const handleHashSync = () => {
+      if (typeof window !== 'undefined') {
+        setCurrentHash(window.location.hash.toLowerCase());
+      }
+    };
+    window.addEventListener('hashchange', handleHashSync);
+    return () => window.removeEventListener('hashchange', handleHashSync);
+  }, []);
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('lumixora_user');
     if (saved) {
       try {
         const u = JSON.parse(saved);
         const email = (u?.email || '').toLowerCase().trim();
-        const isFounderOrAdmin = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+        const isFounderOrAdmin = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
         
         if (u?.is_blocked === true || !isValidInstitutionalEmail(email)) {
           localStorage.removeItem('lumixora_user');
@@ -128,11 +164,117 @@ function App() {
     setShowTour(false);
   };
 
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+    if (updatedUser) {
+      localStorage.setItem('lumixora_user', JSON.stringify(updatedUser));
+    }
+  };
+
+  // Sync real-time profile updates
+  useEffect(() => {
+    const handleUserUpdateEvent = (e) => {
+      if (e.detail) {
+        setUser(e.detail);
+        localStorage.setItem('lumixora_user', JSON.stringify(e.detail));
+      }
+    };
+    window.addEventListener('lumixora_user_updated', handleUserUpdateEvent);
+    return () => window.removeEventListener('lumixora_user_updated', handleUserUpdateEvent);
+  }, []);
+
+  // Hydrate and sync latest profile from Supabase & Firestore on app refresh
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) return;
+
+    const hydrateLatestProfile = async () => {
+      try {
+        const uEmail = (user.email || '').toLowerCase().trim();
+        const uid = user.id || user.uid || uEmail;
+
+        // 1. Fetch latest from Firestore
+        let remoteDoc = null;
+        if (db && uid) {
+          try {
+            const [s1, s2] = await Promise.allSettled([
+              getDoc(doc(db, 'users', String(uid))),
+              getDoc(doc(db, 'Users', String(uid)))
+            ]);
+            if (s1.status === 'fulfilled' && s1.value.exists()) {
+              remoteDoc = s1.value.data();
+            } else if (s2.status === 'fulfilled' && s2.value.exists()) {
+              remoteDoc = s2.value.data();
+            }
+          } catch (e) {}
+        }
+
+        // 2. Fetch latest from Supabase
+        let sbDoc = null;
+        if (supabase && typeof supabase.from === 'function') {
+          try {
+            const { data } = await supabase.from('users').select('*').eq('email', uEmail).maybeSingle();
+            if (data) sbDoc = data;
+          } catch (e) {}
+        }
+
+        let parsedSb = {};
+        if (sbDoc?.name && sbDoc.name.includes('{')) {
+          try {
+            parsedSb = JSON.parse(sbDoc.name.slice(sbDoc.name.indexOf('{')));
+          } catch (e) {}
+        }
+
+        const resolvedDept = remoteDoc?.department || remoteDoc?.branch || sbDoc?.department || sbDoc?.branch || user?.department || user?.branch || parsedSb.department || parsedSb.branch || 'CSM';
+        const freshUser = {
+          ...user,
+          ...(parsedSb || {}),
+          ...(remoteDoc || {}),
+          name: remoteDoc?.name || remoteDoc?.displayName || (sbDoc?.name && !sbDoc.name.includes('{') ? sbDoc.name : user.name),
+          displayName: remoteDoc?.name || remoteDoc?.displayName || user.displayName || user.name,
+          rollNumber: remoteDoc?.rollNumber || sbDoc?.roll_number || user.rollNumber || parsedSb.rollNumber,
+          department: resolvedDept,
+          branch: resolvedDept,
+          college: remoteDoc?.college || sbDoc?.college || user.college || parsedSb.college,
+          collegeName: remoteDoc?.college || sbDoc?.college || user.college || parsedSb.college,
+          year: remoteDoc?.year || sbDoc?.year || user.year || parsedSb.year,
+          sem: remoteDoc?.sem || user.sem || parsedSb.sem,
+          sec: remoteDoc?.sec || user.sec || parsedSb.sec,
+          qualification: remoteDoc?.qualification || user.qualification || parsedSb.qualification,
+          place: remoteDoc?.place || user.place || parsedSb.place,
+          mobileNumber: remoteDoc?.mobileNumber || user.mobileNumber || parsedSb.mobileNumber,
+          cgpa: remoteDoc?.cgpa || user.cgpa || parsedSb.cgpa
+        };
+
+        // Rehydrate local storage cache for offline/instant UI rendering
+        if (uid) {
+          if (Array.isArray(parsedSb.submissions)) {
+            localStorage.setItem(`lumixora_submissions_${uid}`, JSON.stringify(parsedSb.submissions));
+          }
+          if (Array.isArray(parsedSb.solvedProblems)) {
+            localStorage.setItem(`lumixora_solved_${uid}`, JSON.stringify(parsedSb.solvedProblems));
+          }
+        }
+
+        setUser(freshUser);
+        localStorage.setItem('lumixora_user', JSON.stringify(freshUser));
+      } catch (err) {
+        console.warn('Profile hydration notice:', err);
+      }
+    };
+
+    hydrateLatestProfile();
+  }, [isAuthenticated]);
+
   // Allow re-opening tour on demand from Dashboard or Profile
   useEffect(() => {
     const handleOpenTourEvent = () => setShowTour(true);
+    const handleOpenTjEvent = () => setShowTomAndJerryIntro(true);
     window.addEventListener('lumixora_open_tour', handleOpenTourEvent);
-    return () => window.removeEventListener('lumixora_open_tour', handleOpenTourEvent);
+    window.addEventListener('lumixora_open_tom_and_jerry_intro', handleOpenTjEvent);
+    return () => {
+      window.removeEventListener('lumixora_open_tour', handleOpenTourEvent);
+      window.removeEventListener('lumixora_open_tom_and_jerry_intro', handleOpenTjEvent);
+    };
   }, []);
 
   // Self-healing Capgo default channel configuration on native platforms
@@ -218,7 +360,7 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'clubs'].includes(tab)) {
+        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
           setActiveTab(tab);
         }
       } else {
@@ -256,8 +398,24 @@ function App() {
     checkUpdates();
   }, []);
 
+  const handleWebUpdateRefresh = async () => {
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      localStorage.setItem('lumixora_active_ver', updateInfo?.latestVersion || CURRENT_VERSION);
+    } catch (e) {}
+    window.location.reload(true);
+  };
+
   const renderUpdateModal = () => {
     if (!updateInfo || !updateInfo.show) return null;
+    const isNative = Capacitor.isNativePlatform();
 
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
@@ -270,17 +428,18 @@ function App() {
             </div>
             
             <div>
-              <h2 className="text-lg font-bold text-gray-100 tracking-wide animate-pulse">New Update Available!</h2>
+              <h2 className="text-lg font-bold text-gray-100 tracking-wide animate-pulse">New Version Available!</h2>
               <p className="text-xs text-gray-400 mt-1">
-                A new version <span className="text-brand-teal font-extrabold">{updateInfo.latestVersion}</span> is ready for download.<br/>
+                Version <span className="text-brand-teal font-extrabold">{updateInfo.latestVersion}</span> is live.<br/>
                 Currently running v{CURRENT_VERSION}.
               </p>
             </div>
 
             <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-gray-300 leading-relaxed text-left">
-              <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wide block mb-1">What's New:</span>
-              • Performance improvements & brand updates.<br/>
-              • Brand-new AI Personal Mentor interface & planner.
+              <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wide block mb-1">What's New in v{updateInfo.latestVersion}:</span>
+              • Real-time Supabase integration across all portals.<br/>
+              • OpenMAIC multi-agent classroom v1.0.0 engine.<br/>
+              • Live test scorecards and founder analytics.
             </div>
 
             <div className="flex gap-3 w-full mt-2">
@@ -295,19 +454,28 @@ function App() {
                   Later
                 </button>
               )}
-              <a 
-                href={updateInfo.apkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  if (!updateInfo.mandatory) {
-                    setUpdateInfo(prev => ({ ...prev, show: false }));
-                  }
-                }}
-                className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
-              >
-                Update Now
-              </a>
+              {isNative ? (
+                <a 
+                  href={updateInfo.apkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    if (!updateInfo.mandatory) {
+                      setUpdateInfo(prev => ({ ...prev, show: false }));
+                    }
+                  }}
+                  className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
+                >
+                  Download APK
+                </a>
+              ) : (
+                <button 
+                  onClick={handleWebUpdateRefresh}
+                  className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
+                >
+                  Refresh & Update
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -326,7 +494,7 @@ function App() {
           </div>
 
           <div>
-            <h2 className="text-base font-bold text-gray-100">Exit LUMIXORA App?</h2>
+            <h2 className="text-base font-bold text-gray-100">Exit VYOMRA App?</h2>
             <p className="text-xs text-gray-400 mt-1">Are you sure you want to close the application?</p>
           </div>
 
@@ -430,11 +598,27 @@ function App() {
         // Log in immediately
         handleLogin(immediateProfile);
 
-        // Background sync
+        // Background sync with database profile
         try {
           const { data: sbUsers } = await supabase.from('users').select('*').ilike('email', email);
           if (sbUsers && sbUsers.length > 0) {
-            const merged = { ...sbUsers[0], id: fbUser.uid, uid: fbUser.uid, emailVerified: true, role: isF ? 'founder' : (sbUsers[0].role || 'user') };
+            let unpackedData = {};
+            const rawName = sbUsers[0].name || '';
+            if (rawName.includes('{')) {
+              try {
+                unpackedData = JSON.parse(rawName.substring(rawName.indexOf('{')));
+              } catch (e) {}
+            }
+            const displayName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
+            const merged = { 
+              ...unpackedData,
+              ...sbUsers[0], 
+              id: fbUser.uid, 
+              uid: fbUser.uid, 
+              name: displayName || cleanName,
+              emailVerified: true, 
+              role: isF ? 'founder' : (sbUsers[0].role || 'user') 
+            };
             setUser(merged);
             localStorage.setItem('lumixora_user', JSON.stringify(merged));
           } else {
@@ -446,7 +630,94 @@ function App() {
       }
     });
 
-    return () => unsubscribe();
+    // Also listen for Supabase OAuth events
+    const { data: sbAuthListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const sbEmail = (session.user.email || '').toLowerCase().trim();
+        if (!sbEmail) return;
+
+        const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com' || sbEmail === '249xa33106@gprec.ac.in';
+        if (!isF && !isValidInstitutionalEmail(sbEmail)) {
+          console.warn(`Blocked unauthorized non-institutional email login: ${sbEmail}`);
+          await supabase.auth.signOut().catch(() => {});
+          return;
+        }
+
+        const rawName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || sbEmail.split('@')[0];
+        const cleanName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
+
+        try {
+          const { data: existing } = await supabase.from('users').select('*').ilike('email', sbEmail);
+          let userProfile;
+          if (existing && existing.length > 0) {
+            let unpackedData = {};
+            const dbName = existing[0].name || '';
+            if (dbName.includes('{')) {
+              try {
+                unpackedData = JSON.parse(dbName.substring(dbName.indexOf('{')));
+              } catch (e) {}
+            }
+            userProfile = {
+              ...unpackedData,
+              ...existing[0],
+              id: session.user.id,
+              uid: session.user.id,
+              name: (dbName.includes('{') ? dbName.split('{')[0].trim() : dbName) || cleanName,
+              emailVerified: true,
+              role: isF ? 'founder' : (existing[0].role || 'user')
+            };
+          } else {
+            userProfile = {
+              id: session.user.id,
+              uid: session.user.id,
+              name: cleanName,
+              email: sbEmail,
+              password: 'google_oauth_managed',
+              qualification: 'B.Tech',
+              college: 'GPREC',
+              place: 'Kurnool',
+              year: '1st Year',
+              cgpa: '9.0',
+              targetCGPA: '9.0',
+              careerGoal: 'Placement',
+              department: 'CSE',
+              sem: '1',
+              sec: 'A',
+              learningStyle: 'Practical',
+              weakSubjects: 'None',
+              strongSubjects: 'None',
+              subjects: 'Computer Science',
+              xp: 50,
+              coins: 100,
+              level: 1,
+              streak: 1,
+              longestStreak: 1,
+              streakFreezeCount: 1,
+              badges: ['first_login', 'institutional_verified'],
+              purchasedThemes: ['default'],
+              purchasedFrames: ['none'],
+              currentTheme: 'default',
+              currentFrame: 'none',
+              created_at: new Date().toISOString(),
+              role: isF ? 'founder' : 'user',
+              emailVerified: true,
+              is_approved: true,
+              isApproved: true
+            };
+            await supabase.from('users').upsert([userProfile], { onConflict: 'email' });
+          }
+
+          handleLogin(userProfile);
+        } catch (e) {
+          console.warn("Supabase auth session sync notice:", e);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      sbAuthListener?.subscription?.unsubscribe();
+    };
   }, []);
 
   const handleLogin = (userData) => {
@@ -491,7 +762,29 @@ function App() {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
+      case 'my-academics':
+      case 'academics':
+      case 'academic-tracker':
+      case 'marks':
+      case 'my-marks':
+        return <MyAcademics user={user} />;
+      case 'interview':
+      case 'mock-interview':
+      case 'ai-interview':
+      case 'interview-room':
+        return <AiMockInterviewRoom user={user} setActiveTab={handleTabChange} />;
+      case 'certificates':
+      case 'proof-of-skill':
+      case 'badges':
+      case 'credentials':
+        return <ProofOfSkillCertificates user={user} setActiveTab={handleTabChange} />;
+      case 'alumni':
+      case 'alumni-referrals':
+      case 'alumni-bridge':
+      case 'referrals':
+        return <AlumniReferralBridge user={user} setActiveTab={handleTabChange} />;
       case 'ai-commander':
+      case 'placement-commander':
         return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
       case 'future-twin':
         return <AiFutureTwin user={user} setActiveTab={handleTabChange} />;
@@ -504,17 +797,39 @@ function App() {
       case 'doubts':
         return <DoubtSolving user={user} />;
       case 'notes':
-        return <NotesPlatform user={user} />;
+        return <NotesPlatform user={user} setActiveTab={handleTabChange} />;
+      case 'drive-papers':
+      case 'placement-papers':
+      case 'company-papers':
+        return <CompanyPlacementPapers user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
       case 'videos':
       case 'video-lectures':
       case 'video-portal':
-        return <VideoPortal user={user} setActiveTab={handleTabChange} />;
+        return <LearningHub user={user} setActiveTab={handleTabChange} initialTab="videos" />;
       case 'tasks':
         return <TaskManager user={user} />;
+      case 'courses':
+      case 'courses-portal':
+      case 'all-courses':
+      case 'curriculum-portal':
+        return <CoursesPortal user={user} setActiveTab={handleTabChange} />;
+      case 'openmaic':
+      case 'openmaic-classroom':
+      case 'ai-classroom':
+      case 'interactive-classroom':
+        return <OpenMaicClassroomPortal user={user} setActiveTab={handleTabChange} />;
       case 'learning-hub':
-        return <LearningHub user={user} />;
+      case 'learning':
+      case 'resource-academy':
+      case 'subjects':
+      case 'curriculum':
+        return <LearningHub user={user} setActiveTab={handleTabChange} initialTab="resources" />;
       case 'career-roadmap':
         return <CareerRoadmap user={user} />;
+      case 'aptitude':
+      case 'aptitude-arena':
+        return <AptitudeArena user={user} isFounder={user?.role === 'founder'} />;
+      case 'simulations':
       case 'simulation':
         return <SimulationPortal />;
       case 'contribute':
@@ -522,9 +837,16 @@ function App() {
       case 'contact':
         return <ContactUs user={user} />;
       case 'mentor':
+      case 'personal-mentor':
         return <PersonalMentor user={user} />;
       case 'study-with-me':
+      case 'study-room':
         return <StudyWithMe user={user} />;
+      case 'portfolio':
+      case 'scholar-portfolio':
+      case 'projects':
+      case 'project-showcase':
+        return <ProjectShowcase user={user} setActiveTab={handleTabChange} />;
       case 'grievance':
       case 'grievances':
         return <GrievancePortal user={user} setActiveTab={handleTabChange} />;
@@ -538,15 +860,17 @@ function App() {
         return <AssignedTasksPortal user={user} setActiveTab={handleTabChange} />;
       case 'attendance':
         return <AttendancePortal user={user} />;
-      case 'projects':
-      case 'project-showcase':
-        return <ProjectShowcase user={user} setActiveTab={handleTabChange} />;
       case 'resume':
       case 'resume-creator':
       case 'resume-builder':
         return <ResumeCreator user={user} setActiveTab={handleTabChange} />;
       case 'clubs':
-        return <ClubsPortal user={user} />;
+      case 'cad':
+      case 'cad-club':
+      case 'cad-english-club':
+      case 'cad&englishclub':
+      case 'cadenglishclub':
+        return <Dashboard setActiveTab={setActiveTab} user={user} />;
       case 'marketplace':
         return <Marketplace user={user} />;
       case 'community':
@@ -555,8 +879,15 @@ function App() {
         const joinHash = window.location.hash.substring(1);
         const joinGroupId = joinHash.split('/')[1] || null;
         return <JoinGroup groupId={joinGroupId} user={user} setActiveTab={handleTabChange} />;
-      case 'team-portal':
+      case 'our-team':
       case 'team':
+      case 'team-leads':
+      case 'lumixora-team':
+      case 'team-members':
+      case 'core-team':
+        return <OurTeamPortal user={user} setActiveTab={handleTabChange} />;
+      case 'team-portal':
+      case 'teammate-portal':
         return <TeamPortal user={user} setActiveTab={handleTabChange} />;
       case 'faculty-portal':
         const isFacultyUser = user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
@@ -566,7 +897,9 @@ function App() {
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       case 'founder-portal':
         const isF = user?.role === 'founder' || 
-                    user?.email?.toLowerCase() === 'founder@lumixora.com';
+                    user?.email?.toLowerCase() === 'founder@lumixora.com' ||
+                    user?.email?.toLowerCase() === '249xa33106@gmail.com' ||
+                    user?.email?.toLowerCase() === '249xa33106@gprec.ac.in';
         if (isF) {
           return <FounderPortal user={user} setActiveTab={handleTabChange} />;
         }
@@ -577,37 +910,227 @@ function App() {
   };
 
   if (!isAuthenticated) {
+    const lowerHash = currentHash;
+    
+    // Public Vyomra Proof-of-Skill Certificate Verification URL (Recruiters / Employers)
+    if (lowerHash.includes('verify-cert/') || lowerHash.includes('cert-verify/')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <PublicCertificateVerification onBack={() => { window.location.hash = ''; }} />
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone access to OpenMAIC AI Classroom
+    if (lowerHash.includes('openmaic') || lowerHash.includes('ai-classroom')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <div className="min-h-screen bg-[#06070c] text-white p-2 md:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <div>
+                    <span className="text-sm font-black text-white font-sora">Lumixora OpenMAIC</span>
+                    <span className="ml-2 px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-black border border-purple-500/30 uppercase">
+                      Interactive Classroom
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => { window.location.hash = ''; }} 
+                    className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                  >
+                    ← Home
+                  </button>
+                  <button 
+                    onClick={() => setShowLogin('student')} 
+                    className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-95 text-white text-xs font-black rounded-xl transition-all shadow-lg cursor-pointer"
+                  >
+                    Student Login
+                  </button>
+                </div>
+              </div>
+              <OpenMaicClassroomPortal user={user || { name: 'Scholar Guest', email: 'guest_scholar' }} setActiveTab={handleTabChange} />
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone access to All Courses & Diplomas
+    if (lowerHash.includes('courses') || lowerHash.includes('all-courses')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <div className="min-h-screen bg-[#030712] text-white p-2 md:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <div>
+                    <span className="text-sm font-black text-white font-sora">Lumixora Courses</span>
+                    <span className="ml-2 px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-black border border-cyan-500/30 uppercase">
+                      Curricula & Diplomas
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => { window.location.hash = ''; }} 
+                    className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                  >
+                    ← Home
+                  </button>
+                  <button 
+                    onClick={() => setShowLogin('student')} 
+                    className="px-4 py-1.5 bg-gradient-to-r from-cyan-400 to-blue-600 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg cursor-pointer"
+                  >
+                    Student Login
+                  </button>
+                </div>
+              </div>
+              <CoursesPortal user={user || { name: 'Scholar Guest', email: 'guest_scholar' }} setActiveTab={handleTabChange} />
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone access to Proof-of-Skill Certificates
+    if (lowerHash.includes('certificates') || lowerHash.includes('proof-of-skill')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <div className="min-h-screen bg-[#030712] text-white p-2 md:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <div>
+                    <span className="text-sm font-black text-white font-sora">Lumixora Certificates</span>
+                    <span className="ml-2 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30 uppercase">
+                      Proof-of-Skill
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => { window.location.hash = ''; }} 
+                    className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                  >
+                    ← Home
+                  </button>
+                  <button 
+                    onClick={() => setShowLogin('student')} 
+                    className="px-4 py-1.5 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg cursor-pointer"
+                  >
+                    Student Login
+                  </button>
+                </div>
+              </div>
+              <ProofOfSkillCertificates user={user || { name: 'Scholar Guest', email: 'guest_scholar' }} setActiveTab={handleTabChange} />
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone access to My Academics without requiring initial login
+    if (lowerHash.includes('my-academics') || lowerHash === '#academics' || lowerHash.includes('academics')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <div className="min-h-screen bg-[#030712] text-white p-4 md:p-8">
+              <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl">
+                  <div className="flex items-center gap-3">
+                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-cyan-500/30" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-white">Lumixora by VYOMRA</span>
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30 uppercase">
+                          Academic Performance Tracker
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-cyan-300 font-mono">lumixora.in#my-academics</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => { window.location.hash = ''; }} 
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                    >
+                      ← Home
+                    </button>
+                    <button 
+                      onClick={() => setShowLogin('student')} 
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-600 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
+                    >
+                      Student Login
+                    </button>
+                  </div>
+                </div>
+
+                <MyAcademics user={user || { name: 'Student Scholar', email: 'guest_student' }} />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     if (showLogin) {
       return (
-        <>
-          <button 
-            onClick={() => setShowLogin(null)} 
-            className="fixed top-6 left-6 z-[99999] px-4 py-2 bg-black/50 hover:bg-black/70 text-white text-sm font-bold rounded-xl backdrop-blur-md transition-all border border-white/20"
-          >
-            ← Back to Home
-          </button>
-          <AuthPortal onLogin={handleLogin} mode={showLogin} />
-          {renderUpdateModal()}
-        </>
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <button 
+              onClick={() => setShowLogin(null)} 
+              className="fixed top-6 left-6 z-[99999] px-4 py-2 bg-black/50 hover:bg-black/70 text-white text-sm font-bold rounded-xl backdrop-blur-md transition-all border border-white/20"
+            >
+              ← Back to Home
+            </button>
+            <AuthPortal onLogin={handleLogin} mode={showLogin} />
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
       );
     }
     return (
-      <>
-        <LandingPage onLoginClick={(type) => setShowLogin(type || 'student')} />
-        {renderUpdateModal()}
-      </>
+      <ThemeProvider>
+        <ToastProvider>
+          <CursorGlow />
+          <LandingPage onLoginClick={(type) => setShowLogin(type || 'student')} />
+          {renderUpdateModal()}
+        </ToastProvider>
+      </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider>
       <ToastProvider>
+        <CursorGlow />
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
             {showIntro && (
               <CinematicIntro onComplete={() => setShowIntro(false)} />
             )}
-            <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={setUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
+            {showTomAndJerryIntro && (
+              <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
+            )}
+            <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
               {renderContent()}
             </MainLayout>
             {renderUpdateModal()}

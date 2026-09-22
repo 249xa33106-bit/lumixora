@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Eye, EyeOff, Sparkles, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
-  Building2, GraduationCap, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, 
-  ExternalLink, Key, Lock, Check, Cpu, Award
+  Eye, EyeOff, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
+  Building2, GraduationCap, ShieldCheck, AlertCircle, RefreshCw, 
+  ExternalLink, Key, Check, Cpu, Award
 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
 import { 
   signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, 
   sendPasswordResetEmail, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, 
-  signInWithRedirect, getRedirectResult, sendEmailVerification, signOut 
+  signInWithRedirect, getRedirectResult, sendEmailVerification
 } from 'firebase/auth';
-import { doc, setDoc, collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, collection, onSnapshot } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
-import { DEFAULT_COLLEGES, isValidInstitutionalEmail, getAllAllowedDomains, isTeammateEmail } from '../data/collegesData';
+import { DEFAULT_COLLEGES, isValidInstitutionalEmail, isTeammateEmail, decodeGprecRollNumber } from '../data/collegesData';
+import { notifyFounderLogin, notifyFounderRegister, recordFounderNotification } from '../services/founderNotificationService';
 
 export default function AuthPortal({ onLogin, mode = 'student' }) {
   const [selectedCollege, setSelectedCollege] = useState(() => {
     if (mode === 'teammate' || mode === 'team') {
-      return { id: 'team', name: 'Lumixora Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' };
+      return { id: 'team', name: 'Vyomra Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' };
     }
     return null;
   });
@@ -27,24 +28,23 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [customColleges, setCustomColleges] = useState([]);
-  const [rememberMe, setRememberMe] = useState(true);
-
-  // Email verification waiting room state
-  const [unverifiedEmail, setUnverifiedEmail] = useState('');
-  const [checkingVerification, setCheckingVerification] = useState(false);
-
-  // Forgot Password state
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState('');
+  const [checkingVerification, setCheckingVerification] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [customColleges, setCustomColleges] = useState([]);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [verificationSending, setVerificationSending] = useState(false);
 
-  // Form state
-  const [name, setName] = useState('');
+  // Registration Fields
   const [email, setEmail] = useState(() => localStorage.getItem('lumixora_remembered_email') || '');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [qualification, setQualification] = useState('B.Tech');
   const [collegeName, setCollegeName] = useState('GPREC');
@@ -52,7 +52,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const [yearOfStudy, setYearOfStudy] = useState('1st Year');
   const [cgpa, setCgpa] = useState('9.0');
   const [careerGoal, setCareerGoal] = useState('Placement');
-  const [department, setDepartment] = useState('CSE');
+  const [department, setDepartment] = useState('CSM');
   const [learningStyle, setLearningStyle] = useState('Practical');
   const [weakSubjects, setWeakSubjects] = useState('None');
   const [semester, setSemester] = useState('1');
@@ -64,7 +64,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     if (mode) {
       setAuthMode(mode);
       if (mode === 'teammate' || mode === 'team') {
-        setSelectedCollege({ id: 'team', name: 'Lumixora Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' });
+        setSelectedCollege({ id: 'team', name: 'Vyomra Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' });
       }
     }
   }, [mode]);
@@ -81,7 +81,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     } catch (e) {}
   }, []);
 
-  // AI & Domain Auto-Detection Intelligence
+  // AI & Domain Auto-Detection Intelligence with exact GPREC rules
   const detectedProfile = useMemo(() => {
     if (!email || !email.includes('@')) return null;
     const lower = email.toLowerCase().trim();
@@ -89,52 +89,36 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     const domain = lower.split('@')[1];
 
     let detectedCollege = 'GPREC Kurnool';
-    let detectedDept = 'CSE';
-    let detectedYear = '1st Year';
-    let detectedRoll = prefix.toUpperCase();
     let isInstitutional = false;
 
     if (domain === 'gprec.ac.in') {
       isInstitutional = true;
       detectedCollege = 'G. Pulla Reddy Engineering College';
+      const decoded = decodeGprecRollNumber(prefix);
 
-      // Batch detection from first 2 chars of roll number e.g. 249XA33106
-      const yearDigits = prefix.slice(0, 2);
-      if (yearDigits === '24') { detectedYear = '1st Year'; }
-      else if (yearDigits === '23') { detectedYear = '2nd Year'; }
-      else if (yearDigits === '22') { detectedYear = '3rd Year'; }
-      else if (yearDigits === '21') { detectedYear = '4th Year'; }
-
-      // Branch code detection from roll number pattern
-      if (prefix.includes('a33') || prefix.includes('31') || prefix.includes('csm') || prefix.includes('aiml')) {
-        detectedDept = 'CSE (AI & ML)';
-      } else if (prefix.includes('csd') || prefix.includes('32') || prefix.includes('ds')) {
-        detectedDept = 'CSE (Data Science)';
-      } else if (prefix.includes('05') || prefix.includes('a05') || prefix.includes('cse')) {
-        detectedDept = 'CSE';
-      } else if (prefix.includes('04') || prefix.includes('a04') || prefix.includes('ece')) {
-        detectedDept = 'ECE';
-      } else if (prefix.includes('02') || prefix.includes('a02') || prefix.includes('eee')) {
-        detectedDept = 'EEE';
-      } else if (prefix.includes('03') || prefix.includes('a03') || prefix.includes('mec')) {
-        detectedDept = 'Mechanical';
-      } else if (prefix.includes('01') || prefix.includes('a01') || prefix.includes('civ')) {
-        detectedDept = 'Civil';
-      }
+      return {
+        isInstitutional,
+        college: detectedCollege,
+        department: decoded.department || 'CSM',
+        year: decoded.year,
+        roll: decoded.rollNumber,
+        isPromptRequired: decoded.isPromptRequired
+      };
     } else if (domain?.includes('ashoka')) {
       isInstitutional = true;
       detectedCollege = "Ashoka Women's Engineering College";
     } else if (domain === 'lumixora.com' || domain === 'team.lumixora.com') {
       isInstitutional = true;
-      detectedCollege = 'Lumixora Core Team';
+      detectedCollege = 'Vyomra Core Team';
     }
 
+    const fallbackDecoded = decodeGprecRollNumber(prefix);
     return {
       isInstitutional,
       college: detectedCollege,
-      department: detectedDept,
-      year: detectedYear,
-      roll: detectedRoll
+      department: fallbackDecoded.department || 'CSM',
+      year: fallbackDecoded.year,
+      roll: fallbackDecoded.rollNumber
     };
   }, [email]);
 
@@ -173,7 +157,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const cleanScholarName = (str) => {
     if (!str || typeof str !== 'string') return 'Scholar';
     let cleaned = str.includes('{') ? str.split('{')[0].trim() : str;
-    cleaned = cleaned.replace(/[\{\}":;]/g, '').trim();
+    cleaned = cleaned.replace(/[{}:;"]/g, '').trim();
     return cleaned || 'Scholar';
   };
 
@@ -186,17 +170,13 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
   const sendFounderNotification = async (type, userInfo) => {
     try {
-      const rawName = userInfo.name || userInfo.displayName || userInfo.email?.split('@')[0] || 'Unknown';
-      const cleanName = cleanScholarName(rawName);
-      await addDoc(collection(db, 'founder_notifications'), {
-        type,
-        name: cleanName,
-        email: userInfo.email || '',
-        role: userInfo.role || 'user',
-        timestamp: serverTimestamp(),
-        createdAt: new Date().toISOString(),
-        read: false
-      });
+      if (type === 'register') {
+        notifyFounderRegister(userInfo);
+      } else if (type === 'login') {
+        notifyFounderLogin(userInfo);
+      } else {
+        recordFounderNotification({ type, ...userInfo });
+      }
     } catch (e) {
       console.warn('Failed to send founder notification:', e);
     }
@@ -206,10 +186,10 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     try {
       const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
       const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com' || oauthEmail === '249xa33106@gprec.ac.in';
-      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
+      const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || isTeammateEmail(oauthEmail) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin;
       
       if (!isFounderOrAdmin && !isAllowedDomain) {
-        setError(`Security Access Restricted: Please sign in using your official institutional email (e.g. @gprec.ac.in).`);
+        setError(`Security Access Restricted: Sign-in is strictly limited to official college email accounts (e.g. @gprec.ac.in). Please switch to your college email.`);
         setLoading(false);
         try { await auth.signOut(); } catch (e) {}
         return;
@@ -225,13 +205,24 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
       let userProfile;
       if (sbUsers && sbUsers.length > 0) {
+        let unpackedData = {};
+        const rawName = sbUsers[0].name || '';
+        if (rawName.includes('{')) {
+          try {
+            unpackedData = JSON.parse(rawName.substring(rawName.indexOf('{')));
+          } catch (e) {}
+        }
+        const cleanName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
         userProfile = { 
+          ...unpackedData,
           ...sbUsers[0], 
           id: firebaseUser.uid, 
           uid: firebaseUser.uid, 
+          name: cleanName || firebaseUser.displayName || oauthEmail.split('@')[0],
           emailVerified: true,
-          role: sbUsers[0].role || role 
+          role: isFounderOrAdmin ? 'founder' : (sbUsers[0].role || role) 
         };
+        sendFounderNotification('login', userProfile).catch(() => {});
       } else {
         const cleanName = firebaseUser.displayName || oauthEmail.split('@')[0];
         const defaultProfile = {
@@ -241,7 +232,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           email: oauthEmail,
           password: 'google_oauth_managed',
           qualification: 'B.Tech',
-          college: detectedProfile?.college || 'GPREC',
+          college: detectedProfile?.college || (selectedCollege?.name || 'GPREC'),
           place: 'Kurnool',
           year: detectedProfile?.year || '1st Year',
           cgpa: '9.0',
@@ -315,7 +306,12 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       if (session?.user) {
         const sbEmail = (session.user.email || '').toLowerCase().trim();
         if (sbEmail) {
-          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com' || sbEmail === '249xa33106@gprec.ac.in';
+          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com';
+          const isAllowedDomain = isValidInstitutionalEmail(sbEmail, customColleges) || isF;
+          if (!isF && !isAllowedDomain) {
+            await supabase.auth.signOut().catch(() => {});
+            return;
+          }
           const rawName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || sbEmail.split('@')[0];
           const cleanName = cleanScholarName(rawName);
           
@@ -401,10 +397,19 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
-      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com' || cleanEmail === '249xa33106@gprec.ac.in';
+      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com';
       const cleanPassword = password.trim();
 
       if (isLogin) {
+        // Enforce institutional domain policy upfront
+        const isTeammateUser = isTeammateEmail(cleanEmail);
+        const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser || isFounderOrAdmin;
+        if (!isFounderOrAdmin && !isAllowedDomain) {
+          setError('Security Access Restricted: Access is restricted to official college email accounts (e.g. @gprec.ac.in).');
+          setLoading(false);
+          return;
+        }
+
         // ⚡ FAST-PATH PARALLEL LOGIN (Case-insensitive check across Supabase & Firebase)
         const sbAuthPromise = supabase
           .from('users')
@@ -479,10 +484,10 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           return;
         }
 
-        const isTeammateUser = authenticatedUser.role === 'teammate' || authenticatedUser.role === 'team' || isTeammateEmail(cleanEmail);
-        const isAllowedDomain = isValidInstitutionalEmail(cleanEmail, customColleges) || isTeammateUser;
+        const userIsTeammate = authenticatedUser.role === 'teammate' || authenticatedUser.role === 'team' || isTeammateEmail(cleanEmail);
+        const userDomainValid = isValidInstitutionalEmail(cleanEmail, customColleges) || userIsTeammate;
 
-        if (!isFounderOrAdmin && !authenticatedUser.is_approved && !authenticatedUser.isApproved && !isAllowedDomain) {
+        if (!isFounderOrAdmin && !authenticatedUser.is_approved && !authenticatedUser.isApproved && !userDomainValid) {
           setError('Security Access Restricted: Please sign in using your official college (@gprec.ac.in) or team mail.');
           setLoading(false);
           try { await auth.signOut(); } catch (e) {}
@@ -509,9 +514,16 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           role: resolvedRole
         };
 
-        // Audit notification
-        if (!isFounderOrAdmin) {
-          sendFounderNotification('login', finalUserDoc).catch(() => {});
+        // Audit notification & update live activity timestamp
+        const nowIso = new Date().toISOString();
+        sendFounderNotification('login', { ...finalUserDoc, last_login: nowIso }).catch(() => {});
+        // Update last_login in Firestore & Supabase in background
+        if (finalUserDoc.id || finalUserDoc.uid) {
+          const uid = finalUserDoc.id || finalUserDoc.uid;
+          try {
+            if (db) setDoc(doc(db, 'users', uid), { last_login: nowIso, lastActive: nowIso }, { merge: true }).catch(() => {});
+            supabase.from('users').update({ last_login: nowIso }).eq('email', cleanEmail).catch(() => {});
+          } catch (e) {}
         }
 
         handleSuccessfulLogin(finalUserDoc);
@@ -654,23 +666,65 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       setLoading(true);
       setError('');
 
-      let provider;
       if (providerName === 'google') {
-        provider = new GoogleAuthProvider();
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
         provider.setCustomParameters({ prompt: 'select_account' });
-      } else if (providerName === 'github') {
-        provider = new GithubAuthProvider();
-      }
 
-      try {
-        const result = await signInWithPopup(auth, provider);
-        if (result?.user) {
-          await processOAuthUser(result.user, providerName);
-          return;
+        try {
+          const result = await signInWithPopup(auth, provider);
+          if (result?.user) {
+            await processOAuthUser(result.user, 'Google');
+            return;
+          }
+        } catch (popupErr) {
+          console.warn("Firebase popup sign-in note:", popupErr);
+
+          if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+            setLoading(false);
+            return;
+          }
+
+          if (popupErr.code === 'auth/popup-blocked') {
+            try {
+              await signInWithRedirect(auth, provider);
+              return;
+            } catch (redirErr) {
+              console.warn("Firebase redirect note:", redirErr);
+            }
+          }
+
+          // Fallback to Supabase Google OAuth
+          try {
+            const { error: sbOAuthErr } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: window.location.origin
+              }
+            });
+            if (sbOAuthErr) throw sbOAuthErr;
+          } catch (sbErr) {
+            console.error("OAuth fallback error:", sbErr);
+            setError(`Sign-In note: ${popupErr.message || sbErr.message || 'Please check popup permissions or use campus email credentials.'}`);
+            setLoading(false);
+          }
         }
-      } catch (popupErr) {
-        console.warn("Popup fallback to redirect:", popupErr);
-        await signInWithRedirect(auth, provider);
+      } else if (providerName === 'github') {
+        const provider = new GithubAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+          if (result?.user) {
+            await processOAuthUser(result.user, 'GitHub');
+            return;
+          }
+        } catch (popupErr) {
+          if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+            setLoading(false);
+            return;
+          }
+          await signInWithRedirect(auth, provider);
+        }
       }
     } catch (err) {
       console.error('OAuth sign in error:', err);
@@ -684,6 +738,12 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     const query = resetEmail.trim().toLowerCase();
     if (!query || !query.includes('@')) {
       setResetError('Please enter a valid email address.');
+      return;
+    }
+
+    const isF = query === 'founder@lumixora.com' || query === '249xa33106@gmail.com' || query === '249xa33106@gprec.ac.in';
+    if (!isF && !isValidInstitutionalEmail(query, customColleges)) {
+      setResetError('Security Access Restricted: Password reset is strictly available for official college accounts (e.g. @gprec.ac.in).');
       return;
     }
 
@@ -719,7 +779,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         <div className="z-10 w-full max-w-4xl p-6 md:p-8 animate-fade-in-up">
           <div className="text-center mb-8 space-y-3">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-teal/5">
-              <Building2 className="w-3.5 h-3.5" /> Lumixora Multi-Campus Network
+              <Building2 className="w-3.5 h-3.5" /> Vyomra Multi-Campus Network
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
               Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] via-[#3a86ff] to-[#7209b7]">Portal</span>
@@ -1135,7 +1195,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           </div>
 
           <div className="mt-6 text-center text-gray-400 text-xs">
-            {isLogin ? "New to Lumixora? " : "Already have an account? "}
+            {isLogin ? "New to Vyomra? " : "Already have an account? "}
             <button 
               onClick={() => {
                 setIsLogin(!isLogin);
@@ -1151,8 +1211,8 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           {/* Mobile APK Download Pill */}
           <div className="mt-6 pt-5 border-t border-white/5 flex flex-col items-center">
             <a 
-              href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Lumixora.apk" 
-              download="Lumixora.apk"
+              href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Vyomra.apk" 
+              download="Vyomra.apk"
               className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold text-[#00f5d4] border border-[#00f5d4]/30 hover:border-[#00f5d4] hover:bg-[#00f5d4]/5 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
               <Cpu className="w-3.5 h-3.5 text-[#00f5d4]" />

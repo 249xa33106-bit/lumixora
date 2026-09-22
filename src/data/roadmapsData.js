@@ -57,8 +57,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Striver A2Z DSA Sheet (Take U Forward)', url: 'https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2/', type: 'playlist' },
-        { title: 'Apna College C++ / Java Placement Course', url: 'https://www.youtube.com/@ApnaCollegeOfficial', type: 'playlist' }
+        { 
+          title: 'Striver A2Z DSA Complete Placement Playlist', 
+          url: 'https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz',
+          type: 'playlist', 
+          duration: '60+ Hours', 
+          channel: 'take U forward',
+          description: 'Step-by-step Data Structures & Algorithms from basics to dynamic programming for tier-1 IT placements.'
+        },
+        { 
+          title: 'Complete C++ Placement Full Course (Basics to OOP)', 
+          url: 'https://www.youtube.com/watch?v=z9bZufPHFLU', 
+          embedUrl: 'https://www.youtube.com/embed/z9bZufPHFLU',
+          type: 'crash-course', 
+          duration: '10.5 Hours', 
+          channel: 'Apna College',
+          description: 'Comprehensive C++ syntax, pointers, memory management, and OOP fundamentals.'
+        },
+        { 
+          title: 'Core CS Subjects Masterclass (OS, DBMS, Networks)', 
+          url: 'https://www.youtube.com/playlist?list=PLBlnK6fEyqRhqJPDXcvYzA174j8b0G03v', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLBlnK6fEyqRhqJPDXcvYzA174j8b0G03v',
+          type: 'playlist', 
+          duration: '18 Hours', 
+          channel: 'Neso Academy',
+          description: 'High-yield conceptual lectures for technical interview rounds in Operating Systems and DBMS.'
+        },
+        { 
+          title: 'System Design for Beginners to Advanced Interviews', 
+          url: 'https://www.youtube.com/watch?v=xpDnVSmNFX0', 
+          embedUrl: 'https://www.youtube.com/embed/xpDnVSmNFX0',
+          type: 'masterclass', 
+          duration: '5 Hours', 
+          channel: 'Gaurav Sen',
+          description: 'Learn load balancers, caching, microservices, and database sharding with practical architectures.'
+        }
       ],
       platforms: [
         { title: 'LeetCode Problem Sets', desc: 'Industry benchmark coding practice.', url: 'https://leetcode.com/problemset/' },
@@ -121,8 +155,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Fireship Web Dev Fast Guides', url: 'https://www.youtube.com/@Fireship', type: 'channel' },
-        { title: 'Traversy Media Full Stack Courses', url: 'https://www.youtube.com/@TraversyMedia', type: 'channel' }
+        { 
+          title: 'Full Stack Web Development for Beginners (HTML, CSS, JS, Node, React)', 
+          url: 'https://www.youtube.com/watch?v=nu_pCVPKzTk', 
+          embedUrl: 'https://www.youtube.com/embed/nu_pCVPKzTk',
+          type: 'bootcamp', 
+          duration: '11.5 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Build modern responsive full stack applications from the ground up with hands-on projects.'
+        },
+        { 
+          title: 'React 18 & 19 Full Course - Beginner to Advanced', 
+          url: 'https://www.youtube.com/watch?v=2OTq15xPzp4', 
+          embedUrl: 'https://www.youtube.com/embed/2OTq15xPzp4',
+          type: 'crash-course', 
+          duration: '8 Hours', 
+          channel: 'Traversy Media',
+          description: 'Hooks, Context API, state management, routing, and real-world backend API integration.'
+        },
+        { 
+          title: 'Node.js and Express.js - Full Course for Beginners', 
+          url: 'https://www.youtube.com/watch?v=Oe421EPjeBE', 
+          embedUrl: 'https://www.youtube.com/embed/Oe421EPjeBE',
+          type: 'masterclass', 
+          duration: '8.2 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'RESTful API architecture, JWT authentication, MongoDB Mongoose ODM, and production middleware.'
+        },
+        { 
+          title: 'PostgreSQL Database Full Course for Beginners', 
+          url: 'https://www.youtube.com/watch?v=qw--VYLpxG4', 
+          embedUrl: 'https://www.youtube.com/embed/qw--VYLpxG4',
+          type: 'crash-course', 
+          duration: '4.5 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Relational database schema modeling, joins, constraints, indexing, and performance queries.'
+        }
       ],
       platforms: [
         { title: 'The Odin Project', desc: '100% Free full stack curriculum.', url: 'https://www.theodinproject.com/' },
@@ -185,8 +253,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'StatQuest with Josh Starmer', url: 'https://www.youtube.com/@statquest', type: 'channel' },
-        { title: 'Andrej Karpathy Neural Networks Zero to Hero', url: 'https://www.youtube.com/@AndrejKarpathy', type: 'channel' }
+        { 
+          title: 'Neural Networks: Zero to Hero Series', 
+          url: 'https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ',
+          type: 'playlist', 
+          duration: '22 Hours', 
+          channel: 'Andrej Karpathy',
+          description: 'Building micrograd, GPT, language models and neural nets from raw Python scratch.'
+        },
+        { 
+          title: 'StatQuest Machine Learning Fundamentals', 
+          url: 'https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF',
+          type: 'playlist', 
+          duration: '35 Hours', 
+          channel: 'StatQuest with Josh Starmer',
+          description: 'Intuitive step-by-step visual explanations of Regression, Trees, SVM, and Neural Networks.'
+        },
+        { 
+          title: 'PyTorch for Deep Learning Bootcamp (12-Hour Crash Course)', 
+          url: 'https://www.youtube.com/watch?v=V_xro1bcAuA', 
+          embedUrl: 'https://www.youtube.com/embed/V_xro1bcAuA',
+          type: 'bootcamp', 
+          duration: '12 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Tensors, gradients, computer vision models, transfer learning, and production deployment.'
+        },
+        { 
+          title: 'LangChain & Generative AI Crash Course with Gemini/OpenAI', 
+          url: 'https://www.youtube.com/watch?v=aywZrzNaKjs', 
+          embedUrl: 'https://www.youtube.com/embed/aywZrzNaKjs',
+          type: 'masterclass', 
+          duration: '4.5 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'RAG pipelines, vector embeddings, fine-tuning, and production LLM orchestration.'
+        }
       ],
       platforms: [
         { title: 'Kaggle Micro-Courses', desc: 'Free GPU notebooks and competitions.', url: 'https://www.kaggle.com/learn' },
@@ -249,8 +351,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'NetworkChuck Networking & Hacking', url: 'https://www.youtube.com/@NetworkChuck', type: 'channel' },
-        { title: 'David Bombal Ethical Hacking Labs', url: 'https://www.youtube.com/@DavidBombal', type: 'channel' }
+        { 
+          title: 'Full Ethical Hacking & Penetration Testing Course for Beginners', 
+          url: 'https://www.youtube.com/watch?v=3Kq1MIfTWCE', 
+          embedUrl: 'https://www.youtube.com/embed/3Kq1MIfTWCE',
+          type: 'bootcamp', 
+          duration: '15 Hours', 
+          channel: 'freeCodeCamp.org (Heath Adams)',
+          description: 'Networking basics, Linux CLI, Nmap, Metasploit, Wireshark, buffer overflows, and AD exploits.'
+        },
+        { 
+          title: 'CompTIA Security+ SY0-701 Full Training Course', 
+          url: 'https://www.youtube.com/playlist?list=PLG49S3nxzAnl4QDVqK-hOnoqcSKEIDDuv', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLG49S3nxzAnl4QDVqK-hOnoqcSKEIDDuv',
+          type: 'playlist', 
+          duration: '24 Hours', 
+          channel: 'Professor Messer',
+          description: 'Domain-by-domain exam prep covering threats, cryptography, identity access management and cloud security.'
+        },
+        { 
+          title: 'Practical Ethical Hacking Labs & OSINT Masterclass', 
+          url: 'https://www.youtube.com/watch?v=qwA6MmbeGNo', 
+          embedUrl: 'https://www.youtube.com/embed/qwA6MmbeGNo',
+          type: 'crash-course', 
+          duration: '6 Hours', 
+          channel: 'NetworkChuck',
+          description: 'Hands-on Wireshark packet capture, Kali Linux setup, Tor routing, and router exploitation.'
+        },
+        { 
+          title: 'OWASP Top 10 Web Vulnerabilities Breakdown', 
+          url: 'https://www.youtube.com/watch?v=2_lwsM3U7bo', 
+          embedUrl: 'https://www.youtube.com/embed/2_lwsM3U7bo',
+          type: 'masterclass', 
+          duration: '5 Hours', 
+          channel: 'PwnFunction',
+          description: 'Animated, crystal clear breakdowns of XSS, SQL injection, CSRF, SSRF, and Broken Object Level Auth.'
+        }
       ],
       platforms: [
         { title: 'TryHackMe Cyber Labs', desc: 'Hands-on browser-based rooms.', url: 'https://tryhackme.com/' },
@@ -313,8 +449,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Gate Smashers (Varun Singla)', url: 'https://www.youtube.com/@GateSmashers', type: 'channel' },
-        { title: 'Knowledge Gate (Sanchit Jain)', url: 'https://www.youtube.com/@KnowledgeGate_SanchitJain', type: 'channel' }
+        { 
+          title: 'Gate Smashers - Complete Operating Systems for GATE/PSU', 
+          url: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiGz9donHRrE9I3Mwn6XdP8p', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLxCzCOWd7aiGz9donHRrE9I3Mwn6XdP8p',
+          type: 'playlist', 
+          duration: '32 Hours', 
+          channel: 'Gate Smashers (Varun Singla)',
+          description: 'Most popular GATE OS playlist covering Process Management, Deadlocks, Paging, and Disk Scheduling.'
+        },
+        { 
+          title: 'Theory of Computation (Automata) Full Course', 
+          url: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiFM9Lj5G9G_76adtyb4ef7i', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLxCzCOWd7aiFM9Lj5G9G_76adtyb4ef7i',
+          type: 'playlist', 
+          duration: '28 Hours', 
+          channel: 'Gate Smashers',
+          description: 'Deterministic & Non-Deterministic Finite Automata, Regular Expressions, Context-Free Grammars, and Turing Machines.'
+        },
+        { 
+          title: 'Computer Networks Full In-Depth GATE Course', 
+          url: 'https://www.youtube.com/playlist?list=PLBlnK6fEyqRgMCUAG0XRw78UA8qnv6jEx', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLBlnK6fEyqRgMCUAG0XRw78UA8qnv6jEx',
+          type: 'playlist', 
+          duration: '40 Hours', 
+          channel: 'Neso Academy',
+          description: 'Layer by layer deep dive into OSI, TCP/IP, IP Subnetting, Flow Control, and Congestion algorithms.'
+        },
+        { 
+          title: 'Database Management Systems (DBMS) for GATE CS', 
+          url: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiFAN6I8C9XdK_UBbGHW17_z', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLxCzCOWd7aiFAN6I8C9XdK_UBbGHW17_z',
+          type: 'playlist', 
+          duration: '25 Hours', 
+          channel: 'Gate Smashers',
+          description: 'ER diagrams, Relational Algebra, BCNF Normalization, Indexing B+ Trees, and Serializability transactions.'
+        }
       ],
       platforms: [
         { title: 'GATE Overflow Discussion Forum', desc: 'Best peer-reviewed GATE CS PYQs.', url: 'https://gateoverflow.in/' },
@@ -377,8 +547,33 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'SSC Adda247 Live Classes', url: 'https://www.youtube.com/@SSCADDA247', type: 'channel' },
-        { title: 'WiFiStudy Government Exams', url: 'https://www.youtube.com/@wifistudy', type: 'channel' }
+        { 
+          title: 'Complete Quantitative Aptitude for Govt & PSU Exams (12-Hour Marathon)', 
+          url: 'https://www.youtube.com/watch?v=4ZymgE3sQ88', 
+          embedUrl: 'https://www.youtube.com/embed/4ZymgE3sQ88',
+          type: 'crash-course', 
+          duration: '12 Hours', 
+          channel: 'Adda247',
+          description: 'Shortcuts, formulas, and speed math for Time & Work, Speed Distance, Percentages, and Profit & Loss.'
+        },
+        { 
+          title: 'Complete Reasoning Ability Crash Course for SSC/RRB/PSUs', 
+          url: 'https://www.youtube.com/watch?v=2e6i4_Q7s5k', 
+          embedUrl: 'https://www.youtube.com/embed/2e6i4_Q7s5k',
+          type: 'crash-course', 
+          duration: '8.5 Hours', 
+          channel: 'WiFiStudy',
+          description: 'Full syllabus coverage for Syllogisms, Blood Relations, Seating Arrangements, and Coding-Decoding.'
+        },
+        { 
+          title: 'Indian Polity & Constitution Complete Revision for Competitive Exams', 
+          url: 'https://www.youtube.com/watch?v=tI9G_H7fJjQ', 
+          embedUrl: 'https://www.youtube.com/embed/tI9G_H7fJjQ',
+          type: 'masterclass', 
+          duration: '6 Hours', 
+          channel: 'Study IQ Education',
+          description: 'Important Articles, Fundamental Rights, Directive Principles, and Parliamentary System.'
+        }
       ],
       platforms: [
         { title: 'IndiaBIX Quantitative & Reasoning', desc: 'Top aptitude practice portal.', url: 'https://www.indiabix.com/' },
@@ -441,7 +636,42 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'TechWorld with Nana DevOps Bootcamp', url: 'https://www.youtube.com/@TechWorldwithNana', type: 'channel' }
+        { 
+          title: 'DevOps Engineering Course for Beginners (Docker, K8s, CI/CD, Terraform)', 
+          url: 'https://www.youtube.com/watch?v=Wvf0mBNGjXY', 
+          embedUrl: 'https://www.youtube.com/embed/Wvf0mBNGjXY',
+          type: 'bootcamp', 
+          duration: '10 Hours', 
+          channel: 'TechWorld with Nana',
+          description: 'Master complete CI/CD pipelines, Docker container lifecycle, Kubernetes clusters, and cloud orchestration.'
+        },
+        { 
+          title: 'AWS Certified Solutions Architect Associate SAA-C03 Full Course', 
+          url: 'https://www.youtube.com/watch?v=Ia-UEYYR44s', 
+          embedUrl: 'https://www.youtube.com/embed/Ia-UEYYR44s',
+          type: 'bootcamp', 
+          duration: '14 Hours', 
+          channel: 'freeCodeCamp.org (Andrew Brown)',
+          description: 'Deep dive into VPC, EC2, S3, IAM, CloudFront, Route53, and enterprise cloud architecture.'
+        },
+        { 
+          title: 'Docker and Kubernetes Tutorial for Beginners', 
+          url: 'https://www.youtube.com/watch?v=bhBSlnQcq2k', 
+          embedUrl: 'https://www.youtube.com/embed/bhBSlnQcq2k',
+          type: 'crash-course', 
+          duration: '5.5 Hours', 
+          channel: 'Amigoscode',
+          description: 'Containerizing real multi-service apps, writing Pod and Deployment YAMLs, and managing configs.'
+        },
+        { 
+          title: 'Terraform Course - Automate your AWS Cloud Infrastructure', 
+          url: 'https://www.youtube.com/watch?v=SLB_c_ayRMo', 
+          embedUrl: 'https://www.youtube.com/embed/SLB_c_ayRMo',
+          type: 'masterclass', 
+          duration: '4 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'HCL syntax, remote backends, state locking with DynamoDB, and infrastructure modularization.'
+        }
       ],
       platforms: [
         { title: 'KodeKloud Hands-On Labs', desc: 'Docker & Kubernetes real environments.', url: 'https://kodekloud.com/' }
@@ -503,7 +733,33 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Flutter Official YouTube & Widget of the Week', url: 'https://www.youtube.com/@flutterdev', type: 'channel' }
+        { 
+          title: 'Flutter & Dart - The Complete Guide (2025/2026 Edition)', 
+          url: 'https://www.youtube.com/watch?v=VPvVD8t02U8', 
+          embedUrl: 'https://www.youtube.com/embed/VPvVD8t02U8',
+          type: 'bootcamp', 
+          duration: '37 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Comprehensive Flutter crash course covering State Management, Riverpod, Firebase auth, and animations.'
+        },
+        { 
+          title: 'Flutter Widget of the Week Official Google Playlist', 
+          url: 'https://www.youtube.com/playlist?list=PLjxrf2q8roU23XGwz3Km7sQZFTdB996iG', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLjxrf2q8roU23XGwz3Km7sQZFTdB996iG',
+          type: 'playlist', 
+          duration: '10 Hours', 
+          channel: 'Flutter',
+          description: 'Short, practical animated overviews of every built-in widget in the Flutter UI kit.'
+        },
+        { 
+          title: 'Build a Full-Stack Flutter App with Firebase & Riverpod', 
+          url: 'https://www.youtube.com/watch?v=mJ3bGvy0tb4', 
+          embedUrl: 'https://www.youtube.com/embed/mJ3bGvy0tb4',
+          type: 'masterclass', 
+          duration: '6.5 Hours', 
+          channel: 'Rivaan Ranawat',
+          description: 'Production Flutter app architecture, Cloud Firestore synchronization, Push notifications and dark mode.'
+        }
       ],
       platforms: [
         { title: 'Flutter.dev Cookbook', desc: 'Practical recipes for Flutter apps.', url: 'https://docs.flutter.dev/cookbook' }
@@ -565,8 +821,33 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Ken Jee Data Science Career Guides', url: 'https://www.youtube.com/@KenJee_ds', type: 'channel' },
-        { title: 'Alex The Analyst SQL & PowerBI', url: 'https://www.youtube.com/@AlexTheAnalyst', type: 'channel' }
+        { 
+          title: 'Full Data Science Course for Beginners (Python, Pandas, ML)', 
+          url: 'https://www.youtube.com/watch?v=LHBE6Q9XlzI', 
+          embedUrl: 'https://www.youtube.com/embed/LHBE6Q9XlzI',
+          type: 'bootcamp', 
+          duration: '12 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Statistics, data wrangling with Pandas/NumPy, Matplotlib visualization, and Scikit-Learn algorithms.'
+        },
+        { 
+          title: 'SQL for Data Analytics & Business Intelligence Full Course', 
+          url: 'https://www.youtube.com/watch?v=7mz73uXD9DA', 
+          embedUrl: 'https://www.youtube.com/embed/7mz73uXD9DA',
+          type: 'crash-course', 
+          duration: '6 Hours', 
+          channel: 'Alex The Analyst',
+          description: 'Window functions, CTEs, data aggregation, data cleaning, and real portfolio project queries.'
+        },
+        { 
+          title: 'Power BI Full Course - Learn Power BI in 4 Hours', 
+          url: 'https://www.youtube.com/watch?v=3u7MQz1EyG0', 
+          embedUrl: 'https://www.youtube.com/embed/3u7MQz1EyG0',
+          type: 'masterclass', 
+          duration: '4 Hours', 
+          channel: 'Kevin Stratvert',
+          description: 'Connecting data sources, DAX formulas, interactive dashboard cards, slicers, and report publishing.'
+        }
       ],
       platforms: [
         { title: 'Kaggle Datasets & Notebooks', desc: 'The largest data science community.', url: 'https://www.kaggle.com/' }
@@ -628,8 +909,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Flux Academy UI/UX Mastery', url: 'https://www.youtube.com/@FluxAcademy', type: 'channel' },
-        { title: 'Mizko Product Design', url: 'https://www.youtube.com/@mizko', type: 'channel' }
+        { 
+          title: 'Complete Figma UI/UX Design Course (2025/2026)', 
+          url: 'https://www.youtube.com/watch?v=jwNm_8Lh9j0', 
+          embedUrl: 'https://www.youtube.com/embed/jwNm_8Lh9j0',
+          type: 'bootcamp', 
+          duration: '10 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Master Auto-Layout, Components, Design Systems, Variables, Interactive Prototyping, and Micro-interactions.'
+        },
+        { 
+          title: 'UX Design Process & Case Study Walkthrough', 
+          url: 'https://www.youtube.com/watch?v=c9Wg6Cb_YlU', 
+          embedUrl: 'https://www.youtube.com/embed/c9Wg6Cb_YlU',
+          type: 'masterclass', 
+          duration: '4.5 Hours', 
+          channel: 'Mizko',
+          description: 'End-to-end design thinking, user persona creation, wireframing, and creating portfolio case studies.'
+        }
       ],
       platforms: [
         { title: 'Figma Community Resources & Plugins', desc: 'Free UI kits and design files.', url: 'https://www.figma.com/community' },
@@ -692,8 +989,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Brackeys Unity Archive & Tutorials', url: 'https://www.youtube.com/@Brackeys', type: 'channel' },
-        { title: 'Code Monkey C# & Unity Guides', url: 'https://www.youtube.com/@CodeMonkeyUnity', type: 'channel' }
+        { 
+          title: 'Learn Unity Beginner to Advanced in 10 Hours', 
+          url: 'https://www.youtube.com/watch?v=AmGSEH7468U', 
+          embedUrl: 'https://www.youtube.com/embed/AmGSEH7468U',
+          type: 'bootcamp', 
+          duration: '10 Hours', 
+          channel: 'Code Monkey',
+          description: 'Build complete 2D and 3D games with physics, particle effects, UI, and C# scripting.'
+        },
+        { 
+          title: 'Brackeys Unity C# Beginner Tutorials Series', 
+          url: 'https://www.youtube.com/playlist?list=PLPV2KyIb3jR53JevngJvdOBUFYh41zRDR', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLPV2KyIb3jR53JevngJvdOBUFYh41zRDR',
+          type: 'playlist', 
+          duration: '15 Hours', 
+          channel: 'Brackeys',
+          description: 'Legendary step-by-step game development fundamentals for total beginners.'
+        }
       ],
       platforms: [
         { title: 'Unity Learn Portal', desc: 'Official Unity courses and guided paths.', url: 'https://learn.unity.com/' },
@@ -756,8 +1069,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Patrick Collins 32-Hour Web3 Course', url: 'https://www.youtube.com/@PatrickAlphaC', type: 'channel' },
-        { title: 'Dapp University Smart Contract Guides', url: 'https://www.youtube.com/@DappUniversity', type: 'channel' }
+        { 
+          title: 'Learn Blockchain, Solidity & Full-Stack Web3 Bootcamp (32-Hours)', 
+          url: 'https://www.youtube.com/watch?v=gyMwXuJrbJQ', 
+          embedUrl: 'https://www.youtube.com/embed/gyMwXuJrbJQ',
+          type: 'bootcamp', 
+          duration: '32 Hours', 
+          channel: 'freeCodeCamp.org (Patrick Collins)',
+          description: 'Solidity, Hardhat, Foundry, DeFi protocols, Chainlink Oracles, and complete full stack dApp dev.'
+        },
+        { 
+          title: 'Smart Contract Security & Auditing Masterclass', 
+          url: 'https://www.youtube.com/watch?v=sas02qSFZ74', 
+          embedUrl: 'https://www.youtube.com/embed/sas02qSFZ74',
+          type: 'masterclass', 
+          duration: '10 Hours', 
+          channel: 'Patrick Collins',
+          description: 'Hunting vulnerabilities, reentrancy attacks, flash loan attacks, and automated static analysis.'
+        }
       ],
       platforms: [
         { title: 'Ethereum.org Developer Portal', desc: 'Comprehensive guides, docs, and tutorials.', url: 'https://ethereum.org/en/developers/' },
@@ -820,7 +1149,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Ben Eater 8-Bit Computer from Scratch', url: 'https://www.youtube.com/@BenEater', type: 'channel' }
+        { 
+          title: 'Build an 8-bit Computer From Scratch on Breadboards', 
+          url: 'https://www.youtube.com/playlist?list=PE63074A4CC39EC0C', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PE63074A4CC39EC0C',
+          type: 'playlist', 
+          duration: '20 Hours', 
+          channel: 'Ben Eater',
+          description: 'The masterclass on CPU clock, registers, ALU, bus architecture, and control logic.'
+        },
+        { 
+          title: 'Digital Electronics & Logic Design Full Playlist', 
+          url: 'https://www.youtube.com/playlist?list=PLBlnK6fEyqRjMH3kWf6z6446514TLzPno', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLBlnK6fEyqRjMH3kWf6z6446514TLzPno',
+          type: 'playlist', 
+          duration: '35 Hours', 
+          channel: 'Neso Academy',
+          description: 'Gates, Boolean Algebra, K-Maps, Adders, Multiplexers, Latches, and Synchronous Counters.'
+        }
       ],
       platforms: [
         { title: 'HDLBits Verilog Problem Sets', desc: 'Interactive browser-based Verilog practice.', url: 'https://hdlbits.01xz.net/' },
@@ -883,7 +1229,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Seattle Data Guy Data Engineering', url: 'https://www.youtube.com/@SeattleDataGuy', type: 'channel' }
+        { 
+          title: 'Data Engineering Course for Beginners (Python, PySpark, Airflow)', 
+          url: 'https://www.youtube.com/watch?v=Ph324zF6pVs', 
+          embedUrl: 'https://www.youtube.com/embed/Ph324zF6pVs',
+          type: 'bootcamp', 
+          duration: '11 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Building end-to-end data pipelines with Postgres, Snowflake, dbt, and Apache Airflow.'
+        },
+        { 
+          title: 'Apache Kafka & Real-Time Data Streaming Masterclass', 
+          url: 'https://www.youtube.com/watch?v=R873BlBMUBY', 
+          embedUrl: 'https://www.youtube.com/embed/R873BlBMUBY',
+          type: 'crash-course', 
+          duration: '3.5 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Topics, Partitions, Consumer Groups, Producers, and Kafka Streams architecture.'
+        }
       ],
       platforms: [
         { title: 'DataCamp Data Engineering Track', desc: 'SQL, Airflow, and PySpark courses.', url: 'https://www.datacamp.com/' }
@@ -945,7 +1308,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Product School Product Talks', url: 'https://www.youtube.com/@ProductSchoolSanFrancisco', type: 'channel' }
+        { 
+          title: 'Product Management Full Course - How to Become a PM', 
+          url: 'https://www.youtube.com/watch?v=q6t8oN_sDq8', 
+          embedUrl: 'https://www.youtube.com/embed/q6t8oN_sDq8',
+          type: 'bootcamp', 
+          duration: '6 Hours', 
+          channel: 'Product School',
+          description: 'PRD writing, user research, agile roadmaps, stakeholder alignment, and launch execution.'
+        },
+        { 
+          title: 'Google & Meta Product Sense Interview Mock Walkthroughs', 
+          url: 'https://www.youtube.com/playlist?list=PL_Jk9s01hXn9Z7t9W1q-6_42HjQ1qf5lX', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PL_Jk9s01hXn9Z7t9W1q-6_42HjQ1qf5lX',
+          type: 'playlist', 
+          duration: '12 Hours', 
+          channel: 'Exponent',
+          description: 'Real PM interview recordings with critique on product strategy, metrics, and behavioral questions.'
+        }
       ],
       platforms: [
         { title: 'Reforge PM Essays & Library', desc: 'Silicon Valley product leadership playbooks.', url: 'https://www.reforge.com/' },
@@ -1008,7 +1388,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Naveen AutomationLabs Full SDET Guides', url: 'https://www.youtube.com/@NaveenAutomationLabs', type: 'channel' }
+        { 
+          title: 'Selenium WebDriver with Java Full SDET Automation Course', 
+          url: 'https://www.youtube.com/playlist?list=PLFGoYjJG_fqo4oVsa6L_NxxYfdhPrqk3b', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PLFGoYjJG_fqo4oVsa6L_NxxYfdhPrqk3b',
+          type: 'playlist', 
+          duration: '30 Hours', 
+          channel: 'Naveen AutomationLabs',
+          description: 'Framework design, Page Object Model, TestNG, Maven, Extent Reports, and Jenkins integration.'
+        },
+        { 
+          title: 'Playwright Modern End-to-End Testing Crash Course', 
+          url: 'https://www.youtube.com/watch?v=Xz6LH6vDEkE', 
+          embedUrl: 'https://www.youtube.com/embed/Xz6LH6vDEkE',
+          type: 'crash-course', 
+          duration: '4 Hours', 
+          channel: 'freeCodeCamp.org',
+          description: 'Modern web UI testing, API mocking, parallel test runner, trace viewer, and codegen tools.'
+        }
       ],
       platforms: [
         { title: 'Test Automation University (TAU)', desc: '100% Free courses by Applitools.', url: 'https://testautomationu.applitools.com/' }
@@ -1070,8 +1467,33 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Corey Schafer Python & Django Tutorials', url: 'https://www.youtube.com/@coreyms', type: 'channel' },
-        { title: 'Tech With Tim Python Projects', url: 'https://www.youtube.com/@TechWithTim', type: 'channel' }
+        { 
+          title: 'Python for Beginners - Full Course [Programming Tutorial]', 
+          url: 'https://www.youtube.com/watch?v=eWRfhZUzrAc', 
+          embedUrl: 'https://www.youtube.com/embed/eWRfhZUzrAc',
+          type: 'bootcamp', 
+          duration: '6 Hours', 
+          channel: 'Programming with Mosh',
+          description: 'Clear syntax foundations, OOP, data structures, and practical project builds.'
+        },
+        { 
+          title: 'Python Django Full Tutorial: Complete Web Application Course', 
+          url: 'https://www.youtube.com/playlist?list=PL-osiE80TeTtoQCKZ03TU5fNfx2UY6U4p', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PL-osiE80TeTtoQCKZ03TU5fNfx2UY6U4p',
+          type: 'playlist', 
+          duration: '14 Hours', 
+          channel: 'Corey Schafer',
+          description: 'Industry-standard Django course: Models, Authentication, Profile pictures, and production deployment.'
+        },
+        { 
+          title: 'FastAPI - A Python Framework | Full Course for Beginners', 
+          url: 'https://www.youtube.com/watch?v=tLKKmouUAMS', 
+          embedUrl: 'https://www.youtube.com/embed/tLKKmouUAMS',
+          type: 'masterclass', 
+          duration: '19 Hours', 
+          channel: 'freeCodeCamp.org (Sanjeev Thiyagarajan)',
+          description: 'Full stack REST APIs with FastAPI, SQLAlchemy, Alembic migrations, PostgreSQL, and Docker.'
+        }
       ],
       platforms: [
         { title: 'Real Python Tutorials & Guides', desc: 'The best written Python tutorials on the web.', url: 'https://realpython.com/' },
@@ -1134,8 +1556,24 @@ export const ROADMAPS = [
     ],
     resources: {
       videos: [
-        { title: 'Kunal Kushwaha Java & DSA Bootcamp', url: 'https://www.youtube.com/@KunalKushwaha', type: 'channel' },
-        { title: 'Striver (Take U Forward)', url: 'https://www.youtube.com/@takeUforward', type: 'channel' }
+        { 
+          title: 'Complete Java + DSA + Interview Preparation Course (Bootcamp)', 
+          url: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ', 
+          embedUrl: 'https://www.youtube.com/embed/videoseries?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ',
+          type: 'bootcamp', 
+          duration: '60+ Hours', 
+          channel: 'Kunal Kushwaha',
+          description: 'Comprehensive, deep dive from zero programming to advanced LeetCode problems in Java.'
+        },
+        { 
+          title: 'Java Collections Framework Complete Masterclass', 
+          url: 'https://www.youtube.com/watch?v=rzA7UJ-hQn4', 
+          embedUrl: 'https://www.youtube.com/embed/rzA7UJ-hQn4',
+          type: 'masterclass', 
+          duration: '4.5 Hours', 
+          channel: 'Kunal Kushwaha',
+          description: 'Internal working of ArrayList, LinkedList, HashMap, LinkedHashMap, TreeMap, PriorityQueue and Generics.'
+        }
       ],
       platforms: [
         { title: 'LeetCode Problem Sets', desc: 'Top coding interview practice.', url: 'https://leetcode.com/' },

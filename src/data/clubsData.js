@@ -17,6 +17,43 @@ export const DEFAULT_CLUB_CATEGORIES = [
 ];
 
 export const DEFAULT_COLLEGE_CLUBS = [
+  /* Temporarily hidden CAD & English Club
+  {
+    id: 'club-cad-english',
+    name: 'CAD & ENGLISH CLUB (#ExpressEngageEmpower)',
+    shortName: 'CAD & English Club',
+    category: 'Communication & Awareness',
+    code: 'CADENG',
+    logo: '🏛️',
+    bannerColor: 'from-cyan-500 via-blue-600 to-indigo-700',
+    description: 'Premier student-led technical & communicative society at GPREC. Empowering computational design (CAD), professional English fluency, creative presentation standards, high-impact campus events, and multi-disciplinary leadership.',
+    leadName: 'M. Bharani Kumar Reddy (President) & Office Bearers',
+    leadEmail: 'cadenglishclub@gprec.ac.in',
+    portalUrl: 'https://cad-english-club-gprec.web.app/',
+    routeHash: '#cad&englishclub',
+    memberCount: 44,
+    establishedYear: '2018',
+    meetingSchedule: 'Every Friday @ 04:30 PM (GPREC Central Seminar Hall)',
+    tags: ['CAD Design', 'Public Speaking', 'English Fluency', 'Campus Events', 'Leadership', 'Express Engage Empower'],
+    scoreXP: 5500,
+    upcomingEvents: [
+      {
+        id: 'evt-cad-001',
+        title: 'CAD & English Club Annual Leadership & Design Summit 2026',
+        date: '10 Oct 2026',
+        time: '10:00 AM - 04:30 PM',
+        venue: 'GPREC Main Auditorium',
+        rewards: 'Official Club ID Passes + Certificates',
+        category: 'Summit',
+        status: 'Registration Open'
+      }
+    ],
+    announcements: [
+      'Official CAD & English Club Portal live at lumixora.in#cad&englishclub and cad-english-club-gprec.web.app!',
+      'Digital Member Passes & QR Verification badges now active.'
+    ]
+  },
+  */
   {
     id: 'club-code-craft',
     name: 'CodeCraft - Algorithmic & Open Source Society',
@@ -36,7 +73,7 @@ export const DEFAULT_COLLEGE_CLUBS = [
     upcomingEvents: [
       {
         id: 'evt-101',
-        title: 'Lumixora CodeSprint 2026 - 48H Hackathon',
+        title: 'Vyomra CodeSprint 2026 - 48H Hackathon',
         date: '28 Aug 2026',
         time: '10:00 AM - 05:00 PM',
         venue: 'GPREC Main Auditorium & AI Lab',
@@ -56,7 +93,7 @@ export const DEFAULT_COLLEGE_CLUBS = [
       }
     ],
     announcements: [
-      'Registration open for Lumixora CodeSprint 2026!',
+      'Registration open for Vyomra CodeSprint 2026!',
       'GitHub Student Developer Pack bootcamp scheduled for next Friday.'
     ]
   },
@@ -95,7 +132,7 @@ export const DEFAULT_COLLEGE_CLUBS = [
   {
     id: 'club-ecell',
     name: 'E-Cell - Entrepreneurship & Incubation Cell',
-    shortName: 'Lumixora E-Cell',
+    shortName: 'Vyomra E-Cell',
     category: 'Entrepreneurship',
     code: 'ECELL',
     logo: '🚀',

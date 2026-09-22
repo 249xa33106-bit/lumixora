@@ -3,7 +3,7 @@ import { db } from '../config/firebase';
 import { supabase } from '../config/supabase';
 
 // Current local code version of the app
-export const CURRENT_VERSION = '1.1.11';
+export const CURRENT_VERSION = '1.1.15';
 
 /**
  * Compare two semver version strings.
@@ -28,7 +28,7 @@ export function isVersionOutdated(current, latest) {
  * Fetch the latest release information from Firestore or Supabase.
  */
 export async function checkAppUpdate() {
-  const defaultApkUrl = 'https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Lumixora.apk';
+  const defaultApkUrl = 'https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Vyomra.apk';
   
   // 1. Try Firebase Firestore
   try {
@@ -51,14 +51,13 @@ export async function checkAppUpdate() {
   try {
     const { data, error } = await supabase
       .from('app_config')
-      .select('value')
-      .eq('key', 'latest_version')
-      .single();
+      .select('*')
+      .eq('id', 'global')
+      .maybeSingle();
       
     if (!error && data) {
-      console.log("Supabase Update Data fetched:", data);
       return {
-        latestVersion: data.value || CURRENT_VERSION,
+        latestVersion: data.latest_version || CURRENT_VERSION,
         apkUrl: defaultApkUrl,
         mandatory: false
       };

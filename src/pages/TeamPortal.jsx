@@ -228,7 +228,7 @@ export default function TeamPortal({ user, setActiveTab }) {
         ...paperForm,
         fileUrl: finalUrl,
         category: 'previous_paper',
-        contributedBy: user?.name || user?.email || 'Lumixora Teammate',
+        contributedBy: user?.name || user?.email || 'Vyomra Teammate',
         contributorEmail: user?.email || '',
         contributorRole: 'Teammate',
         last_edited: new Date().toISOString()
@@ -439,7 +439,7 @@ export default function TeamPortal({ user, setActiveTab }) {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5" /> Lumixora Core Contributor Portal
+              <Sparkles className="w-3.5 h-3.5" /> Vyomra Core Contributor Portal
             </div>
             <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight flex items-center gap-3">
               Teammate Command Hub

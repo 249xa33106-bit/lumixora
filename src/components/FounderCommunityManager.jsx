@@ -24,8 +24,8 @@ export default function FounderCommunityManager() {
 
   const handleSendEmail = () => {
     const link = generateInviteLink();
-    const subject = encodeURIComponent("Join Your Class Community on Lumixora!");
-    const body = encodeURIComponent(`Hello,\n\nYou have been invited to join your official class community group on Lumixora.\n\nClick the link below to sign up and instantly join the group for ${department} Section ${section}, ${year}:\n\n${link}\n\nBest,\nLumixora Team`);
+    const subject = encodeURIComponent("Join Your Class Community on Vyomra!");
+    const body = encodeURIComponent(`Hello,\n\nYou have been invited to join your official class community group on Vyomra.\n\nClick the link below to sign up and instantly join the group for ${department} Section ${section}, ${year}:\n\n${link}\n\nBest,\nVyomra Team`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 

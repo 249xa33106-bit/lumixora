@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Search, BookOpen, ChevronRight, GraduationCap, Map, Clock, Shield, Plus, Trash2, Edit2, X } from 'lucide-react';
+import { Search, BookOpen, ChevronRight, GraduationCap, Map, Clock, Shield, Plus, Trash2, Edit2, X, Video, Sparkles, Film } from 'lucide-react';
 import SubjectPage from './SubjectPage';
+import VideoPortal from './VideoPortal';
 import { useData } from '../context/DataContext';
 
-export default function LearningHub({ user }) {
+export default function LearningHub({ user, setActiveTab, initialTab = 'videos' }) {
   const { hubSubjects, addHubSubject, updateHubSubject, deleteHubSubject, hubMaterials, updateHubMaterials, uploadFile } = useData();
   
+  const [activeHubView, setActiveHubView] = useState(initialTab === 'resources' || initialTab === 'notes' ? 'resources' : 'videos');
   const [selectedBranch, setSelectedBranch] = useState('CSE');
   const [selectedSem, setSelectedSem] = useState('Sem 3');
   const [searchQuery, setSearchQuery] = useState('');
@@ -167,17 +169,59 @@ export default function LearningHub({ user }) {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12 relative">
-      {/* Header Section */}
-      <div className="glass-panel p-8 rounded-3xl bg-gradient-to-br from-brand-blue/10 to-transparent border border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
-          <div className="space-y-4 flex-1">
-            <div className="flex items-center justify-between w-full">
-              <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                <GraduationCap className="w-8 h-8 text-brand-blue" />
-                Resource Academy
-              </h1>
+    <div className="space-y-6 animate-fade-in pb-12 relative">
+      {/* Unified Hub Navigation Switcher */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 glass-panel p-3 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-2xl">
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5">
+          <button
+            onClick={() => { setActiveHubView('videos'); setActiveSubject(null); }}
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-300 ${
+              activeHubView === 'videos'
+                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-lg shadow-rose-500/25 scale-[1.02]'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Video className="w-4 h-4" />
+            <span>Academic Video Lectures</span>
+            <span className="text-[10px] bg-black/40 text-rose-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Unit Lectures 🎥</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveHubView('resources')}
+            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-300 ${
+              activeHubView === 'resources'
+                ? 'bg-gradient-to-r from-brand-teal via-emerald-500 to-teal-400 text-black shadow-lg shadow-brand-teal/25 scale-[1.02]'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Resource Academy & Notes</span>
+            <span className="text-[10px] bg-black/40 text-teal-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Notes & PDFs 📚</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 px-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
+            <Sparkles className="w-4 h-4 text-brand-teal animate-pulse" />
+            <span className="hidden md:inline">Unified Academic Hub</span>
+          </div>
+        </div>
+      </div>
+
+      {activeHubView === 'videos' ? (
+        <VideoPortal user={user} setActiveTab={setActiveTab} />
+      ) : (
+        <div className="space-y-8 animate-fade-in">
+          {/* Header Section */}
+          <div className="glass-panel p-8 rounded-3xl bg-gradient-to-br from-brand-blue/10 to-transparent border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl"></div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center justify-between w-full">
+                  <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                    <GraduationCap className="w-8 h-8 text-brand-blue" />
+                    Resource Academy
+                  </h1>
               {/* Founder Mode Toggle */}
               {user?.role === 'founder' && (
                 <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shrink-0">
@@ -504,6 +548,8 @@ export default function LearningHub({ user }) {
               </div>
             </form>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

@@ -414,5 +414,28 @@ export function GamificationProvider({ children, user, activeTab }) {
 }
 
 export function useGamification() {
-  return useContext(GamificationContext);
+  const context = useContext(GamificationContext);
+  return context || {
+    profile: null,
+    loading: false,
+    leaderboard: [],
+    challenges: { daily: [], weekly: [] },
+    levelUpData: null,
+    setLevelUpData: () => {},
+    streakMilestone: null,
+    setStreakMilestone: () => {},
+    unlockedBadge: null,
+    setUnlockedBadge: () => {},
+    isStudying: false,
+    setIsStudying: () => {},
+    awardXP: () => Promise.resolve(),
+    trackActivity: () => {},
+    updateChallenge: () => {},
+    buyShopItem: () => {},
+    equipItem: () => {},
+    fetchLeaderboard: () => {},
+    unlockBadge: () => {},
+    triggerStreakReminder: () => {},
+    resetTodayProgress: () => {}
+  };
 }

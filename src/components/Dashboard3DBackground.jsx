@@ -47,7 +47,7 @@ export default function Dashboard3DBackground({ showParticleText = false }) {
 
     const particleTexture = makeParticleTexture();
 
-    // ─── 2. SPECTRUM RAINBOW "LUMIXORA" HOLOGRAPHIC TYPOGRAPHY (OPTIONAL) ────
+    // ─── 2. SPECTRUM RAINBOW "VYOMRA" HOLOGRAPHIC TYPOGRAPHY (OPTIONAL) ────
     let textGeo, textMat, textPointsMesh;
     const textPointsData = [];
 
@@ -260,7 +260,7 @@ export default function Dashboard3DBackground({ showParticleText = false }) {
       camera.position.y = targetY;
       camera.lookAt(0, 0, 0);
 
-      // Animate LUMIXORA particle text (if enabled)
+      // Animate VYOMRA particle text (if enabled)
       if (showParticleText && textGeo) {
         const posAttr = textGeo.attributes.position;
         const colorAttr = textGeo.attributes.color;

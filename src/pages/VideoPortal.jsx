@@ -41,8 +41,8 @@ function getYouTubeEmbedUrl(url) {
 }
 
 export default function VideoPortal({ user, setActiveTab }) {
-  const { awardXP } = useGamification ? useGamification() : { awardXP: () => {} };
-  const { addToast } = useToast ? useToast() : { addToast: () => {} };
+  const { awardXP } = useGamification() || { awardXP: () => {} };
+  const { addToast } = useToast() || { addToast: () => {} };
 
   const userEmail = (user?.email || '').toLowerCase().trim();
   const isFounder = user?.role === 'founder' || 
@@ -82,24 +82,50 @@ export default function VideoPortal({ user, setActiveTab }) {
     }
   });
 
-  // Dynamic subjects list with full CRUD persistence
+  // Dynamic subjects list with full CRUD persistence, prioritizing latest official curriculum
   const [subjectsList, setSubjectsList] = useState(() => {
     try {
-      const saved = localStorage.getItem('lumixora_custom_syllabus_videos_v3');
+      const saved = localStorage.getItem('lumixora_custom_syllabus_videos_v11');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Check if all initial subjects are present and updated
+          const hasKunal = parsed.some(s => s.id === 'kunal-kushwaha-java-dsa-masterclass');
+          const hasMefa = parsed.some(s => s.id === 'common-sem3-hsm202-mefa' && s.oneShotVideo?.url?.includes('356_pioFiss'));
+          if (hasKunal && hasMefa) return parsed;
+        }
       }
     } catch (e) {
       console.warn("Failed loading saved syllabus videos", e);
     }
+    // Default to INITIAL_SYLLABUS_VIDEOS (which includes Kunal Kushwaha masterclasses, MEFA, DBMS, OS, UHV, etc.)
+    try {
+      localStorage.setItem('lumixora_custom_syllabus_videos_v11', JSON.stringify(INITIAL_SYLLABUS_VIDEOS));
+    } catch (e) {}
     return INITIAL_SYLLABUS_VIDEOS;
   });
+
+  // Ensure Kunal Kushwaha Masterclasses and all official subjects are actively loaded on mount
+  useEffect(() => {
+    setSubjectsList(prev => {
+      const existingIds = new Set((prev || []).map(s => s.id));
+      const hasKunal = existingIds.has('kunal-kushwaha-java-dsa-masterclass');
+      const hasMefa = (prev || []).some(s => s.id === 'common-sem3-hsm202-mefa' && s.oneShotVideo?.url?.includes('356_pioFiss'));
+      if (!hasKunal || !hasMefa) {
+        try {
+          localStorage.setItem('lumixora_custom_syllabus_videos_v11', JSON.stringify(INITIAL_SYLLABUS_VIDEOS));
+        } catch (e) {}
+        return INITIAL_SYLLABUS_VIDEOS;
+      }
+      return prev;
+    });
+  }, []);
 
   // Persist subjects list to local storage
   const saveSubjects = (updatedList) => {
     setSubjectsList(updatedList);
     try {
-      localStorage.setItem('lumixora_custom_syllabus_videos_v3', JSON.stringify(updatedList));
+      localStorage.setItem('lumixora_custom_syllabus_videos_v11', JSON.stringify(updatedList));
     } catch (e) {
       console.warn("Failed to persist syllabus videos locally", e);
     }
@@ -120,12 +146,10 @@ export default function VideoPortal({ user, setActiveTab }) {
     }
   };
 
-  // Reset to original defaults
+  // Reset / Sync to latest curriculum defaults
   const handleResetToDefaults = () => {
-    if (window.confirm("Are you sure you want to reset all subjects and videos to default 2023 curriculum?")) {
-      saveSubjects(INITIAL_SYLLABUS_VIDEOS);
-      if (addToast) addToast("Reset to default curriculum successfully!", "info");
-    }
+    saveSubjects(INITIAL_SYLLABUS_VIDEOS);
+    if (addToast) addToast("Curriculum synced to latest official syllabus with MEFA & CS subjects!", "success");
   };
 
   // ── Modals & State for Subject CRUD ──
@@ -555,8 +579,17 @@ export default function VideoPortal({ user, setActiveTab }) {
               </p>
             </div>
 
-            {/* Founder Controls Header */}
+            {/* Header Controls */}
             <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleResetToDefaults}
+                title="Sync and refresh latest official curriculum"
+                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:border-brand-teal/40"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-brand-teal" />
+                <span>Sync Curriculum</span>
+              </button>
+
               {isFaculty && (
                 <>
                   <button
@@ -577,16 +610,6 @@ export default function VideoPortal({ user, setActiveTab }) {
                   >
                     <Plus className="w-4 h-4" /> Add Subject
                   </button>
-
-                  {founderEditMode && (
-                    <button
-                      onClick={handleResetToDefaults}
-                      title="Reset subjects to default"
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 transition-colors cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                  )}
                 </>
               )}
             </div>

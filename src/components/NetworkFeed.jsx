@@ -28,7 +28,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
       dbNotes.forEach((note, index) => {
         const authorUser = dbUsers?.find(u => u.name === note.author || u.id === note.user_id) || {
           name: note.author || 'Contributor Student',
-          college: 'LUMIXORA Network',
+          college: 'VYOMRA Network',
           avatarUrl: ''
         };
 
@@ -55,7 +55,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
       dbDoubts.forEach((doubt, index) => {
         const authorUser = dbUsers?.find(u => u.name === doubt.studentName || u.id === doubt.userId) || {
           name: doubt.studentName || 'Student Peer',
-          college: 'LUMIXORA Hub',
+          college: 'VYOMRA Hub',
           avatarUrl: ''
         };
 
@@ -117,7 +117,7 @@ export default function NetworkFeed({ user, dbNotes = [], dbDoubts = [], dbUsers
       id: Date.now(),
       name: user?.name || 'Scholar Student',
       avatar: (user?.name || 'S').charAt(0).toUpperCase(),
-      college: 'LUMIXORA University of Tech',
+      college: 'VYOMRA University of Tech',
       timestamp: 'Just now',
       text: newPostText,
       type: attachmentType === 'pdf' ? 'PDF Document' : attachmentType === 'image' ? 'Image File' : null,

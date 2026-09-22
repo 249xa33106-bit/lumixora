@@ -50,6 +50,15 @@ You can return the answer in any order.`,
       'Try checking every pair of numbers. What is the time complexity?',
       'Can we use a hash map to look up the complement of each number in O(1) time?'
     ],
+    videoUrl: 'https://www.youtube.com/embed/KLlXCFG5TnA',
+    videoTitle: 'Two Sum - LeetCode 1 - Python & Hash Map Explained',
+    channelName: 'NeetCode',
+    duration: '11:42',
+    videoKeyTakeaways: [
+      'Brute force O(N^2) vs One-Pass Hash Map O(N)',
+      'Instant complement lookup (target - num) in O(1)',
+      'Index mapping without double-counting elements'
+    ],
     editorial: `### Optimal O(N) Hash Map Solution
 
 We can traverse the array once, maintaining a hash map of values seen so far and their index. For each number \`num\` at index \`i\`, we calculate its complement \`target - num\`. If the complement exists in our map, we have found our pair!
@@ -142,6 +151,15 @@ An input string is valid if:
       'A Stack data structure is perfect for keeping track of open parentheses.',
       'Push open brackets onto the stack. For a closing bracket, check if it matches the top of the stack.'
     ],
+    videoUrl: 'https://www.youtube.com/embed/WTzjTpmBsbQ',
+    videoTitle: 'Valid Parentheses - LeetCode 20 - Python & Stack Visualizer',
+    channelName: 'NeetCode',
+    duration: '10:15',
+    videoKeyTakeaways: [
+      'LIFO Stack matching for bracket pairs',
+      'Dictionary lookup mapping closing bracket to expected opener',
+      'Edge case validation for odd string lengths and extra closing braces'
+    ],
     editorial: `### Stack O(N) Solution
 
 We iterate through the string character by character. If we see an opening bracket, we push it onto our stack. If we see a closing bracket, we check if the stack is empty or if the top of the stack matches the closing bracket. If so, pop it. Otherwise, return false.
@@ -217,6 +235,15 @@ class Solution {
     hints: [
       'Can you do it iteratively by maintaining three pointers: prev, curr, and next?',
       'Can you think of a recursive approach?'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/G0_I-ZF0S38',
+    videoTitle: 'Reverse Linked List - LeetCode 206 - Iterative & Recursive',
+    channelName: 'NeetCode',
+    duration: '08:45',
+    videoKeyTakeaways: [
+      'Three-pointer pointer reversing: prev, curr, nextTemp',
+      'O(N) single-pass traversal with O(1) auxiliary space',
+      'Recursive call stack intuition and base cases'
     ],
     editorial: `### Iterative Solution
 
@@ -330,6 +357,15 @@ Return *the maximum amount of water a container can store*.`,
       'Try using two pointers at both ends of the array.',
       'Calculate the area, then move the pointer that points to the shorter line inward.'
     ],
+    videoUrl: 'https://www.youtube.com/embed/UuiTKBwPgAo',
+    videoTitle: 'Container with Most Water - LeetCode 11 - Two Pointer Strategy',
+    channelName: 'NeetCode',
+    duration: '12:18',
+    videoKeyTakeaways: [
+      'Two-pointer greedy boundary contraction',
+      'Why shifting the taller wall can never increase area',
+      'Optimal O(N) time and O(1) space complexity'
+    ],
     editorial: `### Two Pointers O(N) Solution
 
 We place one pointer at the start and one pointer at the end of the array. The area is bounded by the shorter line, and the width is the difference between the two pointers.
@@ -406,6 +442,15 @@ Each solution contains a distinct board configuration of the n-queens' placement
     hints: [
       'Use backtracking row by row. For each row, try to place a queen in each column.',
       'Maintain boolean sets for columns, positive diagonals (r + c), and negative diagonals (r - c) to check safety in O(1).'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/Ph95IHmTH5E',
+    videoTitle: 'N-Queens - Backtracking & Diagonal Sets - LeetCode 51',
+    channelName: 'NeetCode',
+    duration: '19:35',
+    videoKeyTakeaways: [
+      'Row-by-row state space tree search',
+      'O(1) safety checks with Column, (r+c) and (r-c) hash sets',
+      'Formatting and collecting board configurations'
     ],
     editorial: `### Backtracking and Sets Solution
 
@@ -532,6 +577,15 @@ int main() {
     hints: [
       'Initialize all distances to infinity, except the source which is 0.',
       'Maintain unvisited vertices set and continuously select the one with the smallest distance.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/XB4MIexX00E',
+    videoTitle: '3.6 Dijkstra Algorithm - Single Source Shortest Path',
+    channelName: 'Abdul Bari',
+    duration: '24:50',
+    videoKeyTakeaways: [
+      'Greedy selection of minimum distance vertex',
+      'Edge relaxation formula: dist[v] = min(dist[v], dist[u] + cost[u][v])',
+      'Adjacency matrix representation and tracing'
     ],
     editorial: `### Dijkstra's Shortest Path Algorithm
 Dijkstra's algorithm finds the shortest path from a single source vertex to all other vertices in a weighted graph with non-negative edge weights.
@@ -695,6 +749,15 @@ int main() {
       'Divide the array into two halves, recursively sort them, and merge the sorted halves.',
       'Use a temporary buffer array to merge elements back to original array.'
     ],
+    videoUrl: 'https://www.youtube.com/embed/mB5HXBb_HYY',
+    videoTitle: '2.8.1 Merge Sort Algorithm - Divide & Conquer',
+    channelName: 'Abdul Bari',
+    duration: '21:30',
+    videoKeyTakeaways: [
+      'Recursive divide step: mid = (low + high) / 2',
+      'Two-way merge technique with temporary buffer array',
+      'Guaranteed O(N log N) time complexity'
+    ],
     editorial: `### Merge Sort Algorithm
 Merge Sort is a Divide and Conquer algorithm. It divides the input array into two halves, calls itself for the two halves, and then merges the two sorted halves.
 The merge() function is used for merging two halves:
@@ -836,6 +899,15 @@ Implement the **Floyd-Warshall algorithm** (All-Pairs Shortest Path) to update t
       'Consider updating the distance between all pairs (i, j) by checking if a path through an intermediate vertex k is shorter.',
       'The recurrence relation is: dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]).'
     ],
+    videoUrl: 'https://www.youtube.com/embed/oNI0rf2P9gE',
+    videoTitle: '3.4 All Pairs Shortest Path - Floyd Warshall Algorithm',
+    channelName: 'Abdul Bari',
+    duration: '28:10',
+    videoKeyTakeaways: [
+      'Dynamic programming intermediate vertex iteration k from 0 to n-1',
+      'Optimal substructure: A^k[i][j] = min(A^(k-1)[i][j], A^(k-1)[i][k] + A^(k-1)[k][j])',
+      'In-place matrix updates with O(N^3) time complexity'
+    ],
     editorial: `### Floyd-Warshall Algorithm (All-Pairs Shortest Path)
 
 The Floyd-Warshall algorithm is a dynamic programming algorithm used to find the shortest paths between all pairs of vertices in a weighted graph.
@@ -922,6 +994,15 @@ Each job is represented as an object with \`id\` (character), \`deadline\` (inte
       'Sort all jobs in decreasing order of profit.',
       'For each job, try to find a free time slot in its deadline range starting from its deadline - 1 down to 0.'
     ],
+    videoUrl: 'https://www.youtube.com/embed/zPtI8q9gkX8',
+    videoTitle: '3.2 Job Sequencing with Deadlines - Greedy Method',
+    channelName: 'Abdul Bari',
+    duration: '18:40',
+    videoKeyTakeaways: [
+      'Sort jobs in descending order of profit to prioritize high-yield tasks',
+      'Schedule each job in the latest possible slot within its deadline',
+      'Maximize profit under single-machine unit time constraints'
+    ],
     editorial: `### Greedy Approach for Job Sequencing
 
 By sorting the jobs in descending order of profit, we ensure that we prioritize high-profit jobs. For each job, we attempt to schedule it as late as possible (near its deadline) to leave earlier slots open for other jobs with tighter deadlines.
@@ -999,6 +1080,782 @@ type Result struct {
 func jobSequencing(jobs []Job, n int) Result {
     // Write your code here
     return Result{}
+}`
+    }
+  },
+  {
+    id: 'maximum-subarray',
+    title: 'Maximum Subarray (Kadane\'s Algorithm)',
+    difficulty: 'Medium',
+    acceptanceRate: '50.1%',
+    category: 'Arrays',
+    frequency: 96,
+    popularity: 99,
+    solved: false,
+    companies: ['Google', 'Amazon', 'Microsoft', 'LinkedIn', 'Apple'],
+    statement: `Given an integer array \`nums\`, find the subarray with the largest sum, and return *its sum*.
+
+A **subarray** is a contiguous non-empty sequence of elements within an array.`,
+    inputFormat: 'An array of integers `nums`.',
+    outputFormat: 'The maximum contiguous subarray sum (integer).',
+    constraints: [
+      '1 <= nums.length <= 10^5',
+      '-10^4 <= nums[i] <= 10^4'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'nums = [-2,1,-3,4,-1,2,1,-5,4]',
+        output: '6',
+        explanation: 'The subarray [4,-1,2,1] has the largest sum 6.'
+      },
+      {
+        input: 'nums = [1]',
+        output: '1',
+        explanation: 'The subarray [1] has the largest sum 1.'
+      }
+    ],
+    testCases: [
+      { input: '[-2,1,-3,4,-1,2,1,-5,4]', output: '6' },
+      { input: '[1]', output: '1' },
+      { input: '[5,4,-1,7,8]', output: '23' }
+    ],
+    hiddenTestCases: [
+      { input: '[-1]', output: '-1' },
+      { input: '[-2,-1]', output: '-1' }
+    ],
+    hints: [
+      'If the current running sum becomes negative, reset it to 0.',
+      'Track the global maximum at every step.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/5WZl3MMT0Eg',
+    videoTitle: 'Maximum Subarray - Kadane\'s Algorithm - LeetCode 53',
+    channelName: 'NeetCode',
+    duration: '08:50',
+    videoKeyTakeaways: [
+      'Kadane\'s linear dynamic programming pattern',
+      'Discarding negative prefix sums on the fly',
+      'O(N) single-pass with O(1) memory'
+    ],
+    editorial: `### Kadane's Algorithm O(N) Time, O(1) Space
+
+We maintain a running current sum. For every number, we add it to \`currentSum\`. If \`currentSum > maxSum\`, we update \`maxSum\`. If \`currentSum < 0\`, we reset it to \`0\` since a negative prefix will never help future subarrays.`,
+    starterTemplates: {
+      javascript: `function maxSubArray(nums) {
+    // Write your code here
+    
+}`,
+      python: `def max_sub_array(nums: list[int]) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    int maxSubArray(std::vector<int>& nums) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int maxSubArray(int[] nums) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func maxSubArray(nums []int) int {
+    // Write your code here
+    return 0
+}`
+    }
+  },
+  {
+    id: 'best-time-to-buy-and-sell-stock',
+    title: 'Best Time to Buy and Sell Stock',
+    difficulty: 'Easy',
+    acceptanceRate: '54.3%',
+    category: 'Sliding Window',
+    frequency: 94,
+    popularity: 99,
+    solved: false,
+    companies: ['Amazon', 'Google', 'Meta', 'Apple', 'Microsoft'],
+    statement: `You are given an array \`prices\` where \`prices[i]\` is the price of a given stock on the \`i\`-th day.
+
+You want to maximize your profit by choosing a **single day** to buy one stock and choosing a **different day in the future** to sell that stock.
+
+Return *the maximum profit you can achieve from this transaction*. If you cannot achieve any profit, return \`0\`.`,
+    inputFormat: 'An array of positive integers `prices`.',
+    outputFormat: 'Maximum profit (integer).',
+    constraints: [
+      '1 <= prices.length <= 10^5',
+      '0 <= prices[i] <= 10^4'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'prices = [7,1,5,3,6,4]',
+        output: '5',
+        explanation: 'Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6-1 = 5.'
+      },
+      {
+        input: 'prices = [7,6,4,3,1]',
+        output: '0',
+        explanation: 'In this case, no transactions are done and max profit = 0.'
+      }
+    ],
+    testCases: [
+      { input: '[7,1,5,3,6,4]', output: '5' },
+      { input: '[7,6,4,3,1]', output: '0' },
+      { input: '[2,4,1]', output: '2' }
+    ],
+    hiddenTestCases: [
+      { input: '[1,2]', output: '1' },
+      { input: '[3,2,6,5,0,3]', output: '4' }
+    ],
+    hints: [
+      'Maintain the minimum buying price seen so far as you iterate.',
+      'At each day, the potential profit is prices[i] - minPrice.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/1pkOG_aoGwE',
+    videoTitle: 'Best Time to Buy and Sell Stock - LeetCode 121',
+    channelName: 'NeetCode',
+    duration: '09:12',
+    videoKeyTakeaways: [
+      'Two-pointer sliding window / single pass tracking',
+      'Updating lowest buy price dynamically',
+      'Constant auxiliary space O(1)'
+    ],
+    editorial: `### One-Pass O(N) Algorithm
+
+Track the lowest price encountered so far \`minPrice\`. At every day \`i\`, calculate \`prices[i] - minPrice\` and update \`maxProfit\`.`,
+    starterTemplates: {
+      javascript: `function maxProfit(prices) {
+    // Write your code here
+    
+}`,
+      python: `def max_profit(prices: list[int]) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    int maxProfit(std::vector<int>& prices) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int maxProfit(int[] prices) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func maxProfit(prices []int) int {
+    // Write your code here
+    return 0
+}`
+    }
+  },
+  {
+    id: 'longest-substring-without-repeating-characters',
+    title: 'Longest Substring Without Repeating Characters',
+    difficulty: 'Medium',
+    acceptanceRate: '33.8%',
+    category: 'Sliding Window',
+    frequency: 92,
+    popularity: 98,
+    solved: false,
+    companies: ['Amazon', 'Microsoft', 'Bloomberg', 'Meta', 'Adobe'],
+    statement: `Given a string \`s\`, find the length of the **longest substring** without repeating characters.`,
+    inputFormat: 'A string `s`.',
+    outputFormat: 'Length of the longest non-repeating substring (integer).',
+    constraints: [
+      '0 <= s.length <= 5 * 10^4',
+      's consists of English letters, digits, symbols and spaces.'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 's = "abcabcbb"',
+        output: '3',
+        explanation: 'The answer is "abc", with the length of 3.'
+      },
+      {
+        input: 's = "bbbbb"',
+        output: '1',
+        explanation: 'The answer is "b", with the length of 1.'
+      }
+    ],
+    testCases: [
+      { input: '"abcabcbb"', output: '3' },
+      { input: '"bbbbb"', output: '1' },
+      { input: '"pwwkew"', output: '3' }
+    ],
+    hiddenTestCases: [
+      { input: '""', output: '0' },
+      { input: '" "', output: '1' }
+    ],
+    hints: [
+      'Use a sliding window with left and right pointers.',
+      'Use a Set or Hash Map to store characters within the current window.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/wiGpQwVHdE0',
+    videoTitle: 'Longest Substring Without Repeating Characters - LeetCode 3',
+    channelName: 'NeetCode',
+    duration: '10:45',
+    videoKeyTakeaways: [
+      'Sliding window with dynamic left pointer expansion',
+      'Set-based character frequency tracking',
+      'O(N) time and O(min(M, N)) space'
+    ],
+    editorial: `### Sliding Window with Hash Set
+
+Expand the window by advancing \`right\`. If \`s[right]\` is already in the set, remove \`s[left]\` and increment \`left\` until the duplicate is evicted. The maximum window size \`right - left + 1\` is the answer.`,
+    starterTemplates: {
+      javascript: `function lengthOfLongestSubstring(s) {
+    // Write your code here
+    
+}`,
+      python: `def length_of_longest_substring(s: str) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <string>
+#include <unordered_set>
+#include <algorithm>
+
+class Solution {
+public:
+    int lengthOfLongestSubstring(std::string s) {
+        // Write your code here
+        
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func lengthOfLongestSubstring(s string) int {
+    // Write your code here
+    return 0
+}`
+    }
+  },
+  {
+    id: 'three-sum',
+    title: '3Sum',
+    difficulty: 'Medium',
+    acceptanceRate: '32.5%',
+    category: 'Two Pointers',
+    frequency: 91,
+    popularity: 97,
+    solved: false,
+    companies: ['Meta', 'Amazon', 'Apple', 'Google', 'Microsoft'],
+    statement: `Given an integer array \`nums\`, return all the triplets \`[nums[i], nums[j], nums[k]]\` such that \`i != j\`, \`i != k\`, and \`j != k\`, and \`nums[i] + nums[j] + nums[k] == 0\`.
+
+Notice that the solution set must not contain duplicate triplets.`,
+    inputFormat: 'An integer array `nums`.',
+    outputFormat: 'A 2D array of unique triplets summing to 0.',
+    constraints: [
+      '3 <= nums.length <= 3000',
+      '-10^5 <= nums[i] <= 10^5'
+    ],
+    timeLimit: '1500ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'nums = [-1,0,1,2,-1,-4]',
+        output: '[[-1,-1,2],[-1,0,1]]',
+        explanation: 'Distinct triplets with sum 0.'
+      }
+    ],
+    testCases: [
+      { input: '[-1,0,1,2,-1,-4]', output: '[[-1,-1,2],[-1,0,1]]' },
+      { input: '[0,1,1]', output: '[]' },
+      { input: '[0,0,0]', output: '[[0,0,0]]' }
+    ],
+    hiddenTestCases: [
+      { input: '[-2,0,1,1,2]', output: '[[-2,0,2],[-2,1,1]]' }
+    ],
+    hints: [
+      'Sort the array first.',
+      'Fix one element and use two pointers (left and right) to find the remaining pair.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/jzZsG8n2R9A',
+    videoTitle: '3Sum - LeetCode 15 - Two Pointers & Duplicate Avoidance',
+    channelName: 'NeetCode',
+    duration: '15:30',
+    videoKeyTakeaways: [
+      'Sorting array for O(N log N) ordering',
+      'Fixing one element and reducing to 2Sum II with two pointers',
+      'Skipping duplicate values efficiently'
+    ],
+    editorial: `### Sort & Two Pointers O(N^2) Solution
+
+Sort the array. Loop through \`i\` from \`0\` to \`n-3\`. If \`nums[i] > 0\`, break. Set \`left = i + 1\` and \`right = n - 1\`. If sum is 0, add to result and skip duplicate numbers.`,
+    starterTemplates: {
+      javascript: `function threeSum(nums) {
+    // Write your code here
+    
+}`,
+      python: `def three_sum(nums: list[int]) -> list[list[int]]:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    std::vector<std::vector<int>> threeSum(std::vector<int>& nums) {
+        // Write your code here
+        
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        // Write your code here
+        return new ArrayList<>();
+    }
+}`,
+      go: `func threeSum(nums []int) [][]int {
+    // Write your code here
+    return nil
+}`
+    }
+  },
+  {
+    id: 'binary-search',
+    title: 'Binary Search',
+    difficulty: 'Easy',
+    acceptanceRate: '56.4%',
+    category: 'Binary Search',
+    frequency: 93,
+    popularity: 96,
+    solved: false,
+    companies: ['Microsoft', 'Apple', 'Google', 'Amazon'],
+    statement: `Given an array of integers \`nums\` which is sorted in ascending order, and an integer \`target\`, write a function to search \`target\` in \`nums\`. If \`target\` exists, then return its index. Otherwise, return \`-1\`.
+
+You must write an algorithm with \`O(log n)\` runtime complexity.`,
+    inputFormat: 'A sorted integer array `nums` and integer `target`.',
+    outputFormat: 'Index of target if found, else -1.',
+    constraints: [
+      '1 <= nums.length <= 10^4',
+      '-10^4 < nums[i], target < 10^4',
+      'All integers in nums are unique and sorted in ascending order.'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'nums = [-1,0,3,5,9,12], target = 9',
+        output: '4',
+        explanation: '9 exists in nums and its index is 4.'
+      },
+      {
+        input: 'nums = [-1,0,3,5,9,12], target = 2',
+        output: '-1',
+        explanation: '2 does not exist in nums so return -1.'
+      }
+    ],
+    testCases: [
+      { input: '[-1,0,3,5,9,12]\n9', output: '4' },
+      { input: '[-1,0,3,5,9,12]\n2', output: '-1' }
+    ],
+    hiddenTestCases: [
+      { input: '[5]\n5', output: '0' },
+      { input: '[2,5]\n5', output: '1' }
+    ],
+    hints: [
+      'Maintain low and high pointers, checking mid = low + (high - low) / 2.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/s4DPM8ct1pI',
+    videoTitle: 'Binary Search - LeetCode 704 - O(log N) Explained',
+    channelName: 'NeetCode',
+    duration: '07:20',
+    videoKeyTakeaways: [
+      'Logarithmic search space reduction',
+      'Avoiding integer overflow with mid = low + (high - low) / 2',
+      'Loop invariant: low <= high'
+    ],
+    editorial: `### Standard Binary Search O(log N)
+
+Compare target with \`nums[mid]\`. If target is smaller, search left (\`high = mid - 1\`). If larger, search right (\`low = mid + 1\`).`,
+    starterTemplates: {
+      javascript: `function search(nums, target) {
+    // Write your code here
+    
+}`,
+      python: `def search(nums: list[int], target: int) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int search(std::vector<int>& nums, int target) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int search(int[] nums, int target) {
+        // Write your code here
+        return -1;
+    }
+}`,
+      go: `func search(nums []int, target int) int {
+    // Write your code here
+    return -1
+}`
+    }
+  },
+  {
+    id: 'climbing-stairs',
+    title: 'Climbing Stairs',
+    difficulty: 'Easy',
+    acceptanceRate: '52.3%',
+    category: 'Dynamic Programming',
+    frequency: 89,
+    popularity: 95,
+    solved: false,
+    companies: ['Amazon', 'Adobe', 'Apple', 'Google'],
+    statement: `You are climbing a staircase. It takes \`n\` steps to reach the top.
+
+Each time you can either climb \`1\` or \`2\` steps. In how many distinct ways can you climb to the top?`,
+    inputFormat: 'An integer `n` (number of stairs).',
+    outputFormat: 'Number of distinct ways (integer).',
+    constraints: [
+      '1 <= n <= 45'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'n = 2',
+        output: '2',
+        explanation: 'There are two ways: 1 step + 1 step, or 2 steps.'
+      },
+      {
+        input: 'n = 3',
+        output: '3',
+        explanation: 'Three ways: 1+1+1, 1+2, 2+1.'
+      }
+    ],
+    testCases: [
+      { input: '2', output: '2' },
+      { input: '3', output: '3' },
+      { input: '5', output: '8' }
+    ],
+    hiddenTestCases: [
+      { input: '1', output: '1' },
+      { input: '4', output: '5' }
+    ],
+    hints: [
+      'To reach step n, you can jump from n-1 (1 step) or n-2 (2 steps).',
+      'Ways(n) = Ways(n-1) + Ways(n-2).'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/Y0lT9Fck7qI',
+    videoTitle: 'Climbing Stairs - Dynamic Programming - LeetCode 70',
+    channelName: 'NeetCode',
+    duration: '10:20',
+    videoKeyTakeaways: [
+      'Fibonacci state transition',
+      'Bottom-up dynamic programming with two variables',
+      'O(N) time and O(1) space optimization'
+    ],
+    editorial: `### Bottom-Up DP (Fibonacci)
+
+\`dp[i] = dp[i-1] + dp[i-2]\`. Using two variables \`one\` and \`two\`, we iteratively compute the solution in O(N) time and O(1) space.`,
+    starterTemplates: {
+      javascript: `function climbStairs(n) {
+    // Write your code here
+    
+}`,
+      python: `def climb_stairs(n: int) -> int:
+    # Write your code here
+    pass`,
+      cpp: `class Solution {
+public:
+    int climbStairs(int n) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int climbStairs(int n) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func climbStairs(n int) int {
+    // Write your code here
+    return 0
+}`
+    }
+  },
+  {
+    id: 'coin-change',
+    title: 'Coin Change',
+    difficulty: 'Medium',
+    acceptanceRate: '42.1%',
+    category: 'Dynamic Programming',
+    frequency: 88,
+    popularity: 96,
+    solved: false,
+    companies: ['Amazon', 'Bloomberg', 'Goldman Sachs', 'Meta'],
+    statement: `You are given an integer array \`coins\` representing coins of different denominations and an integer \`amount\` representing a total amount of money.
+
+Return *the fewest number of coins that you need to make up that amount*. If that amount of money cannot be made up by any combination of the coins, return \`-1\`.
+
+You may assume that you have an infinite number of each kind of coin.`,
+    inputFormat: 'An array of integers `coins` and integer `amount`.',
+    outputFormat: 'Minimum number of coins (integer).',
+    constraints: [
+      '1 <= coins.length <= 12',
+      '1 <= coins[i] <= 2^31 - 1',
+      '0 <= amount <= 10^4'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'coins = [1,2,5], amount = 11',
+        output: '3',
+        explanation: '11 = 5 + 5 + 1 (3 coins total).'
+      },
+      {
+        input: 'coins = [2], amount = 3',
+        output: '-1',
+        explanation: 'Amount 3 cannot be formed.'
+      }
+    ],
+    testCases: [
+      { input: '[1,2,5]\n11', output: '3' },
+      { input: '[2]\n3', output: '-1' },
+      { input: '[1]\n0', output: '0' }
+    ],
+    hiddenTestCases: [
+      { input: '[186,419,83,408]\n6249', output: '20' }
+    ],
+    hints: [
+      'Use DP where dp[i] represents the min coins needed for amount i.',
+      'dp[i] = min(dp[i], 1 + dp[i - coin]).'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/H9bfqozjoqs',
+    videoTitle: 'Coin Change - Bottom Up DP - LeetCode 322',
+    channelName: 'NeetCode',
+    duration: '16:40',
+    videoKeyTakeaways: [
+      'Unbounded knapsack state relation',
+      'Bottom-up tabulation initialization with amount + 1',
+      'O(amount * len(coins)) complexity'
+    ],
+    editorial: `### Bottom-Up DP O(Amount * Coins)
+
+Initialize \`dp\` array of size \`amount + 1\` with infinity, \`dp[0] = 0\`. For each \`a\` from 1 to \`amount\`, for each \`c\` in \`coins\`: if \`a - c >= 0\`, \`dp[a] = min(dp[a], 1 + dp[a - c])\`.`,
+    starterTemplates: {
+      javascript: `function coinChange(coins, amount) {
+    // Write your code here
+    
+}`,
+      python: `def coin_change(coins: list[int], amount: int) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    int coinChange(std::vector<int>& coins, int amount) {
+        // Write your code here
+        
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        // Write your code here
+        return -1;
+    }
+}`,
+      go: `func coinChange(coins []int, amount int) int {
+    // Write your code here
+    return -1
+}`
+    }
+  },
+  {
+    id: 'number-of-islands',
+    title: 'Number of Islands',
+    difficulty: 'Medium',
+    acceptanceRate: '57.2%',
+    category: 'Graphs',
+    frequency: 93,
+    popularity: 99,
+    solved: false,
+    companies: ['Amazon', 'Google', 'Meta', 'Microsoft', 'Bloomberg'],
+    statement: `Given an \`m x n\` 2D binary grid \`grid\` which represents a map of \`'1'\`s (land) and \`'0'\`s (water), return *the number of islands*.
+
+An **island** is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.`,
+    inputFormat: 'A 2D array of string/character digits grid.',
+    outputFormat: 'Total number of islands (integer).',
+    constraints: [
+      'm == grid.length',
+      'n == grid[i].length',
+      '1 <= m, n <= 300',
+      'grid[i][j] is "0" or "1".'
+    ],
+    timeLimit: '1500ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
+        output: '1',
+        explanation: 'All lands are connected into 1 island.'
+      }
+    ],
+    testCases: [
+      { input: '[["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]', output: '1' },
+      { input: '[["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]]', output: '3' }
+    ],
+    hiddenTestCases: [
+      { input: '[["1"]]', output: '1' },
+      { input: '[["0"]]', output: '0' }
+    ],
+    hints: [
+      'Iterate through every cell. When you encounter land ("1"), trigger a BFS/DFS to mark all connected land as visited.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/pV2kpPD66nE',
+    videoTitle: 'Number of Islands - BFS / DFS Graph Traversal - LeetCode 200',
+    channelName: 'NeetCode',
+    duration: '19:10',
+    videoKeyTakeaways: [
+      'Connected components graph traversal',
+      'In-place grid sinking or visited set tracking',
+      'O(M * N) time and space complexity'
+    ],
+    editorial: `### BFS / DFS Flood Fill
+
+Iterate through every cell \`(r, c)\`. If \`grid[r][c] === '1'\`, increment island count and run BFS/DFS to sink all 4-directionally connected '1's to '0'.`,
+    starterTemplates: {
+      javascript: `function numIslands(grid) {
+    // Write your code here
+    
+}`,
+      python: `def num_islands(grid: list[list[str]]) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int numIslands(std::vector<std::vector<char>>& grid) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int numIslands(char[][] grid) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func numIslands(grid [][]byte) int {
+    // Write your code here
+    return 0
+}`
+    }
+  },
+  {
+    id: 'trapping-rain-water',
+    title: 'Trapping Rain Water',
+    difficulty: 'Hard',
+    acceptanceRate: '59.8%',
+    category: 'Two Pointers',
+    frequency: 90,
+    popularity: 98,
+    solved: false,
+    companies: ['Google', 'Amazon', 'Goldman Sachs', 'Meta'],
+    statement: `Given \`n\` non-negative integers representing an elevation map where the width of each bar is \`1\`, compute how much water it can trap after raining.`,
+    inputFormat: 'An array of non-negative integers `height`.',
+    outputFormat: 'Total units of trapped water (integer).',
+    constraints: [
+      'n == height.length',
+      '1 <= n <= 2 * 10^4',
+      '0 <= height[i] <= 10^5'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'height = [0,1,0,2,1,0,1,3,2,1,2,1]',
+        output: '6',
+        explanation: 'The elevation map traps 6 units of rain water.'
+      }
+    ],
+    testCases: [
+      { input: '[0,1,0,2,1,0,1,3,2,1,2,1]', output: '6' },
+      { input: '[4,2,0,3,2,5]', output: '9' }
+    ],
+    hiddenTestCases: [
+      { input: '[2,0,2]', output: '2' },
+      { input: '[3,0,0,2,0,4]', output: '10' }
+    ],
+    hints: [
+      'Water at index i is determined by min(maxLeft, maxRight) - height[i].',
+      'Use two pointers (left and right) moving inward.'
+    ],
+    videoUrl: 'https://www.youtube.com/embed/ZI2z5pq0TqA',
+    videoTitle: 'Trapping Rain Water - Two Pointer Optimal O(1) Space - LeetCode 42',
+    channelName: 'NeetCode',
+    duration: '18:30',
+    videoKeyTakeaways: [
+      'Bottleneck bounded by min(leftMax, rightMax)',
+      'Two pointer inward contraction eliminating array memory',
+      'O(N) time and O(1) space'
+    ],
+    editorial: `### Two Pointers O(N) Time, O(1) Space
+
+Maintain \`left\`, \`right\`, \`maxLeft\`, and \`maxRight\`. Shift the pointer with the smaller max boundary inward, accumulating water as \`max - height[pointer]\`.`,
+    starterTemplates: {
+      javascript: `function trap(height) {
+    // Write your code here
+    
+}`,
+      python: `def trap(height: list[int]) -> int:
+    # Write your code here
+    pass`,
+      cpp: `#include <vector>
+#include <algorithm>
+
+class Solution {
+public:
+    int trap(std::vector<int>& height) {
+        // Write your code here
+        
+    }
+};`,
+      java: `class Solution {
+    public int trap(int[] height) {
+        // Write your code here
+        return 0;
+    }
+}`,
+      go: `func trap(height []int) int {
+    // Write your code here
+    return 0
 }`
     }
   }

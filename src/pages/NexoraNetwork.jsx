@@ -44,7 +44,7 @@ export default function NexoraNetwork({ user }) {
             <span>Nexora Network</span>
           </h1>
           <p className="text-xs text-gray-400 mt-1 font-medium">
-            LUMIXORA's premium academic networking sandbox. Connect, chat, write blogs, and build study cohorts.
+            VYOMRA's premium academic networking sandbox. Connect, chat, write blogs, and build study cohorts.
           </p>
         </div>
 

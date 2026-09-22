@@ -223,11 +223,14 @@ export function calculateDeterministicTwinPredictions(history) {
   const studyHoursPerWeek = (totalStudyMinutes / 60) * (7 / 14); // relative to 2 weeks
   const consistencyScore = Math.min(100, Math.round((studyHoursPerWeek / (goals.studyHoursGoal || 4)) * 70 + (avgFocus * 0.3)));
   
-  // Placement Readiness
-  // Based on coding questions (PYQs solved + DSA sessions)
-  const dsaSessions = sessions.filter(s => s.subjectId === 'ds101').length;
-  const solvedPyqs = pyqs.filter(p => p.status === 'Solved').length;
-  const placementReadiness = Math.min(100, Math.round((solvedPyqs * 15) + (dsaSessions * 8) + (quizAccuracy * 0.2)));
+  // Placement Readiness (Unified Multi-Factor Engine - 0% if no activities done)
+  let placementReadiness = 0;
+  if (solvedPyqs > 0 || dsaSessions > 0 || quizzes.length > 0 || completedAssignments > 0) {
+    const codingBonus = Math.min(45, (solvedPyqs * 8) + (dsaSessions * 6) + (completedAssignments * 5));
+    const testBonus = Math.min(35, quizAccuracy > 0 ? Math.round((quizAccuracy / 100) * 25) : (quizzes.length > 0 ? 15 : 0));
+    const consistencyBonus = Math.min(20, Math.round(consistencyScore * 0.2));
+    placementReadiness = Math.min(100, Math.round(codingBonus + testBonus + consistencyBonus));
+  }
 
   // Burnout Risk
   // High study hours + high focus score - low sleep / notes ratio
@@ -323,7 +326,7 @@ export async function generateAIPredictions(userId, history) {
   }
 
   try {
-    const systemPrompt = `You are Lumixora Future Twin™ Engine. Analyze the student's historical academic data and output a structured analysis.
+    const systemPrompt = `You are Vyomra Future Twin™ Engine. Analyze the student's historical academic data and output a structured analysis.
 You MUST output ONLY a valid JSON object matching this structure exactly. No markdown, no ticks.
 {
   "predictedCGPA": 8.75,

@@ -1127,7 +1127,7 @@ Please provide:
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Lumixora AI Academic Engine"
+                      placeholder="e.g. Vyomra AI Academic Engine"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-[#00f5d4]"

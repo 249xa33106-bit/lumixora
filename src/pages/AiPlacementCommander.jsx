@@ -4,7 +4,8 @@ import {
   ShieldAlert, CheckSquare, Lightbulb, Database, Send, Activity, BarChart2,
   FileText, Briefcase, ChevronRight, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle,
   Play, Lock, Unlock, Mic, MicOff, Volume2, VolumeX, Building, Plus, Trash2,
-  Search, ExternalLink, Sliders, Layers, HelpCircle, Check, X, ShieldCheck
+  Search, ExternalLink, Sliders, Layers, HelpCircle, Check, X, ShieldCheck,
+  TrendingUp, TrendingDown, ArrowUpRight, Compass, Download, Filter
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { useToast } from '../context/ToastContext';
@@ -200,12 +201,109 @@ const CODING_PROBLEMS = [
   }
 ];
 
+// Industry Benchmark Profiles for Advanced Skill Gap Analyzer
+const BENCHMARK_TIERS = [
+  {
+    id: 'tier1',
+    name: 'Tier-1 Product & FAANG (Google, Microsoft, Amazon, Atlassian)',
+    badge: 'Tier-1 FAANG / Product',
+    ctc: '₹26 - ₹55 LPA',
+    color: 'from-blue-600 to-indigo-600',
+    benchmarks: {
+      dsa: 85,
+      coding: 85,
+      coreCs: 80,
+      aptitude: 75,
+      projects: 80,
+      resume: 90,
+      interview: 85,
+      communication: 80
+    },
+    keyTopics: [
+      { name: 'Graphs & Dynamic Programming', status: 'critical', desc: 'Dijkstra, Topological Sort, 2D Memoization, Tree DP' },
+      { name: 'System Design & Scalability', status: 'critical', desc: 'Rate Limiters, Distributed Caching (Redis), Microservices, Sharding' },
+      { name: 'OS Concurrency & Multithreading', status: 'high', desc: 'Deadlocks, Mutex Locks, Thread Pools, Semaphores' },
+      { name: 'Database Query Optimization', status: 'high', desc: 'B+ Tree Indexing, ACID Isolation, Normalization' }
+    ]
+  },
+  {
+    id: 'fintech',
+    name: 'FinTech & Quant Firms (Goldman Sachs, Morgan Stanley, DE Shaw)',
+    badge: 'FinTech & Quantitative',
+    ctc: '₹28 - ₹60 LPA',
+    color: 'from-amber-600 to-yellow-600',
+    benchmarks: {
+      dsa: 90,
+      coding: 85,
+      coreCs: 90,
+      aptitude: 90,
+      projects: 75,
+      resume: 85,
+      interview: 85,
+      communication: 80
+    },
+    keyTopics: [
+      { name: 'Combinatorics & Probability', status: 'critical', desc: 'Bayes Theorem, Expected Value, Matrix Exponentiation' },
+      { name: 'Low-Latency Memory Architecture', status: 'critical', desc: 'Cache Locality, Pointer Arithmetic, Zero-Copy' },
+      { name: 'Advanced Trees & Heaps', status: 'high', desc: 'Segment Trees, Trie, Priority Queues, Binary Lifting' },
+      { name: 'Transactional Integrity', status: 'high', desc: 'Two-Phase Commit, WAL, Write Optimization' }
+    ]
+  },
+  {
+    id: 'startup',
+    name: 'High-Growth Tech Unicorns (Razorpay, Swiggy, Zerodha, CRED)',
+    badge: 'Unicorn Product Startups',
+    ctc: '₹18 - ₹36 LPA',
+    color: 'from-purple-600 to-pink-600',
+    benchmarks: {
+      dsa: 75,
+      coding: 90,
+      coreCs: 80,
+      aptitude: 70,
+      projects: 90,
+      resume: 85,
+      interview: 85,
+      communication: 85
+    },
+    keyTopics: [
+      { name: 'Production Backend Architecture', status: 'critical', desc: 'REST/gRPC APIs, Redis Caching, RabbitMQ / Kafka' },
+      { name: 'Cloud & Containerization', status: 'critical', desc: 'Docker, CI/CD Actions, Kubernetes Basics, AWS S3' },
+      { name: 'Frontend State Management', status: 'high', desc: 'React Hooks, Redux/Zustand, Next.js SSR, Tailwind' },
+      { name: 'Defensible Production Projects', status: 'high', desc: 'Live deployed full-stack web apps with telemetry' }
+    ]
+  },
+  {
+    id: 'service',
+    name: 'Premier Service MNCs (TCS Digital, Infosys PP, Accenture FSE)',
+    badge: 'Premier Service MNCs',
+    ctc: '₹7 - ₹12 LPA',
+    color: 'from-emerald-600 to-teal-600',
+    benchmarks: {
+      dsa: 70,
+      coding: 75,
+      coreCs: 75,
+      aptitude: 85,
+      projects: 70,
+      resume: 80,
+      interview: 80,
+      communication: 80
+    },
+    keyTopics: [
+      { name: 'Cognitive & Speed Quantitative Drills', status: 'critical', desc: 'Time & Work, Pipes & Cisterns, Syllogisms, Data Interpretation' },
+      { name: 'Core Object Oriented Programming', status: 'critical', desc: 'Polymorphism, Inheritance, Exception Handling in Java/C++' },
+      { name: 'Basic SQL & Data Manipulation', status: 'high', desc: 'Joins, Group By, Subqueries, Primary/Foreign Keys' },
+      { name: 'Communication & Problem Solving', status: 'high', desc: 'Behavioral Viva, Situation Reaction Tests, Agile Basics' }
+    ]
+  }
+];
+
 export default function AiPlacementCommander({ user, setActiveTab }) {
   const { addToast } = useToast();
   const { awardXP } = useGamification();
 
   // Active Navigation Module inside Placement OS
   const [activeModule, setActiveModule] = useState('overview');
+  const [selectedBenchmarkTier, setSelectedBenchmarkTier] = useState('tier1');
 
   // Onboarding Wizard State
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
@@ -298,7 +396,7 @@ export default function AiPlacementCommander({ user, setActiveTab }) {
   const [isDefendingResume, setIsDefendingResume] = useState(false);
 
   // Module 9: Project Defense Arena State
-  const [projectName, setProjectName] = useState('Lumixora Distributed RAG Vector Engine');
+  const [projectName, setProjectName] = useState('Vyomra Distributed RAG Vector Engine');
   const [projectTechStack, setProjectTechStack] = useState('Java 21, FastAPI, Qdrant Vector DB, PostgreSQL, Docker');
   const [projectDescription, setProjectDescription] = useState('Architected a high-throughput vector search pipeline with Redis LRU caching layer handling 5,000 RPS at <80ms latency.');
   const [isGeneratingProjectViva, setIsGeneratingProjectViva] = useState(false);
@@ -1010,7 +1108,7 @@ Analyze this code and return ONLY a valid JSON object:
   return (
     <div className="space-y-8 animate-fade-in pb-32 text-left">
 
-      {/* HERO BANNER - LUMIXORA PLACEMENT TWIN COMMANDER */}
+      {/* HERO BANNER - VYOMRA PLACEMENT TWIN COMMANDER */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0b0e1b] via-[#14182f] to-[#0a0c16] p-6 md:p-10 border border-white/10 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-600/20 via-purple-600/15 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse"></div>
 
@@ -1018,7 +1116,7 @@ Analyze this code and return ONLY a valid JSON object:
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-black tracking-widest uppercase mb-3">
               <Cpu className="w-3.5 h-3.5 text-blue-400" />
-              <span>LUMIXORA PLACEMENT TWIN™</span>
+              <span>VYOMRA PLACEMENT TWIN™</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
               One AI. Your Entire <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">Placement War</span>
@@ -1048,6 +1146,7 @@ Analyze this code and return ONLY a valid JSON object:
         <div className="mt-8 flex flex-wrap gap-2 pt-6 border-t border-white/10">
           {[
             { id: 'overview', label: '📊 Twin Overview', icon: BarChart2 },
+            { id: 'skill_gap', label: '🎯 Advanced Skill Gap', icon: Target },
             { id: 'twin_engine', label: '🧬 Placement Twin', icon: Brain },
             { id: 'daily_mission', label: '🎯 Daily Mission', icon: Target },
             { id: 'skill_graph', label: '🕸️ Skill Graph', icon: Layers },
@@ -1253,6 +1352,310 @@ Analyze this code and return ONLY a valid JSON object:
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* MODULE: ADVANCED SKILL GAP ANALYZER */}
+      {activeModule === 'skill_gap' && (
+        <div className="space-y-6 animate-fade-in text-white">
+          {/* Header Card */}
+          <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 bg-black/50 space-y-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-black uppercase mb-2">
+                  <Target className="w-3.5 h-3.5" />
+                  <span>INDUSTRY BENCHMARK SKILL GAP ENGINE</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black text-white">Advanced Placement Skill Gap Analysis</h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Comparative telemetry audit comparing your current verified competencies against real industry hiring bars for <strong className="text-white">{targetRoleObj.name}</strong>.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={() => {
+                    const activeTier = BENCHMARK_TIERS.find(t => t.id === selectedBenchmarkTier) || BENCHMARK_TIERS[0];
+                    window.print();
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/10 flex items-center gap-2 cursor-pointer transition-all shadow-sm"
+                  title="Print or Export Skill Gap Audit"
+                >
+                  <Download className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Export Gap Audit (PDF)</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveModule('daily_mission')}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white text-xs font-black flex items-center gap-2 cursor-pointer transition-all shadow-lg"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Bridge Gaps via Daily Missions</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Target Tier Selector Tabs */}
+            <div className="space-y-2 pt-2 border-t border-white/10">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Select Industry Target Benchmark Tier:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {BENCHMARK_TIERS.map(tier => {
+                  const isSelected = selectedBenchmarkTier === tier.id;
+                  return (
+                    <button
+                      key={tier.id}
+                      onClick={() => setSelectedBenchmarkTier(tier.id)}
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                        isSelected 
+                          ? 'bg-gradient-to-br from-white/15 to-white/5 border-blue-500 shadow-lg shadow-blue-500/20 scale-[1.01]' 
+                          : 'bg-black/40 border-white/10 hover:bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 p-1 bg-blue-500 rounded-full text-black">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                      )}
+                      <span className="text-[10px] font-black uppercase text-blue-400 tracking-wider block">{tier.badge}</span>
+                      <h4 className="text-sm font-black text-white mt-1 line-clamp-1">{tier.name.split('(')[0]}</h4>
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-[11px]">
+                        <span className="text-gray-400 font-medium">Package:</span>
+                        <span className="font-bold text-emerald-400">{tier.ctc}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic Gap Metric Summary Banner */}
+          {(() => {
+            const currentTier = BENCHMARK_TIERS.find(t => t.id === selectedBenchmarkTier) || BENCHMARK_TIERS[0];
+            const nameMap = {
+              dsa: 'Data Structures & Algorithms',
+              coding: 'Coding Speed & Syntax',
+              coreCs: 'Core CS (OS, DBMS, CN)',
+              aptitude: 'Aptitude & Logical Reasoning',
+              projects: 'Full-Stack Project Portfolio',
+              resume: 'ATS Resume Defensibility',
+              interview: 'Technical Interview Defense',
+              communication: 'Communication & Behavioral'
+            };
+
+            const comparisons = Object.keys(currentTier.benchmarks).map(key => {
+              const current = twinScores[key] ?? 0;
+              const target = currentTier.benchmarks[key];
+              const deficit = target - current;
+              return {
+                key,
+                name: nameMap[key] || key,
+                current,
+                target,
+                deficit,
+                status: deficit <= 0 ? 'met' : deficit <= 20 ? 'moderate' : 'critical'
+              };
+            });
+
+            const criticalGaps = comparisons.filter(c => c.status === 'critical');
+            const totalDeficitSum = comparisons.reduce((acc, c) => acc + Math.max(0, c.deficit), 0);
+            const avgDeficit = Math.round(totalDeficitSum / comparisons.length);
+            const highestDeficit = [...comparisons].sort((a, b) => b.deficit - a.deficit)[0];
+            const avgBenchmark = Math.round(Object.values(currentTier.benchmarks).reduce((a, b) => a + b, 0) / comparisons.length);
+
+            return (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="p-5 rounded-2xl bg-black/40 border border-red-500/30 space-y-1">
+                    <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Critical Skill Gaps
+                    </span>
+                    <h4 className="text-2xl font-black text-red-400">{criticalGaps.length} <span className="text-xs text-gray-400 font-normal">/ {comparisons.length} Dimensions</span></h4>
+                    <span className="text-xs text-gray-300 block font-medium">Gap Deficit &gt; 20% from Hiring Bar</span>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-black/40 border border-amber-500/30 space-y-1">
+                    <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
+                      <TrendingDown className="w-3.5 h-3.5" /> Average Readiness Deficit
+                    </span>
+                    <h4 className="text-2xl font-black text-amber-400">-{avgDeficit}%</h4>
+                    <span className="text-xs text-gray-300 block font-medium">Below {currentTier.badge} Benchmark ({avgBenchmark}%)</span>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-black/40 border border-blue-500/30 space-y-1">
+                    <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
+                      <ShieldAlert className="w-3.5 h-3.5" /> Primary Remediation Focus
+                    </span>
+                    <h4 className="text-base font-black text-blue-400 truncate">{highestDeficit?.name || 'DSA'}</h4>
+                    <span className="text-xs text-gray-300 block font-medium">{highestDeficit?.deficit > 0 ? `-${highestDeficit.deficit}% Deficit` : 'All Bars Satisfied'}</span>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-black/40 border border-purple-500/30 space-y-1">
+                    <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider block flex items-center gap-1.5">
+                      <Compass className="w-3.5 h-3.5" /> Est. Time to Bridge Gap
+                    </span>
+                    <h4 className="text-2xl font-black text-purple-400">{Math.max(2, Math.ceil(totalDeficitSum / 25))} Weeks</h4>
+                    <span className="text-xs text-gray-300 block font-medium">With 45-60 min daily targeted practice</span>
+                  </div>
+                </div>
+
+                {/* Granular Comparative Matrix */}
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 bg-black/40 space-y-6">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                      <h3 className="text-xl font-black text-white">Comparative Competency Matrix</h3>
+                      <p className="text-xs text-gray-400 mt-0.5">Real-time candidate telemetry score vs. required industry benchmark bar.</p>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs font-bold">
+                      <span className="flex items-center gap-1.5 text-gray-300"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Your Score</span>
+                      <span className="flex items-center gap-1.5 text-gray-300"><span className="w-3 h-3 rounded-full bg-purple-400 inline-block"></span> Benchmark Bar</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {comparisons.map(item => {
+                      const isMet = item.deficit <= 0;
+                      const isCritical = item.deficit > 20;
+
+                      return (
+                        <div key={item.key} className="p-5 rounded-2xl bg-black/60 border border-white/10 hover:border-white/20 transition-all space-y-3">
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <h4 className="text-sm font-black text-white">{item.name}</h4>
+                              <span className="text-[11px] text-gray-400">Target Bar: <strong className="text-purple-300">{item.target}%</strong></span>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
+                              isMet 
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                                : isCritical 
+                                ? 'bg-red-500/10 border-red-500/30 text-red-400' 
+                                : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                            }`}>
+                              {isMet ? '🟢 Bar Satisfied' : isCritical ? `🔴 Critical (-${item.deficit}%)` : `🟡 Moderate (-${item.deficit}%)`}
+                            </span>
+                          </div>
+
+                          {/* Dual Visual Bar */}
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-[11px] font-bold">
+                              <span className="text-gray-400">Candidate Score: <span className={item.current > 0 ? 'text-blue-400' : 'text-gray-500'}>{item.current}%</span></span>
+                              <span className="text-purple-300">Target: {item.target}%</span>
+                            </div>
+                            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
+                              {/* Target Marker */}
+                              <div 
+                                className="absolute top-0 bottom-0 w-1 bg-purple-400 z-10" 
+                                style={{ left: `${item.target}%` }}
+                                title={`Target Benchmark: ${item.target}%`}
+                              />
+                              {/* Current Fill */}
+                              <div 
+                                className={`h-full rounded-full transition-all duration-700 ${
+                                  isMet 
+                                    ? 'bg-gradient-to-r from-blue-500 to-emerald-400' 
+                                    : isCritical 
+                                    ? 'bg-gradient-to-r from-red-500 to-amber-500' 
+                                    : 'bg-gradient-to-r from-blue-500 to-amber-400'
+                                }`} 
+                                style={{ width: `${Math.min(100, item.current)}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Bridge Gap Action Button */}
+                          <div className="pt-2 flex justify-end">
+                            <button
+                              onClick={() => {
+                                if (item.key === 'dsa' || item.key === 'coding') setActiveModule('coding_arena');
+                                else if (item.key === 'aptitude') setActiveModule('aptitude_arena');
+                                else if (item.key === 'interview' || item.key === 'communication') setActiveModule('mock_interview');
+                                else if (item.key === 'resume') setActiveModule('resume_defense');
+                                else if (item.key === 'projects') setActiveModule('project_defense');
+                                else setActiveModule('daily_mission');
+                              }}
+                              className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer transition-colors group"
+                            >
+                              <span>Bridge This Deficit</span>
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* High-Yield Missing Concepts for Selected Tier */}
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 bg-black/40 space-y-5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-white">Target High-Yield Concept Checklist for {currentTier.badge}</h3>
+                      <p className="text-xs text-gray-400">Essential core topics demanded in technical rounds for this company tier.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {currentTier.keyTopics.map((topic, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                            {topic.name}
+                          </h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                            topic.status === 'critical' ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
+                          }`}>
+                            {topic.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400">{topic.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4-Week Fast-Track Remediation Roadmap */}
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 bg-black/40 space-y-6">
+                  <div>
+                    <h3 className="text-xl font-black text-white flex items-center gap-2">
+                      <Compass className="w-5 h-5 text-purple-400" />
+                      <span>4-Week Fast-Track Remediation Roadmap</span>
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">Structured 4-sprint trajectory to eliminate all critical skill deficits.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="p-5 rounded-2xl bg-black/50 border border-white/10 space-y-2">
+                      <span className="text-[10px] font-black text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded uppercase">Sprint 1 (Week 1)</span>
+                      <h4 className="text-sm font-bold text-white">Foundations & Patterns</h4>
+                      <p className="text-xs text-gray-400">Two-Pointers, HashMaps, Quant Speed Math, and SQL Aggregations.</p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-black/50 border border-white/10 space-y-2">
+                      <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded uppercase">Sprint 2 (Week 2)</span>
+                      <h4 className="text-sm font-bold text-white">Algorithms & Core CS</h4>
+                      <p className="text-xs text-gray-400">Trees, Binary Search, DBMS ACID/Indexes, OS Thread Concurrency.</p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-black/50 border border-white/10 space-y-2">
+                      <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded uppercase">Sprint 3 (Week 3)</span>
+                      <h4 className="text-sm font-bold text-white">Systems & Projects</h4>
+                      <p className="text-xs text-gray-400">Microservices, Redis Caching, Dynamic Programming, and Project Defense.</p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-black/50 border border-white/10 space-y-2">
+                      <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded uppercase">Sprint 4 (Week 4)</span>
+                      <h4 className="text-sm font-bold text-white">Mock Bar Raiser & Speed</h4>
+                      <p className="text-xs text-gray-400">Full AI Mock Interviews, Company Placement Simulators, and ATS Polish.</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -1957,7 +2360,7 @@ Analyze this code and return ONLY a valid JSON object:
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="e.g. Lumixora Distributed RAG Vector Engine"
+                  placeholder="e.g. Vyomra Distributed RAG Vector Engine"
                   className="w-full bg-black/60 border border-white/15 rounded-xl p-3 text-xs text-white outline-none focus:border-fuchsia-500/50"
                 />
               </div>
@@ -2436,7 +2839,7 @@ Analyze this code and return ONLY a valid JSON object:
           <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/20 bg-[#0c0f1d] max-w-xl w-full space-y-6 shadow-2xl">
             <div className="flex justify-between items-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-black uppercase">
-                ⚙ Lumixora Placement Twin Onboarding
+                ⚙ Vyomra Placement Twin Onboarding
               </div>
               <button onClick={() => setShowOnboardingModal(false)} className="text-gray-400 hover:text-white cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
@@ -2468,7 +2871,7 @@ Analyze this code and return ONLY a valid JSON object:
                 onClick={() => {
                   setShowOnboardingModal(false);
                   recalculateWeightedReadiness(twinScores, targetRoleObj);
-                  addToast({ message: '✨ Lumixora Placement Twin Recalibrated!', type: 'success' });
+                  addToast({ message: '✨ Vyomra Placement Twin Recalibrated!', type: 'success' });
                 }}
                 className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-xs cursor-pointer shadow-xl"
               >

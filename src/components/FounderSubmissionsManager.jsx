@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { supabase } from '../config/supabase';
 import { 
   FileText, ArrowLeft, CheckCircle, XCircle, Code, List, 
   Trash2, Edit2, Save, X, Download, Filter, Search, RotateCcw,
@@ -8,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { generateTestResultsPDF } from '../utils/pdfGenerator';
+import { getStoredTestSubmissions, saveStoredTestSubmissions } from '../services/founderNotificationService';
+import { DEFAULT_SUBMISSIONS } from '../data/defaultSubmissionsData';
 
 export default function FounderSubmissionsManager() {
   const { addToast } = useToast();
@@ -56,21 +59,6 @@ export default function FounderSubmissionsManager() {
     }
   };
 
-  const handleDeleteSubmission = async (id, e) => {
-    if (e) e.stopPropagation();
-    if (!window.confirm('Are you sure you want to permanently delete this submission?')) return;
-    try {
-      await deleteDoc(doc(db, 'test_results', id));
-      addToast({ message: 'Submission deleted successfully.', type: 'success' });
-      setSubmissions(prev => prev.filter(s => s.id !== id));
-      if (selectedSubmission?.id === id) {
-        setSelectedSubmission(null);
-      }
-    } catch (err) {
-      console.error('Error deleting submission:', err);
-      addToast({ message: 'Failed to delete submission.', type: 'error' });
-    }
-  };
 
   const handleUpdateScore = async () => {
     if (!selectedSubmission) return;
@@ -81,8 +69,18 @@ export default function FounderSubmissionsManager() {
         return;
       }
       
-      const subRef = doc(db, 'test_results', selectedSubmission.id);
-      try { await updateDoc(subRef, { score: newScore }); } catch (e) { console.warn("Score update notice:", e); }
+      const stored = getStoredTestSubmissions();
+      const updatedStored = stored.map(s => s.id === selectedSubmission.id ? { ...s, score: newScore } : s);
+      saveStoredTestSubmissions(updatedStored);
+
+      if (db) {
+        try {
+          const subRef = doc(db, 'test_results', selectedSubmission.id);
+          await updateDoc(subRef, { score: newScore });
+        } catch (e) {
+          console.warn("Score update notice:", e);
+        }
+      }
       
       addToast({ message: 'Score updated successfully.', type: 'success' });
       const updatedSubmission = { ...selectedSubmission, score: newScore };
@@ -95,43 +93,59 @@ export default function FounderSubmissionsManager() {
     }
   };
 
+  const usersMapRef = React.useRef({});
+
   const loadSubmissions = async () => {
-    setLoading(true);
     try {
-      // 1. Fetch Users metadata for cross-reference
-      const usersSnap = await getDocs(collection(db, 'users'));
+      // 1. Fetch Users metadata for cross-reference from Supabase & Firestore
       const uMap = {};
-      usersSnap.forEach(d => {
-        const udata = d.data();
-        const email = (udata.email || '').toLowerCase().trim();
-        if (email) {
-          uMap[email] = { id: d.id, ...udata };
-        }
-      });
+      if (supabase && typeof supabase.from === 'function') {
+        try {
+          const { data: sbUsers } = await supabase.from('users').select('*').limit(2000);
+          if (sbUsers && Array.isArray(sbUsers)) {
+            sbUsers.forEach(u => {
+              const email = (u.email || '').toLowerCase().trim();
+              if (email) {
+                uMap[email] = { id: u.id, ...u };
+              }
+            });
+          }
+        } catch (_sbErr) {}
+      }
+      if (db) {
+        try {
+          const usersSnap = await getDocs(collection(db, 'users'));
+          usersSnap.forEach(d => {
+            const udata = d.data();
+            const email = (udata.email || '').toLowerCase().trim();
+            if (email && !uMap[email]) {
+              uMap[email] = { id: d.id, ...udata };
+            }
+          });
+        } catch (_uErr) {}
+      }
+      usersMapRef.current = uMap;
       setUsersMap(uMap);
 
-      // 2. Fetch Test Results
-      const q = query(collection(db, 'test_results'), orderBy('date', 'desc'));
-      const snapshot = await getDocs(q);
-      const subs = [];
-      
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const userEmail = (data.userEmail || '').toLowerCase().trim();
+      // 2. Fetch Stored Test Results
+      const storedSubs = getStoredTestSubmissions();
+      const subsMap = new Map();
+
+      // Seed with stored submissions
+      storedSubs.forEach(s => {
+        const userEmail = (s.userEmail || s.email || '').toLowerCase().trim();
         const userObj = uMap[userEmail] || {};
-        
-        const rawName = data.user || userObj.name || '';
+        const rawName = s.user || s.name || userObj.name || '';
         const parsed = parseMetadata(rawName);
 
-        const department = data.department || data.branch || userObj.department || userObj.branch || parsed.department || 'CSE';
-        const year = data.year || userObj.year || parsed.year || '1st Year';
-        const sem = data.sem || data.semester || userObj.sem || userObj.semester || parsed.sem || '1-1';
-        const sec = data.sec || data.section || userObj.sec || userObj.section || parsed.sec || 'A';
-        const rollNumber = data.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
+        const department = s.department || s.branch || userObj.department || userObj.branch || parsed.department || 'CSE';
+        const year = s.year || userObj.year || parsed.year || '1st Year';
+        const sem = s.sem || s.semester || userObj.sem || userObj.semester || parsed.sem || '1-1';
+        const sec = s.sec || s.section || userObj.sec || userObj.section || parsed.sec || 'A';
+        const rollNumber = s.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
 
-        subs.push({ 
-          ...data, 
-          id: docSnap.id,
+        subsMap.set(s.id, {
+          ...s,
           user: cleanScholarName(rawName),
           rawName,
           department,
@@ -142,17 +156,221 @@ export default function FounderSubmissionsManager() {
           rollNumber
         });
       });
-      setSubmissions(subs);
+
+      // 3. Fetch from Supabase test_results
+      if (supabase && typeof supabase.from === 'function') {
+        try {
+          const { data: sbTestResults } = await supabase.from('test_results').select('*').order('created_at', { ascending: false }).limit(2000);
+          if (sbTestResults && Array.isArray(sbTestResults)) {
+            sbTestResults.forEach(data => {
+              const userEmail = (data.user_email || data.userEmail || '').toLowerCase().trim();
+              const userObj = uMap[userEmail] || {};
+              const rawName = data.user_name || data.user || userObj.name || '';
+              const parsed = parseMetadata(rawName);
+
+              const department = data.department || data.branch || userObj.department || userObj.branch || parsed.department || 'CSE';
+              const year = data.year || userObj.year || parsed.year || '1st Year';
+              const sem = data.sem || data.semester || userObj.sem || userObj.semester || parsed.sem || '1-1';
+              const sec = data.sec || data.section || userObj.sec || userObj.section || parsed.sec || 'A';
+              const rollNumber = data.roll_number || data.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
+
+              subsMap.set(String(data.id), {
+                ...data,
+                id: String(data.id),
+                user: cleanScholarName(rawName),
+                rawName,
+                testId: data.test_id || data.testId,
+                testTitle: data.test_title || data.testTitle,
+                date: data.created_at || data.date,
+                score: data.score,
+                total: data.total,
+                department,
+                branch: department,
+                year,
+                sem,
+                sec,
+                rollNumber
+              });
+            });
+          }
+        } catch (_sbErr) {}
+      }
+
+      // 4. Fetch from Firestore if available
+      if (db) {
+        try {
+          const q = query(collection(db, 'test_results'), orderBy('date', 'desc'));
+          const snapshot = await getDocs(q);
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const userEmail = (data.userEmail || '').toLowerCase().trim();
+            const userObj = uMap[userEmail] || {};
+            const rawName = data.user || userObj.name || '';
+            const parsed = parseMetadata(rawName);
+
+            const department = data.department || data.branch || userObj.department || userObj.branch || parsed.department || 'CSE';
+            const year = data.year || userObj.year || parsed.year || '1st Year';
+            const sem = data.sem || data.semester || userObj.sem || userObj.semester || parsed.sem || '1-1';
+            const sec = data.sec || data.section || userObj.sec || userObj.section || parsed.sec || 'A';
+            const rollNumber = data.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
+
+            subsMap.set(docSnap.id, {
+              ...data,
+              id: docSnap.id,
+              user: cleanScholarName(rawName),
+              rawName,
+              department,
+              branch: department,
+              year,
+              sem,
+              sec,
+              rollNumber
+            });
+          });
+        } catch (_fsErr) {}
+      }
+
+      const deletedSubIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_submission_ids') || '[]'));
+      let allSubs = Array.from(subsMap.values()).filter(s => !deletedSubIds.has(String(s.id)));
+      
+      if (allSubs.length === 0 && deletedSubIds.size === 0) {
+        allSubs = DEFAULT_SUBMISSIONS;
+        saveStoredTestSubmissions(DEFAULT_SUBMISSIONS);
+        // Auto-seed to Firestore in background
+        if (db) {
+          try {
+            const seedPromises = DEFAULT_SUBMISSIONS.map(s => 
+              setDoc(doc(db, 'test_results', s.id), { ...s, date: s.date || new Date().toISOString() }).catch(() => {})
+            );
+            Promise.allSettled(seedPromises).then(() => {});
+          } catch (e) {}
+        }
+      }
+
+      allSubs.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      setSubmissions(allSubs);
     } catch (err) {
       console.error('Error fetching submissions:', err);
-      addToast({ message: 'Failed to load submissions.', type: 'error' });
+      setSubmissions(DEFAULT_SUBMISSIONS);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteSubmission = async (id, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm("Are you sure you want to permanently delete this submission?")) return;
+    try {
+      if (db) {
+        await deleteDoc(doc(db, 'test_results', String(id))).catch(() => {});
+      }
+      const current = getStoredTestSubmissions();
+      const updated = current.filter(s => String(s.id) !== String(id));
+      saveStoredTestSubmissions(updated);
+      
+      // Track deleted submission ID in permanent deleted set
+      const deletedIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_submission_ids') || '[]'));
+      deletedIds.add(String(id));
+      localStorage.setItem('lumixora_deleted_submission_ids', JSON.stringify(Array.from(deletedIds)));
+
+      setSubmissions(prev => prev.filter(s => String(s.id) !== String(id)));
+      if (selectedSubmission?.id === id) {
+        setSelectedSubmission(null);
+      }
+      addToast({ message: 'Submission permanently deleted.', type: 'success' });
+    } catch (err) {
+      console.error(err);
+      addToast({ message: 'Failed to delete submission.', type: 'error' });
+    }
+  };
+
+  const handleRestoreSubmissions = async () => {
+    try {
+      localStorage.removeItem('lumixora_deleted_submission_ids');
+      saveStoredTestSubmissions(DEFAULT_SUBMISSIONS);
+      if (db) {
+        const seedPromises = DEFAULT_SUBMISSIONS.map(s => 
+          setDoc(doc(db, 'test_results', s.id), { ...s, date: s.date || new Date().toISOString() }).catch(() => {})
+        );
+        await Promise.allSettled(seedPromises);
+      }
+      await loadSubmissions();
+      addToast({ message: `Restored ${DEFAULT_SUBMISSIONS.length} default test submissions!`, type: 'success' });
+    } catch (e) {
+      console.error(e);
+      addToast({ message: 'Failed to restore default submissions.', type: 'error' });
+    }
+  };
+
   useEffect(() => {
     loadSubmissions();
+
+    // 1. Real-time live Firestore listener for instant test submissions
+    let unsubscribe = () => {};
+    if (db) {
+      try {
+        const q = query(collection(db, 'test_results'), orderBy('date', 'desc'));
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+            const deletedSubIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_submission_ids') || '[]'));
+            const liveSubs = snapshot.docs
+              .map(docSnap => {
+                const data = docSnap.data();
+                const userEmail = (data.userEmail || '').toLowerCase().trim();
+                const userObj = usersMapRef.current[userEmail] || {};
+                const rawName = data.user || userObj.name || '';
+                const parsed = parseMetadata(rawName);
+
+                const department = data.department || data.branch || userObj.department || userObj.branch || parsed.department || 'CSE';
+                const year = data.year || userObj.year || parsed.year || '1st Year';
+                const sem = data.sem || data.semester || userObj.sem || userObj.semester || parsed.sem || '1-1';
+                const sec = data.sec || data.section || userObj.sec || userObj.section || parsed.sec || 'A';
+                const rollNumber = data.rollNumber || userObj.rollNumber || (userEmail.endsWith('@gprec.ac.in') ? userEmail.split('@')[0].toUpperCase() : '');
+
+                return {
+                  ...data,
+                  id: docSnap.id,
+                  user: cleanScholarName(rawName),
+                  rawName,
+                  department,
+                  branch: department,
+                  year,
+                  sem,
+                  sec,
+                  rollNumber
+                };
+              })
+              .filter(s => !deletedSubIds.has(String(s.id)));
+
+            liveSubs.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+            setSubmissions(liveSubs);
+            setLoading(false);
+          }
+        }, (err) => {
+          console.warn("Realtime test_results snapshot notice:", err);
+        });
+      } catch (e) {
+        console.warn("Error setting up onSnapshot for test_results:", e);
+      }
+    }
+
+    const handleNewTestSub = () => {
+      loadSubmissions();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('lumixora_test_submission', handleNewTestSub);
+      window.addEventListener('storage', handleNewTestSub);
+    }
+
+    return () => {
+      unsubscribe();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('lumixora_test_submission', handleNewTestSub);
+        window.removeEventListener('storage', handleNewTestSub);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Unique list of test titles
@@ -233,7 +451,7 @@ export default function FounderSubmissionsManager() {
           sem: selectedSem,
           sec: selectedSec
         },
-        institutionName: 'G. Pulla Reddy Engineering College (Autonomous)'
+        institutionName: (user?.college || user?.institutionName || 'Institutional Campus Partner')
       });
       addToast({ message: `Downloaded Test Results PDF (${filteredSubmissions.length} candidates)!`, type: 'success' });
     } catch (err) {
@@ -242,13 +460,16 @@ export default function FounderSubmissionsManager() {
     }
   };
 
-  const handleResetFilters = () => {
+  const handleResetFilters = async () => {
     setSelectedTest('All');
     setSelectedBranch('All');
     setSelectedYear('All');
     setSelectedSem('All');
     setSelectedSec('All');
     setSearchTerm('');
+    if (submissions.length === 0) {
+      await handleRestoreSubmissions();
+    }
   };
 
   const renderSubmissionDetail = () => {
@@ -458,6 +679,15 @@ export default function FounderSubmissionsManager() {
 
         <div className="flex flex-wrap items-center gap-3">
           <button 
+            onClick={handleRestoreSubmissions}
+            className="bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 hover:text-amber-300 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            title="Restore and seed default test submissions"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Restore Default Submissions</span>
+          </button>
+
+          <button 
             onClick={loadSubmissions}
             className="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
           >
@@ -661,12 +891,20 @@ export default function FounderSubmissionsManager() {
             <p className="text-gray-400 text-xs mt-1 max-w-sm mx-auto">
               No test submissions matched the current filters. Try changing branch, year, or section.
             </p>
-            <button
-              onClick={handleResetFilters}
-              className="mt-4 px-4 py-2 rounded-xl bg-brand-teal/20 text-brand-teal font-bold text-xs hover:bg-brand-teal/30 transition-all cursor-pointer"
-            >
-              Reset All Filters
-            </button>
+            <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">
+              <button
+                onClick={handleResetFilters}
+                className="px-4 py-2 rounded-xl bg-brand-teal/20 text-brand-teal font-bold text-xs hover:bg-brand-teal/30 transition-all cursor-pointer"
+              >
+                Reset All Filters
+              </button>
+              <button
+                onClick={handleRestoreSubmissions}
+                className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 font-bold text-xs hover:bg-amber-500/30 transition-all cursor-pointer"
+              >
+                Restore Default Submissions
+              </button>
+            </div>
           </div>
         )}
       </div>

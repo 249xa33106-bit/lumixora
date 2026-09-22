@@ -233,7 +233,7 @@ export default function PersonalMentor({ user }) {
       try { return JSON.parse(saved); } catch (_e) {}
     }
     return [
-      { role: 'system', content: 'You are now talking to your Lumixora AI Academic Twin™.' },
+      { role: 'system', content: 'You are now talking to your Vyomra AI Academic Twin™.' },
       { role: 'assistant', content: `Greetings ${profile.name || 'Scholar'}! I am your AI Academic Twin™. I have successfully harvested your study sessions, task logs, and timetable records. I am ready to synchronize. What concept or problem can I help you solve today?` }
     ];
   });
@@ -373,7 +373,7 @@ export default function PersonalMentor({ user }) {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              LUMIXORA Student OS™
+              VYOMRA Student OS™
               <span className={`text-[10px] uppercase font-extrabold tracking-widest px-2.5 py-0.5 rounded border ${
                 isWarMode ? 'bg-red-600/25 border-red-500 text-red-400 animate-pulse' : 'bg-brand-pink/20 text-brand-pink border-white/10'
               }`}>
@@ -428,7 +428,7 @@ export default function PersonalMentor({ user }) {
                   <div>
                     <h2 className="text-base font-bold text-red-200">Exam countdown alert: Only {examCountdown} days remaining!</h2>
                     <p className="text-xs text-gray-300 leading-relaxed mt-1">
-                      Lumixora AI has automatically activated **Exam War Mode**. Your daily study planner has adjusted focus to target your weak subject **{profile.weakSubjects}** with high priority.
+                      Vyomra AI has automatically activated **Exam War Mode**. Your daily study planner has adjusted focus to target your weak subject **{profile.weakSubjects}** with high priority.
                     </p>
                     
                     <div className="mt-3 flex gap-2">
@@ -710,7 +710,7 @@ export default function PersonalMentor({ user }) {
                 </div>
                 <div>
                   <span className="text-[10px] font-extrabold text-white block">Dr. Academic Twin™</span>
-                  <span className="text-[9px] text-gray-500 font-semibold block">Lumixora Core Coach</span>
+                  <span className="text-[9px] text-gray-500 font-semibold block">Vyomra Core Coach</span>
                 </div>
               </div>
             </div>

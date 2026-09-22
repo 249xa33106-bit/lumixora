@@ -241,7 +241,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
           console.warn("Supabase fetch notice:", sbErr);
         }
 
-        // 3. Fetch Lumixora Test Results ONLY if valid userEmail exists for THIS active user
+        // 3. Fetch Vyomra Test Results ONLY if valid userEmail exists for THIS active user
         let testsSolvedCount = 0;
         let totalCorrectQuestions = 0;
         let totalQuestionsAttempted = 0;
@@ -315,7 +315,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
           hackerrankSolved: hrUser ? 25 : 0
         });
 
-        // Combined Total DSA Solved Across Lumixora + LeetCode + HackerRank
+        // Combined Total DSA Solved Across Vyomra + LeetCode + HackerRank
         const combinedDsaSolved = testsSolvedCount + lcSolved + (hrUser ? 25 : 0);
 
         const calculatedAccuracy = totalQuestionsAttempted > 0 
@@ -335,16 +335,14 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
           ? savedPortfolioData.projects
           : dbProjects;
 
-        // Combined Dynamic Job Readiness Calculation Formula
+        // Unified Multi-Factor Job / Placement Readiness Engine (0% if no activities completed)
         let realSynergyScore = 0;
-        if (combinedDsaSolved > 0) {
-          const problemPoints = Math.min(50, Math.round(combinedDsaSolved * 0.5));
-          const accVal = totalQuestionsAttempted > 0 ? Math.round((totalCorrectQuestions / totalQuestionsAttempted) * 100) : 85;
-          const accPoints = Math.round((accVal / 100) * 30);
-          const projPoints = Math.min(20, (finalProjects.length * 10) + (finalSkills.length * 2));
-          realSynergyScore = Math.min(100, problemPoints + accPoints + projPoints);
-        } else if (finalProjects.length > 0) {
-          realSynergyScore = Math.min(100, (finalProjects.length * 20));
+        if (combinedDsaSolved > 0 || testsSolvedCount > 0 || finalProjects.length > 0) {
+          const codingPoints = Math.min(45, (combinedDsaSolved * 5));
+          const accVal = totalQuestionsAttempted > 0 ? Math.round((totalCorrectQuestions / totalQuestionsAttempted) * 100) : 0;
+          const accPoints = Math.min(30, accVal > 0 ? Math.round((accVal / 100) * 20) + (testsSolvedCount > 0 ? 10 : 0) : 0);
+          const projPoints = Math.min(25, (finalProjects.length * 10) + (finalSkills.length * 2));
+          realSynergyScore = Math.min(100, Math.round(codingPoints + accPoints + projPoints));
         }
 
         setRealProfile({
@@ -544,6 +542,24 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
         projects: editForm.projects
       }));
 
+      // Sync with global user object across app
+      const rawUser = localStorage.getItem('lumixora_user');
+      if (rawUser) {
+        try {
+          const parsedU = JSON.parse(rawUser);
+          const updatedU = {
+            ...parsedU,
+            name: editForm.scholarName,
+            displayName: editForm.scholarName,
+            targetRole: editForm.targetRole,
+            place: editForm.place,
+            skills: skillsArray
+          };
+          localStorage.setItem('lumixora_user', JSON.stringify(updatedU));
+          window.dispatchEvent(new CustomEvent('lumixora_user_updated', { detail: updatedU }));
+        } catch (e) {}
+      }
+
       addToast({ message: 'Coding profiles & AI Portfolio updated live in Supabase!', type: 'success' });
       setShowEditModal(false);
     } catch (err) {
@@ -592,7 +608,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
     setChatMessages([
       { 
         role: 'assistant', 
-        content: `👋 Hello! I am **${realProfile.name}'s AI Career Twin**. Trained live on ${realProfile.name}'s verified stats (${realStats.totalDsaSolved} combined DSA problems across Lumixora, LeetCode, and HackerRank). Ask me anything!` 
+        content: `👋 Hello! I am **${realProfile.name}'s AI Career Twin**. Trained live on ${realProfile.name}'s verified stats (${realStats.totalDsaSolved} combined DSA problems across Vyomra, LeetCode, and HackerRank). Ask me anything!` 
       }
     ]);
   }, [realProfile.name, realStats.totalDsaSolved]);
@@ -629,7 +645,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
       const reply = await generateTwinResponse([...chatMessages, userQuery], twinContext, 'Advanced');
       setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: `${realProfile.name} is a scholar at ${realProfile.college} focused on ${realProfile.targetRole} with ${realStats.totalDsaSolved} combined DSA problems solved on LeetCode, HackerRank, and Lumixora Code Arena.` }]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: `${realProfile.name} is a scholar at ${realProfile.college} focused on ${realProfile.targetRole} with ${realStats.totalDsaSolved} combined DSA problems solved on LeetCode, HackerRank, and Vyomra Code Arena.` }]);
     } finally {
       setIsAiThinking(false);
     }
@@ -690,11 +706,17 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
             <div className="flex items-center gap-5">
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#00f5d4] to-brand-purple rounded-2xl blur-md group-hover:scale-110 transition-transform"></div>
-                <img 
-                  src={realProfile.avatarUrl} 
-                  alt={realProfile.name} 
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border-2 border-white/20 relative z-10 shadow-lg"
-                />
+                {realProfile.avatarUrl && realProfile.avatarUrl !== '/lumixora_logo.jpg' ? (
+                  <img 
+                    src={realProfile.avatarUrl} 
+                    alt={realProfile.name} 
+                    className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border-2 border-white/20 relative z-10 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-tr from-[#00f5d4] via-[#0d9488] to-brand-blue flex items-center justify-center font-black text-2xl md:text-3xl text-white border-2 border-white/20 relative z-10 shadow-lg select-none">
+                    {realProfile.name ? (realProfile.name.trim().split(/\s+/).length > 1 ? (realProfile.name.trim().split(/\s+/)[0][0] + realProfile.name.trim().split(/\s+/)[realProfile.name.trim().split(/\s+/).length - 1][0]).toUpperCase() : realProfile.name.substring(0, 2).toUpperCase()) : 'S'}
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -773,7 +795,15 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
                 <div className="text-right">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400 group-hover:text-emerald-400 transition-colors block">Job Readiness ↗</span>
                   <span className="text-2xl font-black text-white">{realStats.synergyScore}%</span>
-                  <span className="text-[9px] font-bold text-emerald-400 block">Top Candidate</span>
+                  <span className={`text-[9px] font-bold block ${
+                    realStats.synergyScore >= 75 
+                      ? 'text-emerald-400' 
+                      : realStats.synergyScore >= 55 
+                        ? 'text-teal-300' 
+                        : 'text-amber-300'
+                  }`}>
+                    {realStats.synergyScore >= 75 ? '🚀 Top Candidate' : realStats.synergyScore >= 55 ? '⚡ Advancing' : '📈 Foundation'}
+                  </span>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#00f5d4] to-brand-blue flex items-center justify-center text-black font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
                   <Trophy className="w-6 h-6" />
@@ -870,7 +900,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
               <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">{realStats.accuracy} Accuracy</span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Combined problem count across LeetCode ({externalCodingData.leetcodeSolved}), HackerRank ({externalCodingData.hackerrankSolved}), & Lumixora Sandbox ({realStats.lumixoraDsaSolved}).
+              Combined problem count across LeetCode ({externalCodingData.leetcodeSolved}), HackerRank ({externalCodingData.hackerrankSolved}), & Vyomra Sandbox ({realStats.lumixoraDsaSolved}).
             </p>
 
             {/* LeetCode Difficulty Breakdown if available */}
@@ -1205,7 +1235,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Job Readiness Score Calculation</h3>
-                  <p className="text-[10px] text-gray-400">Lumixora Multi-Platform Academic & DSA Intelligence Engine</p>
+                  <p className="text-[10px] text-gray-400">Vyomra Multi-Platform Academic & DSA Intelligence Engine</p>
                 </div>
               </div>
               <button 
@@ -1223,7 +1253,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
                   <span className="text-xl font-black text-[#00f5d4]">{realStats.synergyScore}%</span>
                 </div>
                 <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Evaluated using live database metrics from Lumixora Code Arena, connected LeetCode profile ({externalCodingData.leetcodeSolved} solved), HackerRank profile, and verified projects.
+                  Evaluated using live database metrics from Vyomra Code Arena, connected LeetCode profile ({externalCodingData.leetcodeSolved} solved), HackerRank profile, and verified projects.
                 </p>
               </div>
 

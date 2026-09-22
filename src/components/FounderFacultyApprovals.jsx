@@ -10,6 +10,14 @@ export default function FounderFacultyApprovals() {
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
 
+  const cleanScholarName = (str, fallback = 'Faculty Member') => {
+    if (!str || typeof str !== 'string') return fallback;
+    let cleaned = str;
+    if (cleaned.includes('{')) cleaned = cleaned.split('{')[0].trim();
+    cleaned = cleaned.replace(/[{}":;]/g, '').trim();
+    return cleaned || fallback;
+  };
+
   const fetchFacultyAccounts = async () => {
     setLoading(true);
     try {
@@ -24,14 +32,19 @@ export default function FounderFacultyApprovals() {
         
         if (sbData && sbData.length > 0) {
           sbData.forEach(item => {
+            let meta = {};
+            if (item.name && item.name.includes('{')) {
+              try { meta = JSON.parse(item.name.substring(item.name.indexOf('{'))); } catch (_e) {}
+            }
+            const cleanName = cleanScholarName(item.name || item.full_name, item.email?.split('@')[0] || 'Faculty Member');
             const emailKey = item.email ? item.email.toLowerCase().trim() : item.id;
             combinedMap.set(emailKey, {
               id: item.id || emailKey,
               email: item.email || '',
-              name: item.name || item.full_name || item.email?.split('@')[0] || 'Faculty Member',
-              department: item.department || 'Academic Dept',
-              designation: item.designation || 'Faculty',
-              mobileNumber: item.mobileNumber || item.phone || '',
+              name: cleanName,
+              department: item.department || item.branch || meta.department || meta.branch || 'CSM',
+              designation: item.designation || meta.designation || 'Faculty',
+              mobileNumber: item.mobileNumber || item.phone || meta.mobileNumber || '',
               isApproved: item.isApproved === true || item.is_approved === true,
               source: 'supabase'
             });
@@ -50,16 +63,21 @@ export default function FounderFacultyApprovals() {
               const data = dDoc.data();
               const isFaculty = data.role === 'faculty' || data.role === 'mentor' || data.mode === 'faculty' || !!data.designation;
               if (isFaculty) {
+                let meta = {};
+                if (data.name && data.name.includes('{')) {
+                  try { meta = JSON.parse(data.name.substring(data.name.indexOf('{'))); } catch (_e) {}
+                }
                 const emailKey = data.email ? data.email.toLowerCase().trim() : dDoc.id;
                 const existing = combinedMap.get(emailKey) || {};
+                const cleanName = cleanScholarName(data.name || data.displayName, existing.name || 'Faculty Member');
                 combinedMap.set(emailKey, {
                   id: data.uid || dDoc.id || existing.id,
                   docId: dDoc.id,
                   email: data.email || existing.email || '',
-                  name: data.name || existing.name || 'Faculty Member',
-                  department: data.department || existing.department || 'Academic Dept',
-                  designation: data.designation || existing.designation || 'Faculty',
-                  mobileNumber: data.mobileNumber || existing.mobileNumber || '',
+                  name: cleanName,
+                  department: data.department || data.branch || meta.department || existing.department || 'CSM',
+                  designation: data.designation || meta.designation || existing.designation || 'Faculty',
+                  mobileNumber: data.mobileNumber || meta.mobileNumber || existing.mobileNumber || '',
                   isApproved: data.isApproved === true || data.is_approved === true || existing.isApproved === true,
                   source: 'firestore'
                 });

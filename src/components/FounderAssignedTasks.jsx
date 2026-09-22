@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy, updateDoc, setDoc } from 'firebase/firestore';
-import { ClipboardList, Trash2, Plus, Server, Edit2, X, Trophy, Save } from 'lucide-react';
+import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy, updateDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { ClipboardList, Trash2, Plus, Server, Edit2, X, Trophy, Save, RotateCcw } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { DEFAULT_ASSIGNED_TASKS } from '../data/defaultTasksData';
 
 export default function FounderAssignedTasks() {
   const { addToast } = useToast();
@@ -25,6 +26,40 @@ export default function FounderAssignedTasks() {
   useEffect(() => {
     fetchTasks();
     fetchLeaderboard();
+
+    let unsubTasks = () => {};
+    let unsubCompleted = () => {};
+
+    if (db) {
+      try {
+        const qTasks = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
+        unsubTasks = onSnapshot(qTasks, (snapshot) => {
+          const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+          const live = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(t => !deletedTaskIds.has(t.id));
+          
+          const taskMap = new Map();
+          DEFAULT_ASSIGNED_TASKS.forEach(t => {
+            if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+          });
+          live.forEach(t => {
+            if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+          });
+          setTasks(Array.from(taskMap.values()));
+        }, () => {});
+
+        const qCompleted = query(collection(db, 'completed_tasks'));
+        unsubCompleted = onSnapshot(qCompleted, () => {
+          fetchLeaderboard();
+        }, () => {});
+      } catch (e) {}
+    }
+
+    return () => {
+      unsubTasks();
+      unsubCompleted();
+    };
   }, []);
 
   const fetchLeaderboard = async () => {
@@ -75,15 +110,70 @@ export default function FounderAssignedTasks() {
     }
   };
 
+  const [isRestoring, setIsRestoring] = useState(false);
+
   const fetchTasks = async () => {
     try {
-      const q = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      setTasks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+      let fetched = [];
+      if (db) {
+        try {
+          const q = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            fetched = snap.docs
+              .map(doc => ({ id: doc.id, ...doc.data() }))
+              .filter(t => !deletedTaskIds.has(t.id));
+          }
+        } catch (e) {
+          console.warn("Firestore assigned_tasks fetch notice:", e);
+        }
+      }
+
+      const taskMap = new Map();
+      DEFAULT_ASSIGNED_TASKS.forEach(t => {
+        if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+      });
+      fetched.forEach(t => {
+        if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+      });
+
+      const combined = Array.from(taskMap.values());
+      setTasks(combined);
+
+      if (db) {
+        try {
+          const seedPromises = DEFAULT_ASSIGNED_TASKS.map(t => 
+            setDoc(doc(db, 'assigned_tasks', t.id), { ...t, createdAt: new Date().toISOString() }).catch(() => {})
+          );
+          Promise.allSettled(seedPromises).then(() => {});
+        } catch (e) {}
+      }
     } catch (error) {
       console.error("Error fetching tasks:", error);
+      setTasks(DEFAULT_ASSIGNED_TASKS);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRestoreDefaultTasks = async () => {
+    setIsRestoring(true);
+    try {
+      localStorage.removeItem('lumixora_deleted_task_ids');
+      if (db) {
+        const seedPromises = DEFAULT_ASSIGNED_TASKS.map(t => 
+          setDoc(doc(db, 'assigned_tasks', t.id), { ...t, createdAt: new Date().toISOString() })
+        );
+        await Promise.allSettled(seedPromises);
+      }
+      await fetchTasks();
+      addToast({ message: `Restored ${DEFAULT_ASSIGNED_TASKS.length} default assigned tasks!`, type: 'success' });
+    } catch (e) {
+      console.error(e);
+      addToast({ message: 'Failed to restore default tasks.', type: 'error' });
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -136,10 +226,18 @@ export default function FounderAssignedTasks() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    if (!window.confirm("Are you sure you want to permanently delete this task?")) return;
     try {
-      await deleteDoc(doc(db, 'assigned_tasks', id));
-      addToast('Task deleted', 'success');
+      if (db) {
+        await deleteDoc(doc(db, 'assigned_tasks', String(id))).catch(() => {});
+      }
+
+      // Record deleted task ID
+      const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+      deletedTaskIds.add(String(id));
+      localStorage.setItem('lumixora_deleted_task_ids', JSON.stringify(Array.from(deletedTaskIds)));
+
+      addToast('Task permanently deleted', 'success');
       setTasks(prev => (prev || []).filter(t => t && t.id !== id));
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -150,16 +248,28 @@ export default function FounderAssignedTasks() {
   return (
     <div className="space-y-6">
       <div className="glass-panel p-6 rounded-3xl border border-white/10">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <ClipboardList className="text-brand-purple" />
             {editingTaskId ? 'Edit Task' : 'Assign New Task'}
           </h2>
-          {editingTaskId && (
-            <button onClick={cancelEdit} className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
-              <X size={16} /> Cancel Edit
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleRestoreDefaultTasks}
+              disabled={isRestoring}
+              className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-amber-400 hover:bg-white/10 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Restore default pre-loaded subject tasks"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isRestoring ? 'animate-spin' : ''}`} />
+              <span>{isRestoring ? 'Restoring...' : 'Restore Default Tasks'}</span>
             </button>
-          )}
+            {editingTaskId && (
+              <button onClick={cancelEdit} className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
+                <X size={16} /> Cancel Edit
+              </button>
+            )}
+          </div>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">

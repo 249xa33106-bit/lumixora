@@ -9,14 +9,14 @@ export const TOUR_STEPS = [
   {
     id: 'welcome',
     tab: 'dashboard',
-    title: 'Welcome to Lumixora OS',
+    title: 'Welcome to Vyomra OS',
     subtitle: 'Your AI Academic & Placement Operating System',
     badge: '🌟 Getting Started',
     badgeColor: 'bg-brand-teal/20 text-brand-teal border-brand-teal/30',
     icon: Compass,
     iconColor: 'text-brand-teal',
     bgGlow: 'from-brand-teal/20 via-brand-purple/10 to-transparent',
-    description: 'Lumixora is an all-in-one student platform designed specifically for engineering scholars to master academics, crack placements, and collaborate seamlessly.',
+    description: 'Vyomra is an all-in-one student platform designed specifically for engineering scholars to master academics, crack placements, and collaborate seamlessly.',
     highlights: [
       '⚡ Track your daily learning streaks, XP, and campus leaderboard ranks.',
       '🎯 Access your entire curriculum, AI tools, and placement prep in one place.',

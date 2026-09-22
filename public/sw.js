@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lumixora-v3-cache';
+const CACHE_NAME = 'lumixora-v6-cache-' + Date.now();
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -9,10 +9,8 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('Purging old service worker cache:', key);
-            return caches.delete(key);
-          }
+          console.log('Purging old service worker cache:', key);
+          return caches.delete(key);
         })
       );
     })

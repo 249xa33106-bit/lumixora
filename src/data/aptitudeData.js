@@ -18,10 +18,84 @@ export const APTITUDE_COMPANIES = [
 ];
 
 export const COMPANY_TEST_PRESETS = [
-  { id: 'tcs', name: 'TCS NQT Cognitive Challenge', company: 'TCS NQT', duration: 15, questionCount: 10, badge: 'TCS Certified' },
-  { id: 'accenture', name: 'Accenture Technical & Logic Sprint', company: 'Accenture ASE', duration: 12, questionCount: 8, badge: 'Accenture Ready' },
-  { id: 'infosys', name: 'Infosys DSE Pseudocode Assessment', company: 'Infosys DSE', duration: 15, questionCount: 10, badge: 'Infosys Top Coder' },
-  { id: 'amazon', name: 'Amazon Technical Aptitude Sprint', company: 'Amazon', duration: 20, questionCount: 10, badge: 'Amazon SDE Master' }
+  { 
+    id: 'tcs', 
+    name: 'TCS NQT Cognitive & Coding Challenge', 
+    company: 'TCS NQT', 
+    duration: 15, 
+    questionCount: 10, 
+    badge: 'TCS Certified',
+    videoUrl: 'https://www.youtube.com/embed/5F_1M6GfM0w',
+    videoTitle: 'TCS NQT Complete Aptitude & Technical Questions Solved',
+    channelName: 'PrepInsta / Knowledge Gate',
+    videoDuration: '1h 45m',
+    videoTopicsCovered: ['Numerical Ability', 'Reasoning Ability', 'Advanced Coding', 'Verbal Logic']
+  },
+  { 
+    id: 'accenture', 
+    name: 'Accenture Technical & Logic Sprint', 
+    company: 'Accenture ASE', 
+    duration: 12, 
+    questionCount: 8, 
+    badge: 'Accenture Ready',
+    videoUrl: 'https://www.youtube.com/embed/K8w3LzP14zY',
+    videoTitle: 'Accenture ASE Critical Reasoning & Pseudocode Masterclass',
+    channelName: 'OnlineStudy4u',
+    videoDuration: '1h 15m',
+    videoTopicsCovered: ['Critical Reasoning', 'Abstract Reasoning', 'Pseudocode Debugging', 'Networking Basics']
+  },
+  { 
+    id: 'infosys', 
+    name: 'Infosys DSE Pseudocode Assessment', 
+    company: 'Infosys DSE', 
+    duration: 15, 
+    questionCount: 10, 
+    badge: 'Infosys Top Coder',
+    videoUrl: 'https://www.youtube.com/embed/fG2EaW_Lg-k',
+    videoTitle: 'Infosys Pseudocode, Reasoning & Numerical Ability Full Test Solved',
+    channelName: 'Face Prep',
+    videoDuration: '1h 30m',
+    videoTopicsCovered: ['Mathematical Thinking', 'Pseudocode', 'Data Interpretation', 'Puzzles']
+  },
+  { 
+    id: 'wipro', 
+    name: 'Wipro NLTH Elite National Challenge', 
+    company: 'Wipro NLTH', 
+    duration: 15, 
+    questionCount: 10, 
+    badge: 'Wipro Elite Ready',
+    videoUrl: 'https://www.youtube.com/embed/9g_8aP9Kq4E',
+    videoTitle: 'Wipro NLTH Quantitative, Logical & Coding Assessment Breakdown',
+    channelName: 'Talent Battle',
+    videoDuration: '1h 20m',
+    videoTopicsCovered: ['Quantitative Aptitude', 'Logical Reasoning', 'Essay & Verbal', 'Basic Coding']
+  },
+  { 
+    id: 'cognizant', 
+    name: 'Cognizant GenC / Elevate Assessment', 
+    company: 'Cognizant GenC', 
+    duration: 15, 
+    questionCount: 10, 
+    badge: 'Cognizant Pro',
+    videoUrl: 'https://www.youtube.com/embed/Y_uH2iO5cXs',
+    videoTitle: 'Cognizant GenC Technical & Aptitude Test Real Questions Analysis',
+    channelName: 'Career Ride',
+    videoDuration: '1h 10m',
+    videoTopicsCovered: ['Analytical Ability', 'English Comprehension', 'Automata Fix / Debugging']
+  },
+  { 
+    id: 'amazon', 
+    name: 'Amazon SDE Online Assessment Sprint', 
+    company: 'Amazon', 
+    duration: 20, 
+    questionCount: 10, 
+    badge: 'Amazon SDE Master',
+    videoUrl: 'https://www.youtube.com/embed/O8YQn0_9k-M',
+    videoTitle: 'Amazon OA (Online Assessment) DSA, Debugging & Leadership Principles',
+    channelName: 'NeetCode / TechLead',
+    videoDuration: '2h 10m',
+    videoTopicsCovered: ['OA2 Coding Questions', 'Workstyles Assessment', 'Code Debugging', 'Time-Space Complexity']
+  }
 ];
 
 export const APTITUDE_FORMULAS = [
@@ -270,7 +344,7 @@ export const INITIAL_APTITUDE_QUESTIONS = [
     subTopic: 'Loop Control',
     company: 'Infosys DSE',
     difficulty: 'Easy',
-    question: 'How many times will "Lumixora" be printed?\n\nfor(int i = 0; i < 10; i += 3) {\n    printf("Lumixora\\n");\n}',
+    question: 'How many times will "Vyomra" be printed?\n\nfor(int i = 0; i < 10; i += 3) {\n    printf("Vyomra\\n");\n}',
     options: ['4 times', '3 times', '10 times', '5 times'],
     correctAnswer: 0, // '4 times'
     explanation: 'i values: 0, 3, 6, 9. When i becomes 12, i < 10 is false. Total iterations = 4.'
@@ -443,7 +517,7 @@ export const INITIAL_APTITUDE_QUESTIONS = [
     subTopic: 'String Character Pointers',
     company: 'Amazon',
     difficulty: 'Hard',
-    question: 'What is the output of this C code snippet?\n\nchar *str = "Lumixora";\nprintf("%s", str + 4);',
+    question: 'What is the output of this C code snippet?\n\nchar *str = "Vyomra";\nprintf("%s", str + 4);',
     options: ['xora', 'mixora', 'Lumix', 'ora'],
     correctAnswer: 0, // xora
     explanation: '`str` points to \'L\'. `str + 4` shifts pointer 4 characters to \'x\'. Printing `%s` outputs "xora".'

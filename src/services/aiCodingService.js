@@ -1,4 +1,4 @@
-// AI Coding Assistant Services for Lumixora Code Arena
+// AI Coding Assistant Services for Vyomra Code Arena
 // Migrated completely to Groq API (openai/gpt-oss-120b)
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";

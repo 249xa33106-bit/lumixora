@@ -30,7 +30,7 @@ export default function ReportBug({ user }) {
     try {
       const targetPhone = "919346476055"; // WhatsApp number
       const userEmail = user?.email || 'Anonymous Student';
-      const text = `🚨 *BUG REPORT - LUMIXORA*\n\n`
+      const text = `🚨 *BUG REPORT - VYOMRA*\n\n`
         + `👤 *Reported By:* ${userEmail}\n`
         + `📌 *Title:* ${title.trim()}\n`
         + `🔥 *Severity:* ${severity}\n\n`

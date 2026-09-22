@@ -57,7 +57,7 @@ const ROLE_PRESETS = {
     projects: [
       {
         id: 'proj_1',
-        title: 'Lumixora - AI Academic Engine',
+        title: 'Vyomra - AI Academic Engine',
         techStack: 'React 19, Vite, Firebase, Gemini AI, Tailwind CSS',
         link: 'https://lumixora-6497b.web.app',
         github: 'github.com/rahul-sharma/lumixora',
@@ -625,7 +625,7 @@ export default function ResumeCreator({ user, setActiveTab: _setActiveTab }) {
   const generateLatexCode = () => {
     const p = resumeData.personalInfo;
     return `%-------------------------
-% Jake's Resume in LaTeX (Exported from Lumixora)
+% Jake's Resume in LaTeX (Exported from Vyomra)
 %------------------------
 
 \\documentclass[letterpaper,11pt]{article}

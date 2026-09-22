@@ -17,7 +17,7 @@ export default function NetworkAssistant({ user, profileData }) {
     ],
     mentor: [
       { name: 'Dr. Srinivas Prasad', designation: 'Professor & Dean CSE', reason: 'Specializes in Distributed Systems. Recommended for Cloud/Placement mentoring.', area: 'Cloud Computing / DSA' },
-      { name: 'Abhishek Roy', designation: 'Alumni (SDE @ Google)', reason: 'LUMIXORA Ambassador, expert in placement strategies & resume optimizations.', area: 'System Design & FAANG Prep' }
+      { name: 'Abhishek Roy', designation: 'Alumni (SDE @ Google)', reason: 'VYOMRA Ambassador, expert in placement strategies & resume optimizations.', area: 'System Design & FAANG Prep' }
     ]
   });
 

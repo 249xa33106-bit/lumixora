@@ -3,7 +3,8 @@ import {
   Brain, Calculator, Cpu, BookOpen, Code, CheckCircle2, XCircle, 
   HelpCircle, ChevronDown, ChevronUp, Clock, RotateCcw, Award, 
   Sparkles, Filter, Briefcase, Plus, Send, Zap, Check, Edit2, Eraser, 
-  BookMarked, Flame, Lightbulb, Activity, BarChart2, Play, Upload, Download 
+  BookMarked, Flame, Lightbulb, Activity, BarChart2, Play, Upload, Download,
+  Video, ExternalLink, X 
 } from 'lucide-react';
 import { APTITUDE_CATEGORIES, APTITUDE_COMPANIES, INITIAL_APTITUDE_QUESTIONS, APTITUDE_FORMULAS, COMPANY_TEST_PRESETS } from '../data/aptitudeData';
 import { useToast } from '../context/ToastContext';
@@ -96,7 +97,7 @@ export default function AptitudeArena({ user, isFounder }) {
         question: String(q.question).trim(),
         options: (q.options || []).map(opt => String(opt).trim()),
         correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
-        explanation: q.explanation || 'Verified by Lumixora Aptitude Faculty.'
+        explanation: q.explanation || 'Verified by Vyomra Aptitude Faculty.'
       };
     });
 
@@ -201,6 +202,9 @@ export default function AptitudeArena({ user, isFounder }) {
 
   // Formula Handbook Modal State
   const [showFormulaHandbook, setShowFormulaHandbook] = useState(false);
+
+  // Video Solution Modal State
+  const [activeVideoModal, setActiveVideoModal] = useState(null);
 
   // Add Question Modal State (for Founder/Mentor)
   const [showAddModal, setShowAddModal] = useState(false);
@@ -334,10 +338,10 @@ export default function AptitudeArena({ user, isFounder }) {
     if (aiCoachResponses[q.id]?.text) return; // Already fetched
 
     setAiCoachResponses(prev => ({ ...prev, [q.id]: { loading: true, text: '' } }));
-    addToast({ message: 'Lumixora AI Aptitude Coach is analyzing shortcuts...', type: 'info' });
+    addToast({ message: 'Vyomra AI Aptitude Coach is analyzing shortcuts...', type: 'info' });
 
     try {
-      const systemPrompt = `You are Lumixora's Master AI Aptitude Coach for ${q.company} campus placement drives.
+      const systemPrompt = `You are Vyomra's Master AI Aptitude Coach for ${q.company} campus placement drives.
 Explain this ${q.category} problem concisely:
 Problem: "${q.question}"
 Correct Answer Option: "${q.options[q.correctAnswer]}"
@@ -442,7 +446,7 @@ Keep response structured, concise, and engaging.`;
       question: newQForm.question.trim(),
       options: [newQForm.optionA.trim(), newQForm.optionB.trim(), newQForm.optionC.trim() || 'None of these', newQForm.optionD.trim() || 'All of these'],
       correctAnswer: Number(newQForm.correctAnswer),
-      explanation: newQForm.explanation.trim() || 'Correct answer verified by Lumixora Faculty.'
+      explanation: newQForm.explanation.trim() || 'Correct answer verified by Vyomra Faculty.'
     };
 
     const updated = [newQuestion, ...customQuestions];
@@ -804,20 +808,39 @@ Keep response structured, concise, and engaging.`;
                       })}
                     </div>
 
-                    {/* Action buttons row: Explanation & AI Copilot Coach */}
+                    {/* Action buttons row: Explanation & AI Copilot Coach & Video */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5">
-                      {isAnswered ? (
+                      <div className="flex flex-wrap items-center gap-3">
+                        {isAnswered ? (
+                          <button
+                            onClick={() => toggleExplanation(q.id)}
+                            className="text-xs text-brand-teal hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <HelpCircle className="w-3.5 h-3.5" />
+                            <span>{isExplanationOpen ? 'Hide Solution Breakdown' : 'View Step-by-Step Solution Breakdown'}</span>
+                            {isExplanationOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-gray-500 italic">Select an option to unlock detailed explanation and AI tricks.</span>
+                        )}
+
+                        {/* Video Concept Explainer Button */}
                         <button
-                          onClick={() => toggleExplanation(q.id)}
-                          className="text-xs text-brand-teal hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                          onClick={() => setActiveVideoModal({
+                            name: `${q.company || 'Campus'} - ${q.subTopic || q.category} Concept Video`,
+                            videoUrl: q.videoUrl || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q.subTopic + ' ' + q.category + ' aptitude trick placement')}`,
+                            videoTitle: `${q.subTopic || q.category} Placement Shortcuts & Formulas`,
+                            channelName: 'Top Placement Educator',
+                            videoDuration: '15:00',
+                            videoTopicsCovered: [q.category, q.subTopic, 'Shortcuts', 'Tricks']
+                          })}
+                          className="px-2.5 py-1 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/25 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer"
+                          title="Watch video solution and shortcuts for this question topic"
                         >
-                          <HelpCircle className="w-3.5 h-3.5" />
-                          <span>{isExplanationOpen ? 'Hide Solution Breakdown' : 'View Step-by-Step Solution Breakdown'}</span>
-                          {isExplanationOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          <Video className="w-3.5 h-3.5 text-red-500" />
+                          <span>▶ Concept Video</span>
                         </button>
-                      ) : (
-                        <span className="text-[10px] text-gray-500 italic">Select an option to unlock detailed explanation and AI tricks.</span>
-                      )}
+                      </div>
 
                       {/* Ask AI Aptitude Coach Button */}
                       <button
@@ -845,7 +868,7 @@ Keep response structured, concise, and engaging.`;
                       <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-purple/10 to-transparent border border-brand-purple/30 space-y-2 text-xs text-gray-200 leading-relaxed animate-fade-in">
                         <div className="flex items-center gap-2 text-brand-purple font-bold text-[10px] uppercase tracking-wider">
                           <Lightbulb className="w-4 h-4" />
-                          <span>Lumixora AI Aptitude Coach Pro-Tip</span>
+                          <span>Vyomra AI Aptitude Coach Pro-Tip</span>
                         </div>
                         <div className="prose prose-invert max-w-none text-xs leading-relaxed whitespace-pre-wrap">
                           {aiState.text}
@@ -889,13 +912,26 @@ Keep response structured, concise, and engaging.`;
                         <span className="text-[10px] text-gray-400 block">{preset.questionCount} Questions • {preset.duration} Mins</span>
                       </div>
 
-                      <button
-                        onClick={() => handleStartPresetTest(preset)}
-                        className="w-full py-2 rounded-xl bg-brand-teal hover:bg-brand-teal/80 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Start Test</span>
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleStartPresetTest(preset)}
+                          className="flex-1 py-2 rounded-xl bg-brand-teal hover:bg-brand-teal/80 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Start Test</span>
+                        </button>
+
+                        {preset.videoUrl && (
+                          <button
+                            onClick={() => setActiveVideoModal(preset)}
+                            className="px-3 py-2 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/25 font-extrabold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            title={`Watch video walkthrough & pattern analysis for ${preset.company}`}
+                          >
+                            <Video className="w-3.5 h-3.5 text-red-500" />
+                            <span>Video</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1333,6 +1369,59 @@ Keep response structured, concise, and engaging.`;
               </div>
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* Video Solution & Company Walkthrough Modal */}
+      {activeVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="glass-panel w-full max-w-3xl rounded-3xl border border-white/10 p-6 space-y-4 text-left shadow-2xl relative">
+            <button 
+              onClick={() => setActiveVideoModal(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="space-y-1 pr-10">
+              <span className="text-[10px] font-bold bg-red-600/20 text-red-400 border border-red-500/30 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                🎬 Campus Placement Video Analysis
+              </span>
+              <h3 className="text-base font-extrabold text-white">{activeVideoModal.name || activeVideoModal.videoTitle}</h3>
+              <p className="text-xs text-gray-400">
+                Educator: <span className="text-brand-teal font-bold">{activeVideoModal.channelName || 'Campus Placement Masterclass'}</span> • Duration: <span className="text-gray-300 font-mono font-bold">{activeVideoModal.videoDuration || '15 mins'}</span>
+              </p>
+            </div>
+
+            {/* 16:9 Video Embed */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+              <iframe
+                src={
+                  activeVideoModal.videoUrl.includes('youtube.com/embed')
+                    ? activeVideoModal.videoUrl
+                    : activeVideoModal.videoUrl.includes('watch?v=')
+                    ? `https://www.youtube.com/embed/${activeVideoModal.videoUrl.split('watch?v=')[1]?.split('&')[0]}`
+                    : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(activeVideoModal.name + ' placement aptitude')}`
+                }
+                title={activeVideoModal.name || activeVideoModal.videoTitle}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full border-0"
+              />
+            </div>
+
+            {/* Topics Covered */}
+            {activeVideoModal.videoTopicsCovered && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/5">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">Topics:</span>
+                {activeVideoModal.videoTopicsCovered.map((topic, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-brand-teal font-semibold">
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

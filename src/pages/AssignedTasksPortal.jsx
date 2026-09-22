@@ -1,12 +1,201 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, BookOpen, Calendar, ChevronRight, ArrowLeft, Download, Trophy, CheckCircle, Check, Loader2 } from 'lucide-react';
+import { ClipboardList, BookOpen, Calendar, ChevronRight, ArrowLeft, Download, Trophy, CheckCircle, Check, Loader2, Copy, Code2, Sparkles, Terminal } from 'lucide-react';
 import { db } from '../config/firebase';
-import { collection, getDocs, query, orderBy, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where, addDoc, serverTimestamp, setDoc, doc, onSnapshot } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
+import { DEFAULT_ASSIGNED_TASKS } from '../data/defaultTasksData';
+import { notifyFounderTask } from '../services/founderNotificationService';
+
+// Inline Markdown Parser for bold text and code snippets
+function formatInlineMarkdown(text) {
+  if (!text) return '';
+  const codeParts = text.split(/(`[^`]+`)/g);
+
+  return codeParts.map((part, i) => {
+    if (part.startsWith('`') && part.endsWith('`')) {
+      const code = part.slice(1, -1);
+      return (
+        <code key={i} className="px-1.5 py-0.5 rounded-md bg-white/10 text-brand-teal font-mono text-xs font-semibold border border-white/10">
+          {code}
+        </code>
+      );
+    }
+
+    const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+    return boldParts.map((bPart, j) => {
+      if (bPart.startsWith('**') && bPart.endsWith('**')) {
+        const boldText = bPart.slice(2, -2);
+        return (
+          <strong key={j} className="font-extrabold text-white">
+            {boldText}
+          </strong>
+        );
+      }
+      return bPart;
+    });
+  });
+}
+
+// Rich Markdown Content Renderer for Theory & Concept Details
+function RenderMarkdown({ content }) {
+  if (!content) return null;
+  const lines = content.split('\n');
+
+  return (
+    <div className="space-y-3 text-sm text-gray-200 leading-relaxed font-sans">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={idx} className="h-2" />;
+
+        // Header 3: ### Title
+        if (trimmed.startsWith('### ')) {
+          const headerText = trimmed.replace('### ', '');
+          return (
+            <div key={idx} className="pt-4 pb-1 border-b border-white/10 flex items-center gap-2">
+              <span className="text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-teal-200 to-brand-blue">
+                {headerText}
+              </span>
+            </div>
+          );
+        }
+
+        // Header 2: ## Title
+        if (trimmed.startsWith('## ')) {
+          const headerText = trimmed.replace('## ', '');
+          return (
+            <h4 key={idx} className="text-lg font-black text-white pt-3 border-b border-white/10 pb-1">
+              {headerText}
+            </h4>
+          );
+        }
+
+        // Numbered item: 1. **Title**: Text
+        const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
+        if (numMatch) {
+          const num = numMatch[1];
+          const text = numMatch[2];
+          return (
+            <div key={idx} className="flex items-start gap-3 pl-1 py-1">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/40 text-xs font-bold flex items-center justify-center mt-0.5">
+                {num}
+              </span>
+              <div className="flex-1 text-gray-300">
+                {formatInlineMarkdown(text)}
+              </div>
+            </div>
+          );
+        }
+
+        // Bullet item: - **Sub**: Text
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          const text = trimmed.substring(2);
+          return (
+            <div key={idx} className="flex items-start gap-2.5 pl-6 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-purple mt-2 flex-shrink-0"></span>
+              <div className="flex-1 text-gray-300">
+                {formatInlineMarkdown(text)}
+              </div>
+            </div>
+          );
+        }
+
+        // Regular paragraph
+        return (
+          <p key={idx} className="text-gray-300 leading-relaxed">
+            {formatInlineMarkdown(line)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+// High-Contrast Interactive Code Block with One-Click Copy
+function CodeBlockViewer({ code, language = "JAVA" }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/15 bg-[#0a0c12] shadow-2xl overflow-hidden">
+      {/* Code Header Bar */}
+      <div className="flex items-center justify-between px-5 py-3 bg-white/5 border-b border-white/10">
+        <div className="flex items-center gap-2.5">
+          <div className="flex gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+          </div>
+          <span className="text-xs font-mono font-bold text-gray-400 pl-2 uppercase tracking-widest flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5 text-brand-teal" /> {language} Source Implementation
+          </span>
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 transition-all cursor-pointer shadow-sm"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-brand-teal" />
+              <span className="text-brand-teal">Copied to Clipboard!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5 text-gray-400" />
+              <span>Copy Code</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Code Body */}
+      <div className="p-5 overflow-x-auto text-xs md:text-sm font-mono leading-relaxed text-gray-200 bg-black/40">
+        <pre className="whitespace-pre">{code}</pre>
+      </div>
+    </div>
+  );
+}
+
+// Structured Practice Problems & Interview Exercises Viewer
+function PracticeProblemsViewer({ content }) {
+  if (!content) return null;
+  const problems = content.split('\n').filter(p => p.trim());
+
+  return (
+    <div className="grid grid-cols-1 gap-3">
+      {problems.map((prob, idx) => {
+        const cleanText = prob.trim();
+        return (
+          <div key={idx} className="glass-panel p-5 rounded-2xl border border-brand-purple/20 bg-brand-purple/5 hover:border-brand-purple/40 hover:bg-brand-purple/10 transition-all">
+            <div className="flex items-start gap-3.5">
+              <div className="w-7 h-7 rounded-xl bg-brand-purple/20 text-brand-pink flex items-center justify-center font-black text-xs shrink-0 mt-0.5 border border-brand-purple/30">
+                #{idx + 1}
+              </div>
+              <div className="flex-1 text-sm text-gray-200 leading-relaxed">
+                {formatInlineMarkdown(cleanText.replace(/^\d+\.\s*/, ''))}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function AssignedTasksPortal({ user, setActiveTab }) {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState(() => {
+    try {
+      const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+      return DEFAULT_ASSIGNED_TASKS.filter(t => !deletedTaskIds.has(t.id));
+    } catch (e) {
+      return DEFAULT_ASSIGNED_TASKS;
+    }
+  });
+  const [loading, setLoading] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [completedTasks, setCompletedTasks] = useState(new Set());
@@ -18,9 +207,37 @@ export default function AssignedTasksPortal({ user, setActiveTab }) {
   useEffect(() => {
     fetchTasks();
     if (user) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       fetchUserCompletedTasks();
     }
+
+    // Real-time live listener for assigned tasks
+    let unsubscribeTasks = () => {};
+    if (db) {
+      try {
+        const q = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
+        unsubscribeTasks = onSnapshot(q, (snapshot) => {
+          const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+          const live = snapshot.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(t => !deletedTaskIds.has(t.id));
+          
+          const taskMap = new Map();
+          DEFAULT_ASSIGNED_TASKS.forEach(t => {
+            if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+          });
+          live.forEach(t => {
+            if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+          });
+          setTasks(Array.from(taskMap.values()));
+        }, (err) => {
+          console.warn("Realtime assigned_tasks snapshot notice:", err);
+        });
+      } catch (e) {}
+    }
+
+    return () => {
+      unsubscribeTasks();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -60,13 +277,17 @@ export default function AssignedTasksPortal({ user, setActiveTab }) {
       });
 
       // Apply overrides if founder manually edited the leaderboard
-      const overrideSnap = await getDocs(collection(db, 'consistency_overrides'));
-      overrideSnap.forEach(doc => {
-        const data = doc.data();
-        if (data.userName) {
-          userCounts[data.userName] = data.daysCompleted;
-        }
-      });
+      try {
+        const overrideSnap = await getDocs(collection(db, 'consistency_overrides'));
+        overrideSnap.forEach(doc => {
+          const data = doc.data();
+          if (data.userName) {
+            userCounts[data.userName] = data.daysCompleted;
+          }
+        });
+      } catch (e) {
+        console.warn("Consistency overrides fetch notice:", e);
+      }
 
       const lb = Object.keys(userCounts).map(name => ({
         userName: name,
@@ -97,6 +318,13 @@ export default function AssignedTasksPortal({ user, setActiveTab }) {
         newSet.add(task.id);
         return newSet;
       });
+      notifyFounderTask({
+        user: user?.name || user?.displayName || 'Scholar',
+        email: user?.email || '',
+        college: user?.college || 'GPREC',
+        department: user?.department || user?.branch || 'CSE',
+        title: `${task.subject || 'Subject'} (${task.dayLabel || 'Day 1'})`
+      });
       addToast({ message: 'Task marked as completed!', type: 'success' });
     } catch (error) {
       console.error("Error marking task as complete:", error);
@@ -108,10 +336,32 @@ export default function AssignedTasksPortal({ user, setActiveTab }) {
 
   const fetchTasks = async () => {
     try {
-      const q = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTasks(fetched);
+      const deletedTaskIds = new Set(JSON.parse(localStorage.getItem('lumixora_deleted_task_ids') || '[]'));
+      let fetched = [];
+      if (db) {
+        try {
+          const q = query(collection(db, 'assigned_tasks'), orderBy('createdAt', 'desc'));
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+            fetched = snapshot.docs
+              .map(d => ({ id: d.id, ...d.data() }))
+              .filter(t => !deletedTaskIds.has(t.id));
+          }
+        } catch (e) {
+          console.warn("Firestore assigned_tasks fetch notice:", e);
+        }
+      }
+
+      const taskMap = new Map();
+      DEFAULT_ASSIGNED_TASKS.forEach(t => {
+        if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+      });
+      fetched.forEach(t => {
+        if (!deletedTaskIds.has(t.id)) taskMap.set(t.id, t);
+      });
+
+      const combined = Array.from(taskMap.values());
+      setTasks(combined);
     } catch (error) {
       console.error("Error fetching assigned tasks:", error);
     } finally {
@@ -338,34 +588,36 @@ export default function AssignedTasksPortal({ user, setActiveTab }) {
                
                <h2 className="text-3xl font-extrabold text-white mb-6 tracking-tight relative z-10">{selectedTask.title}</h2>
                
-               <div className="space-y-8 relative z-10">
-                 <div>
-                   <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Task Details & Instructions</h3>
-                   <div className="bg-black/30 rounded-2xl p-6 border border-white/5">
-                     <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{selectedTask.description}</p>
-                   </div>
-                 </div>
-                 
-                 {selectedTask.codeReferences && (
-                   <div>
-                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Code References & Examples</h3>
-                     <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-white/10 shadow-inner">
-                       <pre className="text-gray-300 font-mono text-sm leading-relaxed whitespace-pre-wrap">{selectedTask.codeReferences}</pre>
-                     </div>
-                   </div>
-                 )}
-                 
-                 {selectedTask.practiceProblems && (
-                   <div>
-                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Practice Problems & Exercises</h3>
-                     <div className="bg-brand-purple/5 rounded-2xl p-6 border border-brand-purple/10">
-                       <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{selectedTask.practiceProblems}</p>
-                     </div>
-                   </div>
-                 )}
-               </div>
-             </div>
-          </div>
+                <div className="space-y-8 relative z-10">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-brand-teal" /> Task Details & Theoretical Concepts
+                    </h3>
+                    <div className="bg-black/40 rounded-3xl p-6 md:p-8 border border-white/10 shadow-xl">
+                      <RenderMarkdown content={selectedTask.description} />
+                    </div>
+                  </div>
+                  
+                  {selectedTask.codeReferences && (
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Code2 className="w-4 h-4 text-brand-teal" /> Code References & Implementations
+                      </h3>
+                      <CodeBlockViewer code={selectedTask.codeReferences} language={selectedTask.subject.includes('Python') ? 'PYTHON' : 'JAVA'} />
+                    </div>
+                  )}
+                  
+                  {selectedTask.practiceProblems && (
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-brand-pink" /> Practical Problems & Coding Exercises
+                      </h3>
+                      <PracticeProblemsViewer content={selectedTask.practiceProblems} />
+                    </div>
+                  )}
+                </div>
+              </div>
+           </div>
         )}
 
       </div>

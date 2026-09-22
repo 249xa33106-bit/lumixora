@@ -13,6 +13,552 @@ export const SEMESTERS = [
 
 export const INITIAL_SYLLABUS_VIDEOS = [
   // =========================================================================
+  // --- 1.1 MANAGERIAL ECONOMICS AND FINANCIAL ANALYSIS (MEFA) ---
+  // Scheme: 2023 | Code: HSM 202 | Category: BS&H | Credits: 2
+  // Common to CSE, CSB, CE, ECE & EEE
+  // =========================================================================
+  {
+  "id": "common-sem3-hsm202-mefa",
+  "branch": "CSE",
+  "branchesApplicable": [
+    "CSE",
+    "CSM",
+    "ECE",
+    "EEE",
+    "Civil",
+    "Mechanical"
+  ],
+  "semester": "Sem 3",
+  "semestersApplicable": [
+    "Sem 3",
+    "Sem 4"
+  ],
+  "subjectCode": "HSM 202",
+  "subjectName": "Managerial Economics and Financial Analysis (MEFA)",
+  "credits": 2,
+  "scheme": "2023 Scheme",
+  "category": "BS&H",
+  "description": "Managerial Economics, Demand Analysis, Elasticity of Demand, Production & Cost Functions, Break-Even Analysis (BEA), Market Structures (Monopoly, Oligopoly, Perfect Competition), Capital Budgeting (NPV, IRR, Payback), Double-Entry Accounting, Final Accounts & Financial Ratio Analysis.",
+  "thumbnail": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000",
+  "oneShotVideo": {
+    "title": "Managerial Economics and Financial Analysis (MEFA) Complete Playlist & Masterclass",
+    "channel": "Devika's Commerce & Management Academy",
+    "url": "https://www.youtube.com/watch?v=356_pioFiss",
+    "duration": "4h 30m",
+    "views": "780K"
+  },
+  "playlistUrl": "https://www.youtube.com/playlist?list=PLLhSIFfDZcUW8eZFwPrZjj_TBdelHfHho",
+  "units": [
+    {
+      "unitNumber": 1,
+      "unitTitle": "UNIT I: Managerial Economics and Demand Analysis",
+      "description": "Introduction – Meaning, Nature & Scope and Uses of Managerial Economics, Role of Managerial Economist. Demand – Concepts, Law of Demand, Exceptions of Law of Demand, Law of Diminishing Marginal Utility, Indifference Curve. Elasticity of Demand – Types, Measurement and Significance.",
+      "videos": [
+        {
+          "id": "v-mefa-u1-1",
+          "title": "Meaning, Nature, Scope & Significance of Managerial Economics & Role of Managerial Economist",
+          "channel": "Devika's Commerce Academy",
+          "duration": "18:45",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Fundamental concepts of Managerial Economics, integration of economic theory with business practices, and responsibilities of a managerial economist."
+        },
+        {
+          "id": "v-mefa-u1-2",
+          "title": "Demand Analysis: Law of Demand, Demand Schedule & Exceptions to Law of Demand",
+          "channel": "Devika's Commerce Academy",
+          "duration": "16:20",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Demand function, determinants of demand, graphical representation of demand curves, and Giffen goods / Veblen goods exceptions."
+        },
+        {
+          "id": "v-mefa-u1-3",
+          "title": "Law of Diminishing Marginal Utility & Indifference Curve Analysis",
+          "channel": "Devika's Commerce Academy",
+          "duration": "22:10",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Assumptions, tabular schedule, marginal rate of substitution (MRS), consumer equilibrium, and properties of indifference curves."
+        },
+        {
+          "id": "v-mefa-u1-4",
+          "title": "Elasticity of Demand: Price, Income, Cross Elasticity & Measurement Methods",
+          "channel": "Devika's Commerce Academy",
+          "duration": "24:30",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Degrees of elasticity (perfectly elastic, inelastic, unitary), percentage method, point elasticity, total outlay method, and business significance."
+        }
+      ]
+    },
+    {
+      "unitNumber": 2,
+      "unitTitle": "UNIT II: Production and Cost Analysis",
+      "description": "Introduction – Production Function – Meaning, Features and types. Short run and long run Production Function, Isoquants and Isocosts, Least-cost combination. Cost – Cost concepts and Cost behaviour in Short-run and Long-run. Break-Even Analysis (BEA) – Determination of Break-Even Point (Simple Problems).",
+      "videos": [
+        {
+          "id": "v-mefa-u2-1",
+          "title": "Production Function: Short-Run vs Long-Run & Law of Variable Proportions",
+          "channel": "Devika's Commerce Academy",
+          "duration": "20:15",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Total Product (TP), Marginal Product (MP), Average Product (AP) with 3 stages of production and returns to scale."
+        },
+        {
+          "id": "v-mefa-u2-2",
+          "title": "Isoquants, Isocost Lines, MRTS & Least-Cost Factor Combination",
+          "channel": "Devika's Commerce Academy",
+          "duration": "18:50",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Marginal Rate of Technical Substitution (MRTS), producer equilibrium tangent condition, and expansion path."
+        },
+        {
+          "id": "v-mefa-u2-3",
+          "title": "Cost Concepts & Short-Run / Long-Run Cost Curves (FC, VC, TC, MC, AC)",
+          "channel": "Devika's Commerce Academy",
+          "duration": "25:40",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Explicit vs implicit costs, opportunity costs, fixed vs variable costs, U-shaped short-run curves, and envelope long-run average cost (LAC)."
+        },
+        {
+          "id": "v-mefa-u2-4",
+          "title": "Break-Even Analysis (BEA): BEP Formula, P/V Ratio, Margin of Safety & Numerical Problems",
+          "channel": "Devika's Commerce Academy",
+          "duration": "28:30",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Break-even chart, BEP in units and rupees, profit-volume ratio calculations, margin of safety formulas with solved semester exam problems."
+        }
+      ]
+    },
+    {
+      "unitNumber": 3,
+      "unitTitle": "UNIT III: Business Organizations and Markets",
+      "description": "Introduction – Forms of Business Organizations – Sole Proprietary - Partnership - Joint Stock Companies. Types of Markets - Perfect and Imperfect Markets; Features of Perfect Competition, Monopoly, Monopolistic and Oligopoly; Price-Output Determination under Perfect and Monopoly.",
+      "videos": [
+        {
+          "id": "v-mefa-u3-1",
+          "title": "Forms of Business Organizations: Sole Proprietorship, Partnership & Joint Stock Companies",
+          "channel": "Devika's Commerce Academy",
+          "duration": "21:10",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Features, advantages, limitations, liability comparison, and company incorporation process (Memorandum & Articles of Association)."
+        },
+        {
+          "id": "v-mefa-u3-2",
+          "title": "Market Structures Classification: Perfect Competition vs Imperfect Competition Markets",
+          "channel": "Devika's Commerce Academy",
+          "duration": "17:30",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Number of buyers/sellers, product differentiation, barriers to entry, pricing power across market models."
+        },
+        {
+          "id": "v-mefa-u3-3",
+          "title": "Monopoly, Monopolistic Competition, Duopoly & Oligopoly (Kinked Demand Curve)",
+          "channel": "Devika's Commerce Academy",
+          "duration": "23:45",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Characteristics, price leadership, non-price competition, Paul Sweezy kinked demand curve in oligopoly."
+        },
+        {
+          "id": "v-mefa-u3-4",
+          "title": "Price-Output Determination under Perfect Competition and Monopoly Equilibrium",
+          "channel": "Devika's Commerce Academy",
+          "duration": "26:15",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "MR = MC equilibrium condition, supernormal profits, normal profits and subnormal losses in short-run and long-run."
+        }
+      ]
+    },
+    {
+      "unitNumber": 4,
+      "unitTitle": "UNIT IV: Capital and its Significance & Capital Budgeting",
+      "description": "Capital and its Significance: Types of Capital, Estimation of fixed and working capital requirements, Methods and sources of raising fixed and working capital. Capital Budgeting: Meaning, Significance and Complications involved in Capital Budgeting decisions, Methods of Capital Budgeting - Traditional Methods (Payback period, ARR), Discounted Cash flow methods (NPV, IRR, PI with Simple Problems).",
+      "videos": [
+        {
+          "id": "v-mefa-u4-1",
+          "title": "Capital & Working Capital: Classification, Estimation of Requirements & Sources of Finance",
+          "channel": "Devika's Commerce Academy",
+          "duration": "19:40",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Fixed vs working capital, operating cycle calculation, short-term vs long-term sources (Shares, Debentures, Retained Earnings, Bank Overdraft)."
+        },
+        {
+          "id": "v-mefa-u4-2",
+          "title": "Capital Budgeting: Meaning, Importance, Complications & Project Cash Flow Estimation",
+          "channel": "Devika's Commerce Academy",
+          "duration": "15:20",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Long-term investment appraisal, time value of money, sunk costs, and risk complications in capital budgeting."
+        },
+        {
+          "id": "v-mefa-u4-3",
+          "title": "Traditional Methods of Capital Budgeting: Payback Period (PBP) & Accounting Rate of Return (ARR)",
+          "channel": "Devika's Commerce Academy",
+          "duration": "27:50",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "PBP formulas for even and uneven cash flows, ARR calculation based on average profit / average investment, and solved exam problems."
+        },
+        {
+          "id": "v-mefa-u4-4",
+          "title": "Discounted Cash Flow Methods: Net Present Value (NPV), IRR & Profitability Index (PI)",
+          "channel": "Devika's Commerce Academy",
+          "duration": "32:10",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Present Value discounting factor, NPV = PV of Inflows - Initial Outflow, Internal Rate of Return trial & interpolation, and PI decision criteria."
+        }
+      ]
+    },
+    {
+      "unitNumber": 5,
+      "unitTitle": "UNIT V: Financial Accounting and Analysis",
+      "description": "Financial Accounting and Analysis Introduction – Concepts and Conventions - Double-Entry System of Bookkeeping, Journal, Ledger, Trial Balance - Final Accounts (Trading Account, Profit and Loss Account and Balance Sheet with Simple adjustments). Introduction to Financial Analysis – Analysis and Interpretation of Liquidity Ratios, Activity Ratios, and Capital structure Ratios and Profitability Ratios. Income tax calculation and filing income tax returns (ITR).",
+      "videos": [
+        {
+          "id": "v-mefa-u5-1",
+          "title": "Accounting Concepts & Conventions, Double-Entry System, Rules of Debit & Credit, Journal Entries",
+          "channel": "Devika's Commerce Academy",
+          "duration": "29:30",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Golden rules of accounting (Personal, Real, Nominal accounts), duality principle, business entity concept, and journal posting."
+        },
+        {
+          "id": "v-mefa-u5-2",
+          "title": "Ledger Accounts, Trial Balance & Preparation of Final Accounts with Balance Sheet",
+          "channel": "Devika's Commerce Academy",
+          "duration": "34:40",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Trading Account (Gross Profit), Profit & Loss Account (Net Profit), and Balance Sheet (Assets & Liabilities) with closing stock adjustments."
+        },
+        {
+          "id": "v-mefa-u5-3",
+          "title": "Financial Ratio Analysis: Liquidity Ratios (Current Ratio, Quick Ratio) & Activity / Turnover Ratios",
+          "channel": "Devika's Commerce Academy",
+          "duration": "26:15",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Interpretation of liquidity, Inventory Turnover Ratio, Debtors/Creditors Turnover Ratio, and Working Capital Turnover."
+        },
+        {
+          "id": "v-mefa-u5-4",
+          "title": "Capital Structure & Profitability Ratios: Debt-Equity, Gross Profit Ratio, Net Profit Ratio, ROI & EPS",
+          "channel": "Devika's Commerce Academy",
+          "duration": "25:10",
+          "url": "https://www.youtube.com/watch?v=356_pioFiss",
+          "summary": "Solvency metrics, leverage evaluation, Operating Profit Ratio, Return on Capital Employed (ROCE) and earnings per share."
+        }
+      ]
+    }
+  ]
+},
+
+  // =========================================================================
+  // --- 1.2 DATABASE MANAGEMENT SYSTEMS (DBMS) ---
+  // Scheme: 2023 | Code: CS401 | Category: PCC | Credits: 3
+  // CSE & CSM Semester 4
+  // =========================================================================
+  {
+  "id": "cse-sem4-cs401-dbms",
+  "branch": "CSE",
+  "branchesApplicable": [
+    "CSE",
+    "CSM"
+  ],
+  "semester": "Sem 4",
+  "subjectCode": "CS401",
+  "subjectName": "Database Management Systems (DBMS)",
+  "credits": 3,
+  "scheme": "2023 Scheme",
+  "category": "PCC",
+  "description": "Database System Architecture, ER Modeling, Relational Algebra, SQL Queries, Normalization (1NF to BCNF), Transaction Processing, Concurrency Control Protocols (2PL, Timestamp), and Indexing B/B+ Trees.",
+  "thumbnail": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?q=80&w=1000",
+  "oneShotVideo": {
+    "title": "Database Management Systems (DBMS) Complete One-Shot Revision Marathon",
+    "channel": "Gate Smashers",
+    "url": "https://www.youtube.com/watch?v=kBdlM6hNDAE",
+    "duration": "6h 15m",
+    "views": "2.1M"
+  },
+  "playlistUrl": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiFAN6I8C9AzFiPrgPM6wDLy",
+  "units": [
+    {
+      "unitNumber": 1,
+      "unitTitle": "UNIT I: Introduction & Database Architecture",
+      "description": "Data Models, Schemas, Instances, Three-Schema Architecture, Data Independence, Database Languages, ER Modeling, Entities, Attributes, Relationships, Extended ER Features.",
+      "videos": [
+        {
+          "id": "v-dbms-u1-1",
+          "title": "Introduction to DBMS, File System vs DBMS & 3-Tier Architecture",
+          "channel": "Gate Smashers",
+          "duration": "18:15",
+          "url": "https://www.youtube.com/watch?v=3EJlovevfcA",
+          "summary": "Database design life cycle, physical and logical data independence, data abstraction."
+        },
+        {
+          "id": "v-dbms-u1-2",
+          "title": "ER Diagram: Entity, Attributes, Relationship Types & Cardinality with Solved Examples",
+          "channel": "Gate Smashers",
+          "duration": "24:40",
+          "url": "https://www.youtube.com/watch?v=gbV_G7u_g_Y",
+          "summary": "Strong/weak entity sets, composite/multivalued attributes, primary/foreign keys, ER to relational schema mapping."
+        }
+      ]
+    },
+    {
+      "unitNumber": 2,
+      "unitTitle": "UNIT II: Relational Model & SQL",
+      "description": "Relational Model Concepts, Relational Constraints, Relational Algebra (Select, Project, Joins, Set Operations), Tuple Relational Calculus, SQL DDL, DML, DCL, Complex Queries, Views.",
+      "videos": [
+        {
+          "id": "v-dbms-u2-1",
+          "title": "Relational Algebra: Selection, Projection, Cross Product, Natural Join & Division",
+          "channel": "Gate Smashers",
+          "duration": "28:10",
+          "url": "https://www.youtube.com/watch?v=yL_7_kC6w3s",
+          "summary": "Procedural query language operations, theta join, outer join, and university schema queries."
+        },
+        {
+          "id": "v-dbms-u2-2",
+          "title": "Complete SQL Tutorial: DDL, DML, Subqueries, Aggregate Functions & Joins",
+          "channel": "freeCodeCamp / Gate Smashers",
+          "duration": "45:00",
+          "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+          "summary": "CREATE, ALTER, INSERT, UPDATE, GROUP BY, HAVING, nested subqueries, and triggers."
+        }
+      ]
+    },
+    {
+      "unitNumber": 3,
+      "unitTitle": "UNIT III: Database Normalization",
+      "description": "Functional Dependencies, Closure of Attribute Sets, Canonical Cover, Normal Forms: 1NF, 2NF, 3NF, BCNF, Multi-Valued Dependencies and 4NF, Lossless Join & Dependency Preservation.",
+      "videos": [
+        {
+          "id": "v-dbms-u3-1",
+          "title": "Functional Dependencies, Candidate Key Finding & Closure of Attribute Sets",
+          "channel": "Gate Smashers",
+          "duration": "22:30",
+          "url": "https://www.youtube.com/watch?v=5fs1PRflmD8",
+          "summary": "Armstrong axioms, attribute closure algorithm, finding candidate keys of relational schema."
+        },
+        {
+          "id": "v-dbms-u3-2",
+          "title": "Normalization Step-by-Step: 1NF, 2NF, 3NF, and BCNF with Solved Examples",
+          "channel": "Gate Smashers",
+          "duration": "32:15",
+          "url": "https://www.youtube.com/watch?v=UrYLYV7WSHM",
+          "summary": "Eliminating insertion, deletion, update anomalies through lossless decomposition."
+        }
+      ]
+    },
+    {
+      "unitNumber": 4,
+      "unitTitle": "UNIT IV: Transaction Processing & Concurrency Control",
+      "description": "ACID Properties, Transaction States, Schedules: Serial, Serializable, Conflict & View Serializability, Recoverable Schedules, Two-Phase Locking (2PL), Timestamp Ordering, Deadlock Prevention.",
+      "videos": [
+        {
+          "id": "v-dbms-u4-1",
+          "title": "ACID Properties of Transactions & Transaction State Diagram",
+          "channel": "Gate Smashers",
+          "duration": "16:40",
+          "url": "https://www.youtube.com/watch?v=a3fI_j8B_rM",
+          "summary": "Atomicity, Consistency, Isolation, Durability with real-world banking transaction flow."
+        },
+        {
+          "id": "v-dbms-u4-2",
+          "title": "Conflict Serializability & Precedence Graph (Testing Serializability)",
+          "channel": "Gate Smashers",
+          "duration": "21:50",
+          "url": "https://www.youtube.com/watch?v=7hR9qQ0H6nI",
+          "summary": "Read-write conflicts, cycle detection in precedence graph, and strict schedules."
+        },
+        {
+          "id": "v-dbms-u4-3",
+          "title": "Concurrency Control Protocols: Two Phase Locking (Strict 2PL, Rigorous 2PL) & Timestamp Ordering",
+          "channel": "Gate Smashers",
+          "duration": "26:20",
+          "url": "https://www.youtube.com/watch?v=gT_u4m9L0vM",
+          "summary": "Growing phase, shrinking phase, lock conversion, cascading abort prevention, and Thomas write rule."
+        }
+      ]
+    },
+    {
+      "unitNumber": 5,
+      "unitTitle": "UNIT V: Indexing & Storage Structures",
+      "description": "File Organizations, Primary Index, Clustering Index, Secondary Index, Multi-level Indexing, B-Trees and B+ Trees Search, Insertion and Deletion Algorithms.",
+      "videos": [
+        {
+          "id": "v-dbms-u5-1",
+          "title": "Indexing in Databases: Primary, Secondary, Clustered & Dense vs Sparse Indexing",
+          "channel": "Gate Smashers",
+          "duration": "24:10",
+          "url": "https://www.youtube.com/watch?v=T_rG_q0uK4w",
+          "summary": "Data blocks, index records, block access calculations, and multi-level indexing."
+        },
+        {
+          "id": "v-dbms-u5-2",
+          "title": "B-Trees and B+ Trees: Construction, Search, Insert & Delete Operations",
+          "channel": "Gate Smashers",
+          "duration": "31:40",
+          "url": "https://www.youtube.com/watch?v=aZjYr87r1b8",
+          "summary": "Order of B-tree, node splitting, leaf pointers, and range queries in B+ Trees."
+        }
+      ]
+    }
+  ]
+},
+
+  // =========================================================================
+  // --- 1.3 OPERATING SYSTEMS (OS) ---
+  // Scheme: 2023 | Code: CS402 | Category: PCC | Credits: 3
+  // CSE, CSM, ECE & EEE Semester 4
+  // =========================================================================
+  {
+  "id": "cse-sem4-cs402-os",
+  "branch": "CSE",
+  "branchesApplicable": [
+    "CSE",
+    "CSM",
+    "ECE",
+    "EEE"
+  ],
+  "semester": "Sem 4",
+  "subjectCode": "CS402",
+  "subjectName": "Operating Systems (OS)",
+  "credits": 3,
+  "scheme": "2023 Scheme",
+  "category": "PCC",
+  "description": "Operating System Structure, System Calls, Process Management, CPU Scheduling Algorithms, Inter-Process Communication, Classical Synchronization Problems (Dining Philosophers, Readers-Writers), Deadlock Detection & Avoidance (Banker's Algorithm), Paging, Segmentation, and File Systems.",
+  "thumbnail": "https://images.unsplash.com/photo-1629654297299-c8506221ca97?q=80&w=1000",
+  "oneShotVideo": {
+    "title": "Operating Systems (OS) Complete One-Shot Revision Marathon",
+    "channel": "Gate Smashers / Neso Academy",
+    "url": "https://www.youtube.com/watch?v=bkSWJJZNgf8",
+    "duration": "7h 30m",
+    "views": "3.4M"
+  },
+  "playlistUrl": "https://www.youtube.com/playlist?list=PLBlnK6fEyqRiVhbXDGLXDk_OQAeuVcp2O",
+  "units": [
+    {
+      "unitNumber": 1,
+      "unitTitle": "UNIT I: OS Overview & Process Concept",
+      "description": "Functions of Operating System, Dual Mode Operation, System Calls, Process States, PCB, Process Scheduling Queues, Context Switching, Inter-Process Communication (IPC).",
+      "videos": [
+        {
+          "id": "v-os-u1-1",
+          "title": "Introduction to Operating Systems, Dual-Mode & System Calls Explained",
+          "channel": "Gate Smashers",
+          "duration": "19:20",
+          "url": "https://www.youtube.com/watch?v=26QPDBe-NB8",
+          "summary": "Kernel mode vs user mode, hardware interrupts, trap, fork(), and exec() system calls."
+        },
+        {
+          "id": "v-os-u1-2",
+          "title": "Process State Transition Diagram & Process Control Block (PCB)",
+          "channel": "Gate Smashers",
+          "duration": "16:40",
+          "url": "https://www.youtube.com/watch?v=ovS7Wmg9N_I",
+          "summary": "New, Ready, Running, Waiting, Terminated states, context switching overhead and scheduler types."
+        }
+      ]
+    },
+    {
+      "unitNumber": 2,
+      "unitTitle": "UNIT II: CPU Scheduling & Threads",
+      "description": "Multithreading Models, Scheduling Criteria, FCFS, SJF (Preemptive/Non-preemptive), Priority Scheduling, Round Robin, Multilevel Queue & Multilevel Feedback Queue Scheduling.",
+      "videos": [
+        {
+          "id": "v-os-u2-1",
+          "title": "CPU Scheduling Algorithms: FCFS, SJF, SRTF Solved with Gantt Chart",
+          "channel": "Gate Smashers",
+          "duration": "28:30",
+          "url": "https://www.youtube.com/watch?v=zFnrUVqti3M",
+          "summary": "Average turnaround time, waiting time, response time calculations and Convoy Effect in FCFS."
+        },
+        {
+          "id": "v-os-u2-2",
+          "title": "Round Robin CPU Scheduling Algorithm with Time Quantum & Solved Numerical",
+          "channel": "Gate Smashers",
+          "duration": "22:15",
+          "url": "https://www.youtube.com/watch?v=TxjIlNYRZ5E",
+          "summary": "Impact of time quantum size, context switch frequency, and average waiting time calculations."
+        }
+      ]
+    },
+    {
+      "unitNumber": 3,
+      "unitTitle": "UNIT III: Process Synchronization & Deadlocks",
+      "description": "Critical Section Problem, Peterson's Solution, Semaphores (Binary & Counting), Mutex, Producer-Consumer, Readers-Writers, Dining Philosophers Problems. Deadlock Conditions, Resource Allocation Graph, Banker's Algorithm, Deadlock Detection & Recovery.",
+      "videos": [
+        {
+          "id": "v-os-u3-1",
+          "title": "Critical Section Problem, Race Conditions & Peterson's Solution Algorithm",
+          "channel": "Gate Smashers",
+          "duration": "21:40",
+          "url": "https://www.youtube.com/watch?v=1r_7iLq9F0w",
+          "summary": "Mutual exclusion, progress, and bounded waiting criteria satisfied by software solutions."
+        },
+        {
+          "id": "v-os-u3-2",
+          "title": "Semaphores in OS: Binary vs Counting Semaphores & Producer-Consumer Problem",
+          "channel": "Gate Smashers",
+          "duration": "25:10",
+          "url": "https://www.youtube.com/watch?v=XDE0z0b_yE4",
+          "summary": "Wait() and Signal() atomic operations, mutex implementation, and buffer synchronization."
+        },
+        {
+          "id": "v-os-u3-3",
+          "title": "Deadlock in OS: 4 Necessary Conditions & Banker's Algorithm Solved Problem",
+          "channel": "Gate Smashers",
+          "duration": "29:45",
+          "url": "https://www.youtube.com/watch?v=T0FXvTHcYi4",
+          "summary": "Mutual exclusion, hold and wait, no preemption, circular wait, and safety algorithm / resource request algorithm."
+        }
+      ]
+    },
+    {
+      "unitNumber": 4,
+      "unitTitle": "UNIT IV: Memory Management & Virtual Memory",
+      "description": "Logical vs Physical Address Space, Contiguous Memory Allocation, Paging, Page Table Structure, TLB (Translation Lookaside Buffer), Segmentation, Demand Paging, Page Faults, Page Replacement Algorithms (FIFO, LRU, Optimal).",
+      "videos": [
+        {
+          "id": "v-os-u4-1",
+          "title": "Paging in OS: Logical to Physical Address Translation & Page Table Architecture",
+          "channel": "Gate Smashers",
+          "duration": "27:15",
+          "url": "https://www.youtube.com/watch?v=pJ6myTV3ca8",
+          "summary": "Page number, page offset, frame number, MMU translation, and TLB hit ratio calculations."
+        },
+        {
+          "id": "v-os-u4-2",
+          "title": "Page Replacement Algorithms: FIFO, Optimal, LRU & Belady's Anomaly Solved Problems",
+          "channel": "Gate Smashers",
+          "duration": "31:20",
+          "url": "https://www.youtube.com/watch?v=8XFEb8pQ2n4",
+          "summary": "Page fault frequency comparison, stack algorithms, and Belady anomaly illustration in FIFO."
+        }
+      ]
+    },
+    {
+      "unitNumber": 5,
+      "unitTitle": "UNIT V: File Systems & Disk Management",
+      "description": "File Concepts, Access Methods, Directory Structure, File Allocation Methods (Contiguous, Linked, Indexed), Free Space Management, Disk Structure, Disk Scheduling Algorithms (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK).",
+      "videos": [
+        {
+          "id": "v-os-u5-1",
+          "title": "File Allocation Methods: Contiguous, Linked & Inode Indexed Allocation",
+          "channel": "Gate Smashers",
+          "duration": "23:30",
+          "url": "https://www.youtube.com/watch?v=5aK8a5L0mP4",
+          "summary": "External fragmentation in contiguous allocation, pointer overhead in linked, and Unix inode structures."
+        },
+        {
+          "id": "v-os-u5-2",
+          "title": "Disk Scheduling Algorithms: FCFS, SSTF, SCAN, C-SCAN Solved with Total Head Movements",
+          "channel": "Gate Smashers",
+          "duration": "26:50",
+          "url": "https://www.youtube.com/watch?v=9_zW7L_v8K4",
+          "summary": "Seek time calculation, cylinder tracks traversal, and algorithm efficiency comparison."
+        }
+      ]
+    }
+  ]
+},
+  // =========================================================================
   // --- 1. UNIVERSAL HUMAN VALUES (UHV) ---
   // Scheme: 2023 | Code: HSM 201 | Category: BS&H | Credits: 3
   // Common to ALL Branches (CSE, CSM, ECE, EEE, Civil, Mechanical)
@@ -669,184 +1215,506 @@ export const INITIAL_SYLLABUS_VIDEOS = [
   {
     id: 'cse-sem3-cs203-oopj',
     branch: 'CSE',
-    branchesApplicable: ['CSE', 'CSM', 'CSE(DS)', 'CSBS'],
+    branchesApplicable: ['CSE', 'CSM', 'CSE(DS)', 'CSBS', 'ECE', 'EEE', 'Civil', 'Mechanical'],
     semester: 'Sem 3',
+    semestersApplicable: ['Sem 3', 'Sem 4', 'Sem 5'],
     subjectCode: 'CS203',
     subjectName: 'Object Oriented Programming through Java (OOPJ)',
     credits: 3,
     scheme: '2023 Scheme',
     category: 'PC',
-    description: 'Java Fundamentals, Classes & Objects, Inheritance, Dynamic Method Dispatch, Interfaces & Packages, String Handling, Exception Handling, Multithreading & Synchronization, JDBC Architecture, and Collections Framework.',
+    description: 'Java Fundamentals, Classes & Objects, Inheritance, Dynamic Method Dispatch, Interfaces & Packages, String Handling, Exception Handling, Multithreading & Synchronization, JDBC Architecture, and Collections Framework taught by Kunal Kushwaha & top educators.',
     thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000',
     oneShotVideo: {
-      title: 'Java Full Course Marathon in One Shot',
-      channel: 'Telusko / Apna College',
-      url: 'https://www.youtube.com/watch?v=BGTx91t8q50',
-      duration: '8h 30m',
-      views: '4.2M'
+      title: 'Complete Java + DSA + Interview Preparation Bootcamp',
+      channel: 'Kunal Kushwaha',
+      url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+      duration: '60+ Hours',
+      views: '5.8M'
     },
-    playlistUrl: 'https://www.youtube.com/playlist?list=PLsyeobzWxl7pe_IiTfNyr55kwJPWbgxB5',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ',
     units: [
       {
         unitNumber: 1,
-        unitTitle: 'UNIT I: OOP Concepts, Programming Constructs & Classes',
-        description: 'Overview of Java, buzzwords, OOP principles. Data types, Operators, Control statements. Classes, Objects, Methods, Constructors, Console I/O, this keyword, Garbage collection, finalize, and Wrapper classes.',
+        unitTitle: 'UNIT I: Java Architecture, Syntax, Methods & Flow of Program',
+        description: 'Overview of Java, JVM, JRE, JDK, bytecode compilation, Primitive data types, Operators, Control statements (if/else, switch, while, for loops), Functions, Methods, Scoping, Shadowing, and Variable Arguments (Varargs).',
         videos: [
           {
-            id: 'v-oopj-u1-1',
-            title: 'Java Buzzwords & JVM, JRE, JDK Architecture Explained',
-            channel: 'Telusko',
-            duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
-            summary: 'Platform independence, bytecode compilation, JIT compiler and memory regions (Stack, Heap).'
+            id: 'v-oopj-u1-kunal-1',
+            title: 'Introduction to Java: Architecture, Installation, JDK/JRE/JVM & First Program',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 12m',
+            url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+            summary: 'How Java works, bytecode compilation, JIT compiler, memory architecture, installing JDK & IntelliJ IDEA, and writing your first Java application.'
           },
           {
-            id: 'v-oopj-u1-2',
-            title: 'Classes, Objects, Methods & Constructor Overloading in Java',
-            channel: 'Apna College',
-            duration: '35:40',
-            url: 'https://www.youtube.com/watch?v=bSrm9RXwBaI',
-            summary: 'Default, parameterized, copy constructors, this keyword reference and memory allocation.'
+            id: 'v-oopj-u1-kunal-2',
+            title: 'Conditionals, Loops & Calculator Program in Java',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 45m',
+            url: 'https://www.youtube.com/watch?v=vvanI8NRlSI',
+            summary: 'If-else statements, while loops, do-while loops, for loops, counting occurrences, reverse a number, and building a full interactive calculator.'
           },
           {
-            id: 'v-oopj-u1-3',
-            title: 'Wrapper Classes, Autoboxing/Unboxing & Garbage Collection in Java',
-            channel: 'Telusko',
-            duration: '19:30',
-            url: 'https://www.youtube.com/watch?v=3u_sK_8j2wA',
-            summary: 'Integer, Double wrappers, System.gc(), and object destruction.'
+            id: 'v-oopj-u1-kunal-3',
+            title: 'Functions & Methods in Java: Parameters, Return Values, Scoping & Varargs',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 30m',
+            url: 'https://www.youtube.com/watch?v=vLnPwxZd34I',
+            summary: 'Passing parameters by value, method overloading, block scope, method scope, loop scope, and variable length arguments (Varargs).'
+          },
+          {
+            id: 'v-oopj-u1-kunal-4',
+            title: 'Arrays & ArrayList in Java: Memory Allocation, 2D Arrays & Dynamic Sizing',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 10m',
+            url: 'https://www.youtube.com/watch?v=n60Dn0UsbEk',
+            summary: 'Array declaration, initialization in heap memory, stack pointers, 2D multidimensional arrays, and ArrayList dynamic internals.'
           }
         ]
       },
       {
         unitNumber: 2,
-        unitTitle: 'UNIT II: Inheritance, Interfaces & Packages',
-        description: 'Types of Inheritance (Single, Multilevel, Hierarchical, Multiple via Interfaces), Final and Super keywords, Method Overloading, Dynamic Method Dispatch. Abstract classes, Interfaces, Default/Static methods in Interfaces. Packages, java.lang, java.util, Math, Random, Formatter, and Date/Time.',
+        unitTitle: 'UNIT II: Object Oriented Programming (OOP 1 & 2): Classes, Objects, Constructors & Inheritance',
+        description: 'Classes, Objects, Constructors (Default, Parameterized), this keyword, new keyword, Garbage Collection, Finalize, Inheritance (Single, Multilevel, Hierarchical), super keyword, Polymorphism (Static vs Dynamic), Dynamic Method Dispatch, Encapsulation, and Abstraction.',
         videos: [
           {
-            id: 'v-oopj-u2-1',
-            title: 'Inheritance in Java (Single, Multilevel, Hierarchical) with super keyword',
-            channel: 'Telusko',
-            duration: '28:10',
+            id: 'v-oopj-u2-kunal-1',
+            title: 'OOP 1: Introduction, Classes, Objects, Constructors, Memory Allocation & this Keyword',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 55m',
+            url: 'https://www.youtube.com/watch?v=BSvc586N45E',
+            summary: 'Deep dive into classes as templates, instantiating objects with new, constructor overloading, calling constructor from constructor using this(), and final keyword immutability.'
+          },
+          {
+            id: 'v-oopj-u2-kunal-2',
+            title: 'OOP 2: Packages, Static Variables, Static Methods, Static Blocks & Singleton Class',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 40m',
+            url: 'https://www.youtube.com/watch?v=4Q_lB_c3lU',
+            summary: 'Package directory hierarchy, classpath, static keyword memory management, inner classes, static initialization blocks, and building a Singleton class in Java.'
+          },
+          {
+            id: 'v-oopj-u2-kunal-3',
+            title: 'OOP 3: Inheritance, Polymorphism, Encapsulation & Dynamic Method Dispatch',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 15m',
             url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
-            summary: 'Parent-child relationships, super() constructor calls, method overriding rules.'
-          },
-          {
-            id: 'v-oopj-u2-2',
-            title: 'Dynamic Method Dispatch (Runtime Polymorphism) in Java Explained',
-            channel: 'Telusko',
-            duration: '18:45',
-            url: 'https://www.youtube.com/watch?v=d_p_java_disp',
-            summary: 'Superclass reference variable pointing to subclass object and runtime method resolution.'
-          },
-          {
-            id: 'v-oopj-u2-3',
-            title: 'Abstract Classes vs Interfaces & Default/Static Methods in Interfaces',
-            channel: 'Telusko',
-            duration: '25:20',
-            url: 'https://www.youtube.com/watch?v=1XATy2G1qJg',
-            summary: 'Multiple inheritance solution, contract design, and Java 8 interface feature additions.'
-          },
-          {
-            id: 'v-oopj-u2-4',
-            title: 'Creating and Importing User-Defined Packages & java.util Classes',
-            channel: 'Telusko',
-            duration: '21:30',
-            url: 'https://www.youtube.com/watch?v=404iM1lqfE4',
-            summary: 'Classpath configuration, package directory hierarchy, access modifiers (public, protected, private, default).'
+            summary: 'Types of inheritance, super() constructor calls, method overriding vs overloading, runtime polymorphism via dynamic method dispatch, and data hiding via getters/setters.'
           }
         ]
       },
       {
         unitNumber: 3,
-        unitTitle: 'UNIT III: String Handling & Exception Handling',
-        description: 'String constructors & methods (charAt, compareTo, substring, replace). StringBuffer & StringBuilder comparison and mutable methods. Exception Handling hierarchy, try-catch-finally, throw, throws, multi-catch, and Custom Exceptions.',
+        unitTitle: 'UNIT III: OOP (3 & 4): Access Control, Abstract Classes, Interfaces & String Handling',
+        description: 'Access Modifiers (public, protected, private, default), in-built packages, Object class methods. Abstract classes, Interfaces, Default/Static methods in Interfaces, Multiple inheritance via interfaces. Strings, StringBuilder, Immutability & String Constant Pool (SCP).',
         videos: [
           {
-            id: 'v-oopj-u3-1',
-            title: 'String vs StringBuffer vs StringBuilder in Java Deep Dive',
-            channel: 'Telusko',
-            duration: '26:50',
-            url: 'https://www.youtube.com/watch?v=rzA7UJ-hQn4',
-            summary: 'String Constant Pool (SCP), immutability reason, thread safety in StringBuffer vs speed in StringBuilder.'
+            id: 'v-oopj-u3-kunal-1',
+            title: 'OOP 4: Access Control, In-built Packages, Object Class Methods & toString()',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 20m',
+            url: 'https://www.youtube.com/watch?v=W145DXs8fG8',
+            summary: 'Detailed access modifier matrix across same package, subclass, and external packages, hashCode(), equals(), and Object class inheritance.'
           },
           {
-            id: 'v-oopj-u3-2',
-            title: 'Exception Handling Masterclass (try, catch, finally, throw, throws)',
-            channel: 'Gate Smashers',
-            duration: '31:10',
-            url: 'https://www.youtube.com/watch?v=e_wK3b6Fk2s',
-            summary: 'Checked vs Unchecked exceptions, Throwable hierarchy, and multi-catch block ordering.'
+            id: 'v-oopj-u3-kunal-2',
+            title: 'OOP 5: Abstract Classes, Interfaces, Default/Static Methods & Nested Interfaces',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 50m',
+            url: 'https://www.youtube.com/watch?v=rg1P9VpD_B0',
+            summary: 'Why multiple inheritance is not supported with classes, creating interface contracts, implementing multiple interfaces, and default/static methods.'
           },
           {
-            id: 'v-oopj-u3-3',
-            title: 'Creating User-Defined / Custom Exceptions in Java with Examples',
-            channel: 'Telusko',
-            duration: '16:40',
-            url: 'https://www.youtube.com/watch?v=83e6yWJ_05s',
-            summary: 'Extending Exception/RuntimeException, passing custom messages to super(message).'
+            id: 'v-oopj-u3-kunal-3',
+            title: 'Strings & StringBuilder in Java: String Pool, Immutability, Performance & Methods',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 35m',
+            url: 'https://www.youtube.com/watch?v=zjxXwD5qTfQ',
+            summary: 'String Constant Pool (SCP), == vs .equals(), charAt, substring, mutable StringBuilder operations, and memory efficiency.'
           }
         ]
       },
       {
         unitNumber: 4,
-        unitTitle: 'UNIT IV: Multithreading & JDBC Architecture',
-        description: 'Java Thread model, Thread class & Runnable interface, Thread life cycle, Priorities, Deadlocks, Synchronization (synchronized keyword, blocks), Inter-thread communication (wait, notify, notifyAll). JDBC: Architecture, Drivers, Steps, DriverManager, Connection, Statement, PreparedStatement & ResultSet.',
+        unitTitle: 'UNIT IV: Exception Handling, Generics & Multithreading',
+        description: 'Exception handling hierarchy (Throwable, Exception, Error, RuntimeException), try-catch-finally blocks, throw, throws, custom user-defined exceptions. Generics, Custom ArrayList, Wildcards, Lambda expressions. Java Thread model, Runnable interface, Thread life cycle, Synchronization, and JDBC basics.',
         videos: [
           {
-            id: 'v-oopj-u4-1',
-            title: 'Multithreading in Java: Thread class vs Runnable interface',
-            channel: 'Telusko',
-            duration: '32:15',
+            id: 'v-oopj-u4-kunal-1',
+            title: 'OOP 6: Generics, Custom ArrayList, Lambda Expressions & Exception Handling in Java',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 05m',
+            url: 'https://www.youtube.com/watch?v=OY2lPr8h93U',
+            summary: 'Generics type safety, bounded wildcards <? extends T>, custom ArrayList implementation, lambda expressions, try-catch-finally, and custom exceptions.'
+          },
+          {
+            id: 'v-oopj-u4-kunal-2',
+            title: 'Multithreading & Concurrency in Java: Thread class vs Runnable & Synchronization',
+            channel: 'Telusko / Kunal Kushwaha',
+            duration: '42:15',
             url: 'https://www.youtube.com/watch?v=mD_3h_C0p9Y',
-            summary: 'Thread lifecycle states (New, Runnable, Blocked, Waiting, Terminated) and start() vs run().'
+            summary: 'Thread states, thread priorities, synchronized methods, synchronized blocks, wait(), notify(), and inter-thread communication.'
           },
           {
-            id: 'v-oopj-u4-2',
-            title: 'Thread Synchronization, Deadlock & Producer-Consumer Problem (wait/notify)',
-            channel: 'Telusko',
-            duration: '38:40',
-            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
-            summary: 'Monitor lock mechanism, preventing race conditions, and synchronized buffer communication.'
-          },
-          {
-            id: 'v-oopj-u4-3',
-            title: 'JDBC Step-by-Step Tutorial (Connection, PreparedStatement & CRUD Operations)',
+            id: 'v-oopj-u4-kunal-3',
+            title: 'JDBC Step-by-Step Architecture: Connection, PreparedStatement & Database CRUD',
             channel: 'Telusko',
             duration: '35:20',
             url: 'https://www.youtube.com/watch?v=3n-vH_72s9w',
-            summary: 'Class.forName(), DriverManager.getConnection(), executing SQL queries and ResultSet traversal.'
+            summary: 'Connecting Java to MySQL/PostgreSQL databases using JDBC Driver, DriverManager, Statement, and ResultSet execution.'
           }
         ]
       },
       {
         unitNumber: 5,
-        unitTitle: 'UNIT V: Java Collections Framework',
-        description: 'Collection Interfaces: List, Set, SortedSet, Queue, Deque. Collection Classes: ArrayList, LinkedList, HashSet, LinkedHashSet, TreeSet, PriorityQueue, ArrayDeque. Accessing collections using Iterator and For-Each loops.',
+        unitTitle: 'UNIT V: Java Collections Framework Masterclass',
+        description: 'Collection Interfaces: List, Set, SortedSet, Queue, Deque, Map. Classes: ArrayList, LinkedList, Vector, Stack, HashSet, LinkedHashSet, TreeSet, PriorityQueue, ArrayDeque, HashMap, LinkedHashMap, TreeMap. Iterators & For-Each loops.',
         videos: [
           {
-            id: 'v-oopj-u5-1',
-            title: 'Java Collections Framework Complete Architecture & Hierarchy',
-            channel: 'Telusko',
-            duration: '45:30',
-            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
-            summary: 'Collection interface tree, difference between List (ordered/duplicates) and Set (unique elements).'
-          },
-          {
-            id: 'v-oopj-u5-2',
-            title: 'ArrayList vs LinkedList vs HashSet vs TreeSet Performance & Internal Working',
-            channel: 'Apna College',
-            duration: '40:15',
+            id: 'v-oopj-u5-kunal-1',
+            title: 'Java Collections Framework Complete Masterclass (Internal Working & Time Complexity)',
+            channel: 'Kunal Kushwaha',
+            duration: '4h 30m',
             url: 'https://www.youtube.com/watch?v=rzA7UJ-hQn4',
-            summary: 'Dynamic resizing, hashing bucket collision handling, and red-black tree sorted traversal.'
+            summary: 'Detailed architecture of Collections, internal arrays in ArrayList, Node pointers in LinkedList, hashing in HashMap, Red-Black Trees in TreeSet/TreeMap, PriorityQueues, and Iterator patterns.'
           },
           {
-            id: 'v-oopj-u5-3',
-            title: 'Iterator, ListIterator & For-Each Loop Iteration in Java Collections',
-            channel: 'Telusko',
-            duration: '18:50',
-            url: 'https://www.youtube.com/watch?v=83e6yWJ_05s',
-            summary: 'hasNext(), next(), remove() methods and avoiding ConcurrentModificationException.'
+            id: 'v-oopj-u5-kunal-2',
+            title: 'HashMap & HashSet Internal Working: Hashing, Buckets & Collision Resolution',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 15m',
+            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
+            summary: 'hashCode(), equals(), bucket index calculation, linked list chaining, and treeification in Java 8+.'
+          },
+          {
+            id: 'v-oopj-u5-kunal-3',
+            title: 'Bitwise Operators & Number System Math for DSA and Java Coding Interviews',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 45m',
+            url: 'https://www.youtube.com/watch?v=f65OiUP1qMM',
+            summary: 'Bit manipulation tricks, find unique element, odd/even check, power of 2, set bits count, and fast exponentiation.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // --- FLAGSHIP 1: COMPLETE JAVA + DSA + INTERVIEW BOOTCAMP BY KUNAL KUSHWAHA ---
+  // =========================================================================
+  {
+    id: 'kunal-kushwaha-java-dsa-masterclass',
+    branch: 'CSE',
+    branchesApplicable: ['CSE', 'CSM', 'ECE', 'EEE', 'Civil', 'Mechanical'],
+    semester: 'Sem 3',
+    semestersApplicable: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+    subjectCode: 'KUNAL-DSA-BOOTCAMP',
+    subjectName: 'Complete Java + DSA Bootcamp (by Kunal Kushwaha)',
+    credits: 4,
+    scheme: 'Industry Ready 2026',
+    category: 'Placement Masterclass',
+    description: 'The world-renowned 60+ hour Java, Data Structures, Algorithms, LeetCode, and FAANG interview preparation bootcamp by Kunal Kushwaha. Covers Java fundamentals, Searching, Sorting, Strings, OOP, Recursion, Trees, Graphs, DP, and System Design.',
+    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1000',
+    oneShotVideo: {
+      title: 'Complete Java + DSA + Interview Preparation Bootcamp (Full Playlist)',
+      channel: 'Kunal Kushwaha',
+      url: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ',
+      duration: '60+ Hours',
+      views: '6.2M'
+    },
+    playlistUrl: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnr_DxHsP7AW9ftq0AtAyYqJ',
+    units: [
+      {
+        unitNumber: 1,
+        unitTitle: 'MODULE 1: Java Fundamentals, Memory Model & Flow of Program',
+        description: 'How Java works, Bytecode, JRE/JDK/JVM, Variables, Conditionals, Loops, Functions, Methods, Scoping, and Time Complexity basics.',
+        videos: [
+          {
+            id: 'v-kk-m1-1',
+            title: 'Java Introduction, Setup, Memory Architecture & First Code',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 12m',
+            url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+            summary: 'JVM internals, Stack vs Heap memory, primitive data types, Scanner input, and compilation workflow.'
+          },
+          {
+            id: 'v-kk-m1-2',
+            title: 'Conditionals, Loops & Switch Statements in Java',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 45m',
+            url: 'https://www.youtube.com/watch?v=vvanI8NRlSI',
+            summary: 'Nested loops, break and continue, enhanced switch syntax, and solving core math programming problems.'
+          },
+          {
+            id: 'v-kk-m1-3',
+            title: 'Functions & Methods in Java: Pass by Value, Scoping & Varargs',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 30m',
+            url: 'https://www.youtube.com/watch?v=vLnPwxZd34I',
+            summary: 'Method signature, return types, pass-by-value demonstration with object references, and variable arguments.'
+          }
+        ]
+      },
+      {
+        unitNumber: 2,
+        unitTitle: 'MODULE 2: Arrays, Linear Search & Binary Search (1D and 2D Matrices)',
+        description: 'Memory allocation of arrays, dynamic ArrayLists, Linear Search, Binary Search in sorted arrays, Order-Agnostic Binary Search, LeetCode Binary Search problems, and Binary Search in 2D Matrices.',
+        videos: [
+          {
+            id: 'v-kk-m2-1',
+            title: 'Arrays & Dynamic ArrayList in Java: Memory Allocation & 2D Matrices',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 10m',
+            url: 'https://www.youtube.com/watch?v=n60Dn0UsbEk',
+            summary: 'Arrays in heap, continuous memory concept, multidimensional arrays, dynamic array resizing, and reversing arrays.'
+          },
+          {
+            id: 'v-kk-m2-2',
+            title: 'Linear Search Algorithm & LeetCode Problem Solutions',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 05m',
+            url: 'https://www.youtube.com/watch?_HRA37X8N_Q',
+            summary: 'Searching in range, searching in strings, minimum number finding, and searching in 2D arrays.'
+          },
+          {
+            id: 'v-kk-m2-3',
+            title: 'Binary Search Algorithm & Order-Agnostic Binary Search Explained',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 25m',
+            url: 'https://www.youtube.com/watch?v=fwpFkTXpYrg',
+            summary: 'O(log N) divide-and-conquer searching logic, best case vs worst case, and order-agnostic comparison.'
+          },
+          {
+            id: 'v-kk-m2-4',
+            title: 'Top LeetCode Binary Search Interview Questions (Ceiling, Floor, First/Last Position, Peak Index)',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 45m',
+            url: 'https://www.youtube.com/watch?v=W9QJ8HaRvSw',
+            summary: 'Solving Ceiling of number, Floor, First and Last Position in sorted array, Infinite array search, and Mountain array peak.'
+          },
+          {
+            id: 'v-kk-m2-5',
+            title: 'Binary Search in 2D Matrices (Row-Wise & Column-Wise Sorted)',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 15m',
+            url: 'https://www.youtube.com/watch?v=enI_exwq3Gs',
+            summary: 'O(N + M) staircase elimination search and O(log(N*M)) strict sorted matrix binary search.'
+          }
+        ]
+      },
+      {
+        unitNumber: 3,
+        unitTitle: 'MODULE 3: Sorting Algorithms (Bubble, Selection, Insertion, Cyclic Sort) & Strings',
+        description: 'Bubble Sort, Selection Sort, Insertion Sort, Cyclic Sort (Crucial for Amazon/Google missing/duplicate number questions), Pattern Printing, and Strings/StringBuilder.',
+        videos: [
+          {
+            id: 'v-kk-m3-1',
+            title: 'Bubble Sort Algorithm: Step-by-Step with Complexity Analysis',
+            channel: 'Kunal Kushwaha',
+            duration: '50 mins',
+            url: 'https://www.youtube.com/watch?v=F5MZyqRp_IM',
+            summary: 'Adjacent element comparisons, swapping, best-case O(N) optimization with boolean swapped flag.'
+          },
+          {
+            id: 'v-kk-m3-2',
+            title: 'Selection Sort & Insertion Sort Algorithms Explained',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 15m',
+            url: 'https://www.youtube.com/watch?v=Nd4SCCIHFWk',
+            summary: 'Finding max/min index in remaining unsorted subarray, inserting into sorted left partition, and why insertion sort is adaptive.'
+          },
+          {
+            id: 'v-kk-m3-3',
+            title: 'Cyclic Sort Algorithm: Amazon & Google Favorite Pattern (Missing Number, Disappeared Numbers)',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 35m',
+            url: 'https://www.youtube.com/watch?v=JflhwH15OR4',
+            summary: 'Index mapping technique for numbers 1 to N in O(N) time with O(1) auxiliary space.'
+          },
+          {
+            id: 'v-kk-m3-4',
+            title: 'Strings, StringBuilder & Character Array Performance in Java',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 35m',
+            url: 'https://www.youtube.com/watch?v=zjxXwD5qTfQ',
+            summary: 'String Constant Pool (SCP), immutability, palindrome check, and StringBuilder dynamic character operations.'
+          }
+        ]
+      },
+      {
+        unitNumber: 4,
+        unitTitle: 'MODULE 4: Object-Oriented Programming (OOP Full 6-Part Masterclass)',
+        description: 'Comprehensive OOP: Classes, Objects, Constructors, Static variables/methods, Singleton design pattern, Inheritance, Polymorphism, Encapsulation, Abstraction, Access Modifiers, Interfaces, Generics, and Collections Framework.',
+        videos: [
+          {
+            id: 'v-kk-m4-1',
+            title: 'OOP 1: Classes, Objects, Constructors, new & this keyword',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 55m',
+            url: 'https://www.youtube.com/watch?v=BSvc586N45E',
+            summary: 'Class templates, stack reference vs heap instance, constructor overloading, and final keyword behavior.'
+          },
+          {
+            id: 'v-kk-m4-2',
+            title: 'OOP 2: Packages, Static Context, Singleton Pattern & Inner Classes',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 40m',
+            url: 'https://www.youtube.com/watch?v=4Q_lB_c3lU',
+            summary: 'Package organization, static members loaded during class loading, static blocks, and private constructor singleton.'
+          },
+          {
+            id: 'v-kk-m4-3',
+            title: 'OOP 3: Inheritance, Polymorphism, Encapsulation & Runtime Dispatch',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 15m',
+            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            summary: 'Super keyword, constructor chaining, method overriding rules, runtime polymorphism, and encapsulation.'
+          },
+          {
+            id: 'v-kk-m4-4',
+            title: 'OOP 4: Access Modifiers, Protected Specifiers & Object Class Methods',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 20m',
+            url: 'https://www.youtube.com/watch?v=W145DXs8fG8',
+            summary: 'Public, private, default, protected access tables, toString(), equals(), hashCode(), and finalize().'
+          },
+          {
+            id: 'v-kk-m4-5',
+            title: 'OOP 5: Abstract Classes, Interfaces, Multiple Inheritance & Default Methods',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 50m',
+            url: 'https://www.youtube.com/watch?v=rg1P9VpD_B0',
+            summary: 'Abstract methods, interface specifications, multiple interface implementation, and static methods in interfaces.'
+          },
+          {
+            id: 'v-kk-m4-6',
+            title: 'OOP 6: Generics, Custom ArrayList, Lambda Expressions & Exception Handling',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 05m',
+            url: 'https://www.youtube.com/watch?v=OY2lPr8h93U',
+            summary: 'Generic classes, type parameters, lambda functions, try-catch blocks, throw, throws, and custom exceptions.'
+          }
+        ]
+      },
+      {
+        unitNumber: 5,
+        unitTitle: 'MODULE 5: Recursion, Backtracking, Bitwise Math & Dynamic Programming',
+        description: 'Recursion basics, Recursive tree visualization, Subset sums, Permutations, Backtracking (N-Queens, Sudoku Solver, Knights Tour), Bitwise operations, and Dynamic Programming intro.',
+        videos: [
+          {
+            id: 'v-kk-m5-1',
+            title: 'Recursion Introduction: Call Stack, Base Conditions & Recurrence Relations',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 45m',
+            url: 'https://www.youtube.com/watch?v=M2uO2nMT0Bk',
+            summary: 'How recursion works in memory, call stack frames, base cases, and writing pure recursive functions.'
+          },
+          {
+            id: 'v-kk-m5-2',
+            title: 'Recursion with Arrays & Linear/Binary Search via Recursion',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 20m',
+            url: 'https://www.youtube.com/watch?v=sTdiMLom00U',
+            summary: 'Checking if array is sorted recursively, linear search returning ArrayList of multiple occurrences, and rotated binary search.'
+          },
+          {
+            id: 'v-kk-m5-3',
+            title: 'Recursion Pattern Questions, Bubble Sort & Selection Sort using Recursion',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 10m',
+            url: 'https://www.youtube.com/watch?v=ymgnIIclCF0',
+            summary: 'Triangle patterns, recursive bubble sort, and recursive selection sort step-by-step.'
+          },
+          {
+            id: 'v-kk-m5-4',
+            title: 'Merge Sort & In-Place Merge Sort using Recursion & Divide-and-Conquer',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 30m',
+            url: 'https://www.youtube.com/watch?v=iKGAgWdgoRk',
+            summary: 'Divide and conquer strategy, merging two sorted arrays, in-place merge sort, and time complexity derivation.'
+          },
+          {
+            id: 'v-kk-m5-5',
+            title: 'Quick Sort Algorithm using Recursion & Pivot Partitioning',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 15m',
+            url: 'https://www.youtube.com/watch?v=Z8svOqfqDnl',
+            summary: 'Pivot selection, swapping around pivot, recursive partitioning, and worst-case prevention.'
+          },
+          {
+            id: 'v-kk-m5-6',
+            title: 'Backtracking Masterclass: Mazes, Obstacles, All Paths & Matrix Traversals',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 15m',
+            url: 'https://www.youtube.com/watch?v=zg5v2vZxp9k',
+            summary: 'State restoration, marking visited cells, restoring visited array upon backtracking, and printing full path steps.'
+          },
+          {
+            id: 'v-kk-m5-7',
+            title: 'N-Queens, N-Knights & Sudoku Solver Complete Backtracking Solutions',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 30m',
+            url: 'https://www.youtube.com/watch?v=nC1rbW2YSz0',
+            summary: 'Placing non-attacking queens on N*N chessboard, isValid safe checks, knight placements, and 9*9 Sudoku solver.'
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // --- FLAGSHIP 2: GIT, GITHUB & OPEN SOURCE BOOTCAMP BY KUNAL KUSHWAHA ---
+  // =========================================================================
+  {
+    id: 'kunal-kushwaha-git-github-bootcamp',
+    branch: 'CSE',
+    branchesApplicable: ['CSE', 'CSM', 'ECE', 'EEE', 'Civil', 'Mechanical'],
+    semester: 'Sem 3',
+    semestersApplicable: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+    subjectCode: 'KUNAL-GIT-DEVOPS',
+    subjectName: 'Git, GitHub & Open Source Masterclass (by Kunal Kushwaha)',
+    credits: 2,
+    scheme: 'Industry Ready 2026',
+    category: 'Placement Masterclass',
+    description: 'Complete Git, GitHub, Version Control, Pull Requests, Open Source Contributions, and DevOps pipeline fundamentals taught by Kunal Kushwaha.',
+    thumbnail: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=1000',
+    oneShotVideo: {
+      title: 'Complete Git and GitHub Tutorial for Beginners to Advanced (Masterclass)',
+      channel: 'Kunal Kushwaha',
+      url: 'https://www.youtube.com/watch?v=apGV9Kg7ics',
+      duration: '2h 45m',
+      views: '3.1M'
+    },
+    playlistUrl: 'https://www.youtube.com/playlist?list=PL9gnSGHSqcnoqBXdMwUTjGgi95E2CpXTU',
+    units: [
+      {
+        unitNumber: 1,
+        unitTitle: 'MODULE 1: Version Control & Git Fundamentals',
+        description: 'What is version control, Git architecture, Working directory, Staging area, Local repo, Commits, and Logs.',
+        videos: [
+          {
+            id: 'v-kk-git-1',
+            title: 'Complete Git & GitHub Tutorial for Beginners to Pro',
+            channel: 'Kunal Kushwaha',
+            duration: '2h 45m',
+            url: 'https://www.youtube.com/watch?v=apGV9Kg7ics',
+            summary: 'git init, git add, git commit, git status, git log, git diff, branching, merging, and merge conflicts.'
+          }
+        ]
+      },
+      {
+        unitNumber: 2,
+        unitTitle: 'MODULE 2: GitHub, Remote Repositories & Open Source Pull Requests',
+        description: 'Pushing to remote GitHub, cloning, forks, pull requests, upstream syncing, and landing open-source internships (GSoC, LFX, MLH).',
+        videos: [
+          {
+            id: 'v-kk-git-2',
+            title: 'How to Contribute to Open Source: Step-by-Step Pull Request Guide',
+            channel: 'Kunal Kushwaha',
+            duration: '1h 15m',
+            url: 'https://www.youtube.com/watch?v=msyGUtUCun8',
+            summary: 'Forking repositories, creating feature branches, submitting PRs, resolving code reviews, and contributing to top GitHub projects.'
           }
         ]
       }

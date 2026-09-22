@@ -48,7 +48,7 @@ export default function ContactUs({ user }) {
     
     try {
       const targetPhone = "919346476055";
-      const text = `💬 *NEW INQUIRY - LUMIXORA*\n\n`
+      const text = `💬 *NEW INQUIRY - VYOMRA*\n\n`
         + `👤 *Name:* ${name.trim()}\n`
         + `📧 *Email:* ${email.trim()}\n\n`
         + `✉️ *Message:* ${message.trim()}`;
@@ -82,13 +82,13 @@ export default function ContactUs({ user }) {
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-purple/20 border border-white/10 text-[10px] font-bold text-brand-pink tracking-wide">
             <Sparkles className="w-3 h-3" />
-            <span>Lumixora Portal Desk</span>
+            <span>Vyomra Portal Desk</span>
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
             Connect with <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-pink to-brand-purple">Admin / Founder</span>
           </h1>
           <p className="text-xs text-gray-400 leading-relaxed">
-            Have questions about Lumixora? Need technical support or want to request custom academic resources? Our support team is here to assist you 24/7.
+            Have questions about Vyomra? Need technical support or want to request custom academic resources? Our support team is here to assist you 24/7.
           </p>
         </div>
       </div>

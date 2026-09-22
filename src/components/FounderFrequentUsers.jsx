@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Flame, Clock, Award, TrendingUp, Search, Filter, Trophy, LogIn } from 'lucide-react';
 import { db } from '../config/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { getStoredTestSubmissions } from '../services/founderNotificationService';
+import { DEFAULT_SUBMISSIONS } from '../data/defaultSubmissionsData';
 
 export default function FounderFrequentUsers({ usersList, onToggleBlock }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,31 +23,90 @@ export default function FounderFrequentUsers({ usersList, onToggleBlock }) {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'test_results'));
         const submittersMap = new Map();
         
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const uid = data.userId || `anonymous_${Math.random()}`;
+        // 1. Process stored test submissions
+        const stored = getStoredTestSubmissions();
+        stored.forEach((data) => {
+          const emailKey = (data.userEmail || data.email || '').toLowerCase().trim();
+          const uid = data.userId || emailKey || `anonymous_${Math.random()}`;
           const dateStr = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
-          
-          const existing = submittersMap.get(uid) || { tests_written: 0, last_test_date: '' };
+          const existing = submittersMap.get(uid) || submittersMap.get(emailKey) || { tests_written: 0, last_test_date: '' };
           
           let cleanName = data.user || existing.name || 'Unknown User';
           if (cleanName.includes('{')) {
             cleanName = cleanName.substring(0, cleanName.indexOf('{')).trim() || 'Unknown User';
           }
           
-          submittersMap.set(uid, {
+          const record = {
             ...existing,
             uid,
             name: cleanName,
-            email: data.userEmail || existing.email,
+            email: data.userEmail || data.email || existing.email,
             tests_written: existing.tests_written + 1,
             last_test_date: dateStr > existing.last_test_date ? dateStr : existing.last_test_date
-          });
+          };
+          submittersMap.set(uid, record);
+          if (emailKey) submittersMap.set(emailKey, record);
         });
-        setTestSubmitters(Array.from(submittersMap.values()));
+
+        // 2. Process Firestore submissions if available
+        if (db) {
+          try {
+            const querySnapshot = await getDocs(collection(db, 'test_results'));
+            querySnapshot.forEach((docSnap) => {
+              const data = docSnap.data();
+              const emailKey = (data.userEmail || data.email || '').toLowerCase().trim();
+              const uid = data.userId || emailKey || docSnap.id;
+              const dateStr = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
+              
+              const existing = submittersMap.get(uid) || submittersMap.get(emailKey) || { tests_written: 0, last_test_date: '' };
+              
+              let cleanName = data.user || existing.name || 'Unknown User';
+              if (cleanName.includes('{')) {
+                cleanName = cleanName.substring(0, cleanName.indexOf('{')).trim() || 'Unknown User';
+              }
+              
+              const record = {
+                ...existing,
+                uid,
+                name: cleanName,
+                email: data.userEmail || data.email || existing.email,
+                tests_written: existing.tests_written + 1,
+                last_test_date: dateStr > existing.last_test_date ? dateStr : existing.last_test_date
+              };
+              submittersMap.set(uid, record);
+            });
+          } catch (_fsErr) {}
+        }
+
+        // 3. Fallback to DEFAULT_SUBMISSIONS if map is empty
+        if (submittersMap.size === 0) {
+          DEFAULT_SUBMISSIONS.forEach((data) => {
+            const emailKey = (data.userEmail || data.email || '').toLowerCase().trim();
+            const uid = data.userId || emailKey || `anonymous_${Math.random()}`;
+            const dateStr = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
+            const existing = submittersMap.get(uid) || submittersMap.get(emailKey) || { tests_written: 0, last_test_date: '' };
+            
+            let cleanName = data.user || existing.name || 'Unknown User';
+            if (cleanName.includes('{')) {
+              cleanName = cleanName.substring(0, cleanName.indexOf('{')).trim() || 'Unknown User';
+            }
+            
+            const record = {
+              ...existing,
+              uid,
+              name: cleanName,
+              email: data.userEmail || data.email || existing.email,
+              tests_written: existing.tests_written + 1,
+              last_test_date: dateStr > existing.last_test_date ? dateStr : existing.last_test_date
+            };
+            submittersMap.set(uid, record);
+            if (emailKey) submittersMap.set(emailKey, record);
+          });
+        }
+        
+        setTestSubmitters(Array.from(new Set(submittersMap.values())));
       } catch (err) {
         console.error("Error fetching test submitters:", err);
       }

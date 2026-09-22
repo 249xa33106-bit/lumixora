@@ -56,5 +56,13 @@ export function ToastProvider({ children }) {
 }
 
 export function useToast() {
-  return useContext(ToastContext);
+  const context = useContext(ToastContext);
+  if (!context) {
+    return {
+      addToast: ({ message, type }) => {
+        console.log(`[Toast] (${type || 'info'}):`, message);
+      }
+    };
+  }
+  return context;
 }

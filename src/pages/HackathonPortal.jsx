@@ -489,7 +489,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
     const userProfileSummary = `Scholar: ${cleanUserName}, College: ${userCollege}, Branch: ${user?.department || 'CSE'}, Role: ${user?.role || 'Student'}`;
     const openSquadsSnippet = squadPosts.slice(0, 8).map((sq, i) => `${i+1}. [${sq.hackathonTitle}] Team: "${sq.teamName || 'Squad'}" needs: ${sq.requiredRoles} | Skills: ${sq.skillsRequired} | College: ${sq.authorCollege}`).join('\n');
 
-    const prompt = `You are Lumixora AI Squad Formation Engine.
+    const prompt = `You are Vyomra AI Squad Formation Engine.
 Based on the student's profile:
 ${userProfileSummary}
 
@@ -508,7 +508,7 @@ Analyze compatibility and provide a top 3 smart match recommendations in Markdow
       });
       setAiMatchResult(response);
     } catch (err) {
-      setAiMatchResult(`### 🤖 AI Smart Match Analysis\n\n**1. Smart India Hackathon (95% Match)**\n* Reason: Strong complementary skill match for rapid MVP prototyping.\n* Suggested Pitch: *"Hi! I saw your SIH squad on Lumixora. I can handle full frontend architecture & deployment."*`);
+      setAiMatchResult(`### 🤖 AI Smart Match Analysis\n\n**1. Smart India Hackathon (95% Match)**\n* Reason: Strong complementary skill match for rapid MVP prototyping.\n* Suggested Pitch: *"Hi! I saw your SIH squad on Vyomra. I can handle full frontend architecture & deployment."*`);
     } finally {
       setAiMatching(false);
     }
@@ -542,6 +542,37 @@ Generate a high-converting candidate application kit in clean Markdown with:
       setAiInternResult(`### 📄 Recruiter Pitch Kit for ${aiSelectedInternship.company}\n\n**Subject:** Application for ${aiSelectedInternship.role} - ${cleanUserName}\n\nHi [Recruiter Name],\n\nI noticed ${aiSelectedInternship.company} is hiring for ${aiSelectedInternship.role}. With hands-on experience in ${aiInternSkills}, I built high-concurrency systems that handle real-time workloads with sub-50ms latency. I'd love to contribute to your engineering team.`);
     } finally {
       setAiInternGenerating(false);
+    }
+  };
+
+  // Handle AI Hackathon Project Ideator
+  const handleGenerateAiIdea = async () => {
+    if (!aiSelectedHackathon) return;
+    setAiGenerating(true);
+    setAiResult(null);
+
+    const prompt = `You are a Grand Champion Hackathon Mentor & Product Architect.
+I am participating in "${aiSelectedHackathon.title}" organized by "${aiSelectedHackathon.organizer}".
+Target Problem Track: "${aiTargetTrack}"
+Tech Stack Available: "${aiTechStack}"
+
+Generate an unfair-advantage winning hackathon submission blueprint in clean Markdown with:
+1. 🏆 **Winning Product Idea & Catchy Name** (Solves a real pain-point with high novelty)
+2. 💡 **Unique Value Proposition & Architecture** (How we leverage ${aiTechStack} to win)
+3. ⏱️ **36-Hour Step-by-Step Hackathon Execution Roadmap** (Hour 0 to Hour 36)
+4. 🎤 **2-Minute Demo Day Pitch Script & Judging Criteria Checklist**`;
+
+    try {
+      const response = await callAICompletion({
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      });
+      setAiResult(response);
+    } catch (err) {
+      console.error(err);
+      setAiResult(`### 💡 Winning Hackathon Strategy: ${aiSelectedHackathon.title}\n\n**Product Concept:** Next-Gen Intelligent Solution\n* **Tech Stack:** ${aiTechStack}\n* **Track:** ${aiTargetTrack}\n\n**Roadmap:**\n1. *Hours 0-6:* Architecture & Database schema\n2. *Hours 6-20:* Core API & AI Pipeline integration\n3. *Hours 20-30:* Frontend UI & Interactive Dashboard\n4. *Hours 30-36:* Demo polishing & Pitch deck`);
+    } finally {
+      setAiGenerating(false);
     }
   };
 
@@ -1217,7 +1248,7 @@ Generate a high-converting candidate application kit in clean Markdown with:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredSquadPosts.map((sq) => {
                 const waLink = sq.contactWhatsapp 
-                  ? `https://wa.me/${sq.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${sq.authorName}, I saw your squad post on Lumixora for "${sq.hackathonTitle}". I'd love to join your team!`)}`
+                  ? `https://wa.me/${sq.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${sq.authorName}, I saw your squad post on Vyomra for "${sq.hackathonTitle}". I'd love to join your team!`)}`
                   : null;
 
                 return (
@@ -1299,7 +1330,7 @@ Generate a high-converting candidate application kit in clean Markdown with:
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredFreeAgents.map((fa) => {
                 const waLink = fa.contactWhatsapp 
-                  ? `https://wa.me/${fa.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${fa.authorName}, I saw your Free Agent profile on Lumixora. We would love to invite you to our hackathon team!`)}`
+                  ? `https://wa.me/${fa.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${fa.authorName}, I saw your Free Agent profile on Vyomra. We would love to invite you to our hackathon team!`)}`
                   : null;
 
                 return (
@@ -1486,7 +1517,7 @@ Generate a high-converting candidate application kit in clean Markdown with:
 
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" /> Lumixora AI Hackathon Co-Pilot
+                <Sparkles className="w-3.5 h-3.5" /> Vyomra AI Hackathon Co-Pilot
               </div>
               <h2 className="text-2xl font-black text-white">
                 Winning Project Ideator for <span className="text-amber-300">{aiSelectedHackathon.title}</span>
@@ -1700,7 +1731,7 @@ Generate a high-converting candidate application kit in clean Markdown with:
                 <Plus className="w-6 h-6 text-brand-teal" /> Post Opportunity / Campus Event
               </h2>
               <p className="text-gray-400 text-xs">
-                Publish internal college hackathons, technical fest challenges, or campus hiring drives to Lumixora.
+                Publish internal college hackathons, technical fest challenges, or campus hiring drives to Vyomra.
               </p>
               <div className="flex gap-2 pt-2">
                 <button
@@ -1931,7 +1962,7 @@ Generate a high-converting candidate application kit in clean Markdown with:
                       required
                       value={newInternship.company}
                       onChange={(e) => setNewInternship(prev => ({ ...prev, company: e.target.value }))}
-                      placeholder="e.g. Lumixora Labs / Partner Startup"
+                      placeholder="e.g. Vyomra Labs / Partner Startup"
                       className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
                     />
                   </div>

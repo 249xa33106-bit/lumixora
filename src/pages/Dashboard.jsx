@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, Award, Clock, ArrowUpRight, AlertTriangle, Send, 
   Loader2, Flame, BarChart2, BookOpen, User, CheckCircle2, ChevronRight, Zap, Star, Compass, Trophy,
-  Briefcase, Cpu, Shield, ShieldCheck, Code2, FileText, HelpCircle, ClipboardList, Target, Map, Users, ShoppingCart, Lock, Rocket, Video
+  Briefcase, Cpu, Shield, ShieldCheck, Code2, FileText, HelpCircle, ClipboardList, Target, Map, Users, ShoppingCart, Lock, Rocket, Video, GraduationCap
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
@@ -12,12 +12,16 @@ import { getCollegeByEmail } from '../data/collegesData';
 import { db } from '../config/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, orderBy, limit, where, getDoc, doc } from 'firebase/firestore';
 import Dashboard3DBackground from '../components/Dashboard3DBackground';
+import StudentDnaCard from '../components/omiverse/StudentDnaCard';
+import OmiverseWorldNavigator from '../components/omiverse/OmiverseWorldNavigator';
+import VyomraProveModal from '../components/omiverse/VyomraProveModal';
 
 export default function Dashboard({ setActiveTab, user }) {
   const { tasks, doubts, notes } = useData();
   const { addToast } = useToast();
   const userId = user?.uid || user?.email || 'default';
   const chatEndRef = useRef(null);
+  const [isProveModalOpen, setIsProveModalOpen] = useState(false);
 
   // ─── Clean Student Name ────────────────────────────────────────────────────
   const cleanScholarName = (str) => {
@@ -78,7 +82,7 @@ export default function Dashboard({ setActiveTab, user }) {
   const [feedbackQuestions, setFeedbackQuestions] = useState([]);
   const [feedbackAnswers, setFeedbackAnswers] = useState({});
   const [feedbacks, setFeedbacks] = useState([
-    { name: 'Rahul K.', text: 'Lumixora completely transformed how I study for my exams!', rating: 5 },
+    { name: 'Rahul K.', text: 'Vyomra completely transformed how I study for my exams!', rating: 5 },
     { name: 'Sneha M.', text: 'The AI Twin is like having a personal tutor 24/7.', rating: 4.5 },
     { name: 'Aman S.', text: 'I love the task tracking and readiness score features.', rating: 4 }
   ]);
@@ -397,7 +401,7 @@ Do NOT use markdown backticks. Return raw JSON.`
         <div className="w-full rounded-3xl overflow-hidden border border-white/5 shadow-2xl aspect-[1024/480] md:aspect-[21/9]">
           <img 
             src="/founder_banner.jpg" 
-            alt="LUMIXORA Learn Smarter - Founder Shaik Sowban" 
+            alt="VYOMRA Learn Smarter - Founder Shaik Sowban" 
             className="w-full h-full object-cover object-center select-none"
           />
         </div>
@@ -414,7 +418,7 @@ Do NOT use markdown backticks. Return raw JSON.`
           
           <div className="max-w-5xl relative z-10">
             <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-8 italic border-l-4 border-brand-teal/30 pl-6 py-2 bg-gradient-to-r from-brand-teal/5 to-transparent rounded-r-xl">
-              "Every great platform starts with a single problem. For Lumixora, it was the realization that learning shouldn't be a one-size-fits-all struggle. Built from late-night coding sessions and an unyielding belief in personalized education, our mission is to empower every student to reach their peak potential. Your journey to excellence starts here."
+              "Every great platform starts with a single problem. For Lumixora, under VYOMRA, it was the realization that learning shouldn't be a one-size-fits-all struggle. Built from late-night coding sessions and an unyielding belief in personalized education, our mission is to empower every student to reach their peak potential. Your journey to excellence starts here."
             </p>
             
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-t border-white/5 pt-6">
@@ -423,7 +427,7 @@ Do NOT use markdown backticks. Return raw JSON.`
                   — Shaik Sowban
                 </p>
                 <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest">
-                  Founder, Lumixora
+                  Founder & CEO, VYOMRA
                 </p>
               </div>
 
@@ -442,6 +446,24 @@ Do NOT use markdown backticks. Return raw JSON.`
 
 
 
+      {/* ─── 🌌 VYOMRA OMIVERSE: AI CAREER BRAIN & TALENT GRAPH ─── */}
+      <div className="animate-fade-in my-2">
+        <StudentDnaCard 
+          user={user} 
+          onNavigateTab={setActiveTab} 
+          onOpenProveModal={() => setIsProveModalOpen(true)} 
+        />
+      </div>
+
+      {/* ─── 🌐 6 WORLDS OF VYOMRA OMIVERSE NAVIGATOR ─── */}
+      <div className="animate-fade-in my-4">
+        <OmiverseWorldNavigator 
+          activeTab={null} 
+          onNavigateTab={setActiveTab} 
+          onOpenProveModal={() => setIsProveModalOpen(true)} 
+        />
+      </div>
+
       {/* ─── Welcome Quick Stats Row ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Welcome Actions Card */}
@@ -455,27 +477,41 @@ Do NOT use markdown backticks. Return raw JSON.`
               Welcome Back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal to-brand-blue">{studentProfile.name}</span>
             </h1>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Lumixora is tracking your stats. Your target CGPA is **{profile.targetCGPA}** and career path is **{profile.careerGoal}**. Keep your Synergy indicator high to maintain perfect alignment.
+              Lumixora (by VYOMRA) is tracking your stats. Your target CGPA is **{profile.targetCGPA}** and career path is **{profile.careerGoal}**. Keep your Synergy indicator high to maintain perfect alignment.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4">
             <button 
+              onClick={() => setActiveTab('my-academics')}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-[#030712] font-black text-xs shadow-lg shadow-teal-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>📊 My Academics & Marks</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('interview')}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white font-extrabold text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+              <span>🎙️ AI Mock Interview Studio</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('certificates')}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:opacity-95 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>📜 Proof-of-Skill Badges & Certs</span>
+            </button>
+            <button 
               onClick={() => setActiveTab('hackathons')}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:opacity-95 text-black font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/30 font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Trophy className="w-3.5 h-3.5" />
               <span>🏆 Hackathons & Internships</span>
             </button>
             <button 
-              onClick={() => setActiveTab('grievance')}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>🔒 Anonymous Grievances</span>
-            </button>
-            <button 
               onClick={() => setActiveTab('doubts')}
-              className="px-4 py-2.5 rounded-xl bg-brand-pink hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-brand-pink/20 hover:bg-brand-pink/30 text-pink-300 border border-brand-pink/30 font-bold text-xs shadow-sm transition-all cursor-pointer"
             >
               Ask AI Assistant
             </button>
@@ -512,307 +548,6 @@ Do NOT use markdown backticks. Return raw JSON.`
           </div>
         </div>
       </div>
-
-      {/* ─── 🚀 ESSENTIAL STUDENT PLATFORM LAUNCHPAD (CATEGORIZED) ─── */}
-      <div className="space-y-5 animate-fade-in my-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-[10px] font-black uppercase tracking-wider">
-              <Zap className="w-3 h-3 animate-bounce" /> Lumixora Student Super-Tools
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <span>🚀 Essential Campus Portals & Tools</span>
-            </h2>
-          </div>
-
-          {/* Category Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full">
-            {[
-              { id: 'all', label: 'All Super-Tools', icon: Sparkles, count: 16 },
-              { id: 'exams', label: '📚 Exam Preparation', count: 5 },
-              { id: 'career', label: '💼 Career & Placements', count: 6 },
-              { id: 'campus', label: '🏫 Campus & Productivity', count: 5 }
-            ].map(cat => {
-              const isSelected = launchpadCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setLaunchpadCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-brand-teal to-brand-purple text-black shadow-md shadow-brand-teal/20 scale-105'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <span>{cat.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                    isSelected ? 'bg-black/20 text-black' : 'bg-white/10 text-gray-400'
-                  }`}>
-                    {cat.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[
-            // ── EXAM PREPARATION CATEGORY (5 Tools) ──
-            {
-              id: 'videos',
-              category: 'exams',
-              categoryLabel: 'Exam Prep',
-              title: 'Academic Video Lectures',
-              desc: 'Branch & Sem-wise verified video lectures, one-shot marathons & unit syllabus playlists',
-              icon: Video,
-              badge: 'SEM WISE 🎬',
-              badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-              gradient: 'from-rose-950/40 via-purple-900/10 to-black/80',
-              borderColor: 'border-rose-500/30 hover:border-rose-400 shadow-rose-500/5',
-              iconBg: 'bg-rose-500 text-white',
-            },
-            {
-              id: 'notes',
-              category: 'exams',
-              categoryLabel: 'Exam Prep',
-              title: 'Previous Question Papers',
-              desc: 'Semester PYQs, solved university model papers & verified lecture notes',
-              icon: FileText,
-              badge: 'EXAMS 🎓',
-              badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-              gradient: 'from-blue-950/40 via-indigo-900/10 to-black/80',
-              borderColor: 'border-blue-500/30 hover:border-blue-400 shadow-blue-500/5',
-              iconBg: 'bg-blue-400 text-black',
-            },
-            {
-              id: 'learning-hub',
-              category: 'exams',
-              categoryLabel: 'Exam Prep',
-              title: 'Learning Hub & Notes',
-              desc: 'Curated semester study modules, formula cheat-sheets & structured learning materials',
-              icon: BookOpen,
-              badge: 'STUDY HUB 📖',
-              badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-              gradient: 'from-emerald-950/40 via-teal-900/10 to-black/80',
-              borderColor: 'border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/5',
-              iconBg: 'bg-emerald-400 text-black',
-            },
-            {
-              id: 'doubts',
-              category: 'exams',
-              categoryLabel: 'Exam Prep',
-              title: '24/7 AI Doubt Solver',
-              desc: 'Step-by-step concept explanations with LaTeX math, diagrams & code',
-              icon: HelpCircle,
-              badge: 'AI TUTOR 🧠',
-              badgeColor: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
-              gradient: 'from-pink-950/40 via-rose-900/10 to-black/80',
-              borderColor: 'border-pink-500/30 hover:border-pink-400 shadow-pink-500/5',
-              iconBg: 'bg-pink-400 text-black',
-            },
-            {
-              id: 'test-portal',
-              category: 'exams',
-              categoryLabel: 'Exam Prep',
-              title: 'Test Portal & Mock Exams',
-              desc: 'Timed subject assessments, GATE test bank & instant score analysis',
-              icon: Target,
-              badge: 'MOCK EXAMS 🎯',
-              badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-              gradient: 'from-rose-950/40 via-red-900/10 to-black/80',
-              borderColor: 'border-rose-500/30 hover:border-rose-400 shadow-rose-500/5',
-              iconBg: 'bg-rose-400 text-black',
-            },
-
-            // ── CAREER & PLACEMENTS CATEGORY (6 Tools) ──
-            {
-              id: 'ai-commander',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'AI Placement Commander™',
-              desc: 'ATS resume scanner, system design architect & DSA mock technical interviews',
-              icon: Cpu,
-              badge: 'PRO 🔥',
-              badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-              gradient: 'from-purple-950/40 via-indigo-900/10 to-black/80',
-              borderColor: 'border-purple-500/30 hover:border-purple-400 shadow-purple-500/5',
-              iconBg: 'bg-purple-400 text-black',
-            },
-            {
-              id: 'resume',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'AI Resume Builder & PDF',
-              desc: 'ATS-optimized templates, AI STAR bullet writer & 1-click high-resolution A4 vector PDF download',
-              icon: FileText,
-              badge: 'PDF EXPORT 📄',
-              badgeColor: 'bg-[#00f5d4]/20 text-[#00f5d4] border-[#00f5d4]/40',
-              gradient: 'from-teal-950/40 via-cyan-900/10 to-black/80',
-              borderColor: 'border-[#00f5d4]/30 hover:border-[#00f5d4] shadow-[#00f5d4]/5',
-              iconBg: 'bg-[#00f5d4] text-black',
-            },
-            {
-              id: 'coding-practice',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'Code Arena & LeetCode DSA',
-              desc: 'Interactive compiler, curated algorithmic challenges & campus leaderboard',
-              icon: Code2,
-              badge: 'COMPILER ⚡',
-              badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-              gradient: 'from-cyan-950/40 via-blue-900/10 to-black/80',
-              borderColor: 'border-cyan-500/30 hover:border-cyan-400 shadow-cyan-500/5',
-              iconBg: 'bg-cyan-400 text-black',
-            },
-            {
-              id: 'hackathons',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'Hackathons & Internships',
-              desc: '28+ FAANG/HFT internships up to ₹2.5L/mo, SIH, GSoC & Squad Matcher',
-              icon: Trophy,
-              badge: 'HOT 💼',
-              badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-              gradient: 'from-amber-950/40 via-amber-900/10 to-black/80',
-              borderColor: 'border-amber-500/30 hover:border-amber-400 shadow-amber-500/5',
-              iconBg: 'bg-amber-400 text-black',
-            },
-            {
-              id: 'projects',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'Project Showcase & Expo',
-              desc: 'Publish your side-projects, AI models & builds, get upvotes, find teammates & AI resume bullets',
-              icon: Rocket,
-              badge: 'SHOWCASE 🚀',
-              badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-              gradient: 'from-purple-950/40 via-indigo-900/10 to-black/80',
-              borderColor: 'border-purple-500/30 hover:border-purple-400 shadow-purple-500/5',
-              iconBg: 'bg-gradient-to-r from-purple-500 to-[#00f5d4] text-black',
-            },
-            {
-              id: 'career-roadmap',
-              category: 'career',
-              categoryLabel: 'Career & Placement',
-              title: 'Career Roadmap & Skills',
-              desc: 'Step-by-step career path tailored for SDE, AI/ML, Cloud & Core domains',
-              icon: Map,
-              badge: 'ROADMAP 🗺️',
-              badgeColor: 'bg-violet-500/20 text-violet-300 border-violet-500/40',
-              gradient: 'from-violet-950/40 via-purple-900/10 to-black/80',
-              borderColor: 'border-violet-500/30 hover:border-violet-400 shadow-violet-500/5',
-              iconBg: 'bg-violet-400 text-black',
-            },
-
-            // ── CAMPUS LIFE & PRODUCTIVITY CATEGORY (5 Tools) ──
-            {
-              id: 'attendance',
-              category: 'campus',
-              categoryLabel: 'Campus Life',
-              title: 'My Attendance & Bunk Calc',
-              desc: 'Subject-wise 75% threshold monitor, safe leaves simulator & alerts',
-              icon: ClipboardList,
-              badge: '75% CRITICAL',
-              badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-              gradient: 'from-yellow-950/40 via-amber-900/10 to-black/80',
-              borderColor: 'border-yellow-500/30 hover:border-yellow-400 shadow-yellow-500/5',
-              iconBg: 'bg-yellow-400 text-black',
-            },
-            {
-              id: 'future-twin',
-              category: 'campus',
-              categoryLabel: 'Campus Life',
-              title: 'AI Future Twin™ & CGPA',
-              desc: 'Simulate semester CGPA scenarios, study consistency & exam readiness',
-              icon: Sparkles,
-              badge: 'AI TWIN 🔮',
-              badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-              gradient: 'from-teal-950/40 via-emerald-900/10 to-black/80',
-              borderColor: 'border-teal-500/30 hover:border-teal-400 shadow-teal-500/5',
-              iconBg: 'bg-teal-400 text-black',
-            },
-            {
-              id: 'grievance',
-              category: 'campus',
-              categoryLabel: 'Campus Life',
-              title: 'Anonymous Grievances',
-              desc: 'Encrypted teaching & classroom feedback routed to professors via Unique Code',
-              icon: ShieldCheck,
-              badge: 'ENCRYPTED 🔒',
-              badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-              gradient: 'from-emerald-950/40 via-teal-900/10 to-black/80',
-              borderColor: 'border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/5',
-              iconBg: 'bg-emerald-400 text-black',
-            },
-            {
-              id: 'community',
-              category: 'campus',
-              categoryLabel: 'Campus Life',
-              title: 'Class Community & Squads',
-              desc: 'Connect with GPREC & Ashoka peers, join study rooms & collaborate',
-              icon: Users,
-              badge: 'CAMPUS 👥',
-              badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
-              gradient: 'from-sky-950/40 via-blue-900/10 to-black/80',
-              borderColor: 'border-sky-500/30 hover:border-sky-400 shadow-sky-500/5',
-              iconBg: 'bg-sky-400 text-black',
-            },
-            {
-              id: 'marketplace',
-              category: 'campus',
-              categoryLabel: 'Campus Life',
-              title: 'Campus Marketplace',
-              desc: 'Buy, sell & exchange engineering textbooks, drafters, calculators & lab coats',
-              icon: ShoppingCart,
-              badge: 'EXCHANGE 🛍️',
-              badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-              gradient: 'from-emerald-950/40 via-green-900/10 to-black/80',
-              borderColor: 'border-emerald-500/30 hover:border-emerald-400 shadow-emerald-500/5',
-              iconBg: 'bg-emerald-400 text-black',
-            }
-          ]
-            .filter(item => launchpadCategory === 'all' || item.category === launchpadCategory)
-            .map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`group relative p-5 rounded-3xl border bg-gradient-to-br ${item.gradient} ${item.borderColor} backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between space-y-4 shadow-lg`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className={`p-3 rounded-2xl ${item.iconBg} shadow-md group-hover:rotate-6 transition-transform duration-300`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider ${item.badgeColor}`}>
-                      {item.badge}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <h3 className="text-sm font-black text-white group-hover:text-brand-teal transition-colors flex items-center gap-1.5">
-                      <span>{item.title}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-brand-teal" />
-                    </h3>
-                    <p className="text-[11px] text-gray-300 leading-relaxed line-clamp-2">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-extrabold text-gray-400 group-hover:text-white transition-colors">
-                    <span className="text-[10px] text-gray-500 uppercase font-bold">{item.categoryLabel}</span>
-                    <span className="flex items-center gap-1">Launch <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" /></span>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-
       {/* ─── Main 3-Column Layout ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
@@ -928,8 +663,8 @@ Do NOT use markdown backticks. Return raw JSON.`
                       </div>
                       
                       <div className="flex-1">
-                        <h4 className="text-sm font-bold text-white mb-1">{task.title}</h4>
-                        <p className="text-xs text-gray-400 mb-3">{task.desc}</p>
+                        <h4 className="text-sm font-bold text-white mb-1">{task?.title || 'Milestone'}</h4>
+                        <p className="text-xs text-gray-400 mb-3">{task?.desc || ''}</p>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                           <div className="bg-white/5 p-3 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
@@ -1093,12 +828,12 @@ Do NOT use markdown backticks. Return raw JSON.`
               </div>
               <div>
                 <h3 className="text-lg font-extrabold text-white">We Value Your Feedback!</h3>
-                <p className="text-[10px] text-gray-400 tracking-wide uppercase">Help us improve Lumixora</p>
+                <p className="text-[10px] text-gray-400 tracking-wide uppercase">Help us improve Vyomra</p>
               </div>
             </div>
             
             <p className="text-xs text-gray-300 mb-5 leading-relaxed">
-              {feedbackQuestions.length > 0 ? "Please answer the following questions to help us improve." : "How has your experience with Lumixora been so far? As our founder believes in constant innovation, your thoughts matter directly to our journey."}
+              {feedbackQuestions.length > 0 ? "Please answer the following questions to help us improve." : "How has your experience with Vyomra been so far? As our founder believes in constant innovation, your thoughts matter directly to our journey."}
             </p>
             
             <form onSubmit={handleFeedbackSubmit}>
@@ -1150,6 +885,14 @@ Do NOT use markdown backticks. Return raw JSON.`
           </div>
         </div>
       )}
+
+      {/* ─── VYOMRA PROVE: TRUST LAYER MODAL ─── */}
+      <VyomraProveModal
+        isOpen={isProveModalOpen}
+        onClose={() => setIsProveModalOpen(false)}
+        onNavigateTab={setActiveTab}
+        user={user}
+      />
     </div>
   );
 }

@@ -31,3 +31,9 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Big Archives & Scratch
+*.zip
+scratch/
+temp_openmaic/
+*.xlsx

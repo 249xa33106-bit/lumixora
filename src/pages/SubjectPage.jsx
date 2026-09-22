@@ -717,7 +717,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                     className="flex items-center justify-center text-xs sm:text-sm font-bold text-slate-400 tracking-widest uppercase rotate-[-25deg] select-none whitespace-nowrap"
                     style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.2)' }}
                   >
-                    {user?.email || 'Student'} • Lumixora ID: {user?.id?.substring(0,6) || 'LM1024'}
+                    {user?.email || 'Student'} • Vyomra ID: {user?.id?.substring(0,6) || 'LM1024'}
                   </div>
                 ))}
               </div>

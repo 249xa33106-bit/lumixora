@@ -2,22 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="/lumixora_logo.jpg" />
+    <link rel="icon" type="image/png" href="/lumixora_logo_icon.png" />
     <link rel="manifest" href="/manifest.json" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <script>
+      (function() {
+        const CURRENT_VERSION = '1.1.15';
+        const cachedVer = localStorage.getItem('lumixora_active_ver');
+        if (cachedVer !== CURRENT_VERSION) {
+          localStorage.setItem('lumixora_active_ver', CURRENT_VERSION);
+          if ('caches' in window) {
+            caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+              regs.forEach(r => r.unregister());
+            });
+          }
+        }
+      })();
+    </script>
     <meta name="theme-color" content="#030712" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Lumixora is a premium student workspace featuring a live doubt solver, interactive notes library, smart scheduler, and custom branch/semester resource Academy." />
-    <meta name="keywords" content="Lumixora, student workspace, notes sharing, AI doubt solver, university resources, study planner, academic hub" />
-    <meta property="og:title" content="Lumixora - Connecting the Future" />
+    <meta name="description" content="Lumixora is a flagship academic & placement operating system by VYOMRA, featuring student workspace featuring a live doubt solver, interactive notes library, smart scheduler, and custom branch/semester resource Academy." />
+    <meta name="keywords" content="Vyomra, student workspace, notes sharing, AI doubt solver, university resources, study planner, academic hub" />
+    <meta property="og:title" content="Lumixora by VYOMRA — Autonomous Student OS" />
     <meta property="og:description" content="A premium student workspace featuring a live doubt solver, interactive notes library, and custom academic resources." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://lumixora.in/" />
-    <meta property="og:image" content="https://lumixora.in/lumixora_logo.jpg" />
+    <meta property="og:image" content="https://lumixora.in/lumixora_logo_icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Google AdSense Monetization -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9513880477766884"
      crossorigin="anonymous"></script>

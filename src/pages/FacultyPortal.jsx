@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   GraduationCap, Users, ClipboardList, CheckCircle, FileText, 
   HelpCircle, Search, Filter, Save, X, Edit2, Trash2, 
-  RefreshCcw, Sparkles, Send, Tag, Copy, Check, Shield
+  RefreshCcw, Sparkles, Send, Copy, Check, Shield
 } from 'lucide-react';
 import { db } from '../config/firebase';
 import { supabase } from '../config/supabase';
@@ -45,7 +45,22 @@ export default function FacultyPortal({ user, setActiveTab }) {
   const [selectedDoubt, setSelectedDoubt] = useState(null);
 
   const facultyDept = user?.department || 'CSE';
-  const facultyCollege = user?.college || 'GPREC';
+  const [activeFacultyCollege, setActiveFacultyCollege] = useState(() => {
+    const activeName = localStorage.getItem('lumixora_active_campus_name');
+    return (user?.role === 'founder' && activeName && activeName !== 'All Campuses (HQ)') ? activeName : (user?.college || 'GPREC');
+  });
+
+  useEffect(() => {
+    const handleCampusEvt = (e) => {
+      if (e.detail?.campusName && e.detail.campusId !== 'all') {
+        setActiveFacultyCollege(e.detail.campusName);
+      }
+    };
+    window.addEventListener('lumixora_campus_changed', handleCampusEvt);
+    return () => window.removeEventListener('lumixora_campus_changed', handleCampusEvt);
+  }, []);
+
+  const facultyCollege = (user?.role === 'founder' ? activeFacultyCollege : (user?.college || 'GPREC'));
 
   // Clean raw name that may contain embedded JSON metadata
   const cleanName = (str) => {
@@ -226,10 +241,9 @@ export default function FacultyPortal({ user, setActiveTab }) {
         qualification: selectedScholar.qualification || 'B.Tech',
         place: selectedScholar.place || 'Kurnool'
       };
-      const packedName = `${cleanNameStr} ${JSON.stringify(newMetadata)}`;
-
       const updates = {
-        name: packedName,
+        name: cleanNameStr,
+        full_name: cleanNameStr,
         displayName: cleanNameStr,
         cleanName: cleanNameStr,
         rollNumber: editForm.rollNumber.trim().toUpperCase(),

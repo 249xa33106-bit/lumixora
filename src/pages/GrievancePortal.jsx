@@ -233,7 +233,7 @@ export default function GrievancePortal({ user, setActiveTab }) {
     }
 
     setIsPolishing(true);
-    const prompt = `You are Lumixora Academic Conciliation AI.
+    const prompt = `You are Vyomra Academic Conciliation AI.
 The following is an anonymous student feedback/complaint regarding academic teaching or classroom infrastructure:
 "${description}"
 
