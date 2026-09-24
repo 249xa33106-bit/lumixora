@@ -431,6 +431,8 @@ function App() {
 
   useEffect(() => {
     const checkUpdates = async () => {
+      // Do NOT show update popup on web platform
+      if (!Capacitor.isNativePlatform()) return;
       const dismissed = sessionStorage.getItem('lumixora_update_dismissed');
       const info = await checkAppUpdate();
       if (isVersionOutdated(CURRENT_VERSION, info.latestVersion)) {
@@ -458,73 +460,7 @@ function App() {
   };
 
   const renderUpdateModal = () => {
-    if (!updateInfo || !updateInfo.show) return null;
-    const isNative = Capacitor.isNativePlatform();
-
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-        <div className="glass-panel w-full max-w-sm rounded-3xl p-6 border border-white/10 relative overflow-hidden bg-gradient-to-br from-brand-purple/10 to-transparent">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-brand-pink/5 rounded-full blur-xl animate-pulse"></div>
-          
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-brand-pink/10 border border-white/10 flex items-center justify-center text-brand-pink text-3xl animate-bounce">
-              🚀
-            </div>
-            
-            <div>
-              <h2 className="text-lg font-bold text-gray-100 tracking-wide animate-pulse">New Version Available!</h2>
-              <p className="text-xs text-gray-400 mt-1">
-                Version <span className="text-brand-teal font-extrabold">{updateInfo.latestVersion}</span> is live.<br/>
-                Currently running v{CURRENT_VERSION}.
-              </p>
-            </div>
-
-            <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-4 text-xs text-gray-300 leading-relaxed text-left">
-              <span className="text-[10px] text-brand-pink font-extrabold uppercase tracking-wide block mb-1">What's New in v{updateInfo.latestVersion}:</span>
-              • Real-time Supabase integration across all portals.<br/>
-              • BoloClass multi-agent AI classroom v1.0.0 engine.<br/>
-              • Live test scorecards and founder analytics.
-            </div>
-
-            <div className="flex gap-3 w-full mt-2">
-              {!updateInfo.mandatory && (
-                <button 
-                  onClick={() => {
-                    setUpdateInfo(prev => ({ ...prev, show: false }));
-                    sessionStorage.setItem('lumixora_update_dismissed', 'true');
-                  }}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-2xl text-xs transition-colors border border-white/10 cursor-pointer"
-                >
-                  Later
-                </button>
-              )}
-              {isNative ? (
-                <a 
-                  href={updateInfo.apkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    if (!updateInfo.mandatory) {
-                      setUpdateInfo(prev => ({ ...prev, show: false }));
-                    }
-                  }}
-                  className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
-                >
-                  Download APK
-                </a>
-              ) : (
-                <button 
-                  onClick={handleWebUpdateRefresh}
-                  className="flex-1 bg-brand-teal hover:opacity-95 text-black font-extrabold py-3 rounded-2xl text-xs text-center transition-all block shadow-sm cursor-pointer"
-                >
-                  Refresh & Update
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   };
 
   const renderExitModal = () => {
