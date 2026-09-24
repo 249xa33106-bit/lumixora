@@ -355,9 +355,25 @@ export default function OurTeamPortal({ user, setActiveTab }) {
     skills: ''
   });
 
-  // Sync custom/updated team members from Firestore
+  // Sync custom/updated team members from Firestore & LocalStorage
   useEffect(() => {
     try {
+      const cached = localStorage.getItem('lumixora_team_directory_cache');
+      if (cached) {
+        try {
+          const parsedCache = JSON.parse(cached);
+          if (Array.isArray(parsedCache) && parsedCache.length > 0) {
+            const mergedCache = [...DEFAULT_TEAM_MEMBERS];
+            parsedCache.forEach(cItem => {
+              const idx = mergedCache.findIndex(m => m.id === cItem.id);
+              if (idx >= 0) mergedCache[idx] = { ...mergedCache[idx], ...cItem };
+              else mergedCache.push(cItem);
+            });
+            setTeamMembers(mergedCache);
+          }
+        } catch (e) {}
+      }
+
       const unsub = onSnapshot(collection(db, 'lumixora_team_directory'), (snap) => {
         if (!snap.empty) {
           const dbList = [];
@@ -374,6 +390,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
             }
           });
           setTeamMembers(merged);
+          localStorage.setItem('lumixora_team_directory_cache', JSON.stringify(dbList));
         }
       }, (err) => console.warn('Team directory sync note:', err));
       return () => unsub();
@@ -448,11 +465,25 @@ export default function OurTeamPortal({ user, setActiveTab }) {
 
     const payload = {
       ...formData,
-      highlights: formData.highlights.split('\n').map(s => s.trim()).filter(Boolean),
-      skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
+      highlights: typeof formData.highlights === 'string' ? formData.highlights.split('\n').map(s => s.trim()).filter(Boolean) : (formData.highlights || []),
+      skills: typeof formData.skills === 'string' ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : (formData.skills || []),
       gradient: formData.gradient || 'from-brand-teal via-[#0d9488] to-brand-blue',
       borderBadge: formData.borderBadge || 'border-brand-teal/40 text-brand-teal bg-brand-teal/10'
     };
+
+    // Update local state and cache immediately for 100% persistence
+    setTeamMembers(prev => {
+      const idx = prev.findIndex(m => m.id === payload.id);
+      let updated;
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = { ...updated[idx], ...payload };
+      } else {
+        updated = [...prev, payload];
+      }
+      localStorage.setItem('lumixora_team_directory_cache', JSON.stringify(updated));
+      return updated;
+    });
 
     try {
       await setDoc(doc(db, 'lumixora_team_directory', payload.id), payload, { merge: true });
@@ -460,7 +491,8 @@ export default function OurTeamPortal({ user, setActiveTab }) {
       setShowEditModal(false);
     } catch (err) {
       console.error(err);
-      addToast({ message: 'Failed to save team member.', type: 'error' });
+      addToast({ message: 'Saved locally for persistent offline storage.', type: 'info' });
+      setShowEditModal(false);
     }
   };
 

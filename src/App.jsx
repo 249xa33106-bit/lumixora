@@ -190,22 +190,26 @@ function App() {
     const hydrateLatestProfile = async () => {
       try {
         const uEmail = (user.email || '').toLowerCase().trim();
-        const uid = user.id || user.uid || uEmail;
+        const uidsToTry = [user.id, user.uid, auth.currentUser?.uid, uEmail].filter(Boolean);
 
-        // 1. Fetch latest from Firestore
+        // 1. Fetch latest from Firestore across candidate UIDs
         let remoteDoc = null;
-        if (db && uid) {
-          try {
-            const [s1, s2] = await Promise.allSettled([
-              getDoc(doc(db, 'users', String(uid))),
-              getDoc(doc(db, 'Users', String(uid)))
-            ]);
-            if (s1.status === 'fulfilled' && s1.value.exists()) {
-              remoteDoc = s1.value.data();
-            } else if (s2.status === 'fulfilled' && s2.value.exists()) {
-              remoteDoc = s2.value.data();
-            }
-          } catch (e) {}
+        if (db) {
+          for (const targetUid of uidsToTry) {
+            try {
+              const [s1, s2] = await Promise.allSettled([
+                getDoc(doc(db, 'users', String(targetUid))),
+                getDoc(doc(db, 'Users', String(targetUid)))
+              ]);
+              if (s1.status === 'fulfilled' && s1.value.exists()) {
+                remoteDoc = s1.value.data();
+                break;
+              } else if (s2.status === 'fulfilled' && s2.value.exists()) {
+                remoteDoc = s2.value.data();
+                break;
+              }
+            } catch (e) {}
+          }
         }
 
         // 2. Fetch latest from Supabase
@@ -224,28 +228,68 @@ function App() {
           } catch (e) {}
         }
 
-        const resolvedDept = remoteDoc?.department || remoteDoc?.branch || sbDoc?.department || sbDoc?.branch || user?.department || user?.branch || parsedSb.department || parsedSb.branch || 'CSM';
+        // Safe helper: prioritize local user edits over empty/stale remote values
+        const pickVal = (localVal, remoteVal, defaultVal = '') => {
+          const lStr = String(localVal || '').trim();
+          const rStr = String(remoteVal || '').trim();
+          if (lStr && lStr !== 'Scholar' && lStr !== 'Student') {
+            return localVal;
+          }
+          if (rStr && rStr !== 'Scholar' && rStr !== 'Student') {
+            return remoteVal;
+          }
+          return localVal || remoteVal || defaultVal;
+        };
+
+        const resolvedName = pickVal(user.name || user.displayName, remoteDoc?.name || remoteDoc?.displayName || (sbDoc?.name && !sbDoc.name.includes('{') ? sbDoc.name : null), 'Scholar');
+        const resolvedRoll = pickVal(user.rollNumber || user.roll_number, remoteDoc?.rollNumber || sbDoc?.roll_number || parsedSb.rollNumber, '');
+        const resolvedDept = pickVal(user.department || user.branch, remoteDoc?.department || remoteDoc?.branch || sbDoc?.department || sbDoc?.branch || parsedSb.department || parsedSb.branch, 'CSM');
+        const resolvedCollege = pickVal(user.college || user.collegeName, remoteDoc?.college || sbDoc?.college || parsedSb.college, 'GPREC');
+        const resolvedYear = pickVal(user.year || user.yearOfStudy, remoteDoc?.year || sbDoc?.year || parsedSb.year, '1st Year');
+        const resolvedSem = pickVal(user.sem || user.semester, remoteDoc?.sem || parsedSb.sem, '1');
+        const resolvedSec = pickVal(user.sec || user.section, remoteDoc?.sec || parsedSb.sec, 'A');
+        const resolvedQual = pickVal(user.qualification, remoteDoc?.qualification || parsedSb.qualification, 'B.Tech');
+        const resolvedPlace = pickVal(user.place, remoteDoc?.place || parsedSb.place, 'Kurnool');
+        const resolvedMobile = pickVal(user.mobileNumber || user.phone, remoteDoc?.mobileNumber || parsedSb.mobileNumber, '');
+        const resolvedCgpa = pickVal(user.cgpa, remoteDoc?.cgpa || parsedSb.cgpa, '9.0');
+        const resolvedLeetcode = pickVal(user.leetcodeUser, localStorage.getItem('lumixora_leetcode_user') || remoteDoc?.leetcodeUser || parsedSb.leetcodeUser, '');
+        const resolvedHackerrank = pickVal(user.hackerrankUser, localStorage.getItem('lumixora_hackerrank_user') || remoteDoc?.hackerrankUser || parsedSb.hackerrankUser, '');
+        const resolvedGithub = pickVal(user.githubUser, localStorage.getItem('lumixora_github_user') || remoteDoc?.githubUser || parsedSb.githubUser, '');
+        const resolvedLinkedin = pickVal(user.linkedinUser, localStorage.getItem('lumixora_linkedin_user') || remoteDoc?.linkedinUser || parsedSb.linkedinUser, '');
+
         const freshUser = {
           ...user,
           ...(parsedSb || {}),
           ...(remoteDoc || {}),
-          name: remoteDoc?.name || remoteDoc?.displayName || (sbDoc?.name && !sbDoc.name.includes('{') ? sbDoc.name : user.name),
-          displayName: remoteDoc?.name || remoteDoc?.displayName || user.displayName || user.name,
-          rollNumber: remoteDoc?.rollNumber || sbDoc?.roll_number || user.rollNumber || parsedSb.rollNumber,
+          name: resolvedName,
+          displayName: resolvedName,
+          full_name: resolvedName,
+          rollNumber: resolvedRoll,
+          roll_number: resolvedRoll,
           department: resolvedDept,
           branch: resolvedDept,
-          college: remoteDoc?.college || sbDoc?.college || user.college || parsedSb.college,
-          collegeName: remoteDoc?.college || sbDoc?.college || user.college || parsedSb.college,
-          year: remoteDoc?.year || sbDoc?.year || user.year || parsedSb.year,
-          sem: remoteDoc?.sem || user.sem || parsedSb.sem,
-          sec: remoteDoc?.sec || user.sec || parsedSb.sec,
-          qualification: remoteDoc?.qualification || user.qualification || parsedSb.qualification,
-          place: remoteDoc?.place || user.place || parsedSb.place,
-          mobileNumber: remoteDoc?.mobileNumber || user.mobileNumber || parsedSb.mobileNumber,
-          cgpa: remoteDoc?.cgpa || user.cgpa || parsedSb.cgpa
+          college: resolvedCollege,
+          collegeName: resolvedCollege,
+          year: resolvedYear,
+          yearOfStudy: resolvedYear,
+          sem: resolvedSem,
+          semester: resolvedSem,
+          sec: resolvedSec,
+          section: resolvedSec,
+          qualification: resolvedQual,
+          place: resolvedPlace,
+          mobileNumber: resolvedMobile,
+          phone: resolvedMobile,
+          cgpa: resolvedCgpa,
+          leetcodeUser: resolvedLeetcode,
+          hackerrankUser: resolvedHackerrank,
+          githubUser: resolvedGithub,
+          linkedinUser: resolvedLinkedin,
+          avatarUrl: user.avatarUrl || remoteDoc?.avatarUrl || sbDoc?.avatar_url || ''
         };
 
         // Rehydrate local storage cache for offline/instant UI rendering
+        const uid = user.id || user.uid || uEmail;
         if (uid) {
           if (Array.isArray(parsedSb.submissions)) {
             localStorage.setItem(`lumixora_submissions_${uid}`, JSON.stringify(parsedSb.submissions));

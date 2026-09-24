@@ -61,8 +61,11 @@ export const loadStudentAcademics = async (userId) => {
         ? cloudData.semesters
         : (localData?.semesters && localData.semesters.length > 0 ? localData.semesters : defaultData.semesters);
 
+      const cloudCgpa = cloudData.overallCgpa && String(cloudData.overallCgpa).trim() !== '' ? cloudData.overallCgpa : null;
+      const localCgpa = localData?.overallCgpa && String(localData.overallCgpa).trim() !== '' ? localData.overallCgpa : null;
+
       const merged = {
-        overallCgpa: cloudData.overallCgpa ?? localData?.overallCgpa ?? '',
+        overallCgpa: cloudCgpa ?? localCgpa ?? '',
         currentSemesterId: cloudData.currentSemesterId || localData?.currentSemesterId || mergedSemesters[0]?.id || 'sem_1',
         semesters: mergedSemesters
       };
