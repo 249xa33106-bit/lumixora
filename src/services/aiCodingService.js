@@ -43,6 +43,46 @@ export async function getAICodingAssistantHelp(actionType, problem, code, langua
 }
 
 /**
+ * Interactive chat completion for follow-up AI Assistant conversation
+ */
+export async function sendAICodingChatMessage(messages, problem, code, language) {
+  try {
+    const systemPrompt = `You are Vyomra AI Coding Assistant, an expert AI pair programmer embedded inside an interactive IDE.
+Context:
+- Problem: "${problem?.title || 'Coding Challenge'}"
+- Problem Statement: ${problem?.statement || ''}
+- Selected Language: ${language}
+- Current Code in Editor:
+\`\`\`${language}
+${code}
+\`\`\`
+
+Answer the user's questions clearly, concisely, and accurately in Markdown. You can give hints, debug errors, explain code, or write full code snippets. Be encouraging, precise, and format code with syntax highlighting (\`\`\`${language}).`;
+
+    const formattedMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }))
+    ];
+
+    const response = await callAICompletion({
+      messages: formattedMessages,
+      temperature: 0.3
+    });
+
+    if (response && response.trim()) {
+      return response;
+    }
+  } catch (err) {
+    console.error("AI Chat Assistant error:", err);
+  }
+
+  return "I'm analyzing your code. Trace your loops, check your array indices, base conditions, and return signatures!";
+}
+
+/**
  * Dynamic problem-aware fallback AI guidance generator
  */
 function generateDynamicFallbackHelp(actionType, problem, code, language) {

@@ -6,7 +6,7 @@ import {
   Download, Copy, BookOpenCheck, Settings2, Code, Video, ExternalLink 
 } from 'lucide-react';
 import { executeCode, runPiston } from '../services/compilerService';
-import { getAICodingAssistantHelp, getPostSubmissionFeedback, getQuickComplexity } from '../services/aiCodingService';
+import { getAICodingAssistantHelp, sendAICodingChatMessage, getPostSubmissionFeedback, getQuickComplexity } from '../services/aiCodingService';
 import { saveCodingSubmissionToSupabase } from '../services/supabaseDataSyncService';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
@@ -60,6 +60,8 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState('');
   const [showAiDrawer, setShowAiDrawer] = useState(false);
+  const [aiChatMessages, setAiChatMessages] = useState([]);
+  const [aiInputText, setAiInputText] = useState('');
 
   // Post Submission Feedback States
   const [submissionFeedback, setSubmissionFeedback] = useState(null);
@@ -363,13 +365,44 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
   const triggerAICopilot = async (actionType) => {
     setShowAiDrawer(true);
     setAiLoading(true);
-    setAiResponse('');
-    
+
+    const actionLabel = actionType === 'hint' ? '💡 Requesting Hint' : 
+                        actionType === 'explain' ? '📖 Explain Code' : 
+                        actionType === 'dry-run' ? '🔍 Dry Run Trace' : 
+                        actionType === 'optimize' ? '⚡ Complexity Optimization' : '🐞 Debug Code Error';
+
+    const userMsg = { id: Date.now(), sender: 'user', text: actionLabel };
+    setAiChatMessages(prev => [...prev, userMsg]);
+
     try {
       const response = await getAICodingAssistantHelp(actionType, activeProblem, code, language);
       setAiResponse(response);
+      setAiChatMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: response }]);
     } catch (err) {
-      setAiResponse(`### AI Copilot Error\n\nFailed to invoke assistant: ${err.message}`);
+      const errTxt = `### AI Copilot Error\n\nFailed to invoke assistant: ${err.message}`;
+      setAiResponse(errTxt);
+      setAiChatMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: errTxt }]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleSendAiMessage = async (e) => {
+    if (e) e.preventDefault();
+    const prompt = aiInputText.trim();
+    if (!prompt || aiLoading) return;
+
+    setAiInputText('');
+    const userMsg = { id: Date.now(), sender: 'user', text: prompt };
+    const updatedMessages = [...aiChatMessages, userMsg];
+    setAiChatMessages(updatedMessages);
+    setAiLoading(true);
+
+    try {
+      const aiReply = await sendAICodingChatMessage(updatedMessages, activeProblem, code, language);
+      setAiChatMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: aiReply }]);
+    } catch (err) {
+      setAiChatMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: `Sorry, I encountered an issue analyzing your code: ${err.message}` }]);
     } finally {
       setAiLoading(false);
     }
@@ -1257,14 +1290,19 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
       {showAiDrawer && (
         <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-[#06060a]/95 border-l border-white/10 shadow-2xl z-50 flex flex-col animate-slide-in-right backdrop-blur-md">
           {/* Drawer Header */}
-          <div className="p-5 border-b border-white/5 bg-black/40 flex items-center justify-between">
+          <div className="p-4 border-b border-white/5 bg-black/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-brand-pink/20 flex items-center justify-center text-brand-pink animate-pulse">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-pink/30 to-brand-purple/30 border border-brand-pink/30 flex items-center justify-center text-brand-pink animate-pulse">
                 <Sparkles className="w-4 h-4 fill-current" />
               </div>
               <div>
-                <h3 className="font-extrabold text-sm text-gray-200">AI Coding Assistant</h3>
-                <span className="text-[10px] text-gray-500 tracking-wide font-bold">Interactive Learning Mode</span>
+                <h3 className="font-extrabold text-sm text-gray-100 flex items-center gap-1.5">
+                  AI Coding Assistant
+                  <span className="text-[9px] bg-brand-pink/20 text-brand-pink border border-brand-pink/30 px-1.5 py-0.2 rounded font-extrabold uppercase">
+                    Interactive Mode
+                  </span>
+                </h3>
+                <span className="text-[10px] text-gray-400 tracking-wide font-bold">Ask follow-up questions or choose quick actions</span>
               </div>
             </div>
             <button 
@@ -1275,32 +1313,89 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
             </button>
           </div>
 
-          {/* Drawer Body content */}
-          <div className="p-6 overflow-y-auto flex-1 text-xs leading-relaxed text-gray-300 custom-scrollbar whitespace-pre-wrap">
-            {aiLoading ? (
-              <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
-                <RefreshCw className="w-8 h-8 text-brand-pink animate-spin" />
+          {/* Quick Action Pills Bar */}
+          <div className="p-3 border-b border-white/5 bg-black/20 flex flex-wrap gap-1.5">
+            {[
+              { type: 'hint', label: '💡 Get Hint' },
+              { type: 'explain', label: '📖 Explain Code' },
+              { type: 'dry-run', label: '🔍 Trace Logic' },
+              { type: 'optimize', label: '⚡ Optimize' }
+            ].map(pill => (
+              <button
+                key={pill.type}
+                onClick={() => triggerAICopilot(pill.type)}
+                disabled={aiLoading}
+                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-brand-pink/20 hover:border-brand-pink/40 border border-white/10 text-[11px] font-bold text-gray-300 transition-all cursor-pointer disabled:opacity-40"
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Drawer Body: Multi-turn Chat Messages */}
+          <div className="p-4 overflow-y-auto flex-1 space-y-4 text-xs leading-relaxed text-gray-300 custom-scrollbar">
+            {aiChatMessages.length === 0 && !aiLoading && (
+              <div className="h-full flex flex-col items-center justify-center gap-3 text-center py-12 px-6">
+                <div className="w-12 h-12 rounded-2xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center text-brand-pink">
+                  <Sparkles className="w-6 h-6" />
+                </div>
                 <div>
-                  <h4 className="font-bold text-gray-200 animate-pulse">AI Copilot is reviewing code...</h4>
-                  <p className="text-[10px] text-gray-500 mt-1 max-w-[280px]">Analyzing logical traces, complexity benchmarks and dry-run outputs.</p>
+                  <h4 className="font-bold text-white text-sm">Ask Vyomra AI Copilot</h4>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Type a question below or click a quick action above to analyze your code, debug issues, or get logic hints.
+                  </p>
                 </div>
               </div>
-            ) : (
-              <div className="prose prose-invert max-w-none prose-xs font-sans leading-relaxed text-gray-300 font-normal">
-                {/* Parse Markdown representation natively */}
-                {aiResponse}
+            )}
+
+            {aiChatMessages.map((msg) => (
+              <div 
+                key={msg.id} 
+                className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {msg.sender === 'ai' && (
+                  <div className="w-6 h-6 rounded-lg bg-brand-pink/20 border border-brand-pink/30 flex items-center justify-center text-brand-pink shrink-0 mt-1">
+                    <Sparkles className="w-3.5 h-3.5 fill-current" />
+                  </div>
+                )}
+
+                <div className={`max-w-[85%] p-3.5 rounded-2xl text-xs ${
+                  msg.sender === 'user' 
+                    ? 'bg-brand-blue/20 border border-brand-blue/30 text-white rounded-tr-none'
+                    : 'bg-white/5 border border-white/10 text-gray-200 rounded-tl-none font-mono whitespace-pre-wrap'
+                }`}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+
+            {aiLoading && (
+              <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300 max-w-[85%]">
+                <RefreshCw className="w-4 h-4 text-brand-pink animate-spin shrink-0" />
+                <span className="animate-pulse font-bold text-gray-400">AI Copilot is analyzing your code and syntax...</span>
               </div>
             )}
           </div>
           
-          {/* Drawer Footer Actions */}
-          <div className="p-4 border-t border-white/5 bg-black/20 flex justify-end">
-            <button 
-              onClick={() => setShowAiDrawer(false)}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors cursor-pointer"
-            >
-              Close Copilot
-            </button>
+          {/* Drawer Footer: Interactive Chat Prompt Input */}
+          <div className="p-3 border-t border-white/10 bg-black/60">
+            <form onSubmit={handleSendAiMessage} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={aiInputText}
+                onChange={(e) => setAiInputText(e.target.value)}
+                placeholder="Ask AI Copilot follow-up questions..."
+                className="flex-1 bg-white/5 border border-white/10 focus:border-brand-pink/50 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 outline-none transition-colors font-sans"
+              />
+              <button
+                type="submit"
+                disabled={!aiInputText.trim() || aiLoading}
+                className="px-4 py-2.5 bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-90 disabled:opacity-40 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-lg shadow-brand-pink/10"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Send</span>
+              </button>
+            </form>
           </div>
         </div>
       )}
