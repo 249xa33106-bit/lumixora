@@ -211,6 +211,92 @@ const Marketplace = () => {
     }
   };
 
+  const [activeTab, setActiveTabMode] = useState('opportunities'); // 'opportunities' | 'peer_market'
+  const [opportunityCategory, setOpportunityCategory] = useState('All');
+
+  const OPPORTUNITY_CATEGORIES = ["All", "Internships", "Hackathons", "Scholarships", "Competitions", "Certifications & Workshops"];
+
+  const OPPORTUNITIES_LIST = [
+    {
+      id: 'opp_1',
+      title: 'Software Engineering Intern — Summer 2026',
+      organization: 'Vyomra AI Labs / Partner Tech',
+      category: 'Internships',
+      stipend: '₹25,000 / month',
+      location: 'Remote / Hybrid (Kurnool)',
+      deadline: 'Oct 15, 2026',
+      badge: 'High Impact ⚡',
+      badgeColor: 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10',
+      description: 'Work directly on distributed student systems, LLM fine-tuning pipelines, and real-time backend API integration.',
+      link: 'https://lumixora-93cca.web.app/#/hackathons',
+      skillsRequired: ['React', 'Python', 'Node.js', 'Firebase']
+    },
+    {
+      id: 'opp_2',
+      title: 'Smart Campus AI Buildathon 2026',
+      organization: 'Vyomra Student Innovation Network',
+      category: 'Hackathons',
+      stipend: '₹1,50,000 Prize Pool',
+      location: 'GPREC Campus / Online',
+      deadline: 'Nov 01, 2026',
+      badge: 'Flagship 🏆',
+      badgeColor: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
+      description: 'Build futuristic solutions for campus safety, automated academic assistance, or student wellness. Cash prizes and direct internship offers.',
+      link: 'https://lumixora-93cca.web.app/#/hackathons',
+      skillsRequired: ['AI/ML', 'Full Stack', 'UI/UX', 'Cloud']
+    },
+    {
+      id: 'opp_3',
+      title: 'Reliance Foundation Undergraduate Scholarship',
+      organization: 'Reliance Foundation',
+      category: 'Scholarships',
+      stipend: 'Up to ₹2,00,000',
+      location: 'Pan-India',
+      deadline: 'Oct 30, 2026',
+      badge: 'Merit Grant 🎓',
+      badgeColor: 'border-purple-400/40 text-purple-300 bg-purple-400/10',
+      description: 'Financial assistance and leadership development program for meritorious B.Tech and degree students across India.',
+      link: 'https://www.scholarships.gov.in/',
+      skillsRequired: ['Academic Excellence', 'CGPA ≥ 8.0']
+    },
+    {
+      id: 'opp_4',
+      title: 'Google Cloud Generative AI Masterclass',
+      organization: 'Google Developer Student Clubs',
+      category: 'Certifications & Workshops',
+      stipend: 'Free Verified Certificate',
+      location: 'Online Workshop',
+      deadline: 'Oct 10, 2026',
+      badge: 'Free Cert 📜',
+      badgeColor: 'border-cyan-400/40 text-cyan-300 bg-cyan-400/10',
+      description: 'Learn foundational LLM architecture, prompt design, and Cloud Vertex AI deployment with hands-on lab credits.',
+      link: 'https://cloud.google.com/innovators',
+      skillsRequired: ['Basic Python', 'Cloud Concepts']
+    },
+    {
+      id: 'opp_5',
+      title: 'Tata Crucible Campus Quiz 2026',
+      organization: 'Tata Group',
+      category: 'Competitions',
+      stipend: '₹2,50,000 National Prize',
+      location: 'Regional & Online',
+      deadline: 'Oct 20, 2026',
+      badge: 'National 🎯',
+      badgeColor: 'border-rose-400/40 text-rose-300 bg-rose-400/10',
+      description: 'India\'s largest business and technology quiz competition for college scholars. Test your general awareness and tech acumen.',
+      link: 'https://tatacrucible.com',
+      skillsRequired: ['Business Tech Awareness', 'Aptitude']
+    }
+  ];
+
+  const filteredOpportunities = OPPORTUNITIES_LIST.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          item.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat = opportunityCategory === 'All' || item.category === opportunityCategory;
+    return matchesSearch && matchesCat;
+  });
+
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -219,7 +305,6 @@ const Marketplace = () => {
   });
 
   const getWhatsAppLink = (number) => {
-    // Basic sanitization
     const cleanNum = number.replace(/\D/g, '');
     return `https://wa.me/${cleanNum.length === 10 ? '91'+cleanNum : cleanNum}`;
   };
@@ -236,49 +321,156 @@ const Marketplace = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-              <span className="bg-gradient-to-br from-brand-teal to-brand-purple text-transparent bg-clip-text">
-                Student Marketplace
+              <span className="bg-gradient-to-br from-brand-teal via-[#00f5d4] to-brand-purple text-transparent bg-clip-text">
+                Lumixora Opportunity Hub & Marketplace
               </span>
             </h1>
-            <p className="text-gray-400 text-sm mt-1">Buy and sell products within {college}</p>
+            <p className="text-gray-400 text-sm mt-1">Discover verified internships, hackathons, grants, and peer campus gear at {college}</p>
           </div>
-          <button 
-            onClick={() => setIsPostModalOpen(true)}
-            className="bg-brand-teal text-black px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-brand-teal/20"
-          >
-            <Plus className="w-5 h-5" />
-            Sell an Item
-          </button>
+
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setActiveTabMode('opportunities')}
+              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'opportunities'
+                  ? 'bg-gradient-to-r from-brand-teal to-emerald-500 text-black shadow-lg shadow-brand-teal/20'
+                  : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <span>🚀 Opportunity Hub</span>
+            </button>
+
+            <button 
+              onClick={() => setActiveTabMode('peer_market')}
+              className={`px-5 py-2.5 rounded-2xl font-extrabold text-xs transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'peer_market'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/20'
+                  : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <span>🛒 Campus Peer Store</span>
+            </button>
+
+            {activeTab === 'peer_market' && (
+              <button 
+                onClick={() => setIsPostModalOpen(true)}
+                className="bg-brand-teal text-black px-4 py-2.5 rounded-2xl font-bold flex items-center gap-2 text-xs hover:opacity-90 transition-opacity shadow-lg shadow-brand-teal/20 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Sell Item
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Filters & Search */}
-        <div className="glass-panel p-4 rounded-3xl border border-white/10 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search products..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-gray-200 focus:outline-none focus:border-brand-teal transition-colors"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        {/* ─── TAB 1: OPPORTUNITY HUB (Internships, Hackathons, Scholarships, Competitions, Certifications) ─── */}
+        {activeTab === 'opportunities' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Category Filter Bar */}
+            <div className="glass-panel p-4 rounded-3xl border border-white/10 flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search internships, hackathons, scholarships..."
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-gray-200 focus:outline-none focus:border-brand-teal transition-colors"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
+                {OPPORTUNITY_CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setOpportunityCategory(cat)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      opportunityCategory === cat 
+                        ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' 
+                        : 'bg-white/5 text-gray-400 border border-transparent hover:bg-white/10'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Opportunities List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredOpportunities.map((opp) => (
+                <div key={opp.id} className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden hover:border-brand-teal/40 transition-all space-y-4 group">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${opp.badgeColor} mb-2`}>
+                        {opp.badge}
+                      </span>
+                      <h3 className="text-lg font-bold text-white group-hover:text-brand-teal transition-colors">{opp.title}</h3>
+                      <p className="text-xs text-gray-400 font-semibold">{opp.organization}</p>
+                    </div>
+                    <span className="text-xs font-black text-brand-teal px-2.5 py-1 rounded-lg bg-brand-teal/10 shrink-0">
+                      {opp.stipend}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-gray-300 leading-relaxed line-clamp-2">{opp.description}</p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {opp.skillsRequired.map((sk, idx) => (
+                      <span key={idx} className="text-[10px] font-bold text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">
+                        {sk}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-white/5 text-xs">
+                    <span className="text-gray-400 font-medium">Deadline: <strong className="text-gray-200">{opp.deadline}</strong></span>
+                    <a 
+                      href={opp.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-xl bg-brand-teal/20 text-brand-teal hover:bg-brand-teal hover:text-black font-extrabold transition-all cursor-pointer flex items-center gap-1.5 text-xs"
+                    >
+                      <span>Explore & Apply</span>
+                      <Tag className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  selectedCategory === cat 
-                    ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' 
-                    : 'bg-white/5 text-gray-400 border border-transparent hover:bg-white/10'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
+
+        {/* ─── TAB 2: PEER-TO-PEER CAMPUS STORE ─── */}
+        {activeTab === 'peer_market' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Filters & Search */}
+            <div className="glass-panel p-4 rounded-3xl border border-white/10 flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search products..."
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm text-gray-200 focus:outline-none focus:border-brand-teal transition-colors"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      selectedCategory === cat 
+                        ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' 
+                        : 'bg-white/5 text-gray-400 border border-transparent hover:bg-white/10'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
 
         {/* Grid */}
         {loading ? (
@@ -350,6 +542,8 @@ const Marketplace = () => {
               </div>
             ))}
           </div>
+        )}
+        </div>
         )}
 
       </div>
