@@ -61,55 +61,43 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     }
   });
 
-  const toggleCursorGlow = () => {
-    const styles = ['tom_and_jerry', 'cyber_rat', 'neon_spotlight', 'fluid_comet', 'magnetic_ring'];
-    const styleNames = {
-      tom_and_jerry: '🐱🐭 Tom & Jerry Cartoon Duo',
-      cyber_rat: '🐭 Cyber Rat Pet Companion',
-      neon_spotlight: '✨ Cosmic Nebula Spotlight',
-      fluid_comet: '⚡ Fluid Neon Comet Trail',
-      magnetic_ring: '🎯 Minimal Magnetic Ring'
-    };
+  const [showCursorMenu, setShowCursorMenu] = useState(false);
 
-    if (!cursorGlowEnabled) {
+  const ALL_CURSOR_STYLES = [
+    { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Tom & Jerry chase across screen with cartoon sparks' },
+    { id: 'pikachu', name: '⚡ Pikachu Electrical Surge', desc: 'Pikachu runs beside cursor with yellow electrical sparks' },
+    { id: 'doraemon', name: '🌀 Doraemon Magic Gadgets', desc: 'Doraemon flies on Bamboo Copter emitting magic sparkles' },
+    { id: 'shinchan', name: '🕶️ Shinchan Mischief Runner', desc: 'Shinchan scurries emitting Action Kamen laser beams' },
+    { id: 'ben10', name: '🛸 Ben 10 Omnitrix Matrix', desc: 'Ben 10 with glowing green Omnitrix pulse aura' },
+    { id: 'bheem', name: '🦾 Chhota Bheem Power Ladoo', desc: 'Chhota Bheem with golden Ladoo energy rings' },
+    { id: 'matrix_rain', name: '🌌 Cyberpunk Matrix Rain', desc: 'Falling green digital matrix code stream' },
+    { id: 'neon_spotlight', name: '✨ Cosmic Fluid Spotlight', desc: 'Fluid multi-color ambient lighting' },
+    { id: 'fluid_comet', name: '⚡ Fluid Neon Comet Trail', desc: 'Silky glowing laser ribbon with stardust' },
+    { id: 'magnetic_ring', name: '🎯 Minimal Magnetic Ring', desc: 'Clean dot with elastic glass follower ring' }
+  ];
+
+  const handleSelectCursorStyle = (styleId) => {
+    if (styleId === 'off') {
+      setCursorGlowEnabled(false);
+      try { localStorage.setItem('lumixora_cursor_glow', 'false'); } catch(e){}
+      window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: false } }));
+      addToast({ message: 'Visual effects turned OFF', type: 'info' });
+    } else {
       setCursorGlowEnabled(true);
+      setCursorStyle(styleId);
       try {
         localStorage.setItem('lumixora_cursor_glow', 'true');
-      } catch (e) {}
-      window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: true, mode: cursorStyle } }));
-      addToast({
-        message: `${styleNames[cursorStyle] || 'Cursor Effect'} turned ON!`,
-        type: 'success'
-      });
-      return;
+        localStorage.setItem('lumixora_cursor_mode', styleId);
+      } catch(e){}
+      window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: true, mode: styleId } }));
+      const found = ALL_CURSOR_STYLES.find(s => s.id === styleId);
+      addToast({ message: `Effect Activated: ${found?.name || styleId}`, type: 'success' });
     }
+    setShowCursorMenu(false);
+  };
 
-    const currentIndex = styles.indexOf(cursorStyle);
-    if (currentIndex < styles.length - 1) {
-      const nextStyle = styles[currentIndex + 1];
-      setCursorStyle(nextStyle);
-      try {
-        localStorage.setItem('lumixora_cursor_mode', nextStyle);
-      } catch (e) {}
-      window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: true, mode: nextStyle } }));
-      addToast({
-        message: `Switched to: ${styleNames[nextStyle]}`,
-        type: 'success'
-      });
-    } else {
-      // Turn off after cycling all
-      setCursorGlowEnabled(false);
-      setCursorStyle(styles[0]);
-      try {
-        localStorage.setItem('lumixora_cursor_glow', 'false');
-        localStorage.setItem('lumixora_cursor_mode', styles[0]);
-      } catch (e) {}
-      window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: false } }));
-      addToast({
-        message: 'Cursor companion turned OFF',
-        type: 'info'
-      });
-    }
+  const toggleCursorGlow = () => {
+    setShowCursorMenu(prev => !prev);
   };
 
   // Multi-Campus B2B Switcher State for Super Admin / Founder
@@ -1056,18 +1044,77 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               </div>
             )}
 
-            {/* 3D Hologram Cursor Glow Toggle Button */}
-            <button
-              onClick={toggleCursorGlow}
-              title={cursorGlowEnabled ? '3D Hologram Cursor: ON (Click to turn off)' : '3D Hologram Cursor: OFF (Click to turn on)'}
-              className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
-                cursorGlowEnabled
-                  ? 'bg-gradient-to-br from-emerald-500/20 via-purple-500/20 to-pink-500/20 border-emerald-400/50 text-[#00f5d4] shadow-[0_0_15px_rgba(0,245,212,0.3)]'
-                  : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-brand-primary hover:bg-[var(--bg-card-hover)]'
-              }`}
-            >
-              <Sparkles className={`w-4 h-4 ${cursorGlowEnabled ? 'text-[#00f5d4] animate-pulse' : ''}`} />
-            </button>
+            {/* Visual Effects & Mascot Themes Selector */}
+            <div className="relative">
+              <button
+                onClick={toggleCursorGlow}
+                title="Select Visual Effects & Mascot Themes"
+                className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                  cursorGlowEnabled
+                    ? 'bg-gradient-to-br from-emerald-500/20 via-purple-500/20 to-pink-500/20 border-emerald-400/50 text-[#00f5d4] shadow-[0_0_15px_rgba(0,245,212,0.3)]'
+                    : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-brand-primary hover:bg-[var(--bg-card-hover)]'
+                }`}
+              >
+                <Sparkles className={`w-4 h-4 ${cursorGlowEnabled ? 'text-[#00f5d4] animate-pulse' : ''}`} />
+              </button>
+
+              {showCursorMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCursorMenu(false)} />
+                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] glass-panel bg-[#12121e] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50 p-2.5 space-y-1 backdrop-blur-xl">
+                    <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
+                      <span className="text-[11px] font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Choose Visual Effect Theme
+                      </span>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
+                        {cursorGlowEnabled ? 'Active' : 'OFF'}
+                      </span>
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+                      <button
+                        onClick={() => handleSelectCursorStyle('off')}
+                        className={`w-full p-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-all cursor-pointer ${
+                          !cursorGlowEnabled
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : 'text-gray-400 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🚫</span>
+                          <div>
+                            <p className="font-extrabold text-xs">Disable Visual Effects</p>
+                            <p className="text-[10px] text-gray-500">Standard clean cursor</p>
+                          </div>
+                        </div>
+                        {!cursorGlowEnabled && <Check className="w-4 h-4 text-red-400" />}
+                      </button>
+
+                      {ALL_CURSOR_STYLES.map(style => (
+                        <button
+                          key={style.id}
+                          onClick={() => handleSelectCursorStyle(style.id)}
+                          className={`w-full p-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-all cursor-pointer ${
+                            cursorGlowEnabled && cursorStyle === style.id
+                              ? 'bg-gradient-to-r from-brand-pink/20 to-purple-600/20 text-brand-pink border border-brand-pink/40 shadow-sm'
+                              : 'text-gray-300 hover:bg-white/5'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span className="text-base mt-0.5">{style.name.split(' ')[0]}</span>
+                            <div>
+                              <p className="font-extrabold text-white text-xs leading-snug">{style.name.split(' ').slice(1).join(' ')}</p>
+                              <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{style.desc}</p>
+                            </div>
+                          </div>
+                          {cursorGlowEnabled && cursorStyle === style.id && <Check className="w-4 h-4 text-brand-pink shrink-0 ml-1" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Dark / Light Mode Toggle */}
             <button

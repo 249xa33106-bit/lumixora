@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 export const CURSOR_STYLES = [
-  { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Duo', desc: 'Jerry chases the cheese cursor while Tom playfully chases behind!' },
-  { id: 'cyber_rat', name: '🐭 Cyber Rat Pet Companion', desc: 'Cute animated cyber mouse that scurries and chases your cursor' },
-  { id: 'neon_spotlight', name: '✨ Cosmic Nebula Spotlight', desc: 'Soft fluid multi-color ambient lighting that illuminates cards' },
+  { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Jerry chases the cheese cursor while Tom playfully chases behind!' },
+  { id: 'pikachu', name: '⚡ Pikachu Electrical Surge', desc: 'Pikachu runs beside your cursor emitting yellow electrical sparks & thunderbolts!' },
+  { id: 'doraemon', name: '🌀 Doraemon Magic Gadget Trail', desc: 'Doraemon flies on Bamboo Copter emitting magic gadget sparkles!' },
+  { id: 'shinchan', name: '🕶️ Shinchan Mischief Runner', desc: 'Shinchan scurries around your cursor emitting Action Kamen laser beams!' },
+  { id: 'ben10', name: '🛸 Ben 10 Omnitrix Matrix', desc: 'Ben 10 with glowing green Omnitrix pulse aura & alien matrix symbols!' },
+  { id: 'bheem', name: '🦾 Chhota Bheem Power Ladoo', desc: 'Chhota Bheem with golden Ladoo aura & glowing energy rings!' },
+  { id: 'matrix_rain', name: '🌌 Cyberpunk Matrix Rain', desc: 'Falling green digital matrix code stream reacting to cursor!' },
+  { id: 'neon_spotlight', name: '✨ Cosmic Fluid Spotlight', desc: 'Soft fluid multi-color ambient lighting that illuminates cards' },
   { id: 'fluid_comet', name: '⚡ Fluid Neon Comet Trail', desc: 'Silky glowing laser ribbon with fading cosmic stardust' },
   { id: 'magnetic_ring', name: '🎯 Minimal Magnetic Ring', desc: 'Clean dot with an elastic magnetic glass follower ring' }
 ];
 
 export default function CursorGlow() {
+  const imagesRef = useRef({});
+
+  useEffect(() => {
+    ['pikachu', 'doraemon', 'shinchan', 'ben10', 'bheem'].forEach(name => {
+      const img = new Image();
+      img.src = `/${name}.png`;
+      imagesRef.current[name] = img;
+    });
+  }, []);
+
   const [styleMode, setStyleMode] = useState(() => {
     try {
       const saved = localStorage.getItem('lumixora_cursor_mode');
@@ -536,6 +551,57 @@ export default function CursorGlow() {
           ctx.stroke();
 
           ctx.restore();
+        }
+
+        // Mascot Character Modes: Pikachu, Doraemon, Shinchan, Ben 10, Chhota Bheem
+        if (['pikachu', 'doraemon', 'shinchan', 'ben10', 'bheem'].includes(styleMode) && isVisible) {
+          const img = imagesRef.current[styleMode];
+          const mdx = targetX - jerryX;
+          const mdy = targetY - jerryY;
+          const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+          jerryAngle = Math.atan2(mdy, mdx);
+
+          if (mdist > 35) {
+            jerryX += Math.cos(jerryAngle) * Math.min(14, mdist * 0.15);
+            jerryY += Math.sin(jerryAngle) * Math.min(14, mdist * 0.15);
+          }
+
+          ctx.save();
+          ctx.translate(jerryX, jerryY);
+
+          // Character Glow Aura
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = styleMode === 'pikachu' ? '#FFD166' :
+                           styleMode === 'ben10' ? '#00F5D4' :
+                           styleMode === 'bheem' ? '#FF9F1C' :
+                           styleMode === 'doraemon' ? '#3A86EF' : '#FF007A';
+
+          if (img && img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, -28, -28, 56, 56);
+          } else {
+            ctx.fillStyle = ctx.shadowColor;
+            ctx.beginPath();
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+
+          // Custom Sparks per character
+          if (Math.random() > 0.4 && stars.length < 25) {
+            stars.push({
+              x: jerryX + (Math.random() - 0.5) * 25,
+              y: jerryY + (Math.random() - 0.5) * 25,
+              vx: (Math.random() - 0.5) * 4,
+              vy: (Math.random() - 0.5) * 4,
+              size: Math.random() * 5 + 3,
+              alpha: 1,
+              rot: Math.random() * Math.PI,
+              color: styleMode === 'pikachu' ? '#FFD166' :
+                     styleMode === 'ben10' ? '#00F5D4' :
+                     styleMode === 'bheem' ? '#FF9F1C' :
+                     styleMode === 'doraemon' ? '#3A86EF' : '#FF007A'
+            });
+          }
         }
 
         // B. Fluid Comet Trail
