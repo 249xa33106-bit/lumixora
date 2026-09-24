@@ -186,6 +186,27 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 10
   },
   {
+    id: 'krishnasai',
+    name: 'KRISHNA SAI',
+    role: 'AI & Research Team Member',
+    division: 'ai-tech',
+    divisionLabel: 'AI & Intelligent Systems',
+    department: 'AI & Research Division',
+    lead: 'Under AI & Innovation Lead (Y. Usha Sree)',
+    image: '/team_krishnasai.png',
+    color: 'indigo',
+    gradient: 'from-indigo-400 via-purple-500 to-violet-500',
+    borderBadge: 'border-indigo-400/40 text-indigo-300 bg-indigo-400/10',
+    bio: 'Core AI & Research Team member at Vyomra. Focuses on intelligent systems research, student learning models, and experimental AI integrations.',
+    highlights: [
+      'Participates in AI research and dataset preparation for platform tutoring models.',
+      'Works with the AI & Research division on model validation and prompt refinement.',
+      'Helps benchmark and evaluate educational AI features for enhanced student engagement.'
+    ],
+    skills: ['AI Research', 'Python', 'Machine Learning', 'Data Processing', 'Intelligent Systems'],
+    priority: 11
+  },
+  {
     id: 'chandrika',
     name: 'C. CHANDRIKA',
     role: 'Operations Head',
