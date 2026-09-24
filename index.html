@@ -9,18 +9,15 @@
     <meta http-equiv="Expires" content="0" />
     <script>
       (function() {
-        const CURRENT_VERSION = '1.1.19';
-        const cachedVer = localStorage.getItem('lumixora_active_ver');
-        if (cachedVer !== CURRENT_VERSION) {
-          localStorage.setItem('lumixora_active_ver', CURRENT_VERSION);
-          if ('caches' in window) {
-            caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-          }
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(regs => {
-              regs.forEach(r => r.unregister());
-            });
-          }
+        const CURRENT_VERSION = '1.1.20';
+        localStorage.setItem('lumixora_active_ver', CURRENT_VERSION);
+        if ('caches' in window) {
+          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(r => r.unregister());
+          });
         }
       })();
     </script>

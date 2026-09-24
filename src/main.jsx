@@ -6,7 +6,7 @@ import App from './App.jsx'
 
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 
-console.log("App Version: 1.1.19 - Force Update");
+console.log("App Version: 1.1.20 - Purged");
 
 // Register Offline Service Worker for alarms & offline PWA, ensuring immediate update
 if ('serviceWorker' in navigator) {
