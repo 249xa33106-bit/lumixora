@@ -404,7 +404,7 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
+        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
           setActiveTab(tab);
         }
       } else {
@@ -859,6 +859,11 @@ function App() {
         return <Marketplace user={user} />;
       case 'community':
         return <CommunityPortal user={user} />;
+      case 'verify-cert':
+      case 'cert-verify':
+        const certHash = window.location.hash.substring(1);
+        const certIdFromHash = certHash.split('/')[1] || '';
+        return <PublicCertificateVerification certId={certIdFromHash} onBack={() => handleTabChange('proof-of-skill')} />;
       case 'join-group':
         const joinHash = window.location.hash.substring(1);
         const joinGroupId = joinHash.split('/')[1] || null;
