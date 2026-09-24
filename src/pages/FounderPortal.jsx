@@ -24,7 +24,9 @@ import {
   Bell,
   GraduationCap,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Mail,
+  Copy
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -47,7 +49,8 @@ import {
   clearNotificationsStorage,
   markSingleNotificationRead,
   dismissSingleNotification,
-  formatNotificationTime
+  formatNotificationTime,
+  getStoredTestSubmissions
 } from '../services/founderNotificationService';
 
 export const cleanScholarName = (str, email = '') => {
@@ -1522,6 +1525,37 @@ export default function FounderPortal({ user, setActiveTab }) {
     }
   };
 
+  const handleCopyAllEmails = () => {
+    try {
+      const targetList = (usersList && usersList.length > 0) ? usersList : (filteredUsers || []);
+      const emails = [];
+      const seen = new Set();
+
+      targetList.forEach(u => {
+        const email = (u.email || '').trim();
+        if (email && email.includes('@') && !email.endsWith('@scholar.lumixora.com')) {
+          const lower = email.toLowerCase();
+          if (!seen.has(lower)) {
+            seen.add(lower);
+            emails.push(email);
+          }
+        }
+      });
+
+      if (emails.length === 0) {
+        addToast({ message: 'No valid scholar emails found to copy.', type: 'warning' });
+        return;
+      }
+
+      const emailStr = emails.join(', ');
+      navigator.clipboard.writeText(emailStr);
+      addToast({ message: `Copied ${emails.length} scholar emails to clipboard (ready for BCC in Mail)!`, type: 'success' });
+    } catch (err) {
+      console.error('Error copying emails:', err);
+      addToast({ message: 'Failed to copy emails to clipboard.', type: 'error' });
+    }
+  };
+
   const handleExportPDF = async () => {
     try {
       addToast({ message: 'Generating comprehensive Supabase live progress PDF...', type: 'info' });
@@ -1541,23 +1575,92 @@ export default function FounderPortal({ user, setActiveTab }) {
         return typeof val === 'string' ? val : 'N/A';
       };
 
-      // 1. Fetch real submissions from Supabase
+      // 1. Fetch real submissions from Supabase and Firestore
       let testSubsList = [];
       let codingSubsList = [];
+      let completedTasksList = [];
+
       if (supabase && typeof supabase.from === 'function') {
         try {
-          const [tRes, cRes] = await Promise.allSettled([
+          const [tRes, cRes, taskRes] = await Promise.allSettled([
             supabase.from('test_results').select('*').limit(500),
-            supabase.from('coding_submissions').select('*').limit(500)
+            supabase.from('coding_submissions').select('*').limit(500),
+            supabase.from('tasks').select('*').limit(500)
           ]);
           if (tRes.status === 'fulfilled' && tRes.value.data) testSubsList = tRes.value.data;
           if (cRes.status === 'fulfilled' && cRes.value.data) codingSubsList = cRes.value.data;
-        } catch(e) {}
+          if (taskRes.status === 'fulfilled' && taskRes.value.data) {
+            completedTasksList = taskRes.value.data.filter(t => t.status === 'Completed' || t.status === 'Done' || t.completed === true || t.completedAt);
+          }
+        } catch(e) {
+          console.warn("Supabase fetch in PDF export notice:", e);
+        }
       }
+
+      // Also merge any Firestore submissions/completed tasks for complete coverage
+      if (db) {
+        try {
+          const [compSnap, testSnap] = await Promise.allSettled([
+            getDocs(collection(db, 'completed_tasks')),
+            getDocs(collection(db, 'test_results'))
+          ]);
+          if (compSnap.status === 'fulfilled' && compSnap.value) {
+            compSnap.value.forEach(d => {
+              const data = d.data();
+              if (!completedTasksList.some(s => s.id === d.id || (s.taskId === data.taskId && s.userId === data.userId))) {
+                completedTasksList.push({ id: d.id, ...data });
+              }
+            });
+          }
+          if (testSnap.status === 'fulfilled' && testSnap.value) {
+            testSnap.value.forEach(d => {
+              const data = d.data();
+              if (!testSubsList.some(s => s.id === d.id)) {
+                testSubsList.push({ id: d.id, ...data });
+              }
+            });
+          }
+        } catch (e) {}
+      }
+
+      // Local storage test submissions & tasks fallback
       try {
         const localSubs = getStoredTestSubmissions() || [];
-        if (Array.isArray(localSubs) && localSubs.length > 0) testSubsList = [...testSubsList, ...localSubs];
+        if (Array.isArray(localSubs) && localSubs.length > 0) {
+          localSubs.forEach(ls => {
+            if (!testSubsList.some(ts => ts.id === ls.id)) testSubsList.push(ls);
+          });
+        }
       } catch (e) {}
+
+      try {
+        const localTasks = JSON.parse(localStorage.getItem('lumixora_assigned_tasks_completed') || localStorage.getItem('assigned_tasks_completed') || '[]');
+        if (Array.isArray(localTasks) && localTasks.length > 0) {
+          localTasks.forEach(lt => {
+            if (!completedTasksList.some(ct => ct.id === lt.id || (ct.taskId === lt.taskId && ct.userId === lt.userId))) {
+              completedTasksList.push(lt);
+            }
+          });
+        }
+      } catch (e) {}
+
+      // If codingSubsList has solved problems not in completedTasksList, include them as completed tasks
+      if (Array.isArray(codingSubsList) && codingSubsList.length > 0) {
+        codingSubsList.forEach(cs => {
+          if (!completedTasksList.some(t => t.id === cs.id || (t.taskId === cs.problemId && (t.userId === cs.user_email || t.userId === cs.userId)))) {
+            completedTasksList.push({
+              id: cs.id,
+              userId: cs.user_email || cs.userId,
+              userName: cs.user_name || cs.userName,
+              subject: cs.language || 'Coding Challenge',
+              dayLabel: 'Problem',
+              taskId: cs.problemTitle || cs.title || cs.problemId || 'Code Solution',
+              status: cs.status || 'Accepted',
+              completedAt: cs.created_at || cs.submitted_at || cs.timestamp
+            });
+          }
+        });
+      }
 
       // Build User-level aggregated progress maps
       const userProgressMap = {};
@@ -1648,7 +1751,7 @@ export default function FounderPortal({ user, setActiveTab }) {
 
         return [
           i + 1,
-          cleanScholarName(u.name),
+          cleanScholarName(u.name, u.email),
           u.email || 'N/A',
           `${u.department || 'CSE'} (${u.year || '1st'})`,
           stats.codingSolved,
@@ -1684,7 +1787,7 @@ export default function FounderPortal({ user, setActiveTab }) {
         
         const tasksTableData = completedTasksList.slice(0, 500).map((t, i) => [
           i + 1,
-          cleanScholarName(t.userName || 'Scholar'),
+          cleanScholarName(t.userName || 'Scholar', t.userId || ''),
           t.userId || 'N/A',
           t.subject || 'Java Core & Advanced',
           t.dayLabel || 'Day 1',
@@ -1721,7 +1824,7 @@ export default function FounderPortal({ user, setActiveTab }) {
           const pct = s.accuracy ? `${s.accuracy}%` : `${Math.round((score / (totalMarks || 1)) * 100)}%`;
           return [
             i + 1,
-            cleanScholarName(s.user_name || s.user || s.name || 'Scholar'),
+            cleanScholarName(s.user_name || s.user || s.name || 'Scholar', s.user_email || s.email || s.userId || ''),
             s.user_email || s.email || s.userId || 'N/A',
             s.test_title || s.testTitle || 'Exam Assessment',
             `${score} / ${totalMarks}`,
@@ -2057,6 +2160,14 @@ export default function FounderPortal({ user, setActiveTab }) {
                 >
                   <Download className="w-4 h-4" />
                   Export PDF (.pdf)
+                </button>
+                <button 
+                  onClick={handleCopyAllEmails}
+                  className="flex items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+                  title="Copy all registered scholar emails to clipboard (ready for BCC in Gmail / Outlook)"
+                >
+                  <Mail className="w-4 h-4" />
+                  Copy All Emails (BCC)
                 </button>
               </div>
 

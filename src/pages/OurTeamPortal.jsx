@@ -33,50 +33,6 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 1
   },
   {
-    id: 'ishrath',
-    name: 'ISHRATH JAHAN',
-    role: 'Under Founder',
-    division: 'executive',
-    divisionLabel: 'Executive Core Team',
-    department: 'Executive Core Team',
-    lead: 'Directly Under Founder (Shaik Sowban)',
-    image: '/team_ishrath.png',
-    color: 'teal',
-    gradient: 'from-teal-400 to-emerald-500',
-    borderBadge: 'border-teal-400/40 text-teal-300 bg-teal-400/10',
-    bio: 'Core executive team member working directly under the Founder, assisting in platform execution, operations, and ecosystem strategy across Vyomra.',
-    highlights: [
-      'Works directly under the Founder to coordinate strategic platform initiatives and milestones.',
-      'Assists in cross-department operations, student support, and academic workflow management.',
-      'Maintains direct communication channels with the Founder to execute product improvements.',
-      'Supports core community growth and student engagement across universities.'
-    ],
-    skills: ['Under Founder', 'Executive Support', 'Core Operations', 'Platform Strategy', 'Team Coordination'],
-    priority: 2
-  },
-  {
-    id: 'arshiya',
-    name: 'ARSHIYA SULTANA',
-    role: 'Under Founder',
-    division: 'executive',
-    divisionLabel: 'Executive Core Team',
-    department: 'Executive Core Team',
-    lead: 'Directly Under Founder (Shaik Sowban)',
-    image: '/team_arshiya.png',
-    color: 'pink',
-    gradient: 'from-pink-400 to-rose-500',
-    borderBadge: 'border-pink-400/40 text-pink-300 bg-pink-400/10',
-    bio: 'Core executive team member working directly under the Founder, assisting in platform research, quality assurance, and core feature initiatives across Vyomra.',
-    highlights: [
-      'Works directly under the Founder on key academic research and platform quality standards.',
-      'Coordinates with the Founder to evaluate and refine student learning tools.',
-      'Assists in resource structuring, verified content curation, and feature feedback.',
-      'Drives student experience optimization directly aligned with the Founder vision.'
-    ],
-    skills: ['Under Founder', 'Executive Support', 'Academic Research', 'Quality Assurance', 'Feature Strategy'],
-    priority: 3
-  },
-  {
     id: 'manasa',
     name: 'C. MANASA',
     role: 'Team Lead • Feature Strategy',
@@ -207,6 +163,27 @@ export const DEFAULT_TEAM_MEMBERS = [
     ],
     skills: ['AI Prototyping', 'Prompt Engineering', 'Python', 'Proof of Concepts', 'Model Evaluation'],
     priority: 9
+  },
+  {
+    id: 'bhanusree',
+    name: 'BHANU SREE',
+    role: 'AI & Research Team Member',
+    division: 'ai-tech',
+    divisionLabel: 'AI & Intelligent Systems',
+    department: 'AI & Research Division',
+    lead: 'Under AI & Innovation Lead (Y. Usha Sree)',
+    image: '/team_bhanusree.jpg',
+    color: 'violet',
+    gradient: 'from-violet-400 via-purple-500 to-indigo-500',
+    borderBadge: 'border-violet-400/40 text-violet-300 bg-violet-400/10',
+    bio: 'Core AI & Research Team member at Vyomra. Specializes in intelligent systems research, student analytics models, and AI feature integration.',
+    highlights: [
+      'Conducts AI research and model evaluations for academic intelligence tools.',
+      'Collaborates with the AI & Research division on prompt engineering and adaptive learning features.',
+      'Assists in testing AI workflows and student interaction models across platform modules.'
+    ],
+    skills: ['AI Research', 'Machine Learning', 'Python', 'Prompt Engineering', 'Intelligent Systems'],
+    priority: 10
   },
   {
     id: 'chandrika',
@@ -844,12 +821,12 @@ export default function OurTeamPortal({ user, setActiveTab }) {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Photo Image URL (e.g. /team_ishrath.png or uploaded link)</label>
+                <label className="text-[10px] font-bold uppercase text-gray-400 block mb-1">Photo Image URL (e.g. /founder_sowban.png or uploaded link)</label>
                 <input
                   type="text"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="e.g. /team_ishrath.png"
+                  placeholder="e.g. /founder_sowban.png"
                   className="w-full bg-[#111118] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
                 />
               </div>

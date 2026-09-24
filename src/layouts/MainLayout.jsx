@@ -463,8 +463,86 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       const uEmail = (user?.email || '').toLowerCase().trim();
       const uName = cleanScholarName(user?.name || '').toLowerCase().trim();
 
-      // 1. Fetch completed tasks
+      // 1. Fetch completed tasks & solved coding problems
       let completed = [];
+
+      // A. Load from Local Browser Storage (localStorage)
+      try {
+        const localKeys = [
+          `lumixora_submissions_${uId}`,
+          `lumixora_submissions_${user?.id}`,
+          `lumixora_submissions_${user?.uid}`
+        ];
+        localKeys.forEach(k => {
+          if (!k) return;
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(sub => {
+                if ((sub.status === 'Accepted' || sub.status === 'Passed' || sub.passed) && !completed.some(c => c.problemId === sub.problemId || c.id === sub.id)) {
+                  completed.push({
+                    id: sub.id || sub.problemId || Date.now(),
+                    subject: 'Code Arena',
+                    dayLabel: sub.problemTitle || sub.title || 'Coding Challenge',
+                    taskId: `Solved (${(sub.language || 'Code').toUpperCase()})`,
+                    problemId: sub.problemId,
+                    status: 'Accepted'
+                  });
+                }
+              });
+            }
+          }
+        });
+      } catch (e) {}
+
+      // B. Load from Packed User Metadata JSON
+      try {
+        if (user?.name && user.name.includes('{')) {
+          const meta = JSON.parse(user.name.slice(user.name.indexOf('{')));
+          if (Array.isArray(meta.submissions)) {
+            meta.submissions.forEach(sub => {
+              if ((sub.status === 'Accepted' || sub.status === 'Passed' || sub.passed) && !completed.some(c => c.problemId === sub.problemId || c.id === sub.id)) {
+                completed.push({
+                  id: sub.id || sub.problemId || Date.now(),
+                  subject: 'Code Arena',
+                  dayLabel: sub.problemTitle || sub.title || 'Coding Challenge',
+                  taskId: `Solved (${(sub.language || 'Code').toUpperCase()})`,
+                  problemId: sub.problemId,
+                  status: 'Accepted'
+                });
+              }
+            });
+          }
+        }
+      } catch (e) {}
+
+      // C. Load from Supabase coding_submissions table
+      if (supabase && typeof supabase.from === 'function') {
+        try {
+          const { data: sbSubs } = await supabase
+            .from('coding_submissions')
+            .select('*')
+            .or(`user_email.eq.${uEmail},user_id.eq.${uId}`);
+          
+          if (sbSubs && Array.isArray(sbSubs)) {
+            sbSubs.forEach(sub => {
+              if ((sub.status === 'Accepted' || sub.status === 'Passed' || sub.passed) && !completed.some(c => c.problemId === sub.problem_id || c.id === sub.id)) {
+                completed.push({
+                  id: sub.id || sub.problem_id || Date.now(),
+                  subject: 'Code Arena',
+                  dayLabel: sub.problem_title || sub.problemTitle || 'Coding Challenge',
+                  taskId: `Solved (${(sub.language || 'Code').toUpperCase()})`,
+                  problemId: sub.problem_id,
+                  status: 'Accepted'
+                });
+              }
+            });
+          }
+        } catch (sbErr) {}
+      }
+
+      // D. Load from Firestore completed_tasks
       if (db) {
         try {
           const compSnap = await getDocs(collection(db, 'completed_tasks'));
@@ -473,7 +551,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             const taskUser = (data.userId || '').toLowerCase().trim();
             const taskName = (data.userName || '').toLowerCase().trim();
             if (taskUser === uId.toLowerCase() || taskUser === uEmail || (uName && taskName.includes(uName))) {
-              completed.push({ id: d.id, ...data });
+              if (!completed.some(c => c.id === d.id)) {
+                completed.push({ id: d.id, ...data });
+              }
             }
           });
         } catch (e) {}

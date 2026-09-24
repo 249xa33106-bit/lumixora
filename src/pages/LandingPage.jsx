@@ -75,42 +75,6 @@ const teamMembersDetails = {
     ],
     skills: ["System Architecture", "Full-Stack Development", "AI/ML Integration", "Cloud Infrastructure", "Product Vision"]
   },
-  ishrath: {
-    name: "ISHRATH JAHAN",
-    role: "Under Founder",
-    department: "Executive Core Team",
-    lead: "Directly Under Founder (Shaik Sowban)",
-    image: "/team_ishrath.png",
-    color: "teal",
-    gradient: "from-teal-400 to-emerald-500",
-    borderBadge: "border-teal-400/30 text-teal-400 bg-teal-400/10",
-    bio: "Core executive team member working directly under the Founder, assisting in platform execution, operations, and ecosystem strategy across Vyomra.",
-    highlights: [
-      "Works directly under the Founder to coordinate strategic platform initiatives and milestones.",
-      "Assists in cross-department operations, student support, and academic workflow management.",
-      "Maintains direct communication channels with the Founder to execute product improvements.",
-      "Supports core community growth and student engagement across universities."
-    ],
-    skills: ["Under Founder", "Executive Support", "Core Operations", "Platform Strategy", "Team Coordination"]
-  },
-  arshiya: {
-    name: "ARSHIYA SULTANA",
-    role: "Under Founder",
-    department: "Executive Core Team",
-    lead: "Directly Under Founder (Shaik Sowban)",
-    image: "/team_arshiya.png",
-    color: "pink",
-    gradient: "from-pink-400 to-rose-500",
-    borderBadge: "border-pink-400/30 text-pink-400 bg-pink-400/10",
-    bio: "Core executive team member working directly under the Founder, assisting in platform research, quality assurance, and core feature initiatives across Vyomra.",
-    highlights: [
-      "Works directly under the Founder on key academic research and platform quality standards.",
-      "Coordinates with the Founder to evaluate and refine student learning tools.",
-      "Assists in resource structuring, verified content curation, and feature feedback.",
-      "Drives student experience optimization directly aligned with the Founder's vision."
-    ],
-    skills: ["Under Founder", "Executive Support", "Academic Research", "Quality Assurance", "Feature Strategy"]
-  },
   ushasree: {
     name: "Y. USHA SREE",
     role: "AI & Innovation Lead — Head of Intelligent Systems",
@@ -1013,66 +977,6 @@ export default function LandingPage({ onLoginClick }) {
 
               <div className="pt-4 border-t border-white/5 mt-5 text-center">
                 <span className="text-[11px] font-extrabold text-brand-teal group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member: ISHRATH JAHAN (Founder's Core Team) */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.ishrath)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-teal-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-400/10 rounded-full blur-2xl group-hover:bg-teal-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_ishrath.png" 
-                  name="ISHRATH JAHAN" 
-                  gradient="from-teal-400 to-emerald-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-teal-400 bg-teal-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-teal-400/20 inline-block mb-2">
-                    Under Founder
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-teal-300 transition-colors">ISHRATH JAHAN</h3>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Working directly under the Founder, assisting in platform execution, operations, and ecosystem strategy.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-teal-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member: ARSHIYA SULTANA (Under Founder) */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.arshiya)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-pink-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-400/10 rounded-full blur-2xl group-hover:bg-pink-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_arshiya.png" 
-                  name="ARSHIYA SULTANA" 
-                  gradient="from-pink-400 to-rose-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-pink-400 bg-pink-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-pink-400/20 inline-block mb-2">
-                    Under Founder
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-pink-300 transition-colors">ARSHIYA SULTANA</h3>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Working directly under the Founder, assisting in academic research, quality assurance, and learning feature design.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-pink-400 group-hover:underline">View Profile & Details &rarr;</span>
               </div>
             </div>
 

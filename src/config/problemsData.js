@@ -68,32 +68,87 @@ We can traverse the array once, maintaining a hash map of values seen so far and
 - **Space Complexity**: O(N) to store values in the hash map.`,
     starterTemplates: {
       javascript: `function twoSum(nums, target) {
-    // Write your code here
-    
+    const map = new Map();
+    for (let i = 0; i < nums.length; i++) {
+        const comp = target - nums[i];
+        if (map.has(comp)) {
+            return [map.get(comp), i];
+        }
+        map.set(nums[i], i);
+    }
+    return [];
 }`,
       python: `def two_sum(nums: list[int], target: int) -> list[int]:
-    # Write your code here
-    pass`,
+    prevMap = {}
+    for i, n in enumerate(nums):
+        diff = target - n
+        if diff in prevMap:
+            return [prevMap[diff], i]
+        prevMap[n] = i
+    return []`,
       cpp: `#include <vector>
+#include <unordered_map>
 
 class Solution {
 public:
     std::vector<int> twoSum(std::vector<int>& nums, int target) {
-        // Write your code here
-        
+        std::unordered_map<int, int> prevMap;
+        for (int i = 0; i < nums.size(); i++) {
+            int diff = target - nums[i];
+            if (prevMap.find(diff) != prevMap.end()) {
+                return {prevMap[diff], i};
+            }
+            prevMap[nums[i]] = i;
+        }
+        return {};
     }
 };`,
       java: `import java.util.*;
 
 class Solution {
     public int[] twoSum(int[] nums, int target) {
-        // Write your code here
+        Map<Integer, Integer> prevMap = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int diff = target - nums[i];
+            if (prevMap.containsKey(diff)) {
+                return new int[]{prevMap.get(diff), i};
+            }
+            prevMap.put(nums[i], i);
+        }
         return new int[]{};
     }
 }`,
       go: `func twoSum(nums []int, target int) []int {
-    // Write your code here
+    prevMap := make(map[int]int)
+    for i, n := range nums {
+        diff := target - n
+        if idx, ok := prevMap[diff]; ok {
+            return []int{idx, i}
+        }
+        prevMap[n] = i
+    }
     return nil
+}`,
+      c: `#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, target;
+    if (scanf("%d", &n) != 1) return 0;
+    int arr[100];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    scanf("%d", &target);
+
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (arr[i] + arr[j] == target) {
+                printf("[%d,%d]\n", i, j);
+                return 0;
+            }
+        }
+    }
+    printf("[]\n");
+    return 0;
 }`
     }
   },
@@ -462,80 +517,215 @@ We solve this problem row-by-row. When placing a queen at \`(row, col)\`, it att
 By keeping track of occupied columns and diagonals in three hash sets, we can check if a square is safe in O(1). If safe, we place the queen and recurse. If backtracking, we remove it.`,
     starterTemplates: {
       javascript: `function solveNQueens(n) {
-    // Write your code here
-    
+    const res = [];
+    const board = Array.from({ length: n }, () => Array(n).fill('.'));
+    const cols = new Set();
+    const posDiag = new Set();
+    const negDiag = new Set();
+
+    function backtrack(r) {
+        if (r === n) {
+            res.push(board.map(row => row.join('')));
+            return;
+        }
+        for (let c = 0; c < n; c++) {
+            if (cols.has(c) || posDiag.has(r + c) || negDiag.has(r - c)) continue;
+            cols.add(c);
+            posDiag.add(r + c);
+            negDiag.add(r - c);
+            board[r][c] = 'Q';
+
+            backtrack(r + 1);
+
+            cols.delete(c);
+            posDiag.delete(r + c);
+            negDiag.delete(r - c);
+            board[r][c] = '.';
+        }
+    }
+
+    backtrack(0);
+    return res;
 }`,
       python: `def solve_n_queens(n: int) -> list[list[str]]:
-    # Write your code here
-    pass`,
+    res = []
+    board = [["."] * n for _ in range(n)]
+    cols, posDiag, negDiag = set(), set(), set()
+
+    def backtrack(r):
+        if r == n:
+            res.append(["".join(row) for row in board])
+            return
+
+        for c in range(n):
+            if c in cols or (r + c) in posDiag or (r - c) in negDiag:
+                continue
+            cols.add(c)
+            posDiag.add(r + c)
+            negDiag.add(r - c)
+            board[r][c] = "Q"
+
+            backtrack(r + 1)
+
+            cols.remove(c)
+            posDiag.remove(r + c)
+            negDiag.remove(r - c)
+            board[r][c] = "."
+
+    backtrack(0)
+    return res`,
       cpp: `#include <vector>
 #include <string>
 
 class Solution {
 public:
     std::vector<std::vector<std::string>> solveNQueens(int n) {
-        // Write your code here
-        
+        std::vector<std::vector<std::string>> result;
+        std::vector<std::string> board(n, std::string(n, '.'));
+        std::vector<bool> cols(n, false), diag1(2 * n - 1, false), diag2(2 * n - 1, false);
+
+        auto backtrack = [&](auto& self, int r) -> void {
+            if (r == n) {
+                result.push_back(board);
+                return;
+            }
+            for (int c = 0; c < n; ++c) {
+                if (cols[c] || diag1[r + c] || diag2[r - c + n - 1]) continue;
+                board[r][c] = 'Q';
+                cols[c] = diag1[r + c] = diag2[r - c + n - 1] = true;
+                
+                self(self, r + 1);
+
+                board[r][c] = '.';
+                cols[c] = diag1[r + c] = diag2[r - c + n - 1] = false;
+            }
+        };
+
+        backtrack(backtrack, 0);
+        return result;
     }
 };`,
       java: `import java.util.*;
 
 class Solution {
     public List<List<String>> solveNQueens(int n) {
-        // Write your code here
-        return new ArrayList<>();
+        List<List<String>> result = new ArrayList<>();
+        char[][] board = new char[n][n];
+        for (int i = 0; i < n; i++) Arrays.fill(board[i], '.');
+        boolean[] cols = new boolean[n];
+        boolean[] diag1 = new boolean[2 * n - 1];
+        boolean[] diag2 = new boolean[2 * n - 1];
+
+        backtrack(0, n, board, cols, diag1, diag2, result);
+        return result;
+    }
+
+    private void backtrack(int r, int n, char[][] board, boolean[] cols, boolean[] diag1, boolean[] diag2, List<List<String>> result) {
+        if (r == n) {
+            List<String> solution = new ArrayList<>();
+            for (int i = 0; i < n; i++) solution.add(new String(board[i]));
+            result.add(solution);
+            return;
+        }
+        for (int c = 0; c < n; c++) {
+            if (cols[c] || diag1[r + c] || diag2[r - c + n - 1]) continue;
+            board[r][c] = 'Q';
+            cols[c] = diag1[r + c] = diag2[r - c + n - 1] = true;
+
+            backtrack(r + 1, n, board, cols, diag1, diag2, result);
+
+            board[r][c] = '.';
+            cols[c] = diag1[r + c] = diag2[r - c + n - 1] = false;
+        }
     }
 }`,
       go: `func solveNQueens(n int) [][]string {
-    // Write your code here
-    return nil
+    var res [][]string
+    board := make([][]byte, n)
+    for i := range board {
+        board[i] = make([]byte, n)
+        for j := range board[i] {
+            board[i][j] = '.'
+        }
+    }
+    cols := make([]bool, n)
+    d1 := make([]bool, 2*n-1)
+    d2 := make([]bool, 2*n-1)
+
+    var backtrack func(r int)
+    backtrack = func(r int) {
+        if r == n {
+            rowStr := make([]string, n)
+            for i := 0; i < n; i++ {
+                rowStr[i] = string(board[i])
+            }
+            res = append(res, rowStr)
+            return
+        }
+        for c := 0; c < n; c++ {
+            if cols[c] || d1[r+c] || d2[r-c+n-1] {
+                continue
+            }
+            board[r][c] = 'Q'
+            cols[c], d1[r+c], d2[r-c+n-1] = true, true, true
+
+            backtrack(r + 1)
+
+            board[r][c] = '.'
+            cols[c], d1[r+c], d2[r-c+n-1] = false, false, false
+        }
+    }
+    backtrack(0)
+    return res
 }`,
       c: `#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-int n, board[10];
+int n, board[20];
+int firstSolution = 1;
 
-int isSafe(int row, int col) {
+bool isSafe(int row, int col) {
     for (int i = 0; i < row; i++) {
         if (board[i] == col || abs(board[i] - col) == abs(i - row))
-            return 0;
+            return false;
     }
-    return 1;
+    return true;
 }
 
-int solve(int row) {
-    if (row == n)
-        return 1;  // one solution found
+void solve(int row) {
+    if (row == n) {
+        if (!firstSolution) printf(",");
+        firstSolution = 0;
+        printf("[");
+        for (int i = 0; i < n; i++) {
+            if (i > 0) printf(",");
+            printf("\"");
+            for (int j = 0; j < n; j++) {
+                if (board[i] == j)
+                    printf("Q");
+                else
+                    printf(".");
+            }
+            printf("\"");
+        }
+        printf("]");
+        return;
+    }
 
     for (int col = 0; col < n; col++) {
         if (isSafe(row, col)) {
             board[row] = col;
-            if (solve(row + 1))
-                return 1;  // stop after one valid solution
+            solve(row + 1);
         }
     }
-    return 0;
 }
 
 int main() {
-    printf("Enter number of queens: ");
-    scanf("%d", &n);
-
-    if (solve(0)) {
-        printf("\\nOne possible solution:\\n");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (board[i] == j)
-                    printf("Q ");
-                else
-                    printf("- ");
-            }
-            printf("\\n");
-        }
-    } else {
-        printf("No solution exists for %d queens.\\n", n);
-    }
-
+    if (scanf("%d", &n) != 1) return 0;
+    printf("[");
+    solve(0);
+    printf("]");
     return 0;
 }`
     }

@@ -29,7 +29,9 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-const newVersion = '1.1.15';
+const pkgPath = path.join(__dirname, 'package.json');
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+const newVersion = pkg.version;
 
 async function updateDatabases() {
   console.log(`Bumping version to ${newVersion} in databases...`);

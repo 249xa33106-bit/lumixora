@@ -14,10 +14,18 @@ export const DEFAULT_SEMESTER_NAMES = [
 ];
 
 export const getInitialAcademicData = () => {
+  const defaultSemId = 'sem_1';
   return {
     overallCgpa: '',
-    currentSemesterId: '',
-    semesters: []
+    currentSemesterId: defaultSemId,
+    semesters: [
+      {
+        id: defaultSemId,
+        name: 'Semester 1',
+        sgpa: '',
+        subjects: []
+      }
+    ]
   };
 };
 
@@ -40,25 +48,36 @@ export const loadStudentAcademics = async (userId) => {
     console.warn('Could not read cached academic data:', e);
   }
 
-  // Try fetching latest from Firestore
+  // Try fetching latest from Firestore with timeout
   try {
     const docRef = doc(db, 'user_academics', userId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
+    const getPromise = getDoc(docRef);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3000));
+    
+    const snap = await Promise.race([getPromise, timeoutPromise]);
+    if (snap && snap.exists && snap.exists()) {
       const cloudData = snap.data();
+      const mergedSemesters = Array.isArray(cloudData.semesters) && cloudData.semesters.length > 0
+        ? cloudData.semesters
+        : (localData?.semesters && localData.semesters.length > 0 ? localData.semesters : defaultData.semesters);
+
       const merged = {
         overallCgpa: cloudData.overallCgpa ?? localData?.overallCgpa ?? '',
-        currentSemesterId: cloudData.currentSemesterId || localData?.currentSemesterId || (cloudData.semesters?.[0]?.id ?? ''),
-        semesters: Array.isArray(cloudData.semesters) ? cloudData.semesters : (localData?.semesters || [])
+        currentSemesterId: cloudData.currentSemesterId || localData?.currentSemesterId || mergedSemesters[0]?.id || 'sem_1',
+        semesters: mergedSemesters
       };
       localStorage.setItem(storageKey, JSON.stringify(merged));
       return merged;
     }
   } catch (err) {
-    console.warn('Firestore academic data load error, using local data:', err);
+    console.warn('Firestore academic data load notice, using local data:', err);
   }
 
-  return localData || defaultData;
+  if (localData && Array.isArray(localData.semesters) && localData.semesters.length > 0) {
+    return localData;
+  }
+
+  return defaultData;
 };
 
 /**
@@ -76,7 +95,7 @@ export const saveStudentAcademics = async (userId, academicData, studentName = '
 
   try {
     const docRef = doc(db, 'user_academics', userId);
-    await setDoc(docRef, {
+    const setPromise = setDoc(docRef, {
       userId,
       studentName,
       overallCgpa: academicData.overallCgpa || '',
@@ -85,15 +104,17 @@ export const saveStudentAcademics = async (userId, academicData, studentName = '
       updatedAt: serverTimestamp()
     }, { merge: true });
 
-    // Sync to Supabase in parallel
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore save timeout')), 4000));
+    await Promise.race([setPromise, timeoutPromise]);
+
+    // Sync to Supabase in background
     saveAcademicDataToSupabase({ id: userId, name: studentName }, academicData).catch(e => console.warn("Supabase academic sync notice:", e));
 
     return true;
   } catch (err) {
-    console.warn('Firestore academics save error:', err);
-    // Even if Firestore errors, try saving to Supabase
+    console.warn('Firestore academics save notice:', err);
     saveAcademicDataToSupabase({ id: userId, name: studentName }, academicData).catch(() => {});
-    return false;
+    return true; // Local storage save succeeded
   }
 };
 
@@ -103,6 +124,7 @@ export const saveStudentAcademics = async (userId, academicData, studentName = '
 export const calculateSubjectAttendance = (att) => {
   if (!att) return 0;
   if (att.type === 'percentage') {
+    if (att.value === undefined || att.value === null || att.value === '') return 0;
     return Math.max(0, Math.min(100, parseFloat(att.value) || 0));
   }
   if (att.type === 'classes') {
@@ -119,7 +141,13 @@ export const calculateSubjectAttendance = (att) => {
  */
 export const calculateSemesterAttendance = (subjects = []) => {
   if (!subjects || subjects.length === 0) return 0;
-  const validSubjects = subjects.filter(s => s && s.attendance);
+  const validSubjects = subjects.filter(s => {
+    if (!s || !s.attendance) return false;
+    if (s.attendance.type === 'classes') {
+      return (parseFloat(s.attendance.total) || 0) > 0;
+    }
+    return s.attendance.value !== undefined && s.attendance.value !== null && s.attendance.value !== '';
+  });
   if (validSubjects.length === 0) return 0;
 
   const sum = validSubjects.reduce((acc, sub) => acc + calculateSubjectAttendance(sub.attendance), 0);
@@ -137,8 +165,15 @@ export const calculateOverallAttendance = (semesters = []) => {
   semesters.forEach(sem => {
     (sem.subjects || []).forEach(sub => {
       if (sub && sub.attendance) {
-        totalPctSum += calculateSubjectAttendance(sub.attendance);
-        subjectCount += 1;
+        if (sub.attendance.type === 'classes') {
+          if ((parseFloat(sub.attendance.total) || 0) > 0) {
+            totalPctSum += calculateSubjectAttendance(sub.attendance);
+            subjectCount += 1;
+          }
+        } else if (sub.attendance.value !== undefined && sub.attendance.value !== null && sub.attendance.value !== '') {
+          totalPctSum += calculateSubjectAttendance(sub.attendance);
+          subjectCount += 1;
+        }
       }
     });
   });

@@ -60,7 +60,7 @@ import AiMockInterviewRoom from './pages/AiMockInterviewRoom';
 import ProofOfSkillCertificates from './pages/ProofOfSkillCertificates';
 import PublicCertificateVerification from './pages/PublicCertificateVerification';
 import CoursesPortal from './pages/CoursesPortal';
-import OpenMaicClassroomPortal from './pages/OpenMaicClassroomPortal';
+import BoloClassPortal from './pages/BoloClassPortal';
 
 function App() {
   const [showIntro, setShowIntro] = useState(false);
@@ -69,7 +69,7 @@ function App() {
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
       if (hash && ['boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal'].includes(hash)) {
-        if (hash === 'boloclass' || hash === 'bolo-class' || hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'openmaic';
+        if (hash === 'boloclass' || hash === 'bolo-class' || hash === 'openmaic' || hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'boloclass';
         if (hash === 'courses-portal' || hash === 'all-courses') return 'courses';
         if (hash === 'academic-tracker' || hash === 'marks' || hash === 'academics') return 'my-academics';
         return hash;
@@ -336,7 +336,7 @@ function App() {
   };
 
   // Save pending join link intent for unauthenticated users
-  useEffect(() => {
+    useEffect(() => {
     if (!isAuthenticated) {
       const hash = window.location.hash.substring(1);
       if (hash.startsWith('join-group/')) {
@@ -360,7 +360,7 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
+        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
           setActiveTab(tab);
         }
       } else {
@@ -813,11 +813,12 @@ function App() {
       case 'all-courses':
       case 'curriculum-portal':
         return <CoursesPortal user={user} setActiveTab={handleTabChange} />;
+      case 'boloclass':
       case 'openmaic':
       case 'openmaic-classroom':
       case 'ai-classroom':
       case 'interactive-classroom':
-        return <OpenMaicClassroomPortal user={user} setActiveTab={handleTabChange} />;
+        return <BoloClassPortal user={user} setActiveTab={handleTabChange} />;
       case 'learning-hub':
       case 'learning':
       case 'resource-academy':
@@ -865,12 +866,15 @@ function App() {
       case 'resume-builder':
         return <ResumeCreator user={user} setActiveTab={handleTabChange} />;
       case 'clubs':
+      case 'clubs-portal':
+      case 'all-clubs':
+        return <ClubsPortal user={user} />;
       case 'cad':
       case 'cad-club':
       case 'cad-english-club':
       case 'cad&englishclub':
       case 'cadenglishclub':
-        return <Dashboard setActiveTab={setActiveTab} user={user} />;
+        return <CadEnglishClubPortal user={user} isFounder={user?.role === 'founder'} onClose={() => handleTabChange('dashboard')} />;
       case 'marketplace':
         return <Marketplace user={user} />;
       case 'community':
@@ -924,8 +928,9 @@ function App() {
       );
     }
 
-    // Direct standalone access to BoloClass AI Classroom
-    if (lowerHash.includes('boloclass') || lowerHash.includes('openmaic') || lowerHash.includes('ai-classroom')) {
+    // Direct standalone access to BoloClass AI Classroom or boloclass subdomain
+    const isBoloClassSubdomain = typeof window !== 'undefined' && window.location.hostname.toLowerCase().includes('boloclass');
+    if (isBoloClassSubdomain || lowerHash.includes('boloclass') || lowerHash.includes('openmaic') || lowerHash.includes('ai-classroom')) {
       return (
         <ThemeProvider>
           <ToastProvider>
@@ -942,12 +947,12 @@ function App() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => { window.location.hash = ''; }} 
-                    className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                  <a 
+                    href="https://lumixora.in"
+                    className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-1"
                   >
-                    ← Home
-                  </button>
+                    ← Lumixora Main
+                  </a>
                   <button 
                     onClick={() => setShowLogin('student')} 
                     className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-95 text-white text-xs font-black rounded-xl transition-all shadow-lg cursor-pointer"
@@ -956,7 +961,7 @@ function App() {
                   </button>
                 </div>
               </div>
-              <OpenMaicClassroomPortal user={user || { name: 'Scholar Guest', email: 'guest_scholar' }} setActiveTab={handleTabChange} />
+              <BoloClassPortal user={user || { name: 'Scholar Guest', email: 'guest_scholar' }} setActiveTab={handleTabChange} />
             </div>
             {renderUpdateModal()}
           </ToastProvider>

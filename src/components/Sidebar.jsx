@@ -43,7 +43,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       items: [
         { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
         { id: 'courses', label: 'All Courses & Diplomas', icon: BookOpen, badge: 'Diplomas 🎓' },
-        { id: 'openmaic', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
+        { id: 'boloclass', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
         { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', icon: GraduationCap, badge: 'NEW 📊' },
         { id: 'doubts', label: 'Doubt Solver (AI 24/7)', icon: HelpCircle, badge: 'AI ⚡' },
         { id: 'learning-hub', label: 'Learning & Video Hub', icon: BookOpen, badge: 'Notes + Vids' },
