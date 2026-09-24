@@ -32,6 +32,7 @@ export default function AiFutureTwin({ user, setActiveTab }) {
 
   // Public Portfolio View State
   const [showPublicPortfolio, setShowPublicPortfolio] = useState(false);
+  const [selectedCareerPath, setSelectedCareerPath] = useState('sde');
 
   // Simulator parameters state
   const [simStudyHours, setSimStudyHours] = useState(3);
@@ -845,6 +846,180 @@ export default function AiFutureTwin({ user, setActiveTab }) {
           </div>
         </div>
 
+      </div>
+
+      {/* ─── PILLAR 9: 2-YEAR CAREER PATH SIMULATION ENGINE ─── */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 bg-gradient-to-br from-[#0b0c16] via-[#0f1224] to-[#0a0a14] shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase tracking-wider mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" /> 2-Year Neural Trajectory Simulator
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              Where Could You Be <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-emerald-400">2 Years From Now?</span>
+            </h2>
+            <p className="text-xs text-gray-400 mt-1">Simulate learning paths, required milestones, target projects, and expected CTC trajectories.</p>
+          </div>
+
+          <div className="flex gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10 shrink-0 overflow-x-auto">
+            {[
+              { id: 'sde', label: 'Product SDE', icon: '💻' },
+              { id: 'ai_ml', label: 'AI Systems', icon: '⚡' },
+              { id: 'higher_studies', label: 'MS / GATE', icon: '🎓' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedCareerPath(tab.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  selectedCareerPath === tab.id
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected Path Trajectory Breakdown */}
+        {(() => {
+          const pathMap = {
+            sde: {
+              title: 'Path A: SDE-1 Product Architect',
+              targetCtc: '₹14 - ₹22 LPA',
+              matchProbability: '92%',
+              badgeColor: 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10',
+              year1: [
+                'Solve 250+ LeetCode Mediums (Arrays, Graphs, DP, Trees)',
+                'Build 2 Production Full-Stack Projects (React, Node, Postgres)',
+                'Complete Low-Level Design (LLD) & Object-Oriented System Design'
+              ],
+              year2: [
+                'Crack Tier-1 Product Company Summer Internship',
+                'Master High-Level System Design (Caching, Sharding, Message Queues)',
+                'Convert Internship to Full-Time PPO (Pre-Placement Offer)'
+              ],
+              certs: ['AWS Certified Solutions Architect', 'Meta Professional Frontend']
+            },
+            ai_ml: {
+              title: 'Path B: AI & Machine Learning Systems Lead',
+              targetCtc: '₹16 - ₹26 LPA',
+              matchProbability: '88%',
+              badgeColor: 'border-purple-400/40 text-purple-300 bg-purple-400/10',
+              year1: [
+                'Master PyTorch, Transformers & Vector Databases (FAISS / Pinecone)',
+                'Fine-tune Open-Source LLMs (Llama 3, Mistral) on custom domain datasets',
+                'Publish 1 Open-Source ML Repository or Research Preprint'
+              ],
+              year2: [
+                'Secure AI Research / ML Engineering Internship',
+                'Deploy low-latency RAG & Agentic workflows on Cloud GPU infrastructure',
+                'Secure AI Systems Lead role at Tier-1 Tech Firm'
+              ],
+              certs: ['Google Cloud Machine Learning Engineer', 'DeepLearning.AI Specialization']
+            },
+            higher_studies: {
+              title: 'Path C: MS in CS / GATE & Higher Studies',
+              targetCtc: '₹22 - ₹35 LPA (Post-Grad)',
+              matchProbability: '85%',
+              badgeColor: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
+              year1: [
+                'Maintain CGPA ≥ 8.8 across all semesters',
+                'Master GATE Core CS subjects (OS, DBMS, TOC, Compiler, Algo)',
+                'Complete 1 Faculty-Guided Research Project with SOP/LOR preparation'
+              ],
+              year2: [
+                'Score 99+ Percentile in GATE / 325+ in GRE & 110+ in TOEFL',
+                'Publish IEEE/Springer conference paper with college faculty',
+                'Secure MS Admission at IISc/IIT or Top 20 Global University'
+              ],
+              certs: ['GATE Computer Science Top Ranker', 'TOEFL / GRE High Scorer']
+            }
+          };
+          const cur = pathMap[selectedCareerPath || 'sde'];
+
+          return (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/5 p-5 rounded-2xl border border-white/10">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <span>{cur.title}</span>
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1">Recommended 2-Year Strategy based on your current academic baseline.</p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block">Projected CTC Target</span>
+                    <span className="text-lg font-black text-emerald-400">{cur.targetCtc}</span>
+                  </div>
+                  <div className="text-right border-l border-white/10 pl-4">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block">Trajectory Match</span>
+                    <span className="text-lg font-black text-purple-400">{cur.matchProbability}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone Timeline Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Year 1 Timeline */}
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" /> Year 1: Skill & Portfolio Building
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400">Months 1 - 12</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-gray-300">
+                    {cur.year1.map((m, idx) => (
+                      <li key={idx} className="flex items-start gap-2 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{m}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Year 2 Timeline */}
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Briefcase className="w-3.5 h-3.5" /> Year 2: Internship & Placement Conversion
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400">Months 13 - 24</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-gray-300">
+                    {cur.year2.map((m, idx) => (
+                      <li key={idx} className="flex items-start gap-2 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                        <Target className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                        <span>{m}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Recommended Credentials */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-brand-teal/10 border border-brand-teal/30">
+                <div className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-brand-teal shrink-0" />
+                  <span className="text-xs font-bold text-gray-200">Recommended Industry Certifications:</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {cur.certs.map((c, i) => (
+                    <span key={i} className="text-[11px] font-extrabold text-brand-teal bg-black/40 px-3 py-1 rounded-lg border border-brand-teal/30">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* BASELINE SETUP MODAL */}
