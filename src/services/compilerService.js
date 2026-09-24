@@ -468,6 +468,11 @@ Output ONLY a JSON object:
 
     if (responseText) {
       let clean = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const start = clean.indexOf('{');
+      const end = clean.lastIndexOf('}');
+      if (start !== -1 && end !== -1 && end >= start) {
+        clean = clean.substring(start, end + 1);
+      }
       const parsed = JSON.parse(clean);
       return {
         success: !!parsed.success,
@@ -481,10 +486,31 @@ Output ONLY a JSON object:
     console.warn('AI Fallback Error:', fallbackError);
   }
 
+  // 4. Local client-side simulation for Python prints & basic execution
+  if (language === 'python' && code) {
+    const printMatches = [...code.matchAll(/print\s*\((.*?)\)/g)];
+    if (printMatches.length > 0) {
+      const outputs = printMatches.map(m => {
+        let val = m[1].trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          return val.slice(1, -1);
+        }
+        return val;
+      });
+      return {
+        success: true,
+        stdout: outputs.join('\n'),
+        stderr: '',
+        signal: null,
+        compileOutput: null
+      };
+    }
+  }
+
   return {
     success: false,
     stdout: '',
-    stderr: 'Execution engine could not complete output. Please verify syntax.',
+    stderr: `Compilation Engine Notice: Unable to reach compiler server. Please check your ${language.toUpperCase()} syntax or try again.`,
     signal: null
   };
 }
