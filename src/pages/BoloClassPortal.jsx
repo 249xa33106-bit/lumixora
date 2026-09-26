@@ -2452,6 +2452,61 @@ const BOLOCLASS_DEFAULT_LESSONS = [
         ]
       }
     ]
+  },
+  {
+    "id": "ml-llm-transformers",
+    "title": "Machine Learning: Neural Networks, Transformers & LLMs",
+    "subject": "Artificial Intelligence & Deep Learning",
+    "difficulty": "Advanced",
+    "duration": "30 mins",
+    "tags": ["Machine Learning", "Transformers", "Neural Networks", "LLMs", "PyTorch"],
+    "professor": {
+      "name": "Prof. Vyomra",
+      "role": "Lead AI Professor of Artificial Intelligence & Neural Architectures",
+      "avatar": "🧠",
+      "voicePitch": 0.95,
+      "voiceRate": 0.98
+    },
+    "classmates": [
+      { "id": "alex", "name": "Alex", "title": "Alex (Curious Skeptic)", "avatar": "🧑‍💻", "color": "text-amber-400", "role": "Edge-Case Specialist", "pitch": 1.2 },
+      { "id": "priya", "name": "Priya", "title": "Priya (ML Engineer)", "avatar": "👩‍🔬", "color": "text-emerald-400", "role": "Algorithmic Precision", "pitch": 1.1 }
+    ],
+    "scenes": [
+      {
+        "id": "scene-ml-1",
+        "slideNumber": 1,
+        "title": "Slide 1: Self-Attention Mechanism & Transformer Architecture",
+        "slideSubtitle": "Query, Key, Value vector projections, Scaled Dot-Product Attention, and Multi-Head Attention equations.",
+        "takeaways": [
+          "Self-Attention computes contextual representations by projecting input embeddings into Query (Q), Key (K), and Value (V) matrices.",
+          "Scaled Dot-Product Attention formula: Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V. Scaling by sqrt(d_k) prevents vanishing gradients.",
+          "Multi-Head Attention allows the model to jointly attend to information from different representation subspaces at different positions.",
+          "Positional Encodings (Sinusoidal or Rotary RoPE) inject order information into token embeddings without recurrence."
+        ],
+        "whiteboardContent": "# Self-Attention & Multi-Head Transformer Matrix\n\n$$\\text{Attention}(Q,K,V) = \\text{softmax}\\left(\\frac{Q K^T}{\\sqrt{d_k}}\\right) V$$\n\n---\n\n### Linear Projection Matrices:\n- $Q = X W_Q \\quad (N \\times d_k)$\n- $K = X W_K \\quad (N \\times d_k)$\n- $V = X W_V \\quad (N \\times d_v)$\n\n### Multi-Head Projection:\n$$\\text{MultiHead}(Q, K, V) = \\text{Concat}(\\text{head}_1, \\dots, \\text{head}_h) W^O$$",
+        "diagram": "┌──────────────────────────────────────────────────────────────────────────┐\n│                     MULTI-HEAD SELF-ATTENTION PIPELINE                   │\n├──────────────────────────────────────────────────────────────────────────┤\n│  Input Tokens X ───► Linear Projections ───► Q, K, V Matrices             │\n│                             │                                            │\n│             ┌───────────────┴───────────────┐                            │\n│             ▼                               ▼                            │\n│  [ Head 1: Q1, K1, V1 ]           [ Head H: Qh, Kh, Vh ]                 │\n│  Softmax(Q1 K1^T / sqrt(dk))      Softmax(Qh Kh^T / sqrt(dk))            │\n│             │                               │                            │\n│             └───────────────┬───────────────┘                            │\n│                             ▼                                            │\n│                  Concat(head_1 .. head_h) W^O ───► Context Output        │\n└──────────────────────────────────────────────────────────────────────────┘",
+        "codeSnippet": "import torch\nimport torch.nn as nn\nimport math\n\nclass SelfAttention(nn.Module):\n    def __init__(self, embed_dim, heads):\n        super().__init__()\n        self.embed_dim = embed_dim\n        self.heads = heads\n        self.head_dim = embed_dim // heads\n        \n        self.qkv = nn.Linear(embed_dim, embed_dim * 3)\n        self.fc_out = nn.Linear(embed_dim, embed_dim)\n        \n    def forward(self, x):\n        B, N, D = x.shape\n        qkv = self.qkv(x).reshape(B, N, 3, self.heads, self.head_dim).permute(2, 0, 3, 1, 4)\n        Q, K, V = qkv[0], qkv[1], qkv[2]\n        \n        scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.head_dim)\n        attn = torch.softmax(scores, dim=-1)\n        out = torch.matmul(attn, V).permute(0, 2, 1, 3).reshape(B, N, D)\n        return self.fc_out(out)\n\nprint('Self-Attention Layer initialized successfully!')",
+        "terminalOutput": "[PYTORCH CUDA RUNTIME]\n>>> Input Tensor Shape: torch.Size([2, 512, 768])\n>>> Attention Map Computed: [2, 12, 512, 512]\n>>> Transformer Forward Pass Complete | Latency: 4.12ms",
+        "dialogue": [
+          { "speaker": "professor", "text": "Welcome scholars! Today we dive into the core engine of modern LLMs: Self-Attention." },
+          { "speaker": "priya", "text": "Professor, why do we scale the dot product by the square root of d_k inside the softmax?" },
+          { "speaker": "professor", "text": "Excellent question, Priya! For large values of d_k, the dot products grow large in magnitude, pushing the softmax function into regions with extremely small gradients. Dividing by sqrt(d_k) maintains unit variance!" }
+        ],
+        "quizzes": [
+          {
+            "question": "What is the purpose of dividing QK^T by sqrt(d_k) in Scaled Dot-Product Attention?",
+            "options": [
+              "To prevent the dot products from growing too large and causing vanishing gradients in softmax",
+              "To reduce VRAM memory by half",
+              "To convert floating point numbers to integers",
+              "To make self-attention non-differentiable"
+            ],
+            "correct": 0,
+            "explanation": "Scaling by sqrt(d_k) normalizes the variance of the dot products to 1, preventing softmax saturation and vanishing gradients during backward propagation."
+          }
+        ]
+      }
+    ]
   }
 ];
 
