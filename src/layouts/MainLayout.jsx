@@ -62,19 +62,37 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
   });
 
   const [showCursorMenu, setShowCursorMenu] = useState(false);
+  const [cursorTab, setCursorTab] = useState('all');
+  const [cursorSearch, setCursorSearch] = useState('');
 
   const ALL_CURSOR_STYLES = [
-    { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Tom & Jerry chase across screen with cartoon sparks' },
-    { id: 'pikachu', name: '⚡ Pikachu Electrical Surge', desc: 'Pikachu runs beside cursor with yellow electrical sparks' },
-    { id: 'doraemon', name: '🌀 Doraemon Magic Gadgets', desc: 'Doraemon flies on Bamboo Copter emitting magic sparkles' },
-    { id: 'shinchan', name: '🕶️ Shinchan Mischief Runner', desc: 'Shinchan scurries emitting Action Kamen laser beams' },
-    { id: 'ben10', name: '🛸 Ben 10 Omnitrix Matrix', desc: 'Ben 10 with glowing green Omnitrix pulse aura' },
-    { id: 'bheem', name: '🦾 Chhota Bheem Power Ladoo', desc: 'Chhota Bheem with golden Ladoo energy rings' },
-    { id: 'matrix_rain', name: '🌌 Cyberpunk Matrix Rain', desc: 'Falling green digital matrix code stream' },
-    { id: 'neon_spotlight', name: '✨ Cosmic Fluid Spotlight', desc: 'Fluid multi-color ambient lighting' },
-    { id: 'fluid_comet', name: '⚡ Fluid Neon Comet Trail', desc: 'Silky glowing laser ribbon with stardust' },
-    { id: 'magnetic_ring', name: '🎯 Minimal Magnetic Ring', desc: 'Clean dot with elastic glass follower ring' }
+    { id: 'naruto', name: '🍥 Naruto Nine-Tails Rasengan', desc: 'Nine-Tails fox red chakra flames & spinning blue Rasengan orb!', cat: 'cartoons' },
+    { id: 'goku', name: '⚡ Goku Super Saiyan Kamehameha', desc: 'Fiery golden Super Saiyan aura with lightning arcs & Kamehameha beam!', cat: 'cartoons' },
+    { id: 'oggy', name: '🐱🪳 Oggy & Cockroaches Chase', desc: 'Oggy chases Joey, Dee Dee & Marky with flyswatter pop stars!', cat: 'cartoons' },
+    { id: 'kdrama', name: '🌸 K-Drama Romantic Hearts', desc: 'Glowing pink hearts, falling Sakura cherry blossom petals & romantic aura!', cat: 'cartoons' },
+    { id: 'spiderman', name: '🕷️ Spider-Man Web Launcher', desc: 'Neon red & blue web threads with spider-sense pulse rings!', cat: 'cartoons' },
+    { id: 'spongebob', name: '🍍 SpongeBob & Jellyfish Bubble', desc: 'SpongeBob flying on jellyfish emitting ocean bubbles & Krabby Patty stars!', cat: 'cartoons' },
+    { id: 'demon_slayer', name: '⚔️ Demon Slayer Sun Breathing', desc: 'Rengoku Sun Breathing golden-red fire dragon blade trail!', cat: 'cartoons' },
+    { id: 'cinema_drama', name: '🎬 Cinema & K-Pop Drama Spotlight', desc: 'Golden Hollywood spotlight beam, camera flash sparkles & musical notes!', cat: 'cartoons' },
+    { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Tom & Jerry chase across screen with cartoon sparks', cat: 'cartoons' },
+    { id: 'pikachu', name: '⚡ Pikachu Electrical Surge', desc: 'Pikachu runs beside cursor with yellow electrical sparks', cat: 'cartoons' },
+    { id: 'doraemon', name: '🌀 Doraemon Magic Gadgets', desc: 'Doraemon flies on Bamboo Copter emitting magic sparkles', cat: 'cartoons' },
+    { id: 'shinchan', name: '🕶️ Shinchan Mischief Runner', desc: 'Shinchan scurries emitting Action Kamen laser beams', cat: 'cartoons' },
+    { id: 'ben10', name: '🛸 Ben 10 Omnitrix Matrix', desc: 'Ben 10 with glowing green Omnitrix pulse aura', cat: 'cartoons' },
+    { id: 'bheem', name: '🦾 Chhota Bheem Power Ladoo', desc: 'Chhota Bheem with golden Ladoo energy rings', cat: 'cartoons' },
+    { id: 'quantum_plasma', name: '🌌 Cyber Quantum Plasma Dragon', desc: 'Glowing cyan & purple energy rings, orbital laser trail & plasma sparks!', cat: 'cyber' },
+    { id: 'fire_phoenix', name: '🔥 Golden Phoenix Fire Stream', desc: 'Spinning golden flames, fiery embers & sparkling stardust tail!', cat: 'cyber' },
+    { id: 'matrix_rain', name: '🌌 Cyberpunk Matrix Rain', desc: 'Falling green digital matrix code stream', cat: 'cyber' },
+    { id: 'neon_spotlight', name: '✨ Cosmic Fluid Spotlight', desc: 'Fluid multi-color ambient lighting', cat: 'cyber' },
+    { id: 'fluid_comet', name: '⚡ Fluid Neon Comet Trail', desc: 'Silky glowing laser ribbon with stardust', cat: 'minimal' },
+    { id: 'magnetic_ring', name: '🎯 Minimal Magnetic Ring', desc: 'Clean dot with elastic glass follower ring', cat: 'minimal' }
   ];
+
+  const filteredCursorStyles = ALL_CURSOR_STYLES.filter(s => {
+    const matchesCat = cursorTab === 'all' || s.cat === cursorTab;
+    const matchesSearch = !cursorSearch || s.name.toLowerCase().includes(cursorSearch.toLowerCase()) || s.desc.toLowerCase().includes(cursorSearch.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
 
   const handleSelectCursorStyle = (styleId) => {
     if (styleId === 'off') {
@@ -1061,17 +1079,77 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               {showCursorMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowCursorMenu(false)} />
-                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] glass-panel bg-[#12121e] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50 p-2.5 space-y-1 backdrop-blur-xl">
-                    <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-                      <span className="text-[11px] font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Choose Visual Effect Theme
-                      </span>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
-                        {cursorGlowEnabled ? 'Active' : 'OFF'}
+                  <div className="absolute right-0 mt-2 w-88 max-w-[calc(100vw-2rem)] glass-panel bg-[#10111e] border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 p-3 space-y-2 backdrop-blur-2xl animate-fade-in">
+                    {/* Header Title & Badge */}
+                    <div className="pb-2 border-b border-white/10 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
+                        <span className="text-xs font-black text-white uppercase tracking-wider">
+                          20 Student Visual Effects
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-brand-teal bg-brand-teal/15 border border-brand-teal/30 px-2.5 py-0.5 rounded-full font-extrabold">
+                        {cursorGlowEnabled ? '✨ Active' : 'OFF'}
                       </span>
                     </div>
 
-                    <div className="max-h-72 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search 20 themes (Naruto, Goku, Oggy, K-Drama...)"
+                        value={cursorSearch}
+                        onChange={(e) => setCursorSearch(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 transition-colors"
+                      />
+                      {cursorSearch && (
+                        <button
+                          onClick={() => setCursorSearch('')}
+                          className="absolute right-2.5 top-1.5 text-xs text-gray-400 hover:text-white"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Category Filter Tabs */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-bold no-scrollbar">
+                      <button
+                        onClick={() => setCursorTab('all')}
+                        className={`px-2.5 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+                          cursorTab === 'all' ? 'bg-brand-teal text-black font-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        All (20)
+                      </button>
+                      <button
+                        onClick={() => setCursorTab('cartoons')}
+                        className={`px-2.5 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+                          cursorTab === 'cartoons' ? 'bg-brand-pink text-white font-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Cartoons & Dramas (14)
+                      </button>
+                      <button
+                        onClick={() => setCursorTab('cyber')}
+                        className={`px-2.5 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+                          cursorTab === 'cyber' ? 'bg-brand-purple text-white font-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Cyber & Energy (4)
+                      </button>
+                      <button
+                        onClick={() => setCursorTab('minimal')}
+                        className={`px-2.5 py-1 rounded-lg shrink-0 transition-all cursor-pointer ${
+                          cursorTab === 'minimal' ? 'bg-white/20 text-white font-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        Minimal (2)
+                      </button>
+                    </div>
+
+                    {/* Scrollable Theme Items */}
+                    <div className="max-h-96 overflow-y-auto space-y-1 custom-scrollbar pr-1">
                       <button
                         onClick={() => handleSelectCursorStyle('off')}
                         className={`w-full p-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-all cursor-pointer ${
@@ -1090,26 +1168,32 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                         {!cursorGlowEnabled && <Check className="w-4 h-4 text-red-400" />}
                       </button>
 
-                      {ALL_CURSOR_STYLES.map(style => (
-                        <button
-                          key={style.id}
-                          onClick={() => handleSelectCursorStyle(style.id)}
-                          className={`w-full p-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-all cursor-pointer ${
-                            cursorGlowEnabled && cursorStyle === style.id
-                              ? 'bg-gradient-to-r from-brand-pink/20 to-purple-600/20 text-brand-pink border border-brand-pink/40 shadow-sm'
-                              : 'text-gray-300 hover:bg-white/5'
-                          }`}
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span className="text-base mt-0.5">{style.name.split(' ')[0]}</span>
-                            <div>
-                              <p className="font-extrabold text-white text-xs leading-snug">{style.name.split(' ').slice(1).join(' ')}</p>
-                              <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{style.desc}</p>
+                      {filteredCursorStyles.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-gray-500">
+                          No matching themes found for "{cursorSearch}".
+                        </div>
+                      ) : (
+                        filteredCursorStyles.map(style => (
+                          <button
+                            key={style.id}
+                            onClick={() => handleSelectCursorStyle(style.id)}
+                            className={`w-full p-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-all cursor-pointer ${
+                              cursorGlowEnabled && cursorStyle === style.id
+                                ? 'bg-gradient-to-r from-brand-pink/20 to-purple-600/20 text-brand-pink border border-brand-pink/40 shadow-sm'
+                                : 'text-gray-300 hover:bg-white/5'
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <span className="text-base mt-0.5">{style.name.split(' ')[0]}</span>
+                              <div>
+                                <p className="font-extrabold text-white text-xs leading-snug">{style.name.split(' ').slice(1).join(' ')}</p>
+                                <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{style.desc}</p>
+                              </div>
                             </div>
-                          </div>
-                          {cursorGlowEnabled && cursorStyle === style.id && <Check className="w-4 h-4 text-brand-pink shrink-0 ml-1" />}
-                        </button>
-                      ))}
+                            {cursorGlowEnabled && cursorStyle === style.id && <Check className="w-4 h-4 text-brand-pink shrink-0 ml-1" />}
+                          </button>
+                        ))
+                      )}
                     </div>
                   </div>
                 </>

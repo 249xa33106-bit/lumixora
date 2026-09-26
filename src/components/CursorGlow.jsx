@@ -1,6 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 export const CURSOR_STYLES = [
+  { id: 'naruto', name: '🍥 Naruto Nine-Tails Rasengan', desc: 'Nine-Tails fox red chakra flames & spinning blue Rasengan orb!' },
+  { id: 'goku', name: '⚡ Goku Super Saiyan Kamehameha', desc: 'Fiery golden Super Saiyan aura with lightning arcs & Kamehameha beam!' },
+  { id: 'oggy', name: '🐱🪳 Oggy & Cockroaches Chase', desc: 'Oggy chases Joey, Dee Dee & Marky with flyswatter pop stars!' },
+  { id: 'kdrama', name: '🌸 K-Drama Romantic Hearts', desc: 'Glowing pink hearts, falling Sakura cherry blossom petals & romantic aura!' },
+  { id: 'spiderman', name: '🕷️ Spider-Man Web Launcher', desc: 'Neon red & blue web threads with spider-sense pulse rings!' },
+  { id: 'spongebob', name: '🍍 SpongeBob & Jellyfish Bubble', desc: 'SpongeBob flying on jellyfish emitting ocean bubbles & Krabby Patty stars!' },
+  { id: 'demon_slayer', name: '⚔️ Demon Slayer Sun Breathing', desc: 'Rengoku Sun Breathing golden-red fire dragon blade trail!' },
+  { id: 'cinema_drama', name: '🎬 Cinema & K-Pop Drama Spotlight', desc: 'Golden Hollywood spotlight beam, camera flash sparkles & musical notes!' },
+  { id: 'quantum_plasma', name: '🌌 Cyber Quantum Plasma Dragon', desc: 'Glowing cyan & purple energy rings, orbital laser trail & plasma sparks!' },
+  { id: 'fire_phoenix', name: '🔥 Golden Phoenix Fire Stream', desc: 'Spinning golden flames, fiery embers & sparkling stardust tail!' },
   { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Jerry chases the cheese cursor while Tom playfully chases behind!' },
   { id: 'pikachu', name: '⚡ Pikachu Electrical Surge', desc: 'Pikachu runs beside your cursor emitting yellow electrical sparks & thunderbolts!' },
   { id: 'doraemon', name: '🌀 Doraemon Magic Gadget Trail', desc: 'Doraemon flies on Bamboo Copter emitting magic gadget sparkles!' },
@@ -102,10 +112,13 @@ export default function CursorGlow() {
     let tomTailWave = 0;
     let tomPounceTimer = 0;
 
-    // Cartoon Effects
+    // Cartoon & Drama Effects
     let dustPuffs = [];
     let cheeseCrumbs = [];
     let stars = [];
+    let petals = [];
+    let bubbles = [];
+    let notes = [];
 
     let isHovering = false;
     let isClicking = false;
@@ -633,6 +646,463 @@ export default function CursorGlow() {
             ctx.stroke();
             ctx.restore();
           }
+        }
+        // C. Quantum Plasma Dragon Trail
+        if (styleMode === 'quantum_plasma' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail + 5) trail.pop();
+
+          if (trail.length > 2) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+
+            for (let i = 1; i < trail.length - 1; i++) {
+              const xc = (trail[i].x + trail[i + 1].x) / 2;
+              const yc = (trail[i].y + trail[i + 1].y) / 2;
+              ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+            }
+
+            const gradient = ctx.createLinearGradient(trail[0].x, trail[0].y, trail[trail.length - 1].x, trail[trail.length - 1].y);
+            gradient.addColorStop(0, '#00F5D4');
+            gradient.addColorStop(0.4, '#A855F7');
+            gradient.addColorStop(0.8, '#FF007A');
+            gradient.addColorStop(1, 'transparent');
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = isHovering ? 12 : 7;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = '#00F5D4';
+            ctx.shadowBlur = 20;
+            ctx.stroke();
+
+            // Pulsing Quantum Energy Ring
+            const pulse = (Date.now() / 150) % (Math.PI * 2);
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 14 + Math.sin(pulse) * 4, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(0, 245, 212, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+          }
+        }
+
+        // D. Golden Phoenix Fire Stream
+        if (styleMode === 'fire_phoenix' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail) trail.pop();
+
+          if (Math.random() > 0.2 && stars.length < 35) {
+            stars.push({
+              x: targetX + (Math.random() - 0.5) * 16,
+              y: targetY + (Math.random() - 0.5) * 16,
+              vx: (Math.random() - 0.5) * 3,
+              vy: -Math.random() * 4 - 1,
+              size: Math.random() * 6 + 3,
+              alpha: 1,
+              rot: Math.random() * Math.PI,
+              color: Math.random() > 0.4 ? '#FFD166' : '#FF4500'
+            });
+          }
+
+          if (trail.length > 2) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+
+            for (let i = 1; i < trail.length - 1; i++) {
+              const xc = (trail[i].x + trail[i + 1].x) / 2;
+              const yc = (trail[i].y + trail[i + 1].y) / 2;
+              ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+            }
+
+            const gradient = ctx.createLinearGradient(trail[0].x, trail[0].y, trail[trail.length - 1].x, trail[trail.length - 1].y);
+            gradient.addColorStop(0, '#FFD166');
+            gradient.addColorStop(0.5, '#FF7000');
+            gradient.addColorStop(1, 'transparent');
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = isHovering ? 10 : 6;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = '#FFD166';
+            ctx.shadowBlur = 18;
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // 1. NARUTO NINE-TAILS RASENGAN
+        if (styleMode === 'naruto' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail) trail.pop();
+
+          if (Math.random() > 0.35 && stars.length < 30) {
+            stars.push({
+              x: targetX + (Math.random() - 0.5) * 24,
+              y: targetY + (Math.random() - 0.5) * 24,
+              vx: (Math.random() - 0.5) * 4,
+              vy: -Math.random() * 5 - 1,
+              size: Math.random() * 5 + 3,
+              alpha: 1,
+              rot: Math.random() * Math.PI,
+              color: Math.random() > 0.4 ? '#FF3300' : '#FF9900'
+            });
+          }
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          const rasRotation = Date.now() / 60;
+          ctx.translate(targetX, targetY);
+
+          ctx.beginPath();
+          ctx.arc(0, 0, isHovering ? 26 : 18, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(0, 210, 255, 0.25)';
+          ctx.shadowColor = '#00D2FF';
+          ctx.shadowBlur = 25;
+          ctx.fill();
+
+          for (let i = 0; i < 3; i++) {
+            ctx.save();
+            ctx.rotate(rasRotation * (i % 2 === 0 ? 1 : -1.4) + i);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 16 - i * 3, 7 + i * 2, 0, 0, Math.PI * 2);
+            ctx.strokeStyle = i === 0 ? '#FFFFFF' : '#00F5D4';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+          }
+          ctx.restore();
+        }
+
+        // 2. GOKU SUPER SAIYAN KAMEHAMEHA
+        if (styleMode === 'goku' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail) trail.pop();
+
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+
+          const saiPulse = Date.now() / 80;
+          ctx.save();
+          ctx.translate(targetX, targetY);
+          ctx.shadowColor = '#FFD166';
+          ctx.shadowBlur = 28;
+
+          ctx.beginPath();
+          const spikeCount = 8;
+          for (let i = 0; i < spikeCount; i++) {
+            const angle = (Math.PI * 2 * i) / spikeCount + saiPulse;
+            const r = (i % 2 === 0 ? 24 : 12) + Math.sin(saiPulse * 3 + i) * 4;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255, 209, 102, 0.45)';
+          ctx.fill();
+          ctx.strokeStyle = '#FFEE77';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+
+          if (trail.length > 2) {
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+            for (let i = 1; i < trail.length - 1; i++) {
+              const xc = (trail[i].x + trail[i + 1].x) / 2;
+              const yc = (trail[i].y + trail[i + 1].y) / 2;
+              ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+            }
+            const grad = ctx.createLinearGradient(trail[0].x, trail[0].y, trail[trail.length - 1].x, trail[trail.length - 1].y);
+            grad.addColorStop(0, '#FFFFFF');
+            grad.addColorStop(0.3, '#00D2FF');
+            grad.addColorStop(0.8, '#3A86EF');
+            grad.addColorStop(1, 'transparent');
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 9;
+            ctx.shadowColor = '#00D2FF';
+            ctx.shadowBlur = 18;
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // 3. OGGY & COCKROACHES CHASE
+        if (styleMode === 'oggy' && isVisible) {
+          const roachTime = Date.now() / 250;
+          const roaches = [
+            { color: '#FF0055', nose: '#FFCC00', radius: 36, speed: 1.2 },
+            { color: '#FF9900', nose: '#FFFFFF', radius: 50, speed: -0.9 },
+            { color: '#00CC66', nose: '#FF0055', radius: 64, speed: 1.4 }
+          ];
+
+          ctx.save();
+          roaches.forEach((r, idx) => {
+            const rx = targetX + Math.cos(roachTime * r.speed + idx * 2) * r.radius;
+            const ry = targetY + Math.sin(roachTime * r.speed + idx * 2) * (r.radius * 0.7);
+
+            ctx.fillStyle = r.color;
+            ctx.beginPath();
+            ctx.ellipse(rx, ry, 7, 4, roachTime * r.speed, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = r.nose;
+            ctx.beginPath();
+            ctx.arc(rx + Math.cos(roachTime * r.speed) * 6, ry + Math.sin(roachTime * r.speed) * 6, 2, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          ctx.fillStyle = '#3A86EF';
+          ctx.shadowColor = '#3A86EF';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(targetX, targetY, 12, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#FF0055';
+          ctx.beginPath();
+          ctx.arc(targetX, targetY, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        // 4. K-DRAMA ROMANTIC HEARTS & SAKURA
+        if (styleMode === 'kdrama' && isVisible) {
+          if (Math.random() > 0.4 && petals.length < 25) {
+            petals.push({
+              x: targetX + (Math.random() - 0.5) * 120,
+              y: targetY - Math.random() * 40,
+              vy: Math.random() * 1.5 + 1,
+              vx: Math.sin(Date.now() / 400) * 1.2,
+              rot: Math.random() * Math.PI,
+              size: Math.random() * 6 + 5,
+              alpha: 1
+            });
+          }
+
+          for (let i = petals.length - 1; i >= 0; i--) {
+            const p = petals[i];
+            p.y += p.vy;
+            p.x += p.vx;
+            p.alpha -= 0.015;
+            p.rot += 0.03;
+            if (p.alpha <= 0 || p.y > window.innerHeight) {
+              petals.splice(i, 1);
+              continue;
+            }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = `rgba(255, 182, 193, ${p.alpha})`;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          ctx.save();
+          ctx.translate(targetX, targetY);
+          const heartScale = 1 + Math.sin(Date.now() / 200) * 0.15;
+          ctx.scale(heartScale, heartScale);
+          ctx.shadowColor = '#FF69B4';
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = '#FF1493';
+
+          ctx.beginPath();
+          ctx.moveTo(0, 4);
+          ctx.bezierCurveTo(-6, -6, -14, 0, 0, 12);
+          ctx.bezierCurveTo(14, 0, 6, -6, 0, 4);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 5. SPIDER-MAN WEB & SPIDER-SENSE
+        if (styleMode === 'spiderman' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail) trail.pop();
+
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.lineWidth = 1.2;
+          ctx.shadowColor = '#00F5D4';
+          ctx.shadowBlur = 10;
+
+          const webRays = 8;
+          ctx.beginPath();
+          for (let i = 0; i < webRays; i++) {
+            const angle = (Math.PI * 2 * i) / webRays;
+            ctx.moveTo(targetX, targetY);
+            ctx.lineTo(targetX + Math.cos(angle) * 32, targetY + Math.sin(angle) * 32);
+          }
+          ctx.stroke();
+
+          const ssPulse = (Date.now() / 180) % 1;
+          ctx.beginPath();
+          ctx.arc(targetX, targetY, 15 + ssPulse * 25, -Math.PI * 0.8, -Math.PI * 0.2);
+          ctx.strokeStyle = `rgba(255, 215, 0, ${1 - ssPulse})`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          if (trail.length > 2) {
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+            for (let i = 1; i < trail.length - 1; i++) {
+              const xc = (trail[i].x + trail[i + 1].x) / 2;
+              const yc = (trail[i].y + trail[i + 1].y) / 2;
+              ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+            }
+            ctx.strokeStyle = '#FF0055';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // 6. SPONGEBOB & JELLYFISH BUBBLE
+        if (styleMode === 'spongebob' && isVisible) {
+          if (Math.random() > 0.35 && bubbles.length < 20) {
+            bubbles.push({
+              x: targetX + (Math.random() - 0.5) * 40,
+              y: targetY + 10,
+              vy: -Math.random() * 2 - 1,
+              size: Math.random() * 8 + 4,
+              alpha: 0.8
+            });
+          }
+
+          for (let i = bubbles.length - 1; i >= 0; i--) {
+            const b = bubbles[i];
+            b.y += b.vy;
+            b.alpha -= 0.02;
+            if (b.alpha <= 0) {
+              bubbles.splice(i, 1);
+              continue;
+            }
+            ctx.save();
+            ctx.strokeStyle = `rgba(0, 245, 212, ${b.alpha})`;
+            ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha * 0.3})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          ctx.save();
+          ctx.translate(targetX, targetY);
+          const floatOffset = Math.sin(Date.now() / 250) * 4;
+          ctx.shadowColor = '#FF69B4';
+          ctx.shadowBlur = 18;
+          ctx.fillStyle = 'rgba(255, 105, 180, 0.85)';
+
+          ctx.beginPath();
+          ctx.arc(0, floatOffset, 14, Math.PI, 0);
+          ctx.quadraticCurveTo(0, floatOffset + 6, -14, floatOffset);
+          ctx.fill();
+
+          ctx.strokeStyle = '#FF1493';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let t = -8; t <= 8; t += 8) {
+            const wave = Math.sin(Date.now() / 150 + t) * 4;
+            ctx.moveTo(t, floatOffset);
+            ctx.lineTo(t + wave, floatOffset + 14);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 7. DEMON SLAYER SUN BREATHING FLAME
+        if (styleMode === 'demon_slayer' && isVisible) {
+          trail.unshift({ x: targetX, y: targetY });
+          if (trail.length > maxTrail + 4) trail.pop();
+
+          if (Math.random() > 0.2 && stars.length < 35) {
+            stars.push({
+              x: targetX + (Math.random() - 0.5) * 20,
+              y: targetY + (Math.random() - 0.5) * 20,
+              vx: (Math.random() - 0.5) * 4,
+              vy: -Math.random() * 5 - 2,
+              size: Math.random() * 6 + 3,
+              alpha: 1,
+              rot: Math.random() * Math.PI,
+              color: Math.random() > 0.5 ? '#FFD166' : '#FF3300'
+            });
+          }
+
+          if (trail.length > 2) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+
+            for (let i = 1; i < trail.length - 1; i++) {
+              const xc = (trail[i].x + trail[i + 1].x) / 2;
+              const yc = (trail[i].y + trail[i + 1].y) / 2;
+              ctx.quadraticCurveTo(trail[i].x, trail[i].y, xc, yc);
+            }
+
+            const flameGrad = ctx.createLinearGradient(trail[0].x, trail[0].y, trail[trail.length - 1].x, trail[trail.length - 1].y);
+            flameGrad.addColorStop(0, '#FFFFFF');
+            flameGrad.addColorStop(0.2, '#FFD166');
+            flameGrad.addColorStop(0.6, '#FF3300');
+            flameGrad.addColorStop(1, 'transparent');
+
+            ctx.strokeStyle = flameGrad;
+            ctx.lineWidth = isHovering ? 14 : 9;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = '#FF3300';
+            ctx.shadowBlur = 22;
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // 8. CINEMA & K-POP DRAMA SPOTLIGHT
+        if (styleMode === 'cinema_drama' && isVisible) {
+          if (Math.random() > 0.4 && notes.length < 15) {
+            notes.push({
+              x: targetX + (Math.random() - 0.5) * 50,
+              y: targetY + (Math.random() - 0.5) * 50,
+              alpha: 1,
+              symbol: Math.random() > 0.5 ? '🎵' : '✨',
+              vy: -Math.random() * 2 - 0.5
+            });
+          }
+
+          for (let i = notes.length - 1; i >= 0; i--) {
+            const n = notes[i];
+            n.y += n.vy;
+            n.alpha -= 0.025;
+            if (n.alpha <= 0) {
+              notes.splice(i, 1);
+              continue;
+            }
+            ctx.save();
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = `rgba(255, 215, 0, ${n.alpha})`;
+            ctx.fillText(n.symbol, n.x, n.y);
+            ctx.restore();
+          }
+
+          ctx.save();
+          ctx.translate(targetX, targetY);
+          ctx.shadowColor = '#FFD166';
+          ctx.shadowBlur = 25;
+          ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+          ctx.beginPath();
+          ctx.arc(0, 0, 32, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#FFD166';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
         }
 
         // Draw Cartoon Click Stars
