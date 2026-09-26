@@ -2510,6 +2510,67 @@ const BOLOCLASS_DEFAULT_LESSONS = [
   }
 ];
 
+// ─── 60FPS Dynamic AI Soundwave Canvas Component ─────────────────────────────
+function AudioWaveformCanvas({ isSpeaking }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    let phase = 0;
+
+    const render = () => {
+      animId = requestAnimationFrame(render);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const bars = 24;
+      const barWidth = canvas.width / bars;
+      phase += 0.16;
+
+      for (let i = 0; i < bars; i++) {
+        const heightMultiplier = isSpeaking
+          ? Math.abs(Math.sin(phase + i * 0.45) * Math.cos(phase * 0.8 + i * 0.25)) * 0.85 + 0.15
+          : Math.sin(phase * 0.4 + i * 0.3) * 0.12 + 0.08;
+
+        const barHeight = Math.max(4, heightMultiplier * canvas.height);
+        const x = i * barWidth + barWidth * 0.2;
+        const y = (canvas.height - barHeight) / 2;
+        const width = barWidth * 0.6;
+
+        const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+        if (isSpeaking) {
+          gradient.addColorStop(0, '#00F5D4');
+          gradient.addColorStop(0.5, '#A855F7');
+          gradient.addColorStop(1, '#FF007A');
+        } else {
+          gradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+        }
+
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = isSpeaking ? '#A855F7' : 'transparent';
+        ctx.shadowBlur = isSpeaking ? 8 : 0;
+
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, width, barHeight, 2);
+        } else {
+          ctx.rect(x, y, width, barHeight);
+        }
+        ctx.fill();
+      }
+    };
+
+    render();
+    return () => cancelAnimationFrame(animId);
+  }, [isSpeaking]);
+
+  return (
+    <canvas ref={canvasRef} width={180} height={28} className="w-[180px] h-[28px] shrink-0" />
+  );
+}
 
 export default function BoloClassPortal({ setActiveTab }) {
   const { addToast } = useToast?.() || {};
@@ -4783,6 +4844,12 @@ ${sc.codeSnippet || 'N/A'}
 
         {/* Audio & Portal Controls */}
         <div className="flex flex-wrap items-center gap-2.5 relative z-10">
+          {/* Live AI Audio Soundwave Visualizer */}
+          <div className="hidden sm:flex items-center gap-2 bg-black/40 border border-purple-500/30 rounded-2xl px-3 py-1 shadow-inner">
+            <span className="text-[10px] font-black text-purple-300 uppercase tracking-widest">AI VOICE</span>
+            <AudioWaveformCanvas isSpeaking={isPlaying || (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking)} />
+          </div>
+
           <div className="flex items-center bg-white/5 rounded-2xl p-1 border border-white/10 text-xs">
             {[0.8, 1.0, 1.25, 1.5].map((rate) => (
               <button
