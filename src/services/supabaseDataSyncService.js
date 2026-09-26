@@ -287,10 +287,56 @@ export async function fetchFullStudentProgressFromSupabase(user) {
       solvedCount: meta.solvedCount || (meta.solvedProblems ? meta.solvedProblems.length : 0),
       mockInterviews: meta.mockInterviews || [],
       academics: meta.academics || null,
-      quizHistory: meta.quizHistory || []
+      quizHistory: meta.quizHistory || [],
+      boloClassData: meta.boloClassData || null
     };
   } catch (err) {
     console.warn('Supabase fetch user progress notice:', err);
     return null;
   }
 }
+
+/**
+ * 6. Save BoloClass Masterclasses & Portal State to Supabase
+ */
+export async function saveBoloClassDataToSupabase(user, boloClassData) {
+  if (!user || (!user.id && !user.email)) return null;
+
+  try {
+    const uEmail = (user.email || '').toLowerCase().trim();
+    const uId = user.id || user.uid;
+
+    let query = supabase.from('users').select('*');
+    if (uId) query = query.eq('id', uId);
+    else query = query.eq('email', uEmail);
+
+    const { data: dbUser } = await query.maybeSingle();
+    let meta = {};
+    let baseName = user.name || 'Scholar';
+
+    if (dbUser) {
+      baseName = dbUser.name ? dbUser.name.split('{')[0].trim() : (user.name || 'Scholar');
+      meta = parseUserPackedMeta(dbUser.name);
+    }
+
+    meta.boloClassData = {
+      ...(meta.boloClassData || {}),
+      ...boloClassData,
+      updatedAt: new Date().toISOString()
+    };
+
+    const newPackedName = packUserMeta(baseName, meta);
+
+    if (uId) {
+      await supabase.from('users').update({ name: newPackedName }).eq('id', uId);
+    } else {
+      await supabase.from('users').update({ name: newPackedName }).eq('email', uEmail);
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.warn('Supabase BoloClass data sync notice:', err);
+    return null;
+  }
+}
+

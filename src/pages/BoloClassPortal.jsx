@@ -14,7 +14,7 @@ import DOMPurify from 'dompurify';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 import { callAICompletion } from '../services/aiService';
-import { saveQuizScoreToSupabase } from '../services/supabaseDataSyncService';
+import { saveQuizScoreToSupabase, saveBoloClassDataToSupabase } from '../services/supabaseDataSyncService';
 
 // ─── 4 Curated Multi-Slide BoloClass Masterclasses ─────────────────────────────
 const BOLOCLASS_DEFAULT_LESSONS = [
@@ -2587,14 +2587,58 @@ export default function BoloClassPortal({ setActiveTab }) {
     }
   };
 
-  const [lessons, setLessons] = useState(BOLOCLASS_DEFAULT_LESSONS);
-  const [activeLesson, setActiveLesson] = useState(BOLOCLASS_DEFAULT_LESSONS[0]);
-  const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
+  // Load lessons with local persistence
+  const [lessons, setLessons] = useState(() => {
+    try {
+      const saved = localStorage.getItem('boloclass_saved_lessons');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return BOLOCLASS_DEFAULT_LESSONS;
+  });
+
+  const [activeLesson, setActiveLesson] = useState(() => {
+    try {
+      const lastId = localStorage.getItem('boloclass_active_lesson_id');
+      if (lastId) {
+        const savedLessons = JSON.parse(localStorage.getItem('boloclass_saved_lessons') || '[]');
+        const found = savedLessons.find(l => l.id === lastId) || BOLOCLASS_DEFAULT_LESSONS.find(l => l.id === lastId);
+        if (found) return found;
+      }
+    } catch (e) {}
+    return BOLOCLASS_DEFAULT_LESSONS[0];
+  });
+
+  const [currentSceneIdx, setCurrentSceneIdx] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`boloclass_scene_idx_${activeLesson?.id}`);
+      if (saved !== null) return parseInt(saved, 10) || 0;
+    } catch (e) {}
+    return 0;
+  });
+
   const [currentDialogueIdx, setCurrentDialogueIdx] = useState(0);
   const [lectureStepIdx, setLectureStepIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [speechRate, setSpeechRate] = useState(1.0);
+
+  const [isAudioEnabled, setIsAudioEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem('boloclass_audio_enabled');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return true;
+  });
+
+  const [speechRate, setSpeechRate] = useState(() => {
+    try {
+      const saved = localStorage.getItem('boloclass_speech_rate');
+      if (saved) return parseFloat(saved) || 1.0;
+    } catch (e) {}
+    return 1.0;
+  });
+
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [allBrowserVoices, setAllBrowserVoices] = useState([]);
@@ -2611,19 +2655,122 @@ export default function BoloClassPortal({ setActiveTab }) {
   const [isGeneratingNextSlide, setIsGeneratingNextSlide] = useState(false);
   const [customTerminalLogs, setCustomTerminalLogs] = useState([]);
   const [terminalInput, setTerminalInput] = useState('');
-  const [classroomNotes, setClassroomNotes] = useState('');
+
+  const [classroomNotes, setClassroomNotes] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`boloclass_notes_${activeLesson?.id}`);
+      if (saved !== null) return saved;
+    } catch (e) {}
+    return '';
+  });
+
   const [isAutoSummarizing, setIsAutoSummarizing] = useState(false);
   const [studentQuestion, setStudentQuestion] = useState('');
   const [electionTimeout, setElectionTimeout] = useState(null);
   const [raisedHand, setRaisedHand] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, sender: 'professor', text: 'Welcome scholars! Feel free to ask questions or discuss concepts in real-time.' }
-  ]);
+
+  const [chatMessages, setChatMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`boloclass_chat_${activeLesson?.id}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [
+      { id: 1, sender: 'professor', text: 'Welcome scholars! Feel free to ask questions or discuss concepts in real-time.' }
+    ];
+  });
+
   const [isAiThinking, setIsAiThinking] = useState(false);
 
-  // Quiz state dictionaries
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [submittedQuizzes, setSubmittedQuizzes] = useState({});
+  // Quiz state dictionaries with local persistence
+  const [quizAnswers, setQuizAnswers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('boloclass_quiz_answers');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {};
+  });
+
+  const [submittedQuizzes, setSubmittedQuizzes] = useState(() => {
+    try {
+      const saved = localStorage.getItem('boloclass_submitted_quizzes');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {};
+  });
+
+  // ── Persistent Synchronizations ──
+  useEffect(() => {
+    try {
+      localStorage.setItem('boloclass_saved_lessons', JSON.stringify(lessons));
+      if (user?.id) {
+        saveBoloClassDataToSupabase(user, { lessonsCount: lessons.length, lastActiveLessonId: activeLesson?.id }).catch(() => {});
+      }
+    } catch (e) {}
+  }, [lessons]);
+
+  useEffect(() => {
+    if (activeLesson?.id) {
+      try {
+        localStorage.setItem('boloclass_active_lesson_id', activeLesson.id);
+        const savedNotes = localStorage.getItem(`boloclass_notes_${activeLesson.id}`);
+        setClassroomNotes(savedNotes || '');
+        const savedChat = localStorage.getItem(`boloclass_chat_${activeLesson.id}`);
+        if (savedChat) {
+          const parsed = JSON.parse(savedChat);
+          if (Array.isArray(parsed) && parsed.length > 0) setChatMessages(parsed);
+          else setChatMessages([{ id: 1, sender: 'professor', text: 'Welcome scholars! Feel free to ask questions or discuss concepts in real-time.' }]);
+        } else {
+          setChatMessages([{ id: 1, sender: 'professor', text: 'Welcome scholars! Feel free to ask questions or discuss concepts in real-time.' }]);
+        }
+      } catch (e) {}
+    }
+  }, [activeLesson?.id]);
+
+  useEffect(() => {
+    if (activeLesson?.id) {
+      try {
+        localStorage.setItem(`boloclass_scene_idx_${activeLesson.id}`, currentSceneIdx);
+      } catch (e) {}
+    }
+  }, [currentSceneIdx, activeLesson?.id]);
+
+  useEffect(() => {
+    if (activeLesson?.id) {
+      try {
+        localStorage.setItem(`boloclass_notes_${activeLesson.id}`, classroomNotes);
+      } catch (e) {}
+    }
+  }, [classroomNotes, activeLesson?.id]);
+
+  useEffect(() => {
+    if (activeLesson?.id && chatMessages.length > 0) {
+      try {
+        localStorage.setItem(`boloclass_chat_${activeLesson.id}`, JSON.stringify(chatMessages));
+      } catch (e) {}
+    }
+  }, [chatMessages, activeLesson?.id]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('boloclass_quiz_answers', JSON.stringify(quizAnswers));
+    } catch (e) {}
+  }, [quizAnswers]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('boloclass_submitted_quizzes', JSON.stringify(submittedQuizzes));
+    } catch (e) {}
+  }, [submittedQuizzes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('boloclass_audio_enabled', JSON.stringify(isAudioEnabled));
+      localStorage.setItem('boloclass_speech_rate', speechRate.toString());
+    } catch (e) {}
+  }, [isAudioEnabled, speechRate]);
 
   const speechSynthRef = useRef(null);
   const terminalBottomRef = useRef(null);
