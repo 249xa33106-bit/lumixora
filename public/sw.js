@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lumixora-v6-cache-' + Date.now();
+const CACHE_NAME = 'lumixora-v7-cache-' + Date.now();
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
