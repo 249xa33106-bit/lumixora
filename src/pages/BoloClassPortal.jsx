@@ -7,7 +7,7 @@ import {
   ChevronLeft, Award, Radio, RefreshCw, PlayCircle, Cpu, ShieldCheck,
   GitBranch, Activity, Eye, Compass, Info, Check, Copy, AlertTriangle,
   BarChart2, Globe, Server, Hash, Sparkle, MessageCircleQuestion,
-  Presentation, LayoutGrid, PlusCircle, Maximize2, Minimize2, Sliders
+  Presentation, LayoutGrid, PlusCircle, Maximize2, Minimize2, Sliders, X
 } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -2734,6 +2734,38 @@ const BOLOCLASS_CURATED_DEBATES = {
   ]
 };
 
+// Multi-Head Attention projection matrices for Head Switcher simulation
+const ATTENTION_HEAD_WEIGHTS = {
+  semantics: [
+    [4.2, 2.1, 0.8, 1.2, 0.4],
+    [1.5, 4.8, 2.3, 0.9, 0.6],
+    [0.8, 2.5, 4.4, 3.1, 1.2],
+    [1.1, 1.0, 2.8, 4.6, 3.5],
+    [0.3, 0.7, 1.4, 3.2, 4.9]
+  ],
+  syntax: [
+    [1.2, 4.5, 0.3, 1.0, 3.8],
+    [3.9, 1.1, 4.2, 0.5, 1.4],
+    [0.5, 3.2, 1.0, 4.8, 2.1],
+    [1.8, 0.9, 4.4, 1.2, 4.1],
+    [4.1, 1.5, 2.0, 3.7, 1.1]
+  ],
+  locality: [
+    [5.0, 3.8, 0.5, 0.1, 0.0],
+    [3.5, 5.2, 3.9, 0.4, 0.1],
+    [0.4, 3.8, 5.5, 3.6, 0.3],
+    [0.1, 0.5, 3.7, 5.1, 3.9],
+    [0.0, 0.1, 0.4, 4.0, 5.3]
+  ],
+  global: [
+    [3.5, 2.9, 3.1, 3.0, 4.5],
+    [4.2, 3.0, 2.8, 3.1, 4.1],
+    [3.8, 3.1, 3.5, 3.2, 4.3],
+    [4.0, 3.2, 3.1, 3.7, 4.4],
+    [4.4, 4.1, 4.2, 4.3, 4.8]
+  ]
+};
+
 export default function BoloClassPortal({ setActiveTab }) {
   const { addToast } = useToast?.() || {};
   const { user, userProgress, addXP, addPoints } = useGamification?.() || {};
@@ -2872,9 +2904,15 @@ export default function BoloClassPortal({ setActiveTab }) {
   const [interjectionInput, setInterjectionInput] = useState('');
   const [isInterjectionLoading, setIsInterjectionLoading] = useState(false);
   const [customDebateMessages, setCustomDebateMessages] = useState([]);
+  const [userCreatedDebates, setUserCreatedDebates] = useState({});
+  const [customMotionInput, setCustomMotionInput] = useState('');
+  const [isGeneratingMotion, setIsGeneratingMotion] = useState(false);
+  const [showConsensusMatrix, setShowConsensusMatrix] = useState(false);
 
   // Active debate topic resolver
-  const currentLessonDebates = BOLOCLASS_CURATED_DEBATES[activeLesson.id] || BOLOCLASS_CURATED_DEBATES['java-data-types'];
+  const baseLessonDebates = BOLOCLASS_CURATED_DEBATES[activeLesson.id] || BOLOCLASS_CURATED_DEBATES['java-data-types'];
+  const userLessonDebates = userCreatedDebates[activeLesson.id] || [];
+  const currentLessonDebates = [...userLessonDebates, ...baseLessonDebates];
   const currentDebate = currentLessonDebates[debateRoundIdx] || currentLessonDebates[0];
 
   // ─── Interactive Memory & Data Structure Sandbox States ───
@@ -2899,14 +2937,28 @@ export default function BoloClassPortal({ setActiveTab }) {
   ]);
   const [jvmStats, setJvmStats] = useState({ stackBytes: 15, heapBytes: 112, gcCount: 0, gcLatencyMs: 0 });
   const [gcSweeping, setGcSweeping] = useState(false);
+  const [inspectedHeapObject, setInspectedHeapObject] = useState(null);
+  const [useCompressedOops, setUseCompressedOops] = useState(true);
+  const [inspectedLockState, setInspectedLockState] = useState('unlocked'); // 'unlocked' | 'thin' | 'fat'
 
   // B+ Tree Simulator State
   const [bTreeSearchKey, setBTreeSearchKey] = useState('');
   const [bTreeSearchResult, setBTreeSearchResult] = useState(null);
+  const [bTreePages, setBTreePages] = useState({
+    leaf1: [5, 10, 15],
+    leaf2: [20, 25, 30, 35],
+    leaf3: [40, 45, 50, 60]
+  });
+  const [bTreeInsertKey, setBTreeInsertKey] = useState('');
+  const [bTreeSplitNotice, setBTreeSplitNotice] = useState(null);
+  const [bTreeRangeMin, setBTreeRangeMin] = useState('15');
+  const [bTreeRangeMax, setBTreeRangeMax] = useState('45');
+  const [bTreeRangeResult, setBTreeRangeResult] = useState(null);
 
   // Attention Weight Heatmap State
   const [attentionTemp, setAttentionTemp] = useState(1.0);
   const [selectedAttnTokenIdx, setSelectedAttnTokenIdx] = useState(0);
+  const [selectedAttnHead, setSelectedAttnHead] = useState('semantics'); // 'syntax' | 'semantics' | 'locality' | 'global'
 
   // Debate audio playback loop
   const handlePlayDebateRound = () => {
@@ -2960,6 +3012,175 @@ export default function BoloClassPortal({ setActiveTab }) {
     };
 
     playNextTurn();
+  };
+
+  // Play single turn voice
+  const handlePlaySingleTurn = (turn) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    if (activeDebaterSpeaker === turn.speaker && isDebatePlaying) {
+      setIsDebatePlaying(false);
+      setActiveDebaterSpeaker(null);
+      return;
+    }
+
+    setIsDebatePlaying(true);
+    setActiveDebaterSpeaker(turn.speaker);
+    const utt = new SpeechSynthesisUtterance(cleanSpeechText(turn.argument));
+    const { femaleVoice, maleVoice } = findVoicesForLanguage(selectedLanguage, allBrowserVoices);
+
+    if (turn.speaker === 'maya') {
+      utt.voice = (selectedFemaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedFemaleVoiceURI) : null) || femaleVoice;
+      utt.pitch = femalePitch;
+    } else if (turn.speaker === 'alex') {
+      utt.voice = (selectedMaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedMaleVoiceURI) : null) || maleVoice;
+      utt.pitch = 1.25;
+    } else {
+      utt.voice = (selectedMaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedMaleVoiceURI) : null) || maleVoice;
+      utt.pitch = malePitch;
+    }
+    utt.rate = speechRate;
+
+    utt.onend = () => {
+      setIsDebatePlaying(false);
+      setActiveDebaterSpeaker(null);
+    };
+    utt.onerror = () => {
+      setIsDebatePlaying(false);
+      setActiveDebaterSpeaker(null);
+    };
+    window.speechSynthesis.speak(utt);
+  };
+
+  // Prepare challenge against specific debater
+  const handleChallengeDebater = (turn) => {
+    setInterjectionInput(`@${turn.speakerName}: While you argue that, what about `);
+    addToast?.({
+      type: 'info',
+      message: `🎯 Direct challenge prepared against ${turn.speakerName}. Complete your technical counterpoint!`
+    });
+  };
+
+  // Generate Custom Debate Motion
+  const handleGenerateCustomDebateMotion = async (e) => {
+    e?.preventDefault();
+    if (!customMotionInput.trim() || isGeneratingMotion) return;
+    const motionTopic = customMotionInput.trim();
+    setIsGeneratingMotion(true);
+
+    try {
+      const prompt = `Generate an intense, high-level computer science debate between 3 AI panelists on the topic: "${motionTopic}".
+Lesson title: "${activeLesson.title}".
+Format STRICTLY as valid JSON with NO surrounding markdown or extra text:
+{
+  "topic": "${motionTopic}",
+  "subtitle": "Architectural breakdown and trade-off analysis of ${motionTopic}",
+  "turns": [
+    {
+      "speaker": "alex",
+      "speakerName": "Alex",
+      "avatar": "🧑‍💻",
+      "stance": "Pragmatic & Simplicity Specialist",
+      "color": "border-amber-500/50 bg-amber-950/20 text-amber-200",
+      "argument": "..."
+    },
+    {
+      "speaker": "maya",
+      "speakerName": "Maya",
+      "avatar": "👩‍💻",
+      "stance": "High Scale & Hardware Efficiency",
+      "color": "border-cyan-500/50 bg-cyan-950/20 text-cyan-200",
+      "argument": "..."
+    },
+    {
+      "speaker": "professor",
+      "speakerName": "Prof. Vyomra",
+      "avatar": "👨‍🏫",
+      "stance": "Architectural Synthesis & Systems Verdict",
+      "color": "border-purple-500/50 bg-purple-950/20 text-purple-200",
+      "argument": "..."
+    }
+  ],
+  "matrix": {
+    "throughput": "Throughput analysis for this topic",
+    "latency": "P99 tail latency and jitter characteristics",
+    "complexity": "Mental model, operational debugging, and deployment friction",
+    "cost": "Memory, disk I/O, and server infrastructure footprint",
+    "verdict": "Clear architectural recommendation on when to choose which"
+  }
+}`;
+
+      let debateObj = null;
+      try {
+        const aiResponse = await callAICompletion({ prompt, temperature: 0.3, maxTokens: 800 });
+        const cleaned = aiResponse ? aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim() : '';
+        const parsed = JSON.parse(cleaned);
+        if (parsed.topic && parsed.turns && parsed.turns.length >= 2) {
+          debateObj = parsed;
+        }
+      } catch (err) {
+        console.warn('AI motion generation fallback invoked', err);
+      }
+
+      if (!debateObj) {
+        debateObj = {
+          topic: motionTopic,
+          subtitle: `Architectural analysis of trade-offs, cache effects, and operational overhead in ${motionTopic}.`,
+          turns: [
+            {
+              speaker: 'alex',
+              speakerName: 'Alex',
+              avatar: '🧑‍💻',
+              stance: 'Pragmatic & Failure Modes',
+              color: 'border-amber-500/50 bg-amber-950/20 text-amber-200',
+              argument: `When architecting around ${motionTopic}, developers frequently optimize prematurely for hypothetical 10x scale while ignoring day-two operational debugging overhead, mean-time-to-recovery (MTTR), and team cognitive load.`
+            },
+            {
+              speaker: 'maya',
+              speakerName: 'Maya',
+              avatar: '👩‍💻',
+              stance: 'High-Throughput & Systems Scale',
+              color: 'border-cyan-500/50 bg-cyan-950/20 text-cyan-200',
+              argument: `At multi-million QPS, architectural bottlenecks dominate hardware utilization. You cannot patch poor algorithmic foundation or cache thrashing with more instances; ${motionTopic} requires mechanical sympathy and lock-free execution paths!`
+            },
+            {
+              speaker: 'professor',
+              speakerName: 'Prof. Vyomra',
+              avatar: '👨‍🏫',
+              stance: 'Architectural Synthesis',
+              color: 'border-purple-500/50 bg-purple-950/20 text-purple-200',
+              argument: `Both perspectives highlight the classic distributed systems theorem. There are no silver bullets in systems design: benchmark your p99 tail latencies under real-world saturation before committing to an irreversible topology.`
+            }
+          ],
+          matrix: {
+            throughput: "High concurrency vs lock contention trade-off",
+            latency: "Sub-millisecond L1 cache vs distributed RPC network hops",
+            complexity: "Manageable single-node simplicity vs distributed consensus coordination",
+            cost: "Standard memory budget vs clustered multi-replica overhead",
+            verdict: "Select based on SLA requirements and SLA breach cost rather than vanity throughput metrics."
+          }
+        };
+      }
+
+      setUserCreatedDebates(prev => {
+        const existing = prev[activeLesson.id] || [];
+        return {
+          ...prev,
+          [activeLesson.id]: [debateObj, ...existing]
+        };
+      });
+      setDebateRoundIdx(0);
+      setCustomMotionInput('');
+      setCustomDebateMessages([]);
+      setUserDebateVote(null);
+      addToast?.({
+        type: 'success',
+        message: `🔥 Custom Debate Created: "${debateObj.topic}"! +50 XP awarded.`
+      });
+      if (user?.id) awardXP(user.id, 'DEBATE_MOTION_GENERATED', 50);
+    } finally {
+      setIsGeneratingMotion(false);
+    }
   };
 
   // Cast vote in debate
@@ -3138,6 +3359,73 @@ Provide a quick, sharp technical response (2 sentences) from either Prof. Vyomra
       latency: "0.03 ms"
     });
     if (user?.id) awardXP(user.id, 'BTREE_SIMULATION', 15);
+  };
+
+  // B+ Tree Simulator: Insert Key
+  const handleBTreeInsertKey = (e) => {
+    e?.preventDefault();
+    const keyNum = parseInt(bTreeInsertKey, 10);
+    if (isNaN(keyNum)) return;
+    setBTreeInsertKey('');
+
+    const allExisting = [...bTreePages.leaf1, ...bTreePages.leaf2, ...bTreePages.leaf3];
+    if (allExisting.includes(keyNum)) {
+      addToast?.({ type: 'warning', message: `Key ${keyNum} is already present in B+ Tree index.` });
+      return;
+    }
+
+    let targetLeaf = 'leaf1';
+    if (keyNum >= 20 && keyNum < 40) targetLeaf = 'leaf2';
+    else if (keyNum >= 40) targetLeaf = 'leaf3';
+
+    const updatedLeaf = [...bTreePages[targetLeaf], keyNum].sort((a, b) => a - b);
+
+    if (updatedLeaf.length > 4) {
+      setBTreeSplitNotice(`🚨 PAGE SPLIT EVENT: ${targetLeaf.toUpperCase()} reached 5 keys (exceeding degree capacity). Splitting into 2 chained leaf blocks & promoting median key ${updatedLeaf[Math.floor(updatedLeaf.length / 2)]} to Level 2 Internal Node!`);
+      setTimeout(() => setBTreeSplitNotice(null), 6000);
+      addToast?.({ type: 'warning', message: `💥 B+ Tree Page Split triggered! Capacity overflow handled gracefully.` });
+    } else {
+      addToast?.({ type: 'success', message: `Key ${keyNum} inserted into ${targetLeaf.toUpperCase()} with O(log N) disk efficiency.` });
+    }
+
+    setBTreePages(prev => ({
+      ...prev,
+      [targetLeaf]: updatedLeaf
+    }));
+    if (user?.id) awardXP(user.id, 'BTREE_INSERTION', 20);
+  };
+
+  // B+ Tree Simulator: Range Query (BETWEEN min AND max)
+  const handleBTreeRangeQuery = (e) => {
+    e?.preventDefault();
+    const minVal = parseInt(bTreeRangeMin, 10);
+    const maxVal = parseInt(bTreeRangeMax, 10);
+    if (isNaN(minVal) || isNaN(maxVal) || minVal > maxVal) {
+      addToast?.({ type: 'error', message: 'Please enter valid Min and Max keys (Min <= Max).' });
+      return;
+    }
+
+    const allKeys = [
+      ...bTreePages.leaf1.map(k => ({ key: k, leaf: 'Leaf Page 1' })),
+      ...bTreePages.leaf2.map(k => ({ key: k, leaf: 'Leaf Page 2' })),
+      ...bTreePages.leaf3.map(k => ({ key: k, leaf: 'Leaf Page 3' }))
+    ];
+    const matches = allKeys.filter(item => item.key >= minVal && item.key <= maxVal);
+    const visitedLeaves = [...new Set(matches.map(m => m.leaf))];
+
+    setBTreeRangeResult({
+      min: minVal,
+      max: maxVal,
+      matches: matches.map(m => m.key),
+      visitedLeaves: visitedLeaves.length > 0 ? visitedLeaves : ['Leaf Page 1'],
+      totalDiskReads: visitedLeaves.length || 1,
+      savedReads: Math.max(1, 1000 - (visitedLeaves.length || 1))
+    });
+    addToast?.({
+      type: 'info',
+      message: `⚡ Sequential Range Scan complete: ${matches.length} keys retrieved across ${visitedLeaves.length} linked pages without re-visiting Root!`
+    });
+    if (user?.id) awardXP(user.id, 'BTREE_RANGE_QUERY', 25);
   };
 
   // ── Persistent Synchronizations ──
@@ -6129,22 +6417,30 @@ ${sc.codeSnippet || 'N/A'}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
                         <button
                           onClick={handlePlayDebateRound}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2"
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-1.5"
                         >
                           {isDebatePlaying ? (
                             <>
-                              <Pause className="w-4 h-4" />
+                              <Pause className="w-3.5 h-3.5" />
                               <span>Pause Audio</span>
                             </>
                           ) : (
                             <>
-                              <Play className="w-4 h-4 fill-current" />
+                              <Play className="w-3.5 h-3.5 fill-current" />
                               <span>Play Debate Audio 🎙️</span>
                             </>
                           )}
+                        </button>
+
+                        <button
+                          onClick={() => setShowConsensusMatrix((prev) => !prev)}
+                          className={`px-3 py-2 rounded-xl font-bold text-xs border transition-all cursor-pointer flex items-center gap-1.5 ${showConsensusMatrix ? 'bg-purple-600 border-purple-400 text-white shadow-lg' : 'bg-white/5 hover:bg-white/10 text-purple-300 border-purple-400/30'}`}
+                        >
+                          <BarChart2 className="w-3.5 h-3.5" />
+                          <span>{showConsensusMatrix ? 'Hide Matrix' : 'Trade-Off Matrix 📊'}</span>
                         </button>
 
                         {currentLessonDebates.length > 1 && (
@@ -6163,6 +6459,81 @@ ${sc.codeSnippet || 'N/A'}
                         )}
                       </div>
                     </div>
+
+                    {/* Custom Debate Motion Generator Bar */}
+                    <form onSubmit={handleGenerateCustomDebateMotion} className="p-3 rounded-2xl bg-gradient-to-r from-rose-950/40 via-purple-950/30 to-black border border-rose-500/30 flex flex-col sm:flex-row items-center gap-2 shadow-lg">
+                      <div className="flex items-center gap-1.5 pl-2 text-rose-400 shrink-0">
+                        <Sparkles className="w-4 h-4 text-rose-400 animate-spin" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-rose-300">Custom Motion:</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={customMotionInput}
+                        onChange={(e) => setCustomMotionInput(e.target.value)}
+                        placeholder="Generate any debate motion (e.g. Kafka vs RabbitMQ, LSM Trees vs B+ Trees, Rust vs Go concurrency, Postgres vs Mongo)..."
+                        className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-rose-400 transition-all w-full"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!customMotionInput.trim() || isGeneratingMotion}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+                      >
+                        <Flame className={'w-3.5 h-3.5 ' + (isGeneratingMotion ? 'animate-bounce' : '')} />
+                        <span>{isGeneratingMotion ? 'Generating...' : 'Generate Debate 🚀 (+50 XP)'}</span>
+                      </button>
+                    </form>
+
+                    {/* Architectural Consensus Matrix Panel */}
+                    {showConsensusMatrix && (
+                      <div className="p-4 rounded-2xl bg-[#070514] border border-purple-500/40 space-y-3 shadow-2xl animate-in fade-in duration-300">
+                        <div className="flex items-center justify-between pb-2 border-b border-purple-500/20">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono uppercase font-bold">Systems Trade-Off Matrix</span>
+                            <h4 className="font-bold text-white text-xs">Architectural Consensus for: {currentDebate.topic}</h4>
+                          </div>
+                          <button onClick={() => setShowConsensusMatrix(false)} className="text-gray-400 hover:text-white p-1">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 text-xs font-mono">
+                          <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/30 space-y-1">
+                            <span className="text-[10px] text-purple-300 uppercase tracking-wider font-bold">⚡ Throughput</span>
+                            <p className="text-gray-200 text-[11px] leading-relaxed">
+                              {currentDebate.matrix?.throughput || "Optimized for high-concurrency event loops and memory cache locality."}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-1">
+                            <span className="text-[10px] text-cyan-300 uppercase tracking-wider font-bold">⏱️ Latency & Jitter</span>
+                            <p className="text-gray-200 text-[11px] leading-relaxed">
+                              {currentDebate.matrix?.latency || "Sub-millisecond P99 tail latency with predictable GC pause envelopes."}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
+                            <span className="text-[10px] text-amber-300 uppercase tracking-wider font-bold">🧩 Complexity & MTTR</span>
+                            <p className="text-gray-200 text-[11px] leading-relaxed">
+                              {currentDebate.matrix?.complexity || "Straightforward operational mental model with low cluster coordination overhead."}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-1">
+                            <span className="text-[10px] text-emerald-300 uppercase tracking-wider font-bold">💰 Memory / Cost</span>
+                            <p className="text-gray-200 text-[11px] leading-relaxed">
+                              {currentDebate.matrix?.cost || "Low object churn reduces tenured GC promotions and hardware fleet cost."}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-black/60 border border-purple-500/30 flex items-start gap-2.5">
+                          <span className="text-2xl">👨‍🏫</span>
+                          <div>
+                            <span className="font-bold text-purple-300 text-xs">Prof. Vyomra's Architectural Verdict:</span>
+                            <p className="text-xs text-gray-200 mt-0.5 leading-relaxed font-sans">
+                              {currentDebate.matrix?.verdict || "Avoid premature distributed complexity: select the simpler single-node approach until traffic metrics demonstrably exceed hardware cache and network throughput saturation limits."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Debater Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -6193,18 +6564,35 @@ ${sc.codeSnippet || 'N/A'}
                               </p>
                             </div>
 
-                            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between">
-                              <span className="text-[10px] font-mono text-gray-400">
-                                Votes: <strong className="text-white">{debateVotes[turn.speaker] || 0}</strong>
-                              </span>
-                              <button
-                                onClick={() => handleVoteDebater(turn.speaker)}
-                                disabled={userDebateVote !== null}
-                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${userDebateVote === turn.speaker ? 'bg-emerald-500 text-black font-black' : userDebateVote ? 'opacity-40 cursor-not-allowed bg-white/5' : 'bg-white/10 hover:bg-white/20 text-white'}`}
-                              >
-                                <Trophy className="w-3 h-3" />
-                                {userDebateVote === turn.speaker ? 'Voted! (+25 XP)' : 'Vote Point'}
-                              </button>
+                            <div className="mt-3 pt-2.5 border-t border-white/10 space-y-2">
+                              <div className="flex items-center justify-between gap-1.5">
+                                <button
+                                  onClick={() => handlePlaySingleTurn(turn)}
+                                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                                  title={`Listen to ${turn.speakerName}`}
+                                >
+                                  <Volume2 className="w-3 h-3 text-cyan-400" />
+                                  <span>Voice</span>
+                                </button>
+
+                                <button
+                                  onClick={() => handleChallengeDebater(turn)}
+                                  className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 text-[10px] font-bold border border-rose-500/40 transition-all cursor-pointer flex items-center gap-1"
+                                  title={`Challenge ${turn.speakerName}'s stance`}
+                                >
+                                  <Zap className="w-3 h-3 text-rose-400" />
+                                  <span>Challenge</span>
+                                </button>
+
+                                <button
+                                  onClick={() => handleVoteDebater(turn.speaker)}
+                                  disabled={userDebateVote !== null}
+                                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${userDebateVote === turn.speaker ? 'bg-emerald-500 text-black font-black' : userDebateVote ? 'opacity-40 cursor-not-allowed bg-white/5' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                                >
+                                  <Trophy className="w-3 h-3" />
+                                  <span>{debateVotes[turn.speaker] || 0}</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -6239,7 +6627,7 @@ ${sc.codeSnippet || 'N/A'}
                         type="text"
                         value={interjectionInput}
                         onChange={(e) => setInterjectionInput(e.target.value)}
-                        placeholder="Interject with your architectural argument (e.g. 'What about L2 CPU cache line alignment?')..."
+                        placeholder="Interject with your architectural counter-argument (e.g. 'What about CPU L1/L2 cache line alignment?')..."
                         className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
                       />
                       <button
@@ -6268,8 +6656,8 @@ ${sc.codeSnippet || 'N/A'}
                         </div>
                         <h3 className="text-sm md:text-base font-black text-white font-sora mt-1">
                           {sandboxTab === 'jvm' && "JVM Stack vs Heap Memory Allocation Engine"}
-                          {sandboxTab === 'btree' && "B+ Tree Fan-Out & Disk Page Traversal Simulator"}
-                          {sandboxTab === 'attention' && "Transformer Self-Attention Heatmap & Temperature Engine"}
+                          {sandboxTab === 'btree' && "B+ Tree Fan-Out, Page Splitting & Range Query Simulator"}
+                          {sandboxTab === 'attention' && "Transformer Multi-Head Attention & Temperature Engine"}
                         </h3>
                       </div>
 
@@ -6326,6 +6714,13 @@ ${sc.codeSnippet || 'N/A'}
                             >
                               <span>🧹 {gcSweeping ? 'Sweeping...' : 'Trigger GC'}</span>
                             </button>
+                            <button
+                              onClick={() => setInspectedHeapObject(jvmHeapItems[0] || { addr: '0x7F01', title: 'SCP: "Java"', type: 'String Constant Pool', size: '24 Bytes', reachable: true, isScp: true })}
+                              className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/40 border border-indigo-400/40 text-indigo-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Cpu className="w-3.5 h-3.5" />
+                              <span>🔬 Inspect 64-Bit Object Layout</span>
+                            </button>
                           </div>
 
                           <div className="flex items-center gap-3 text-[11px] font-mono">
@@ -6334,6 +6729,101 @@ ${sc.codeSnippet || 'N/A'}
                             <span className="text-emerald-300">GCs: <strong>{jvmStats.gcCount}</strong></span>
                           </div>
                         </div>
+
+                        {/* JVM Object Header & Memory Layout Modal */}
+                        {inspectedHeapObject && (
+                          <div className="p-4 rounded-2xl bg-[#040816] border border-cyan-400/50 shadow-2xl space-y-4 font-mono animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
+                              <div className="flex items-center gap-2.5">
+                                <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 text-sm">🔬</span>
+                                <div>
+                                  <h4 className="font-bold text-white text-xs">HotSpot 64-Bit Object Header & Memory Inspector</h4>
+                                  <span className="text-[10px] text-gray-400 font-sans">Instance address: {inspectedHeapObject.addr} ({inspectedHeapObject.title})</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setUseCompressedOops(prev => !prev)}
+                                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${useCompressedOops ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200' : 'bg-white/5 border-white/20 text-gray-400'}`}
+                                  title="Toggle -XX:+UseCompressedOops"
+                                >
+                                  {useCompressedOops ? '32-bit Compressed OOPs (ON)' : '64-bit Direct OOPs (OFF)'}
+                                </button>
+                                <button
+                                  onClick={() => setInspectedHeapObject(null)}
+                                  className="text-gray-400 hover:text-white p-1"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Mark Word Lock State Switcher */}
+                            <div className="p-3 rounded-xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-[11px] text-gray-300 font-bold">Lock State Simulator:</span>
+                              <div className="flex gap-1.5 text-[10px]">
+                                <button
+                                  onClick={() => setInspectedLockState('unlocked')}
+                                  className={`px-2 py-1 rounded-md font-bold cursor-pointer ${inspectedLockState === 'unlocked' ? 'bg-emerald-500 text-black font-black' : 'bg-white/10 text-gray-300'}`}
+                                >
+                                  Unlocked (01)
+                                </button>
+                                <button
+                                  onClick={() => setInspectedLockState('thin')}
+                                  className={`px-2 py-1 rounded-md font-bold cursor-pointer ${inspectedLockState === 'thin' ? 'bg-amber-500 text-black font-black' : 'bg-white/10 text-gray-300'}`}
+                                >
+                                  Thin Lock (00)
+                                </button>
+                                <button
+                                  onClick={() => setInspectedLockState('fat')}
+                                  className={`px-2 py-1 rounded-md font-bold cursor-pointer ${inspectedLockState === 'fat' ? 'bg-rose-500 text-white font-black' : 'bg-white/10 text-gray-300'}`}
+                                >
+                                  Fat Lock (10)
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Detailed Memory Layout Diagram */}
+                            <div className="space-y-2">
+                              <div className="text-[10px] text-cyan-300 font-bold uppercase tracking-wider">Object Byte Decomposition (Total: {useCompressedOops ? '24 Bytes' : '32 Bytes'} Aligned):</div>
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-center text-xs">
+                                <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-400/40 space-y-1">
+                                  <span className="text-purple-300 font-bold block text-[11px]">Mark Word</span>
+                                  <span className="text-white text-xs font-bold block">8 Bytes (64 bits)</span>
+                                  <p className="text-[9px] text-gray-400 leading-tight">
+                                    {inspectedLockState === 'unlocked' && "HashCode: 0x4B3A8F, Age: 4 bits, Lock: 01"}
+                                    {inspectedLockState === 'thin' && "Thread Stack ptr (BasicObjectLock), Lock: 00"}
+                                    {inspectedLockState === 'fat' && "ObjectMonitor* pointer (OS Mutex), Lock: 10"}
+                                  </p>
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-400/40 space-y-1">
+                                  <span className="text-cyan-300 font-bold block text-[11px]">Klass Word</span>
+                                  <span className="text-white text-xs font-bold block">{useCompressedOops ? '4 Bytes (32 bits)' : '8 Bytes (64 bits)'}</span>
+                                  <p className="text-[9px] text-gray-400 leading-tight">
+                                    {useCompressedOops ? "Compressed ptr to java.lang.String class in Metaspace" : "Full 64-bit uncompressed pointer address"}
+                                  </p>
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-400/40 space-y-1">
+                                  <span className="text-amber-300 font-bold block text-[11px]">Instance Payload</span>
+                                  <span className="text-white text-xs font-bold block">9 Bytes</span>
+                                  <p className="text-[9px] text-gray-400 leading-tight">
+                                    byte[] value (4B ref) + hash (4B int) + coder (1B byte)
+                                  </p>
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/20 space-y-1">
+                                  <span className="text-gray-300 font-bold block text-[11px]">8-Byte Alignment Padding</span>
+                                  <span className="text-white text-xs font-bold block">{useCompressedOops ? '3 Bytes' : '7 Bytes'}</span>
+                                  <p className="text-[9px] text-gray-400 leading-tight">
+                                    Ensures total byte count is divisible by 8 for CPU 64-bit bus alignment.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Visual Memory Columns */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -6374,7 +6864,7 @@ ${sc.codeSnippet || 'N/A'}
                             <div className="flex items-center justify-between pb-2 border-b border-purple-500/20">
                               <h4 className="font-black text-purple-400 font-sora flex items-center gap-1.5 text-xs">
                                 <span>📦 SHARED HEAP SPACE</span>
-                                <span className="text-[9px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">GC Managed</span>
+                                <span className="text-[9px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">GC Managed (Click to Inspect)</span>
                               </h4>
                               <span className="text-[10px] text-gray-400 font-mono">{jvmHeapItems.length} Objects</span>
                             </div>
@@ -6383,7 +6873,8 @@ ${sc.codeSnippet || 'N/A'}
                               {jvmHeapItems.map((obj) => (
                                 <div
                                   key={obj.id}
-                                  className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${obj.isScp ? 'bg-amber-950/30 border-amber-500/40' : obj.reachable ? 'bg-purple-950/30 border-purple-500/40' : 'bg-rose-950/30 border-rose-500/40 opacity-60'}`}
+                                  onClick={() => setInspectedHeapObject(obj)}
+                                  className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer hover:scale-[1.01] ${obj.isScp ? 'bg-amber-950/30 border-amber-500/40 hover:border-amber-400' : obj.reachable ? 'bg-purple-950/30 border-purple-500/40 hover:border-purple-400' : 'bg-rose-950/30 border-rose-500/40 opacity-60'}`}
                                 >
                                   <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
@@ -6397,7 +6888,7 @@ ${sc.codeSnippet || 'N/A'}
                                       {obj.size}
                                     </span>
                                     <span className={`text-[9px] font-mono ${obj.reachable ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                      {obj.reachable ? 'Reachable' : 'Garbage'}
+                                      {obj.reachable ? 'Reachable 🔍' : 'Garbage'}
                                     </span>
                                   </div>
                                 </div>
@@ -6411,22 +6902,97 @@ ${sc.codeSnippet || 'N/A'}
                     {/* ─── TAB B: B+ TREE INTERACTIVE SIMULATOR ─── */}
                     {sandboxTab === 'btree' && (
                       <div className="space-y-4">
-                        {/* Search input */}
-                        <form onSubmit={handleBTreeSearch} className="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center gap-2">
-                          <input
-                            type="number"
-                            value={bTreeSearchKey}
-                            onChange={(e) => setBTreeSearchKey(e.target.value)}
-                            placeholder="Enter key to search in B+ Tree (e.g. 5, 25, 30, 50)..."
-                            className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
-                          />
+                        {/* Search & Insert Forms */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {/* Search Key */}
+                          <form onSubmit={handleBTreeSearch} className="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={bTreeSearchKey}
+                              onChange={(e) => setBTreeSearchKey(e.target.value)}
+                              placeholder="Search Key (e.g. 5, 25, 30, 50)..."
+                              className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs transition-all cursor-pointer shrink-0"
+                            >
+                              Traverse ⚡
+                            </button>
+                          </form>
+
+                          {/* Insert Key */}
+                          <form onSubmit={handleBTreeInsertKey} className="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={bTreeInsertKey}
+                              onChange={(e) => setBTreeInsertKey(e.target.value)}
+                              placeholder="Insert New Key (e.g. 18, 28, 42)..."
+                              className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition-all cursor-pointer shrink-0"
+                            >
+                              Insert Key ➕ (+20 XP)
+                            </button>
+                          </form>
+                        </div>
+
+                        {/* Page Split Notification */}
+                        {bTreeSplitNotice && (
+                          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-200 text-xs font-mono flex items-center gap-2 animate-bounce">
+                            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                            <span>{bTreeSplitNotice}</span>
+                          </div>
+                        )}
+
+                        {/* Range Query Bar */}
+                        <form onSubmit={handleBTreeRangeQuery} className="p-3 rounded-2xl bg-[#030617] border border-cyan-500/30 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-cyan-400 font-bold text-xs font-mono">SQL Range Scan:</span>
+                            <span className="text-gray-400 text-xs font-mono">BETWEEN</span>
+                            <input
+                              type="number"
+                              value={bTreeRangeMin}
+                              onChange={(e) => setBTreeRangeMin(e.target.value)}
+                              className="w-16 bg-black/60 border border-cyan-400/40 rounded-lg px-2 py-1 text-xs text-center text-white font-mono"
+                            />
+                            <span className="text-gray-400 text-xs font-mono">AND</span>
+                            <input
+                              type="number"
+                              value={bTreeRangeMax}
+                              onChange={(e) => setBTreeRangeMax(e.target.value)}
+                              className="w-16 bg-black/60 border border-cyan-400/40 rounded-lg px-2 py-1 text-xs text-center text-white font-mono"
+                            />
+                          </div>
                           <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs transition-all cursor-pointer"
+                            className="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-black font-black text-xs transition-all cursor-pointer"
                           >
-                            Traverse Index ⚡
+                            Scan Leaf Range (⇄ Linked) ⚡ (+25 XP)
                           </button>
                         </form>
+
+                        {/* Range Scan Results Card */}
+                        {bTreeRangeResult && (
+                          <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-400/40 space-y-2 font-mono text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-cyan-300">
+                                Sequential Leaf Scan Result ({bTreeRangeResult.min} to {bTreeRangeResult.max}):
+                              </span>
+                              <span className="text-emerald-300 font-bold">
+                                {bTreeRangeResult.matches.length} Keys Found across {bTreeRangeResult.totalDiskReads} Leaf Pages
+                              </span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-black/50 text-gray-200">
+                              Matching Keys: <strong>[{bTreeRangeResult.matches.join(', ')}]</strong>
+                            </div>
+                            <p className="text-[10px] text-gray-400">
+                              Notice how after the initial O(log N) root seek, all data is fetched horizontally by following leaf pointers (⇄) without traversing the tree again!
+                            </p>
+                          </div>
+                        )}
 
                         {/* B+ Tree Visual Structure */}
                         <div className="p-4 rounded-2xl bg-[#02050f] border border-indigo-500/30 space-y-4 font-mono text-center">
@@ -6460,15 +7026,15 @@ ${sc.codeSnippet || 'N/A'}
                             <span className="text-[10px] text-emerald-400 uppercase tracking-widest font-bold">LEVEL 3: LEAF PAGES (DOUBLY LINKED SEQUENTIAL STORAGE)</span>
                             <div className="flex flex-wrap items-center justify-center gap-2">
                               <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
-                                [Leaf 1: 5, 10, 15]
+                                [Leaf 1: {bTreePages.leaf1.join(', ')}]
                               </div>
-                              <span className="text-emerald-400">⇄</span>
+                              <span className="text-emerald-400 font-bold">⇄</span>
                               <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
-                                [Leaf 2: 20, 25, 30, 35]
+                                [Leaf 2: {bTreePages.leaf2.join(', ')}]
                               </div>
-                              <span className="text-emerald-400">⇄</span>
+                              <span className="text-emerald-400 font-bold">⇄</span>
                               <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
-                                [Leaf 3: 40, 45, 50, 60]
+                                [Leaf 3: {bTreePages.leaf3.join(', ')}]
                               </div>
                             </div>
                           </div>
@@ -6499,9 +7065,38 @@ ${sc.codeSnippet || 'N/A'}
                     {/* ─── TAB C: TRANSFORMER ATTENTION WEIGHT HEATMAP ─── */}
                     {sandboxTab === 'attention' && (
                       <div className="space-y-4">
-                        <div className="p-3 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+                        {/* Multi-Head Switcher & Temperature Controls */}
+                        <div className="p-3.5 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[11px] text-purple-300 font-bold mr-1">Attention Head:</span>
+                            <button
+                              onClick={() => setSelectedAttnHead('semantics')}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${selectedAttnHead === 'semantics' ? 'bg-purple-600 text-white shadow' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                            >
+                              Head 1: Semantics
+                            </button>
+                            <button
+                              onClick={() => setSelectedAttnHead('syntax')}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${selectedAttnHead === 'syntax' ? 'bg-indigo-600 text-white shadow' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                            >
+                              Head 2: Syntax
+                            </button>
+                            <button
+                              onClick={() => setSelectedAttnHead('locality')}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${selectedAttnHead === 'locality' ? 'bg-teal-600 text-white shadow' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                            >
+                              Head 3: Locality
+                            </button>
+                            <button
+                              onClick={() => setSelectedAttnHead('global')}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${selectedAttnHead === 'global' ? 'bg-amber-600 text-white shadow' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                            >
+                              Head 4: Global
+                            </button>
+                          </div>
+
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-purple-300 font-bold">Softmax Temperature (τ):</span>
+                            <span className="text-xs text-purple-300 font-bold">Temperature (τ):</span>
                             <input
                               type="range"
                               min="0.2"
@@ -6513,24 +7108,17 @@ ${sc.codeSnippet || 'N/A'}
                             />
                             <span className="text-xs font-mono font-bold text-white">{attentionTemp.toFixed(1)}</span>
                           </div>
-
-                          <span className="text-[10px] text-gray-400 font-mono">Formula: Softmax(QK^T / (sqrt(d_k) * τ))</span>
                         </div>
 
                         {/* Interactive Matrix */}
                         <div className="p-4 rounded-2xl bg-[#05030f] border border-purple-500/30 overflow-x-auto space-y-3">
-                          <div className="text-[11px] text-gray-400 font-mono">
-                            Hover over token to inspect query projection attention distribution:
+                          <div className="flex items-center justify-between text-[11px] text-gray-400 font-mono">
+                            <span>Projection: {selectedAttnHead.toUpperCase()} HEAD (Softmax(QK^T / (sqrt(d_k) * τ)))</span>
+                            <span className="text-purple-300">Hover cell to inspect probability</span>
                           </div>
                           {(() => {
                             const tokens = ["Self", "Attention", "Weights", "Transform", "Context"];
-                            const rawScores = [
-                              [4.2, 2.1, 0.8, 1.2, 0.4],
-                              [1.5, 4.8, 2.3, 0.9, 0.6],
-                              [0.8, 2.5, 4.4, 3.1, 1.2],
-                              [1.1, 1.0, 2.8, 4.6, 3.5],
-                              [0.3, 0.7, 1.4, 3.2, 4.9]
-                            ];
+                            const rawScores = ATTENTION_HEAD_WEIGHTS[selectedAttnHead] || ATTENTION_HEAD_WEIGHTS.semantics;
                             return (
                               <div className="space-y-2">
                                 {tokens.map((rowToken, rIdx) => {
@@ -6553,7 +7141,7 @@ ${sc.codeSnippet || 'N/A'}
                                           >
                                             <span>{(p * 100).toFixed(0)}%</span>
                                             <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-black text-cyan-300 text-[9px] font-mono pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap shadow border border-cyan-500/30">
-                                              Attends to: {tokens[cIdx]}
+                                              Attends to: {tokens[cIdx]} ({(p * 100).toFixed(1)}%)
                                             </div>
                                           </div>
                                         ))}
