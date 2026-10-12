@@ -172,6 +172,14 @@ class InterventionEvaluationOut(BaseModel):
     eval_date: datetime
     notes: Optional[str] = None
 
+class InterventionEvaluationCreate(BaseModel):
+    intervention_id: Optional[int] = 1
+    student_id: Optional[int] = 1
+    baseline_score_pct: float
+    follow_up_score_pct: float
+    topic_name: Optional[str] = "Core Concept"
+    notes: Optional[str] = None
+
 class DashboardSummaryOut(BaseModel):
     total_students: int
     total_tests_conducted: int
