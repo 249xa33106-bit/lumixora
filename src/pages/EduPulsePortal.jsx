@@ -12,7 +12,9 @@ import { useGamification } from '../context/GamificationContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// ─── Default Institutional Dataset (Lumixora Autonomous Campus - GPREC Kurnool) ───────
+import realData from '../data/realEduPulseData.json';
+
+// ─── Real Institutional Dataset (Lumixora Autonomous Campus - GPREC Kurnool) ───────
 const DEFAULT_INSTITUTION = {
   id: 'gprec',
   name: "G. Pulla Reddy Engineering College (Autonomous)",
@@ -23,10 +25,18 @@ const DEFAULT_INSTITUTION = {
   platform: "Lumixora Student OS by VYOMRA"
 };
 
-const DEFAULT_BATCHES = [
-  { id: 1, name: "B.Tech CSE - 2026 Alpha", program: "Computer Science & Engineering", target_year: 2026, studentCount: 12, avgScore: 68.5, department: "CSE" },
-  { id: 2, name: "B.Tech AI&ML - 2026 Sigma", program: "Artificial Intelligence & ML", target_year: 2026, studentCount: 10, avgScore: 64.2, department: "AI&ML" },
-  { id: 3, name: "B.Tech ECE - 2026 Zenith", program: "Electronics & Communication", target_year: 2026, studentCount: 10, avgScore: 59.8, department: "ECE" }
+const DEFAULT_BATCHES = (realData.batches && realData.batches.length > 0) ? realData.batches.map(b => ({
+  id: b.id,
+  name: b.name,
+  program: b.program,
+  target_year: b.target_year || 2026,
+  studentCount: b.student_count,
+  avgScore: 65.4,
+  department: b.name.includes('AI') ? 'AI&ML' : b.name.includes('ECE') ? 'ECE' : 'CSE'
+})) : [
+  { id: 1, name: "B.Tech CSE - 2026 Alpha", program: "Computer Science & Engineering", target_year: 2026, studentCount: 195, avgScore: 68.5, department: "CSE" },
+  { id: 2, name: "B.Tech AI&ML - 2026 Sigma", program: "Artificial Intelligence & ML", target_year: 2026, studentCount: 204, avgScore: 64.2, department: "AI&ML" },
+  { id: 3, name: "B.Tech ECE - 2026 Zenith", program: "Electronics & Communication", target_year: 2026, studentCount: 17, avgScore: 59.8, department: "ECE" }
 ];
 
 const DEFAULT_FACULTY = [
@@ -37,237 +47,63 @@ const DEFAULT_FACULTY = [
   { id: 5, name: "Dr. P. Sreedhar Sir", role: "Faculty Mentor", subject: "Computer Networks & Cloud" },
 ];
 
-const DEFAULT_STUDENTS = [
-  // B.Tech CSE - 2026 Alpha
-  { id: 1, roll: "249X1A0501", name: "K. Sai Teja", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 78.4, status: "on_track", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
-  { id: 2, roll: "249X1A0502", name: "P. Keerthi Reddy", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 48.1, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees", "SQL Indexing & Normalization"] },
-  { id: 3, roll: "249X1A0503", name: "V. Venkat Raman", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 62.5, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
-  { id: 4, roll: "249X1A0504", name: "B. Bhavana Rao", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 84.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 5, roll: "249X1A0505", name: "M. Rahul Varma", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 42.5, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees", "Cache Memory & Paging"] },
-  { id: 6, roll: "249X1A0506", name: "C. Divya Sree", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 56.0, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
-  { id: 7, roll: "249X1A0507", name: "N. Karthik Naidu", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 49.0, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
-  { id: 8, roll: "249X1A0508", name: "G. Anusha Chowdary", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 72.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 9, roll: "249X1A0509", name: "T. Manjunath Swamy", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 46.0, status: "needs_support", testsTaken: 5, gaps: ["Cache Memory & Paging"] },
-  { id: 10, roll: "249X1A0510", name: "D. Sneha Latha", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 68.0, status: "stable", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
-  { id: 11, roll: "249X1A0511", name: "Y. Tarun Kumar", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 58.5, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
-  { id: 12, roll: "249X1A0512", name: "R. Swathi Priya", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 65.5, status: "stable", testsTaken: 5, gaps: [] },
+const DEFAULT_STUDENTS = (realData.students && realData.students.length > 0) ? realData.students.map(s => ({
+  id: s.id,
+  roll: s.roll_number,
+  name: s.full_name,
+  batchId: s.batch_id,
+  batchName: s.batch_name,
+  avgScore: s.avg_score_pct,
+  status: s.support_status === 'mastering' || s.support_status === 'on_track' ? 'on_track' : s.support_status === 'needs_practice' ? 'needs_support' : 'stable',
+  testsTaken: s.tests_taken,
+  gaps: s.gaps && s.gaps.length > 0 ? s.gaps : []
+})) : [];
 
-  // B.Tech AI&ML - 2026 Sigma
-  { id: 13, roll: "249X1A3301", name: "A. Harika Sharma", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 82.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 14, roll: "249X1A3302", name: "S. Pradeep Kumar", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 49.0, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop", "Matrix Factorization"] },
-  { id: 15, roll: "249X1A3303", name: "M. Lavanya Devi", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 76.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 16, roll: "249X1A3304", name: "K. Dinesh Reddy", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 59.5, status: "stable", testsTaken: 5, gaps: ["Neural Net Backprop"] },
-  { id: 17, roll: "249X1A3305", name: "J. Sushmitha Paul", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 45.0, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop", "Probability & Bayes Models"] },
-  { id: 18, roll: "249X1A3306", name: "R. Bhanu Prakash", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 67.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 19, roll: "249X1A3307", name: "N. Meghana Rao", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 61.0, status: "stable", testsTaken: 5, gaps: ["Matrix Factorization"] },
-  { id: 20, roll: "249X1A3308", name: "E. Ajay Krishna", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 51.5, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop"] },
-  { id: 21, roll: "249X1A3309", name: "P. Sravani Latha", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 79.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 22, roll: "249X1A3310", name: "V. Chaitanya Prasad", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 63.0, status: "stable", testsTaken: 5, gaps: [] },
+const DEFAULT_TOPIC_GAPS = (realData.gaps && realData.gaps.length > 0) ? realData.gaps.map(g => ({
+  id: g.topic_id,
+  topicName: g.topic_name,
+  subject: g.subject_name || 'Engineering',
+  batchName: g.batch_name,
+  batchId: g.batch_id,
+  avgScore: g.avg_score_pct,
+  testsEvaluated: g.tests_conducted,
+  isRecurring: g.is_recurring,
+  affectedStudents: g.students_impacted,
+  totalStudents: g.total_batch_students || 12,
+  severity: g.is_recurring ? 'high' : 'medium',
+  rationale: g.reason
+})) : [];
 
-  // B.Tech ECE - 2026 Zenith
-  { id: 23, roll: "249X1A0401", name: "G. Mahesh Babu", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 58.0, status: "stable", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
-  { id: 24, roll: "249X1A0402", name: "T. Sandhya Rani", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 47.0, status: "needs_support", testsTaken: 5, gaps: ["VLSI CMOS Inverter Sizing", "Digital Signal Processing & DFT"] },
-  { id: 25, roll: "249X1A0403", name: "B. Vikram Simha", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 71.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 26, roll: "249X1A0404", name: "K. Pavani Kumari", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 50.5, status: "needs_support", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
-  { id: 27, roll: "249X1A0405", name: "M. Akhil Tej", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 62.0, status: "stable", testsTaken: 5, gaps: [] },
-  { id: 28, roll: "249X1A0406", name: "D. Rohini Sree", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 72.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 29, roll: "249X1A0407", name: "N. Uday Kiran", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 43.0, status: "needs_support", testsTaken: 5, gaps: ["VLSI CMOS Inverter Sizing", "Microcontroller Interrupts"] },
-  { id: 30, roll: "249X1A0408", name: "S. Geetha Madhuri", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 65.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 31, roll: "249X1A0409", name: "R. Vinay Kumar", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 56.0, status: "stable", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
-  { id: 32, roll: "249X1A0410", name: "A. Lakshmi Prasanna", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 70.5, status: "on_track", testsTaken: 5, gaps: [] },
-];
+const DEFAULT_ACTIONS = (realData.actions && realData.actions.length > 0) ? realData.actions.map(a => ({
+  id: a.id,
+  gapId: a.topic_id,
+  title: a.title,
+  topicName: a.topic_name,
+  subject: a.subject_name || 'Engineering',
+  batchName: a.batch_name,
+  batchId: a.batch_id,
+  strategy: a.action_type === 'doubt_clinic' ? 'Doubt Clearing Workshop' : a.action_type === 'targeted_practice' ? 'Targeted Practice Problem Sheet' : '1-on-1 Concept Clinic',
+  assignedTo: a.teacher_name,
+  dueDate: a.due_date ? a.due_date.split('T')[0] : '2026-10-25',
+  status: a.status === 'completed' ? 'completed' : a.status === 'in_progress' ? 'in_progress' : 'assigned',
+  targetCohort: a.target_students ? a.target_students.map(ts => ts.name) : ['Target Scholars'],
+  notes: a.teacher_notes || a.evidence_reason || '',
+  measuredGain: a.status === 'completed' ? '+18.5%' : undefined
+})) : [];
 
-const DEFAULT_TOPIC_GAPS = [
-  {
-    id: 1,
-    topicName: "Graph Traversal & Trees",
-    subject: "Data Structures & Algorithms",
-    batchName: "B.Tech CSE - 2026 Alpha",
-    batchId: 1,
-    avgScore: 41.5,
-    testsEvaluated: 2,
-    isRecurring: true,
-    affectedStudents: 7,
-    totalStudents: 12,
-    severity: "high",
-    rationale: "Batch-wide concept bottleneck: 7 of 12 scholars scored below 50% across Dijkstra shortest paths and topological sort. Recursive DFS back-tracking shows recurring confusion."
-  },
-  {
-    id: 2,
-    topicName: "Neural Net Backprop",
-    subject: "Artificial Intelligence & ML",
-    batchName: "B.Tech AI&ML - 2026 Sigma",
-    batchId: 2,
-    avgScore: 43.8,
-    testsEvaluated: 2,
-    isRecurring: true,
-    affectedStudents: 5,
-    totalStudents: 10,
-    severity: "high",
-    rationale: "Matrix gradient derivatives and cross-entropy error minimization show recurring drop across two consecutive assessments."
-  },
-  {
-    id: 3,
-    topicName: "Digital Signal Processing & DFT",
-    subject: "Signals & Systems",
-    batchName: "B.Tech ECE - 2026 Zenith",
-    batchId: 3,
-    avgScore: 44.5,
-    testsEvaluated: 2,
-    isRecurring: true,
-    affectedStudents: 5,
-    totalStudents: 10,
-    severity: "medium",
-    rationale: "Fast Fourier Transform butterfly stages and Z-transform ROC pole-zero cancellation fell below 50% benchmark."
-  },
-  {
-    id: 4,
-    topicName: "SQL Indexing & Normalization",
-    subject: "DBMS & Systems",
-    batchName: "B.Tech CSE - 2026 Alpha",
-    batchId: 1,
-    avgScore: 47.8,
-    testsEvaluated: 2,
-    isRecurring: false,
-    affectedStudents: 4,
-    totalStudents: 12,
-    severity: "medium",
-    rationale: "Single-test variance in B+ Tree leaf lookups and BCNF functional dependencies. Needs monitoring on next reassessment."
-  },
-  {
-    id: 5,
-    topicName: "Cache Memory & Paging",
-    subject: "Operating Systems",
-    batchName: "B.Tech CSE - 2026 Alpha",
-    batchId: 1,
-    avgScore: 43.5,
-    testsEvaluated: 2,
-    isRecurring: true,
-    affectedStudents: 4,
-    totalStudents: 12,
-    severity: "medium",
-    rationale: "Virtual memory address translation, TLB miss penalty calculations, and LRU eviction show recurring formula confusion."
-  }
-];
-
-const DEFAULT_ACTIONS = [
-  {
-    id: "act-1",
-    gapId: 1,
-    title: "Dijkstra & BFS Step-by-Step Problem Clinic",
-    topicName: "Graph Traversal & Trees",
-    subject: "Data Structures & Algorithms",
-    batchName: "B.Tech CSE - 2026 Alpha",
-    batchId: 1,
-    strategy: "1-on-1 Concept Clinic",
-    assignedTo: "Prof. S. Ramesh Sir",
-    dueDate: "2026-10-18",
-    status: "in_progress",
-    targetCohort: ["P. Keerthi Reddy", "M. Rahul Varma", "N. Karthik Naidu", "T. Manjunath Swamy"],
-    notes: "Conducting step-by-step priority queue trace and adjacency list representations."
-  },
-  {
-    id: "act-2",
-    gapId: 2,
-    title: "Gradient Vectors & Matrix Chain Rule Practice Sheet",
-    topicName: "Neural Net Backprop",
-    subject: "Artificial Intelligence & ML",
-    batchName: "B.Tech AI&ML - 2026 Sigma",
-    batchId: 2,
-    strategy: "Targeted Practice Problem Sheet",
-    assignedTo: "Dr. K. Govardhan Reddy",
-    dueDate: "2026-10-19",
-    status: "assigned",
-    targetCohort: ["S. Pradeep Kumar", "K. Dinesh Reddy", "J. Sushmitha Paul", "E. Ajay Krishna"],
-    notes: "Distributing 25 curated computational practice questions with step-by-step weight updates."
-  },
-  {
-    id: "act-3",
-    gapId: 3,
-    title: "FFT Butterfly Structures & ROC Doubt Workshop",
-    topicName: "Digital Signal Processing & DFT",
-    subject: "Signals & Systems",
-    batchName: "B.Tech ECE - 2026 Zenith",
-    batchId: 3,
-    strategy: "Doubt Clearing Workshop",
-    assignedTo: "Prof. V. Suresh Sir",
-    dueDate: "2026-10-16",
-    status: "completed",
-    targetCohort: ["T. Sandhya Rani", "K. Pavani Kumari", "N. Uday Kiran", "R. Vinay Kumar"],
-    notes: "45-minute lab workshop conducted. All 4 scholars demonstrated full mastery on twiddle factors.",
-    measuredGain: "+18.5%"
-  },
-  {
-    id: "act-4",
-    gapId: 4,
-    title: "15-Minute Reassessment on B-Tree Query Execution",
-    topicName: "SQL Indexing & Normalization",
-    subject: "DBMS & Systems",
-    batchName: "B.Tech CSE - 2026 Alpha",
-    batchId: 1,
-    strategy: "15-min Diagnostic Reassessment",
-    assignedTo: "Dr. M. Lakshmi Devi",
-    dueDate: "2026-10-20",
-    status: "pending_review",
-    targetCohort: ["V. Venkat Raman", "C. Divya Sree", "Y. Tarun Kumar"],
-    notes: "Validating whether query cost drop was transient or a conceptual bottleneck."
-  }
-];
-
-const DEFAULT_EVALUATIONS = [
-  {
-    id: 1,
-    actionTitle: "FFT Butterfly Structures Workshop",
-    topic: "Digital Signal Processing & DFT",
-    batch: "B.Tech ECE - 2026 Zenith",
-    baselineScore: 42.0,
-    followUpScore: 60.5,
-    delta: 18.5,
-    outcome: "marked_gain",
-    strategy: "Doubt Clearing Workshop",
-    faculty: "Prof. V. Suresh Sir",
-    date: "2026-10-11"
-  },
-  {
-    id: 2,
-    actionTitle: "BCNF Functional Dependencies Diagnostic Relecture",
-    topic: "SQL Indexing & Normalization",
-    batch: "B.Tech CSE - 2026 Alpha",
-    baselineScore: 48.5,
-    followUpScore: 59.8,
-    delta: 11.3,
-    outcome: "moderate_gain",
-    strategy: "Foundational Re-lecture",
-    faculty: "Dr. M. Lakshmi Devi",
-    date: "2026-10-09"
-  },
-  {
-    id: 3,
-    actionTitle: "Graph Shortest Path Dijkstra Speed Drill",
-    topic: "Graph Traversal & Trees",
-    batch: "B.Tech CSE - 2026 Alpha",
-    baselineScore: 45.0,
-    followUpScore: 62.0,
-    delta: 17.0,
-    outcome: "marked_gain",
-    strategy: "Targeted Practice Sheet",
-    faculty: "Prof. S. Ramesh Sir",
-    date: "2026-10-06"
-  },
-  {
-    id: 4,
-    actionTitle: "Virtual Paging & TLB Concept Clinic",
-    topic: "Cache Memory & Paging",
-    batch: "B.Tech CSE - 2026 Alpha",
-    baselineScore: 51.0,
-    followUpScore: 54.0,
-    delta: 3.0,
-    outcome: "stable",
-    strategy: "1-on-1 Concept Clinic",
-    faculty: "Dr. P. Sreedhar Sir",
-    date: "2026-10-04"
-  }
-];
+const DEFAULT_EVALUATIONS = (realData.evaluations && realData.evaluations.length > 0) ? realData.evaluations.map(e => ({
+  id: e.id,
+  actionTitle: e.intervention_title,
+  topic: e.topic_name,
+  batch: e.batch_name,
+  baselineScore: e.baseline_score_pct,
+  followUpScore: e.follow_up_score_pct,
+  delta: e.delta_pct,
+  outcome: e.delta_pct >= 15 ? 'marked_gain' : e.delta_pct >= 5 ? 'moderate_gain' : 'stable',
+  strategy: e.action_type === 'doubt_clinic' ? 'Doubt Clearing Workshop' : '1-on-1 Concept Clinic',
+  faculty: 'Srikanth Sir',
+  date: e.eval_date ? e.eval_date.split('T')[0] : '2026-09-29'
+})) : [];
 
 export default function EduPulsePortal({ user: propUser, setActiveTab }) {
   const { addToast } = useToast?.() || {};

@@ -1,0 +1,6854 @@
+{
+  "batches": [
+    {
+      "id": 1,
+      "name": "B.Tech CSE - 2026 Alpha",
+      "program": "Computer Science & Engineering",
+      "target_year": 2026,
+      "student_count": 195
+    },
+    {
+      "id": 2,
+      "name": "B.Tech AI&ML - 2026 Sigma",
+      "program": "Artificial Intelligence & ML",
+      "target_year": 2026,
+      "student_count": 204
+    },
+    {
+      "id": 3,
+      "name": "B.Tech ECE - 2026 Zenith",
+      "program": "Electronics & Communication",
+      "target_year": 2026,
+      "student_count": 17
+    }
+  ],
+  "students": [
+    {
+      "id": 1,
+      "student_uid": "STU-1001",
+      "full_name": "Kowshi",
+      "roll_number": "249X1A0500",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 2,
+      "student_uid": "STU-1002",
+      "full_name": "Harshith",
+      "roll_number": "249X1A0501",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 3,
+      "student_uid": "STU-1003",
+      "full_name": "Yaswanth Gujjala",
+      "roll_number": "249X1A0502",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 4,
+      "student_uid": "STU-1004",
+      "full_name": "Honey",
+      "roll_number": "249X1A0503",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 63.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 5,
+      "student_uid": "STU-1005",
+      "full_name": "John",
+      "roll_number": "249X1A0504",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 3,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 6,
+      "student_uid": "STU-1006",
+      "full_name": "Bhukya Sony Priya",
+      "roll_number": "249X1A0505",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 7,
+      "student_uid": "STU-1007",
+      "full_name": "Aliza Juhaina",
+      "roll_number": "249X1A0506",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 8,
+      "student_uid": "STU-1008",
+      "full_name": "Dilipan",
+      "roll_number": "249X1A0507",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 9,
+      "student_uid": "STU-1009",
+      "full_name": "King",
+      "roll_number": "249X1A0508",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 10,
+      "student_uid": "STU-1010",
+      "full_name": "MAHENDRAKAR AKHIL",
+      "roll_number": "249XA33112",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 11,
+      "student_uid": "STU-1011",
+      "full_name": "Sree Harshita Rakup",
+      "roll_number": "249X1A0510",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 12,
+      "student_uid": "STU-1012",
+      "full_name": "Helo",
+      "roll_number": "249X1A0511",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 13,
+      "student_uid": "STU-1013",
+      "full_name": "Openy",
+      "roll_number": "249X1A0512",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 14,
+      "student_uid": "STU-1014",
+      "full_name": "Balaji Naik",
+      "roll_number": "249X1A0513",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 15,
+      "student_uid": "STU-1015",
+      "full_name": "yagna",
+      "roll_number": "249X1A0514",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 16,
+      "student_uid": "STU-1016",
+      "full_name": "Pcu",
+      "roll_number": "249X1A0515",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 64.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 17,
+      "student_uid": "STU-1017",
+      "full_name": "Praharsha Kuncham",
+      "roll_number": "249X1A0516",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 18,
+      "student_uid": "STU-1018",
+      "full_name": "Zaid Shaik",
+      "roll_number": "239X1A0369",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 19,
+      "student_uid": "STU-1019",
+      "full_name": "Name",
+      "roll_number": "249X1A0518",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 20,
+      "student_uid": "STU-1020",
+      "full_name": "shaik",
+      "roll_number": "249X1A0519",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 21,
+      "student_uid": "STU-1021",
+      "full_name": "Poojari edagottu Sindhura",
+      "roll_number": "259XA33213",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 22,
+      "student_uid": "STU-1022",
+      "full_name": "Kushala",
+      "roll_number": "249X1A0521",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 23,
+      "student_uid": "STU-1023",
+      "full_name": "Samki",
+      "roll_number": "249X1A0522",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 24,
+      "student_uid": "STU-1024",
+      "full_name": "Alena",
+      "roll_number": "249X1A0523",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 25,
+      "student_uid": "STU-1025",
+      "full_name": "Janozai Laiqa Khan",
+      "roll_number": "259XA33095",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 26,
+      "student_uid": "STU-1026",
+      "full_name": "Asmitha",
+      "roll_number": "249X1A0525",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 27,
+      "student_uid": "STU-1027",
+      "full_name": "Kowshik",
+      "roll_number": "249X1A0526",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 28,
+      "student_uid": "STU-1028",
+      "full_name": "Great",
+      "roll_number": "249X1A0527",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 29,
+      "student_uid": "STU-1029",
+      "full_name": "Harshitha",
+      "roll_number": "249X1A0528",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 30,
+      "student_uid": "STU-1030",
+      "full_name": "DappepalliNavyasree",
+      "roll_number": "249X1A0529",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 31,
+      "student_uid": "STU-1031",
+      "full_name": "john doe",
+      "roll_number": "249X1A0530",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 32,
+      "student_uid": "STU-1032",
+      "full_name": "P. Bhavya",
+      "roll_number": "249XA33145",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 33,
+      "student_uid": "STU-1033",
+      "full_name": "Nedamanoori Pranesh",
+      "roll_number": "259XA33192",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 34,
+      "student_uid": "STU-1034",
+      "full_name": "Jada Swetha",
+      "roll_number": "259XA33092",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 35,
+      "student_uid": "STU-1035",
+      "full_name": "LSVSARAVANAN",
+      "roll_number": "249X1A0534",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 36,
+      "student_uid": "STU-1036",
+      "full_name": "Ganthala Sameera",
+      "roll_number": "249X1A0535",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 37,
+      "student_uid": "STU-1037",
+      "full_name": "raghu",
+      "roll_number": "249X1A0536",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 38,
+      "student_uid": "STU-1038",
+      "full_name": "Lalitha Rani",
+      "roll_number": "259XA05227",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 39,
+      "student_uid": "STU-1039",
+      "full_name": "SADHU KOUSALYA",
+      "roll_number": "249XA33148",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 40,
+      "student_uid": "STU-1040",
+      "full_name": "Harshitha",
+      "roll_number": "249X1A0539",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 66.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 41,
+      "student_uid": "STU-1041",
+      "full_name": "SOWBAN",
+      "roll_number": "249X1A0540",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 43.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 42,
+      "student_uid": "STU-1042",
+      "full_name": "Tagulla Sheetal Sharone",
+      "roll_number": "259XA05279",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 43,
+      "student_uid": "STU-1043",
+      "full_name": "Harshitha",
+      "roll_number": "249X1A0542",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 44,
+      "student_uid": "STU-1044",
+      "full_name": "259XA05074 DAPPEPALLI NAVYA SREE",
+      "roll_number": "259XA05074",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 45,
+      "student_uid": "STU-1045",
+      "full_name": "Maligapogu Meghashyam",
+      "roll_number": "259XA33511",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 43.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 46,
+      "student_uid": "STU-1046",
+      "full_name": "BHARATH REDDY",
+      "roll_number": "249X1A0545",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 63.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 47,
+      "student_uid": "STU-1047",
+      "full_name": "Thonduru karthik",
+      "roll_number": "249X1A0546",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 48,
+      "student_uid": "STU-1048",
+      "full_name": "sulli",
+      "roll_number": "249X1A0547",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 49,
+      "student_uid": "STU-1049",
+      "full_name": "Faz",
+      "roll_number": "249X1A0548",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Kinematics & Logic Gates"
+      ]
+    },
+    {
+      "id": 50,
+      "student_uid": "STU-1050",
+      "full_name": "Meghana",
+      "roll_number": "259XA05289",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 42.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL"
+      ]
+    },
+    {
+      "id": 51,
+      "student_uid": "STU-1051",
+      "full_name": "keerthi reddy",
+      "roll_number": "259XA05531",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 70.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 52,
+      "student_uid": "STU-1052",
+      "full_name": "Perla Yagna Reddy",
+      "roll_number": "249X1A0551",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 53,
+      "student_uid": "STU-1053",
+      "full_name": "E.Manideep Goud",
+      "roll_number": "249X1A0552",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 54,
+      "student_uid": "STU-1054",
+      "full_name": "J Sreeja",
+      "roll_number": "249XA33067",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 55,
+      "student_uid": "STU-1055",
+      "full_name": "V Mohith",
+      "roll_number": "249X1A0554",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 56,
+      "student_uid": "STU-1056",
+      "full_name": "Don",
+      "roll_number": "249X1A0555",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 57,
+      "student_uid": "STU-1057",
+      "full_name": "I",
+      "roll_number": "249X1A0556",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 49.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 58,
+      "student_uid": "STU-1058",
+      "full_name": "Govardhan Reddy Nagireddy",
+      "roll_number": "249XA33117",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 59,
+      "student_uid": "STU-1059",
+      "full_name": "Jenne Vandana",
+      "roll_number": "259XA05145",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 60,
+      "student_uid": "STU-1060",
+      "full_name": "Praneeth kumar",
+      "roll_number": "249X1A0559",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 48.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 61,
+      "student_uid": "STU-1061",
+      "full_name": "Kashif",
+      "roll_number": "249X1A0560",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 62,
+      "student_uid": "STU-1062",
+      "full_name": "259XA33025 CHINTHAKUNTA MANASA",
+      "roll_number": "259XA33025",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 41.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 63,
+      "student_uid": "STU-1063",
+      "full_name": "Murari Sathwik",
+      "roll_number": "249XA05233",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 64,
+      "student_uid": "STU-1064",
+      "full_name": "sowban",
+      "roll_number": "249X1A0563",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 63.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 65,
+      "student_uid": "STU-1065",
+      "full_name": "MYLA STEPHEN PRAKASH",
+      "roll_number": "249XA05235",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 66,
+      "student_uid": "STU-1066",
+      "full_name": "N.Darshika",
+      "roll_number": "249X1A0565",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 67,
+      "student_uid": "STU-1067",
+      "full_name": "Gajula Anusha",
+      "roll_number": "249X1A0566",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 68,
+      "student_uid": "STU-1068",
+      "full_name": "Mandla Charan",
+      "roll_number": "259XA33177",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 69,
+      "student_uid": "STU-1069",
+      "full_name": "259XA33501 DUDEKULA JAHARABI",
+      "roll_number": "259XA33501",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 45.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 70,
+      "student_uid": "STU-1070",
+      "full_name": "Naveen Potharaju",
+      "roll_number": "249XA33166",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 71,
+      "student_uid": "STU-1071",
+      "full_name": "Abc",
+      "roll_number": "249X1A0570",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 72,
+      "student_uid": "STU-1072",
+      "full_name": "Rahul",
+      "roll_number": "249X1A0571",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL"
+      ]
+    },
+    {
+      "id": 73,
+      "student_uid": "STU-1073",
+      "full_name": "N.Darshika",
+      "roll_number": "249XA04093",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.2,
+      "tests_taken": 3,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Digital Signal Processing & DFT",
+        "Computer Networks & Sockets"
+      ]
+    },
+    {
+      "id": 74,
+      "student_uid": "STU-1074",
+      "full_name": "Govardhan",
+      "roll_number": "249X1A0573",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 75,
+      "student_uid": "STU-1075",
+      "full_name": "Balaji Kurakula",
+      "roll_number": "249X1A0574",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 76,
+      "student_uid": "STU-1076",
+      "full_name": "MADAVARAM LEKHANA",
+      "roll_number": "259XA33034",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 77,
+      "student_uid": "STU-1077",
+      "full_name": "Alpha",
+      "roll_number": "249X1A0576",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 67.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 78,
+      "student_uid": "STU-1078",
+      "full_name": "Marthala Guru Jyothi",
+      "roll_number": "259XA33159",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 79,
+      "student_uid": "STU-1079",
+      "full_name": "GALIPOTHULA VISWASA RAJU",
+      "roll_number": "259XA33067",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 80,
+      "student_uid": "STU-1080",
+      "full_name": "D MOHAMMAD SAIF",
+      "roll_number": "259XA33059",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 47.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 81,
+      "student_uid": "STU-1081",
+      "full_name": "Usha",
+      "roll_number": "249X1A0580",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 82,
+      "student_uid": "STU-1082",
+      "full_name": "Bhanusree",
+      "roll_number": "259XA33021",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 83,
+      "student_uid": "STU-1083",
+      "full_name": "Lali Poojitha",
+      "roll_number": "259XA33155",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 43.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 84,
+      "student_uid": "STU-1084",
+      "full_name": "Chatakonda Vasanth",
+      "roll_number": "259XA33046",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 85,
+      "student_uid": "STU-1085",
+      "full_name": "Y. USHA SREE",
+      "roll_number": "249X1A0584",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 86,
+      "student_uid": "STU-1086",
+      "full_name": "Bojja vinay kumar reddy",
+      "roll_number": "259XA33043",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 87,
+      "student_uid": "STU-1087",
+      "full_name": "Vamshika",
+      "roll_number": "249X1A0586",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 88,
+      "student_uid": "STU-1088",
+      "full_name": "Bhavana yadav",
+      "roll_number": "259XA05297",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 89,
+      "student_uid": "STU-1089",
+      "full_name": "Bharath Reddy",
+      "roll_number": "249XA33186",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 90,
+      "student_uid": "STU-1090",
+      "full_name": "Tharun Kagganapalli",
+      "roll_number": "259XA33119",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 91,
+      "student_uid": "STU-1091",
+      "full_name": "Kaveri Rangareddy",
+      "roll_number": "249X1A0590",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 92,
+      "student_uid": "STU-1092",
+      "full_name": "Reddycherla Pallavi",
+      "roll_number": "259XA33221",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 93,
+      "student_uid": "STU-1093",
+      "full_name": "KAPA HASINI",
+      "roll_number": "259XA33141",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 94,
+      "student_uid": "STU-1094",
+      "full_name": "P DWARAKANATH",
+      "roll_number": "249XA33124",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 95,
+      "student_uid": "STU-1095",
+      "full_name": "D Gowtham",
+      "roll_number": "249XA33051",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 44.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 96,
+      "student_uid": "STU-1096",
+      "full_name": "spandana",
+      "roll_number": "259XA05160",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 97,
+      "student_uid": "STU-1097",
+      "full_name": "259XA33506 SYED AHAMMAD ABBAS",
+      "roll_number": "259XA33506",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 42.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 98,
+      "student_uid": "STU-1098",
+      "full_name": "259XA05143 JANGAM PREETHI",
+      "roll_number": "259XA05143",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 99,
+      "student_uid": "STU-1099",
+      "full_name": "Happy",
+      "roll_number": "249X1A0598",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 100,
+      "student_uid": "STU-1100",
+      "full_name": "Smk",
+      "roll_number": "249X1A0599",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 101,
+      "student_uid": "STU-1101",
+      "full_name": "259XA33206 ONTEDDU SREE LAKSHMI",
+      "roll_number": "249X1A0600",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 102,
+      "student_uid": "STU-1102",
+      "full_name": "Muskhan",
+      "roll_number": "249X1A0601",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 103,
+      "student_uid": "STU-1103",
+      "full_name": "259XA33181 MITTA VENKATA BHARGAV REDDY",
+      "roll_number": "259XA33181",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 104,
+      "student_uid": "STU-1104",
+      "full_name": "249XA02056 KOTAKONDA SANDEEP",
+      "roll_number": "249XA02056",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 105,
+      "student_uid": "STU-1105",
+      "full_name": "259XA33078 GAJJALA HARSHITHA",
+      "roll_number": "259XA33078",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 106,
+      "student_uid": "STU-1106",
+      "full_name": "Yelamkuru Sreevani",
+      "roll_number": "259XA05293",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 107,
+      "student_uid": "STU-1107",
+      "full_name": "FB",
+      "roll_number": "249X1A0606",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 63.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 108,
+      "student_uid": "STU-1108",
+      "full_name": "singireddy",
+      "roll_number": "259XA33277",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 68.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 109,
+      "student_uid": "STU-1109",
+      "full_name": "259XA33304 YERASI SREE VISHISTA",
+      "roll_number": "259XA33304",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 110,
+      "student_uid": "STU-1110",
+      "full_name": "259XA05076 DESAM SANJANA",
+      "roll_number": "259XA05076",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 111,
+      "student_uid": "STU-1111",
+      "full_name": "praharsha K",
+      "roll_number": "249X1A0610",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 112,
+      "student_uid": "STU-1112",
+      "full_name": "premkumar",
+      "roll_number": "249X1A0611",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 113,
+      "student_uid": "STU-1113",
+      "full_name": "Tenali  Moulika",
+      "roll_number": "249X1A0612",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 114,
+      "student_uid": "STU-1114",
+      "full_name": "259XA33138 KANCHAM JYOTSHNA",
+      "roll_number": "259XA33138",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 115,
+      "student_uid": "STU-1115",
+      "full_name": "249XA04009 BANGARI SHRAVANI",
+      "roll_number": "249XA04009",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 61.4,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 116,
+      "student_uid": "STU-1116",
+      "full_name": "259XA33002 ALLAPUREDDY POOJA",
+      "roll_number": "259XA33002",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 47.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 117,
+      "student_uid": "STU-1117",
+      "full_name": "Puduru Govardhan",
+      "roll_number": "249XA33169",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 118,
+      "student_uid": "STU-1118",
+      "full_name": "259XA33150 KURUBA RUDRAVENI",
+      "roll_number": "259XA33150",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 119,
+      "student_uid": "STU-1119",
+      "full_name": "249XA04076 KAPU SAI SOWMYA",
+      "roll_number": "249XA04076",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 61.4,
+      "tests_taken": 3,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 120,
+      "student_uid": "STU-1120",
+      "full_name": "259XA33041 BESTHA VISHNUNANDAN",
+      "roll_number": "259XA33041",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 121,
+      "student_uid": "STU-1121",
+      "full_name": "259XA33122 KAMMARA KALYAN",
+      "roll_number": "259XA33122",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 122,
+      "student_uid": "STU-1122",
+      "full_name": "249XA05173 KURUVA MADHU KRISHNA",
+      "roll_number": "249XA05173",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 123,
+      "student_uid": "STU-1123",
+      "full_name": "259XA33051 CHINNA MATANGI VENKATESH",
+      "roll_number": "259XA33051",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 124,
+      "student_uid": "STU-1124",
+      "full_name": "K.Kavya sree",
+      "roll_number": "259XA33100",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 125,
+      "student_uid": "STU-1125",
+      "full_name": "Gajjala Gnanamani",
+      "roll_number": "259XA05089",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 126,
+      "student_uid": "STU-1126",
+      "full_name": "259XA05247 REDDY MOHAMMED ADNAN RAZA",
+      "roll_number": "259XA05247",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 127,
+      "student_uid": "STU-1127",
+      "full_name": "259XA05019 BOGGARAPU SAHITHI",
+      "roll_number": "259XA05019",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 128,
+      "student_uid": "STU-1128",
+      "full_name": "Balu",
+      "roll_number": "249X1A0627",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 129,
+      "student_uid": "STU-1129",
+      "full_name": "Adi",
+      "roll_number": "249X1A0628",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 130,
+      "student_uid": "STU-1130",
+      "full_name": "Nithya Sri Gowni",
+      "roll_number": "249XA33027",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 131,
+      "student_uid": "STU-1131",
+      "full_name": "Peram Vamsika",
+      "roll_number": "259XA33210",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 45.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 132,
+      "student_uid": "STU-1132",
+      "full_name": "259XA33289 USTHEPALLI TEJASWI",
+      "roll_number": "259XA33289",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 133,
+      "student_uid": "STU-1133",
+      "full_name": "259XA33247 RAGHAVAREDDY TEJKIRAN REDDY",
+      "roll_number": "259XA33247",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 134,
+      "student_uid": "STU-1134",
+      "full_name": "259XA33258 SHAIK MAHAMMAD REHAN",
+      "roll_number": "259XA33258",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 135,
+      "student_uid": "STU-1135",
+      "full_name": "259XA33203 KORI SIVA KRISHNA",
+      "roll_number": "259XA33203",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 38.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 136,
+      "student_uid": "STU-1136",
+      "full_name": "259XA33237 MONE HANSIKA",
+      "roll_number": "259XA33237",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 46.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 137,
+      "student_uid": "STU-1137",
+      "full_name": "259XA33190 NARPALA ANIL KUMAR",
+      "roll_number": "259XA33190",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 138,
+      "student_uid": "STU-1138",
+      "full_name": "259XA05307 TAMBURI PRAJWAL NAIK",
+      "roll_number": "259XA05307",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 139,
+      "student_uid": "STU-1139",
+      "full_name": "259XA33195 NUTHETI UDAY KUMAR",
+      "roll_number": "259XA33195",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 69.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 140,
+      "student_uid": "STU-1140",
+      "full_name": "259XA33209 PANDLAPURAM BIBI KHADIJA",
+      "roll_number": "259XA33209",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 62.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 141,
+      "student_uid": "STU-1141",
+      "full_name": "259XA33079 GAJULA ANUSHA",
+      "roll_number": "259XA33079",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 142,
+      "student_uid": "STU-1142",
+      "full_name": "GAJULA PRASHANTH KUMAR",
+      "roll_number": "PRASHANTH04032007",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 52.9,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 143,
+      "student_uid": "STU-1143",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0642",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 144,
+      "student_uid": "STU-1144",
+      "full_name": "Susmitha",
+      "roll_number": "249XA33005",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 145,
+      "student_uid": "STU-1145",
+      "full_name": "259XA33185 MORAGUDI SAI MANIKANTANATH REDDY",
+      "roll_number": "259XA33185",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 146,
+      "student_uid": "STU-1146",
+      "full_name": "259XA33104 GOLLA VINOD KUMAR",
+      "roll_number": "259XA33104",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 147,
+      "student_uid": "STU-1147",
+      "full_name": "Yelampalli Sreehitha Reddy",
+      "roll_number": "259XA05294",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 65.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 148,
+      "student_uid": "STU-1148",
+      "full_name": "259XA33055 DANDE DEVESWAR",
+      "roll_number": "259XA33055",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 149,
+      "student_uid": "STU-1149",
+      "full_name": "249XA04181 SYED SAMEER",
+      "roll_number": "249XA04181",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "opportunity",
+      "avg_score_pct": 45.8,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 150,
+      "student_uid": "STU-1150",
+      "full_name": "259XA33029 DAMERAKULA GRACE TEJOMAYEE",
+      "roll_number": "259XA33029",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 40.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 151,
+      "student_uid": "STU-1151",
+      "full_name": "249XA02116 SHAIK MOHAMMED NOUMAN",
+      "roll_number": "249XA02116",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 50.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 152,
+      "student_uid": "STU-1152",
+      "full_name": "John",
+      "roll_number": "249XA3307",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 153,
+      "student_uid": "STU-1153",
+      "full_name": "259XA33271 MEESALA ADITYA",
+      "roll_number": "259XA33271",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 154,
+      "student_uid": "STU-1154",
+      "full_name": "259XA33200 PEDDIREDDY OMKAR NATH REDDY",
+      "roll_number": "259XA33200",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 66.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 155,
+      "student_uid": "STU-1155",
+      "full_name": "259XA01045 GANJARLA HARINATH REDDY",
+      "roll_number": "259XA01045",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 64.3,
+      "tests_taken": 3,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 156,
+      "student_uid": "STU-1156",
+      "full_name": "KUSUPATI SAI SIVA HARIKA",
+      "roll_number": "259XA33153",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 61.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 157,
+      "student_uid": "STU-1157",
+      "full_name": "A Bhanu priya",
+      "roll_number": "259XA5010",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 158,
+      "student_uid": "STU-1158",
+      "full_name": "CHAVVA MAHITHA",
+      "roll_number": "249XA33018",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 159,
+      "student_uid": "STU-1159",
+      "full_name": "259XA05221 PALTHYA MEGHANA BAI",
+      "roll_number": "259XA05221",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 160,
+      "student_uid": "STU-1160",
+      "full_name": "259XA33090 HARIVARAM TEJASWINI",
+      "roll_number": "259XA33090",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 161,
+      "student_uid": "STU-1161",
+      "full_name": "KANCHARLA MOKSHA SREE",
+      "roll_number": "249X1A0660",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 162,
+      "student_uid": "STU-1162",
+      "full_name": "SHAIK FATIMA FERDOS",
+      "roll_number": "259XA04159",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 71.0,
+      "tests_taken": 3,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 163,
+      "student_uid": "STU-1163",
+      "full_name": "249XA05315 V MOHITH",
+      "roll_number": "249XA05315",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 164,
+      "student_uid": "STU-1164",
+      "full_name": "259XA33173 M NAGADEEPU",
+      "roll_number": "259XA33173",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 165,
+      "student_uid": "STU-1165",
+      "full_name": "259XA33309 SHAIK TOUSIF BASHA",
+      "roll_number": "259XA33309",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 45.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 166,
+      "student_uid": "STU-1166",
+      "full_name": "Preethi",
+      "roll_number": "249XA05086",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 167,
+      "student_uid": "STU-1167",
+      "full_name": "259XA33329 POTHARAJU NARESH",
+      "roll_number": "259XA33329",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 168,
+      "student_uid": "STU-1168",
+      "full_name": "259XA33320 VADIGALA LOKESH",
+      "roll_number": "259XA33320",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 169,
+      "student_uid": "STU-1169",
+      "full_name": "259XA33215 PULIMAMIDI LAKSHMI PRASANNA",
+      "roll_number": "259XA33215",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 68.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 170,
+      "student_uid": "STU-1170",
+      "full_name": "259XA33323 YATA AKHIL",
+      "roll_number": "259XA33323",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 171,
+      "student_uid": "STU-1171",
+      "full_name": "P.Madhan",
+      "roll_number": "249X1A0670",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 172,
+      "student_uid": "STU-1172",
+      "full_name": "M.Susreeya",
+      "roll_number": "249X1A0671",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 45.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 173,
+      "student_uid": "STU-1173",
+      "full_name": "Kushala",
+      "roll_number": "249XA33092",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 47.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 174,
+      "student_uid": "STU-1174",
+      "full_name": "259XA33251 REPALLE RAHUL",
+      "roll_number": "259XA33251",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 38.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 175,
+      "student_uid": "STU-1175",
+      "full_name": "259XA33069 DONTHU ARCHITA",
+      "roll_number": "259XA33069",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 37.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 176,
+      "student_uid": "STU-1176",
+      "full_name": "259XA33174 MADDELA BHANU VARA PRASAD",
+      "roll_number": "259XA33174",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 177,
+      "student_uid": "STU-1177",
+      "full_name": "KANCHARLA MOKSHA SREE",
+      "roll_number": "259XA33139",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 178,
+      "student_uid": "STU-1178",
+      "full_name": "259xa04156@gprec.ac.in",
+      "roll_number": "259XA04156",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 65.1,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 179,
+      "student_uid": "STU-1179",
+      "full_name": "259XA05037 BALUSANI SHARAT KUMAR REDDY",
+      "roll_number": "259XA05037",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 180,
+      "student_uid": "STU-1180",
+      "full_name": "Sowban Kumarkalava Mohammed",
+      "roll_number": "249X1A0679",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 181,
+      "student_uid": "STU-1181",
+      "full_name": "259XA05315 VANKARAJU VASANTH KUMAR",
+      "roll_number": "259XA05315",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 182,
+      "student_uid": "STU-1182",
+      "full_name": "259XA33082 GODHULA SRAVANI",
+      "roll_number": "259XA33082",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 183,
+      "student_uid": "STU-1183",
+      "full_name": "249XA03097 SHAIK MUHAMMAD ASADUDDIN",
+      "roll_number": "249XA03097",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 184,
+      "student_uid": "STU-1184",
+      "full_name": "259XA33273 SHAIK YAFIYA",
+      "roll_number": "259XA33273",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 185,
+      "student_uid": "STU-1185",
+      "full_name": "259XA33328 YADAVA VAMSI KRISHNA",
+      "roll_number": "259XA33328",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 186,
+      "student_uid": "STU-1186",
+      "full_name": "259XA33152 KURUVA SHARANYA",
+      "roll_number": "259XA33152",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 66.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 187,
+      "student_uid": "STU-1187",
+      "full_name": "259XA05296 YERAVA VEERA RAGA MOKSHA",
+      "roll_number": "259XA05296",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 188,
+      "student_uid": "STU-1188",
+      "full_name": "249XA33108 KURUVA PAVAN KUMAR",
+      "roll_number": "249XA33108",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 189,
+      "student_uid": "STU-1189",
+      "full_name": "249XA33026 GOULI CHAITRA",
+      "roll_number": "249XA33026",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 190,
+      "student_uid": "STU-1190",
+      "full_name": "Client",
+      "roll_number": "249X1A0689",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 191,
+      "student_uid": "STU-1191",
+      "full_name": "249XA33096 MOCHI SAI HARSHITH",
+      "roll_number": "249XA33096",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 43.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 192,
+      "student_uid": "STU-1192",
+      "full_name": "259XA33294 VARANASI MEGHANA",
+      "roll_number": "259XA33294",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 193,
+      "student_uid": "STU-1193",
+      "full_name": "259XA33302 YARRAGODALA SHANMITHA",
+      "roll_number": "259XA33302",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 194,
+      "student_uid": "STU-1194",
+      "full_name": "M.Afrah Sana",
+      "roll_number": "259XA05209",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 64.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 195,
+      "student_uid": "STU-1195",
+      "full_name": "249XA05060 CHITTIBOINA HARSHA VARDHAN",
+      "roll_number": "249XA05060",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 196,
+      "student_uid": "STU-1196",
+      "full_name": "249XA33106 KUMARKALAVA MOHAMMED SOWBAN",
+      "roll_number": "249XA33106",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 197,
+      "student_uid": "STU-1197",
+      "full_name": "G.Pulla Reddy Engineering college",
+      "roll_number": "259XA33010",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 198,
+      "student_uid": "STU-1198",
+      "full_name": "259XA05082 DUGGU BINDU MADHAVI",
+      "roll_number": "259XA05082",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 199,
+      "student_uid": "STU-1199",
+      "full_name": "259XA33170 KURUVA SIVA KUMAR",
+      "roll_number": "259XA33170",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 42.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 200,
+      "student_uid": "STU-1200",
+      "full_name": "259XA33211 PINJARI HAFEEZA BEGUM",
+      "roll_number": "259XA33211",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 201,
+      "student_uid": "STU-1201",
+      "full_name": "249XA04047 BOLLINENI S R V SATHWIK",
+      "roll_number": "249XA04047",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "opportunity",
+      "avg_score_pct": 43.1,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 202,
+      "student_uid": "STU-1202",
+      "full_name": "259XA33285 TOPI AKSHARA",
+      "roll_number": "259XA33285",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 203,
+      "student_uid": "STU-1203",
+      "full_name": "Sake Hrudayaswini",
+      "roll_number": "249XA33152",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 47.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 204,
+      "student_uid": "STU-1204",
+      "full_name": "259XA05162 KOTHAPALLI CHARITHA HASINI REDDY",
+      "roll_number": "259XA05162",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 205,
+      "student_uid": "STU-1205",
+      "full_name": "Keyser Soze",
+      "roll_number": "249XA05298",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 206,
+      "student_uid": "STU-1206",
+      "full_name": "GAJA BHARGAVI",
+      "roll_number": "259XA33076",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 207,
+      "student_uid": "STU-1207",
+      "full_name": "SHAIK FATIMA FERDOS",
+      "roll_number": "259XA04149",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 53.0,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 208,
+      "student_uid": "STU-1208",
+      "full_name": "K Madhu",
+      "roll_number": "259XA5168",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 209,
+      "student_uid": "STU-1209",
+      "full_name": "M.lohith sriram",
+      "roll_number": "259XA05180",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 210,
+      "student_uid": "STU-1210",
+      "full_name": "259XA33236 SHAIK SANIYA",
+      "roll_number": "259XA33236",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 62.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 211,
+      "student_uid": "STU-1211",
+      "full_name": "259XA33050 CHIMMANI DEVA CHOWDAIAH",
+      "roll_number": "259XA33050",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 212,
+      "student_uid": "STU-1212",
+      "full_name": "PERAM VAMSIKA",
+      "roll_number": "249X1A0711",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 213,
+      "student_uid": "STU-1213",
+      "full_name": "Golla Lavanya",
+      "roll_number": "219X1A3212",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 214,
+      "student_uid": "STU-1214",
+      "full_name": "259XA33014 BIJJAM VYSHNAVI",
+      "roll_number": "259XA33014",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 215,
+      "student_uid": "STU-1215",
+      "full_name": "259XA05282 THOTA BHAVISHYA",
+      "roll_number": "259XA05282",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Relational Schema & SQL"
+      ]
+    },
+    {
+      "id": 216,
+      "student_uid": "STU-1216",
+      "full_name": "sri lakshmi",
+      "roll_number": "259XA33081",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 217,
+      "student_uid": "STU-1217",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0716",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 218,
+      "student_uid": "STU-1218",
+      "full_name": "249XA33150 SAGABALA KIRANMAYEE",
+      "roll_number": "249XA33150",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 219,
+      "student_uid": "STU-1219",
+      "full_name": "259XA33016 BOMMIREDDYGARI NAVYA",
+      "roll_number": "259XA33016",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 220,
+      "student_uid": "STU-1220",
+      "full_name": "259XA33033 DEVARINTI DEEPTHI AKSHAYA",
+      "roll_number": "259XA33033",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 221,
+      "student_uid": "STU-1221",
+      "full_name": "VESIPOGU NISHANTH KUMAR",
+      "roll_number": "259XA05318",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 65.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 222,
+      "student_uid": "STU-1222",
+      "full_name": "259XA33219 RANGAREDDYGARI KAVERI",
+      "roll_number": "259XA33219",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 223,
+      "student_uid": "STU-1223",
+      "full_name": "Manohar",
+      "roll_number": "239X1A33B7",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 224,
+      "student_uid": "STU-1224",
+      "full_name": "259XA33188 NALLABOTHULA RAGHU",
+      "roll_number": "259XA33188",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 65.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 225,
+      "student_uid": "STU-1225",
+      "full_name": "259XA33225 SANIVARAPU JYOTHIRMAI",
+      "roll_number": "259XA33225",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 226,
+      "student_uid": "STU-1226",
+      "full_name": "259XA05272 SAYA DEVI SREE",
+      "roll_number": "259XA05272",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 227,
+      "student_uid": "STU-1227",
+      "full_name": "Rahul",
+      "roll_number": "249XA33114",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 228,
+      "student_uid": "STU-1228",
+      "full_name": "259XA33036 AKKI HARI PRASAD",
+      "roll_number": "259XA33036",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 229,
+      "student_uid": "STU-1229",
+      "full_name": "Sivakala Vennapoosa",
+      "roll_number": "259XA33298",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 46.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 230,
+      "student_uid": "STU-1230",
+      "full_name": "D. Usha Eswari",
+      "roll_number": "249X1A0729",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 231,
+      "student_uid": "STU-1231",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0730",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 232,
+      "student_uid": "STU-1232",
+      "full_name": "259XA05273 SHAIK AREEFA",
+      "roll_number": "259XA05273",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 233,
+      "student_uid": "STU-1233",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0732",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 234,
+      "student_uid": "STU-1234",
+      "full_name": "249XA04189 VINJAMARLA KARTHIK SAI",
+      "roll_number": "249X1A0733",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 235,
+      "student_uid": "STU-1235",
+      "full_name": "259XA33145 KEDARI USHA SREE",
+      "roll_number": "259XA33145",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 236,
+      "student_uid": "STU-1236",
+      "full_name": "259XA33144 KATEGARU NIHARIKA",
+      "roll_number": "259XA33144",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 44.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 237,
+      "student_uid": "STU-1237",
+      "full_name": "Roopa Kandukuri",
+      "roll_number": "269XA33528",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 238,
+      "student_uid": "STU-1238",
+      "full_name": "K MADHU",
+      "roll_number": "259XA05168",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 239,
+      "student_uid": "STU-1239",
+      "full_name": "259XA05098 GOUREDDY SRAVYA",
+      "roll_number": "259XA05098",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 240,
+      "student_uid": "STU-1240",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0739",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 66.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 241,
+      "student_uid": "STU-1241",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0740",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 50.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 242,
+      "student_uid": "STU-1242",
+      "full_name": "239X1A3273 NANDIPATI SUSHMITHA [W]",
+      "roll_number": "239X1A3273",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 243,
+      "student_uid": "STU-1243",
+      "full_name": "249XA04137 POLUDASU MYTHRI",
+      "roll_number": "249XA04137",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 244,
+      "student_uid": "STU-1244",
+      "full_name": "259XA33061 DUDYALA VENKATESH",
+      "roll_number": "259XA33061",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 245,
+      "student_uid": "STU-1245",
+      "full_name": "259XA33088 GUTTAPATI SUNAYANA",
+      "roll_number": "259XA33088",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 246,
+      "student_uid": "STU-1246",
+      "full_name": "259XA33105 GOPI REDDY AMARNATH REDDY",
+      "roll_number": "259XA33105",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 247,
+      "student_uid": "STU-1247",
+      "full_name": "259XA33178 MANGALA RAMESH",
+      "roll_number": "259XA33178",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 248,
+      "student_uid": "STU-1248",
+      "full_name": "Shaik Naseeha Mashrath",
+      "roll_number": "239X1A3384",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 249,
+      "student_uid": "STU-1249",
+      "full_name": "V.Jhansi",
+      "roll_number": "259XA05286",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 250,
+      "student_uid": "STU-1250",
+      "full_name": "Vignesh",
+      "roll_number": "249X1A0749",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 251,
+      "student_uid": "STU-1251",
+      "full_name": "Mokshagna",
+      "roll_number": "249X1A0750",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 252,
+      "student_uid": "STU-1252",
+      "full_name": "259XA33264 SHAIK MUHAMMED MASTAN SOFI",
+      "roll_number": "259XA33264",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 253,
+      "student_uid": "STU-1253",
+      "full_name": "Smk",
+      "roll_number": "249XA05280",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 254,
+      "student_uid": "STU-1254",
+      "full_name": "Mokshagna",
+      "roll_number": "249X1A0753",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 255,
+      "student_uid": "STU-1255",
+      "full_name": "259XA33313 TELUGU SANTHOSH",
+      "roll_number": "259XA33313",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 66.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 256,
+      "student_uid": "STU-1256",
+      "full_name": "259XA33091 HOTHURU MOKSHITHA",
+      "roll_number": "259XA33091",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 257,
+      "student_uid": "STU-1257",
+      "full_name": "249XA33085 MACHANI VYSHNAVI",
+      "roll_number": "249XA33085",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 258,
+      "student_uid": "STU-1258",
+      "full_name": "259XA33276 SINGASANI GAYANI",
+      "roll_number": "259XA33276",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 259,
+      "student_uid": "STU-1259",
+      "full_name": "259XA05323 KURUVA VINODH KUMAR",
+      "roll_number": "259XA05323",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 260,
+      "student_uid": "STU-1260",
+      "full_name": "Ramya sree Remaduru",
+      "roll_number": "259XA05301",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 261,
+      "student_uid": "STU-1261",
+      "full_name": "Khadeer Pmd",
+      "roll_number": "269XA3359",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 262,
+      "student_uid": "STU-1262",
+      "full_name": "249XA33140 PISSAY AKSHITHA",
+      "roll_number": "249XA33140",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 43.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 263,
+      "student_uid": "STU-1263",
+      "full_name": "259XA33199 PAPUDIPPU SAI KARTHIK REDDY",
+      "roll_number": "259XA33199",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 62.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 264,
+      "student_uid": "STU-1264",
+      "full_name": "259XA33235 SHAIK SAMREEN",
+      "roll_number": "259XA33235",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 55.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 265,
+      "student_uid": "STU-1265",
+      "full_name": "sukunna",
+      "roll_number": "249XA33104",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 266,
+      "student_uid": "STU-1266",
+      "full_name": "259XA33162 MENNULU VENKATA AKSHERA",
+      "roll_number": "259XA33162",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 267,
+      "student_uid": "STU-1267",
+      "full_name": "259XA04138 Student",
+      "roll_number": "259XA04138",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 268,
+      "student_uid": "STU-1268",
+      "full_name": "000",
+      "roll_number": "249X1A0767",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 269,
+      "student_uid": "STU-1269",
+      "full_name": "259XA33146 KESHAVA REDDY NEHA",
+      "roll_number": "259XA33146",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 270,
+      "student_uid": "STU-1270",
+      "full_name": "259XA33212 PINJARI NEEHA SUMAIAH",
+      "roll_number": "259XA33212",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 271,
+      "student_uid": "STU-1271",
+      "full_name": "259XA33136 KAMINI BHARGAVI",
+      "roll_number": "259XA33136",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 45.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 272,
+      "student_uid": "STU-1272",
+      "full_name": "249XA33054 EDIGA MANIDEEP GOUD",
+      "roll_number": "249XA33054",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 273,
+      "student_uid": "STU-1273",
+      "full_name": "259XA33183 MOHAMMED SAIF",
+      "roll_number": "259XA33183",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 49.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 274,
+      "student_uid": "STU-1274",
+      "full_name": "259XA33023 CHATAKONDA SUHITHA",
+      "roll_number": "259XA33023",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 275,
+      "student_uid": "STU-1275",
+      "full_name": "259XA33112 HARIJANA SREEKANTH",
+      "roll_number": "259XA33112",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 276,
+      "student_uid": "STU-1276",
+      "full_name": "259XA33189 NANNURU SIVA SANJEEVA",
+      "roll_number": "259XA33189",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 43.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 277,
+      "student_uid": "STU-1277",
+      "full_name": "259XA33028 DAMA MEGHANA",
+      "roll_number": "259XA33028",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 278,
+      "student_uid": "STU-1278",
+      "full_name": "259XA33077 GAJA MEGHANA",
+      "roll_number": "259XA33077",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 279,
+      "student_uid": "STU-1279",
+      "full_name": "259XA33205 NUSHI SAI PRIYA",
+      "roll_number": "259XA33205",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 280,
+      "student_uid": "STU-1280",
+      "full_name": "259XA33198 PALLE CHINNA BABU",
+      "roll_number": "259XA33198",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 281,
+      "student_uid": "STU-1281",
+      "full_name": "259XA33101 NARAVADI SAI REETHIKA",
+      "roll_number": "259XA33101",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 282,
+      "student_uid": "STU-1282",
+      "full_name": "259XA33171 KURUVA VINOD",
+      "roll_number": "259XA33171",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 283,
+      "student_uid": "STU-1283",
+      "full_name": "259XA33206 ONTEDDU SREE LAKSHMI",
+      "roll_number": "249X1A0782",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 284,
+      "student_uid": "STU-1284",
+      "full_name": "259XA33282 THIMMIREDDYGARI LAHARI",
+      "roll_number": "259XA33282",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 285,
+      "student_uid": "STU-1285",
+      "full_name": "SHARAN",
+      "roll_number": "259XA33240",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 286,
+      "student_uid": "STU-1286",
+      "full_name": "B Nagapavan Bharadwaj",
+      "roll_number": "259XA33187",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 287,
+      "student_uid": "STU-1287",
+      "full_name": "259XA33022 CHALLA VYSHNAVI",
+      "roll_number": "259XA33022",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 288,
+      "student_uid": "STU-1288",
+      "full_name": "259XA33163 MOTHUKURU SAMYUKTHA",
+      "roll_number": "259XA33163",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 289,
+      "student_uid": "STU-1289",
+      "full_name": "afreen",
+      "roll_number": "249X1A0788",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 290,
+      "student_uid": "STU-1290",
+      "full_name": "Y.Usha Sree",
+      "roll_number": "259XA05290",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 291,
+      "student_uid": "STU-1291",
+      "full_name": "259XA33018 BUGULU AKSHAYA",
+      "roll_number": "259XA33018",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 292,
+      "student_uid": "STU-1292",
+      "full_name": "259XA33158 MANGALI NANDITA",
+      "roll_number": "259XA33158",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 293,
+      "student_uid": "STU-1293",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0792",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 294,
+      "student_uid": "STU-1294",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0793",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 295,
+      "student_uid": "STU-1295",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0794",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 296,
+      "student_uid": "STU-1296",
+      "full_name": "259XA33094 JANGAM KAVYA",
+      "roll_number": "259XA33094",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 68.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 297,
+      "student_uid": "STU-1297",
+      "full_name": "259XA33252 SAMPANGI BHANU PRAKASH",
+      "roll_number": "259XA33252",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 57.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 298,
+      "student_uid": "STU-1298",
+      "full_name": "pmd khadeer",
+      "roll_number": "269XA33519",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 299,
+      "student_uid": "STU-1299",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0798",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 300,
+      "student_uid": "STU-1300",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0799",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 301,
+      "student_uid": "STU-1301",
+      "full_name": "Kowshi",
+      "roll_number": "249X1A0800",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 302,
+      "student_uid": "STU-1302",
+      "full_name": "249XA33105 KUDUMULA NARENDRA BABU",
+      "roll_number": "249XA33105",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 303,
+      "student_uid": "STU-1303",
+      "full_name": "259XA05243 RACHAMADUGU V V SRI HARSHA",
+      "roll_number": "259XA05243",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 65.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 304,
+      "student_uid": "STU-1304",
+      "full_name": "259XA33175 MADHUGUNDU RAVI TEJA",
+      "roll_number": "259XA33175",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 305,
+      "student_uid": "STU-1305",
+      "full_name": "259XA05291 YEDDULA GANGA ASHRITHA",
+      "roll_number": "259XA05291",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 306,
+      "student_uid": "STU-1306",
+      "full_name": "Govardhan Reddy Nagireddy",
+      "roll_number": "249X1A0805",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 43.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 307,
+      "student_uid": "STU-1307",
+      "full_name": "259XA33117 JANGITI RAM CHARAN",
+      "roll_number": "259XA33117",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 308,
+      "student_uid": "STU-1308",
+      "full_name": "259XA05277 SUDUGUNDU HEMA PRIYA",
+      "roll_number": "259XA05277",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 309,
+      "student_uid": "STU-1309",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0808",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 45.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 310,
+      "student_uid": "STU-1310",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0809",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 311,
+      "student_uid": "STU-1311",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0810",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 50.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 312,
+      "student_uid": "STU-1312",
+      "full_name": "259XA33287 UMMADISETTY CHANDRIKA",
+      "roll_number": "259XA33287",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 44.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 313,
+      "student_uid": "STU-1313",
+      "full_name": "259XA33254 SETTIMANU ARAVIND",
+      "roll_number": "259XA33254",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 314,
+      "student_uid": "STU-1314",
+      "full_name": "Pinjari Neeha Sumaiah",
+      "roll_number": "249X1A0813",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 315,
+      "student_uid": "STU-1315",
+      "full_name": "Sreeram Jagadeeshwar",
+      "roll_number": "249X1A0814",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 59.3,
+      "tests_taken": 3,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 316,
+      "student_uid": "STU-1316",
+      "full_name": "259XA33315 THOKKALA MADHU MOHAN",
+      "roll_number": "259XA33315",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 317,
+      "student_uid": "STU-1317",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0816",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 44.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 318,
+      "student_uid": "STU-1318",
+      "full_name": "259XA33049 CHENCHU SAI KRISHNA",
+      "roll_number": "259XA33049",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 50.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 319,
+      "student_uid": "STU-1319",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0818",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 320,
+      "student_uid": "STU-1320",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0819",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 321,
+      "student_uid": "STU-1321",
+      "full_name": "shaik",
+      "roll_number": "249X1A0820",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 322,
+      "student_uid": "STU-1322",
+      "full_name": "259XA33229 SHAIK AADILA MUBEEN",
+      "roll_number": "259XA33229",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 323,
+      "student_uid": "STU-1323",
+      "full_name": "Deepthi Siruvella",
+      "roll_number": "259XA05276",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 324,
+      "student_uid": "STU-1324",
+      "full_name": "Nazia",
+      "roll_number": "249X1A0823",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 325,
+      "student_uid": "STU-1325",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0824",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 326,
+      "student_uid": "STU-1326",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0825",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 327,
+      "student_uid": "STU-1327",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0826",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 328,
+      "student_uid": "STU-1328",
+      "full_name": "259XA33270 KUMMARI RAVINDRA BABU",
+      "roll_number": "259XA33270",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 48.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 329,
+      "student_uid": "STU-1329",
+      "full_name": "259XA33160 MEENIGA SUSREEYA",
+      "roll_number": "259XA33160",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 66.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 330,
+      "student_uid": "STU-1330",
+      "full_name": "Ajay Kumar",
+      "roll_number": "249X1A0829",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 331,
+      "student_uid": "STU-1331",
+      "full_name": "249XA04193 YERRAMA REDDY VISHNU VARDHAN REDDY",
+      "roll_number": "249XA04193",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 332,
+      "student_uid": "STU-1332",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0831",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 333,
+      "student_uid": "STU-1333",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0832",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 334,
+      "student_uid": "STU-1334",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0833",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 48.0,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 335,
+      "student_uid": "STU-1335",
+      "full_name": "Keshavareddy Neha",
+      "roll_number": "259XA33146_335",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 336,
+      "student_uid": "STU-1336",
+      "full_name": "GURRALA SAI POOJITHA",
+      "roll_number": "259XA05136",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 65.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 337,
+      "student_uid": "STU-1337",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0836",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 338,
+      "student_uid": "STU-1338",
+      "full_name": "Manasa",
+      "roll_number": "249X1A0837",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 339,
+      "student_uid": "STU-1339",
+      "full_name": "Chandrika",
+      "roll_number": "249X1A0838",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 340,
+      "student_uid": "STU-1340",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0839",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 341,
+      "student_uid": "STU-1341",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0840",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 342,
+      "student_uid": "STU-1342",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0841",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 343,
+      "student_uid": "STU-1343",
+      "full_name": "259XA33250 REDDYVARI AADI KESHAVA REDDY",
+      "roll_number": "259XA33250",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Cloud Infrastructure & Docker"
+      ]
+    },
+    {
+      "id": 344,
+      "student_uid": "STU-1344",
+      "full_name": "259XA05284 THOTA BHUVANESWARI",
+      "roll_number": "259XA05284",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 345,
+      "student_uid": "STU-1345",
+      "full_name": "259XA04161 YARRAJODU PURNASREE",
+      "roll_number": "259XA04161",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 51.6,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 346,
+      "student_uid": "STU-1346",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0845",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 347,
+      "student_uid": "STU-1347",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0846",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 348,
+      "student_uid": "STU-1348",
+      "full_name": "249XA04040 BAPANAPALLI GANESH",
+      "roll_number": "249XA04040",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "support_status": "on_track",
+      "avg_score_pct": 58.1,
+      "tests_taken": 3,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Digital Signal Processing & DFT"
+      ]
+    },
+    {
+      "id": 349,
+      "student_uid": "STU-1349",
+      "full_name": "259XA33172 M ANIL KUMAR",
+      "roll_number": "259XA33172",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 350,
+      "student_uid": "STU-1350",
+      "full_name": "259XA33013 BICHALA HEMASREE",
+      "roll_number": "259XA33013",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 351,
+      "student_uid": "STU-1351",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0850",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 352,
+      "student_uid": "STU-1352",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0851",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 353,
+      "student_uid": "STU-1353",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0852",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 354,
+      "student_uid": "STU-1354",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0853",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 355,
+      "student_uid": "STU-1355",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0854",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 356,
+      "student_uid": "STU-1356",
+      "full_name": "CHINAGANI SWAPNA",
+      "roll_number": "259XA33024",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 47.3,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 357,
+      "student_uid": "STU-1357",
+      "full_name": "259XA33038 AMGOTH SAI KUMAR NAIK",
+      "roll_number": "259XA33038",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 48.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 358,
+      "student_uid": "STU-1358",
+      "full_name": "J Sreeja",
+      "roll_number": "249X1A0857",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.1,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 359,
+      "student_uid": "STU-1359",
+      "full_name": "259XA33161 MEESALA MICHELLE MADHURYA",
+      "roll_number": "259XA33161",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 59.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 360,
+      "student_uid": "STU-1360",
+      "full_name": "NagireddyGari Varshini",
+      "roll_number": "259XA05211",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 361,
+      "student_uid": "STU-1361",
+      "full_name": "Varam Lakshmi Sahithi",
+      "roll_number": "259XA05287",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 362,
+      "student_uid": "STU-1362",
+      "full_name": "Pavan Kumar Reddy",
+      "roll_number": "249X1A0861",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 363,
+      "student_uid": "STU-1363",
+      "full_name": "259XA33208 PAMULURU MOULYA SREE",
+      "roll_number": "259XA33208",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 364,
+      "student_uid": "STU-1364",
+      "full_name": "M.Vyshnavi",
+      "roll_number": "249X1A0863",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Relational Schema & SQL",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 365,
+      "student_uid": "STU-1365",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0864",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 366,
+      "student_uid": "STU-1366",
+      "full_name": "259XA33228 SAVARAM POOJITHA",
+      "roll_number": "259XA33228",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 51.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 367,
+      "student_uid": "STU-1367",
+      "full_name": "Shashi Kiran Reddy",
+      "roll_number": "249X1A0866",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 368,
+      "student_uid": "STU-1368",
+      "full_name": "259XA33184 MOPURU PAVAN KUMAR REDDY",
+      "roll_number": "259XA33184",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 369,
+      "student_uid": "STU-1369",
+      "full_name": "259XA33217 RAAVI YASWITHA",
+      "roll_number": "259XA33217",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 66.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 370,
+      "student_uid": "STU-1370",
+      "full_name": "259XA05009 ARNIGAL RAJESWARY",
+      "roll_number": "259XA05009",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 371,
+      "student_uid": "STU-1371",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0870",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 372,
+      "student_uid": "STU-1372",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0871",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.6,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 373,
+      "student_uid": "STU-1373",
+      "full_name": "SHAIK",
+      "roll_number": "249X1A0872",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 61.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 374,
+      "student_uid": "STU-1374",
+      "full_name": "259XA33063 EDIGA SHASHANTH GOWD",
+      "roll_number": "259XA33063",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 45.9,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 375,
+      "student_uid": "STU-1375",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0874",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 376,
+      "student_uid": "STU-1376",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0875",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 377,
+      "student_uid": "STU-1377",
+      "full_name": "259XA33176 MANAPATI NAVEEN",
+      "roll_number": "259XA33176",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 60.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 378,
+      "student_uid": "STU-1378",
+      "full_name": "259XA33278 SIRIGIRI MANASA",
+      "roll_number": "259XA33278",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 46.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 379,
+      "student_uid": "STU-1379",
+      "full_name": "259XA33242 PORALU PURUSHOTHAM",
+      "roll_number": "259XA33242",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 65.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 380,
+      "student_uid": "STU-1380",
+      "full_name": "259XA33305 YERRALLA SOHINI SREE",
+      "roll_number": "259XA33305",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 381,
+      "student_uid": "STU-1381",
+      "full_name": "259XA33121 KAMINI KARTHIK REDDY",
+      "roll_number": "259XA33121",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 52.2,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 382,
+      "student_uid": "STU-1382",
+      "full_name": "259XA33277 SINGIREDDY VARDHINI",
+      "roll_number": "259XA33277_382",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 63.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 383,
+      "student_uid": "STU-1383",
+      "full_name": "249XA33084 M SHAGUFTA YASMEEN",
+      "roll_number": "249XA33084",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 69.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 384,
+      "student_uid": "STU-1384",
+      "full_name": "Pooja",
+      "roll_number": "249X1A0883",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 51.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 385,
+      "student_uid": "STU-1385",
+      "full_name": "BANDARU VEDA",
+      "roll_number": "259XA05012",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 386,
+      "student_uid": "STU-1386",
+      "full_name": "259XA33269 PASALA VIKRAM KUMAR",
+      "roll_number": "259XA33269",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 62.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 387,
+      "student_uid": "STU-1387",
+      "full_name": "259XA33279 SUSWARAM SUMANA SREE",
+      "roll_number": "259XA33279",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 62.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 388,
+      "student_uid": "STU-1388",
+      "full_name": "259XA33045 CHAPPIDI VENKATA SAI RAHUL REDDY",
+      "roll_number": "259XA33045",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "opportunity",
+      "avg_score_pct": 48.5,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 389,
+      "student_uid": "STU-1389",
+      "full_name": "259XA33096 JONNAGIRI PAVANI",
+      "roll_number": "259XA33096",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 390,
+      "student_uid": "STU-1390",
+      "full_name": "259XA33106 GOWKANAPALLE NANDA SAI REDDY",
+      "roll_number": "259XA33106",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 47.4,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Cloud Infrastructure & Docker",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 391,
+      "student_uid": "STU-1391",
+      "full_name": "SHAIK MAKDUM HUSSAINE HARRIES",
+      "roll_number": "259XA05256",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 392,
+      "student_uid": "STU-1392",
+      "full_name": "Keshava reddy",
+      "roll_number": "269XA05526",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 393,
+      "student_uid": "STU-1393",
+      "full_name": "269XA03512 HOLEYA DASARI MAHENDRA",
+      "roll_number": "269XA03512",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 394,
+      "student_uid": "STU-1394",
+      "full_name": "259XA33035 THOPURI MADHURI",
+      "roll_number": "259XA33035",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Data Structures & Algorithms"
+      ]
+    },
+    {
+      "id": 395,
+      "student_uid": "STU-1395",
+      "full_name": "259XA05271 SANIVARAPU SAI GEETHIKA REDDY",
+      "roll_number": "259XA05271",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 396,
+      "student_uid": "STU-1396",
+      "full_name": "SEELAM KARTHIKESWAR REDDY",
+      "roll_number": "249X1A0895",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 58.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 397,
+      "student_uid": "STU-1397",
+      "full_name": "KADAVAKALLU HARSHITHA",
+      "roll_number": "259XA05151",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 72.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 398,
+      "student_uid": "STU-1398",
+      "full_name": "Mohammed Aayan",
+      "roll_number": "249X1A0897",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 52.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 399,
+      "student_uid": "STU-1399",
+      "full_name": "shaik",
+      "roll_number": "249X1A0898",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 57.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 400,
+      "student_uid": "STU-1400",
+      "full_name": "259XA05109 HONNURU HARSHA VARDHAN",
+      "roll_number": "259XA05109",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.3,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 401,
+      "student_uid": "STU-1401",
+      "full_name": "Shabhai Md Asadullah",
+      "roll_number": "269XA33526",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 64.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 402,
+      "student_uid": "STU-1402",
+      "full_name": "259XA33168 NALLABOINA KEERTHIKA SREE",
+      "roll_number": "259XA33168",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 54.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 403,
+      "student_uid": "STU-1403",
+      "full_name": "259XA05027 CHAGANTI CHANDRIKA",
+      "roll_number": "259XA05027",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 404,
+      "student_uid": "STU-1404",
+      "full_name": "259XA33167 NAGURU JASMIN",
+      "roll_number": "259XA33167",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "on_track",
+      "avg_score_pct": 58.6,
+      "tests_taken": 4,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 405,
+      "student_uid": "STU-1405",
+      "full_name": "249XA05281 SHAIK SHAFIN MERAJ",
+      "roll_number": "249XA05281",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 54.2,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 406,
+      "student_uid": "STU-1406",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0905",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 62.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 407,
+      "student_uid": "STU-1407",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0906",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 56.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 408,
+      "student_uid": "STU-1408",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0907",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 66.5,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 409,
+      "student_uid": "STU-1409",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0908",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.8,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "SQL Indexing & Normalization",
+        "Differential Calculus & Complexity"
+      ]
+    },
+    {
+      "id": 410,
+      "student_uid": "STU-1410",
+      "full_name": "Pinjari Shafi",
+      "roll_number": "259XA05239",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 60.0,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 411,
+      "student_uid": "STU-1411",
+      "full_name": "259XA33290 V S SUDEEPTHI",
+      "roll_number": "259XA33290",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "support_status": "needs_practice",
+      "avg_score_pct": 49.7,
+      "tests_taken": 4,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Data Structures & Algorithms",
+        "Neural Net Backprop"
+      ]
+    },
+    {
+      "id": 412,
+      "student_uid": "STU-1412",
+      "full_name": "Scholar",
+      "roll_number": "249X1A0911",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 413,
+      "student_uid": "STU-1413",
+      "full_name": "259xa05146",
+      "roll_number": "259XA05146",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 53.7,
+      "tests_taken": 8,
+      "flagged_topics_count": 3,
+      "gaps": [
+        "Kinematics & Logic Gates",
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    },
+    {
+      "id": 414,
+      "student_uid": "STU-1414",
+      "full_name": "259XA05147 JUJARE TANUSRI",
+      "roll_number": "259XA05147",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.9,
+      "tests_taken": 8,
+      "flagged_topics_count": 0,
+      "gaps": []
+    },
+    {
+      "id": 415,
+      "student_uid": "STU-1415",
+      "full_name": "PETLU VIJAY",
+      "roll_number": "259XA05237",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 55.4,
+      "tests_taken": 8,
+      "flagged_topics_count": 1,
+      "gaps": [
+        "Graph Traversal & Trees"
+      ]
+    },
+    {
+      "id": 416,
+      "student_uid": "STU-1416",
+      "full_name": "Salapala Lakshmi Dheeraj Reddy",
+      "roll_number": "259XA05267",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "support_status": "on_track",
+      "avg_score_pct": 59.1,
+      "tests_taken": 8,
+      "flagged_topics_count": 2,
+      "gaps": [
+        "Graph Traversal & Trees",
+        "SQL Indexing & Normalization"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "topic_id": 2,
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "avg_score_pct": 48.7,
+      "tests_conducted": 3,
+      "students_impacted": 110,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": true,
+      "confidence_level": "High",
+      "reason": "Recurring Focus Area: Batch average is 48.7% across 3 tests. 110 students showed sustained opportunity for additional practice.",
+      "recommended_action_type": "targeted_practice"
+    },
+    {
+      "topic_id": 7,
+      "topic_name": "SQL Indexing & Normalization",
+      "subject_name": "Chemistry",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "avg_score_pct": 47.5,
+      "tests_conducted": 2,
+      "students_impacted": 122,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": true,
+      "confidence_level": "Moderate",
+      "reason": "Recurring Focus Area: Batch average is 47.5% across 2 tests. 122 students showed sustained opportunity for additional practice.",
+      "recommended_action_type": "targeted_practice"
+    },
+    {
+      "topic_id": 16,
+      "topic_name": "Data Structures & Algorithms",
+      "subject_name": "Biology",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "avg_score_pct": 47.9,
+      "tests_conducted": 2,
+      "students_impacted": 116,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": true,
+      "confidence_level": "Moderate",
+      "reason": "Recurring Focus Area: Batch average is 47.9% across 2 tests. 116 students showed sustained opportunity for additional practice.",
+      "recommended_action_type": "targeted_practice"
+    },
+    {
+      "topic_id": 13,
+      "topic_name": "Digital Signal Processing & DFT",
+      "subject_name": "Mathematics",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "avg_score_pct": 47.3,
+      "tests_conducted": 2,
+      "students_impacted": 12,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": true,
+      "confidence_level": "Moderate",
+      "reason": "Recurring Focus Area: Batch average is 47.3% across 2 tests. 12 students showed sustained opportunity for additional practice.",
+      "recommended_action_type": "targeted_practice"
+    },
+    {
+      "topic_id": 1,
+      "topic_name": "Kinematics & Logic Gates",
+      "subject_name": "Physics",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "avg_score_pct": 70.4,
+      "tests_conducted": 1,
+      "students_impacted": 21,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Kinematics & Logic Gates'. Batch average is 70.4%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    },
+    {
+      "topic_id": 6,
+      "topic_name": "Relational Schema & SQL",
+      "subject_name": "Chemistry",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "avg_score_pct": 71.7,
+      "tests_conducted": 1,
+      "students_impacted": 16,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Relational Schema & SQL'. Batch average is 71.7%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    },
+    {
+      "topic_id": 11,
+      "topic_name": "Differential Calculus & Complexity",
+      "subject_name": "Mathematics",
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "avg_score_pct": 70.8,
+      "tests_conducted": 1,
+      "students_impacted": 13,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Differential Calculus & Complexity'. Batch average is 70.8%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    },
+    {
+      "topic_id": 8,
+      "topic_name": "Neural Net Backprop",
+      "subject_name": "Chemistry",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "avg_score_pct": 46.7,
+      "tests_conducted": 1,
+      "students_impacted": 120,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Neural Net Backprop'. Batch average is 46.7%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    },
+    {
+      "topic_id": 17,
+      "topic_name": "Cloud Infrastructure & Docker",
+      "subject_name": "Biology",
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "avg_score_pct": 71.9,
+      "tests_conducted": 1,
+      "students_impacted": 13,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Cloud Infrastructure & Docker'. Batch average is 71.9%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    },
+    {
+      "topic_id": 4,
+      "topic_name": "Computer Networks & Sockets",
+      "subject_name": "Physics",
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "avg_score_pct": 73.5,
+      "tests_conducted": 1,
+      "students_impacted": 1,
+      "total_batch_students": 0,
+      "impact_percentage": 0.0,
+      "is_recurring": false,
+      "confidence_level": "Preliminary (Single Assessment)",
+      "reason": "Preliminary Observation: Only 1 test conducted for 'Computer Networks & Sockets'. Batch average is 73.5%. Further assessment data required before confirming recurring pattern.",
+      "recommended_action_type": "micro_reassessment"
+    }
+  ],
+  "actions": [
+    {
+      "id": 1,
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "subject_id": 1,
+      "subject_name": "Physics",
+      "topic_id": 2,
+      "topic_name": "Graph Traversal & Trees",
+      "teacher_id": 2,
+      "teacher_name": "Srikanth Sir",
+      "title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "status": "completed",
+      "priority": "high",
+      "evidence_reason": "Batch average on Rotational Dynamics was 42.5% across 2 consecutive tests (TEST-PHY-02 & TEST-PHY-03). 10 of 12 students demonstrated persistent difficulty with parallel axis theorem and angular momentum conservation.",
+      "target_student_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2
+      ],
+      "target_students": [
+        {
+          "id": 1,
+          "name": "Kowshi",
+          "uid": "STU-1001"
+        },
+        {
+          "id": 2,
+          "name": "Harshith",
+          "uid": "STU-1002"
+        }
+      ],
+      "due_date": "2026-09-20T00:00:00",
+      "completed_date": "2026-09-22T00:00:00",
+      "teacher_notes": "Conducted a 2-hour interactive session focusing on visual diagrams for torque calculations and rolling without slipping. Students solved 15 guided JEE-level problems.",
+      "created_at": "2026-10-12T06:47:59.832846"
+    },
+    {
+      "id": 2,
+      "batch_id": 1,
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "subject_id": 2,
+      "subject_name": "Chemistry",
+      "topic_id": 7,
+      "topic_name": "SQL Indexing & Normalization",
+      "teacher_id": 3,
+      "teacher_name": "Dr. Madhavi Rao",
+      "title": "Ionic Equilibrium - Henderson Equation & Buffer Solutions Drill",
+      "action_type": "targeted_practice",
+      "status": "in_progress",
+      "priority": "high",
+      "evidence_reason": "Batch average was 48.2% across Tests 6 & 7. 8 students had recurring errors calculating common-ion effect and pH during hydrolysis.",
+      "target_student_ids": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2
+      ],
+      "target_students": [
+        {
+          "id": 1,
+          "name": "Kowshi",
+          "uid": "STU-1001"
+        },
+        {
+          "id": 2,
+          "name": "Harshith",
+          "uid": "STU-1002"
+        }
+      ],
+      "due_date": "2026-10-18T00:00:00",
+      "completed_date": null,
+      "teacher_notes": "Distributed step-by-step algorithmic worksheet. 5 students attended the doubt counter.",
+      "created_at": "2026-10-12T06:47:59.832846"
+    },
+    {
+      "id": 3,
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "subject_id": 4,
+      "subject_name": "Biology",
+      "topic_id": 16,
+      "topic_name": "Data Structures & Algorithms",
+      "teacher_id": 5,
+      "teacher_name": "Dr. Padmaja Rani",
+      "title": "Genetics Pedigree Analysis & Dihybrid Cross Remedial",
+      "action_type": "1on1_clinic",
+      "status": "assigned",
+      "priority": "medium",
+      "evidence_reason": "Average score 46.5% across TEST-BIO-01 and TEST-BIO-02. 6 students repeatedly mixed up sex-linked inheritance ratios.",
+      "target_student_ids": [
+        10,
+        10,
+        21,
+        21,
+        25,
+        25,
+        25,
+        31
+      ],
+      "target_students": [
+        {
+          "id": 10,
+          "name": "MAHENDRAKAR AKHIL",
+          "uid": "STU-1010"
+        },
+        {
+          "id": 21,
+          "name": "Poojari edagottu Sindhura",
+          "uid": "STU-1021"
+        },
+        {
+          "id": 25,
+          "name": "Janozai Laiqa Khan",
+          "uid": "STU-1025"
+        },
+        {
+          "id": 31,
+          "name": "john doe",
+          "uid": "STU-1031"
+        }
+      ],
+      "due_date": "2026-10-22T00:00:00",
+      "completed_date": null,
+      "teacher_notes": "Scheduled 30-minute small-group clinics during study hours.",
+      "created_at": "2026-10-12T06:47:59.832846"
+    },
+    {
+      "id": 4,
+      "batch_id": 3,
+      "batch_name": "B.Tech ECE - 2026 Zenith",
+      "subject_id": 3,
+      "subject_name": "Mathematics",
+      "topic_id": 13,
+      "topic_name": "Digital Signal Processing & DFT",
+      "teacher_id": 4,
+      "teacher_name": "Venkatesh Sir",
+      "title": "Conic Sections Tangent & Normal Formulas Review",
+      "action_type": "targeted_practice",
+      "status": "recommended",
+      "priority": "high",
+      "evidence_reason": "Average score 47.8% across 2 tests; 7 of 10 students scored below 50% benchmark.",
+      "target_student_ids": [
+        5,
+        73,
+        73,
+        115,
+        119,
+        119,
+        142,
+        142
+      ],
+      "target_students": [
+        {
+          "id": 5,
+          "name": "John",
+          "uid": "STU-1005"
+        },
+        {
+          "id": 73,
+          "name": "N.Darshika",
+          "uid": "STU-1073"
+        },
+        {
+          "id": 115,
+          "name": "249XA04009 BANGARI SHRAVANI",
+          "uid": "STU-1115"
+        },
+        {
+          "id": 119,
+          "name": "249XA04076 KAPU SAI SOWMYA",
+          "uid": "STU-1119"
+        },
+        {
+          "id": 142,
+          "name": "GAJULA PRASHANTH KUMAR",
+          "uid": "STU-1142"
+        }
+      ],
+      "due_date": "2026-10-25T00:00:00",
+      "completed_date": null,
+      "teacher_notes": null,
+      "created_at": "2026-10-12T06:47:59.832846"
+    },
+    {
+      "id": 5,
+      "batch_id": 2,
+      "batch_name": "B.Tech AI&ML - 2026 Sigma",
+      "subject_id": 2,
+      "subject_name": "Chemistry",
+      "topic_id": 8,
+      "topic_name": "Neural Net Backprop",
+      "teacher_id": 3,
+      "teacher_name": "Dr. Madhavi Rao",
+      "title": "Electrophilic Addition & Carbocation Stability Concept Clinic",
+      "action_type": "concept_relecture",
+      "status": "recommended",
+      "priority": "medium",
+      "evidence_reason": "Single test baseline showed 44.4% average across NEET batch. Early intervention recommended before the unit exam.",
+      "target_student_ids": [
+        10,
+        10,
+        21,
+        21,
+        25,
+        25,
+        25,
+        31
+      ],
+      "target_students": [
+        {
+          "id": 10,
+          "name": "MAHENDRAKAR AKHIL",
+          "uid": "STU-1010"
+        },
+        {
+          "id": 21,
+          "name": "Poojari edagottu Sindhura",
+          "uid": "STU-1021"
+        },
+        {
+          "id": 25,
+          "name": "Janozai Laiqa Khan",
+          "uid": "STU-1025"
+        },
+        {
+          "id": 31,
+          "name": "john doe",
+          "uid": "STU-1031"
+        }
+      ],
+      "due_date": "2026-10-28T00:00:00",
+      "completed_date": null,
+      "teacher_notes": null,
+      "created_at": "2026-10-12T06:47:59.832846"
+    }
+  ],
+  "evaluations": [
+    {
+      "id": 1,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 1,
+      "student_name": "Kowshi",
+      "student_uid": "STU-1001",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 40.6,
+      "follow_up_score_pct": 57.7,
+      "delta_pct": 17.1,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +17.1% gain on post-intervention clinical re-assessment."
+    },
+    {
+      "id": 2,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 1,
+      "student_name": "Kowshi",
+      "student_uid": "STU-1001",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 43.3,
+      "follow_up_score_pct": 64.7,
+      "delta_pct": 21.4,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +21.4% gain on post-intervention clinical re-assessment."
+    },
+    {
+      "id": 3,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 1,
+      "student_name": "Kowshi",
+      "student_uid": "STU-1001",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 43.1,
+      "follow_up_score_pct": 62.4,
+      "delta_pct": 19.3,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +19.3% gain on post-intervention clinical re-assessment."
+    },
+    {
+      "id": 4,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 1,
+      "student_name": "Kowshi",
+      "student_uid": "STU-1001",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 46.5,
+      "follow_up_score_pct": 68.4,
+      "delta_pct": 21.9,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +21.9% gain on post-intervention clinical re-assessment."
+    },
+    {
+      "id": 5,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 1,
+      "student_name": "Kowshi",
+      "student_uid": "STU-1001",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 42.2,
+      "follow_up_score_pct": 60.7,
+      "delta_pct": 18.5,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +18.5% gain on post-intervention clinical re-assessment."
+    },
+    {
+      "id": 6,
+      "intervention_id": 1,
+      "intervention_title": "Rotational Dynamics - Moment of Inertia & Torque Workshop",
+      "action_type": "doubt_clinic",
+      "student_id": 2,
+      "student_name": "Harshith",
+      "student_uid": "STU-1002",
+      "batch_name": "B.Tech CSE - 2026 Alpha",
+      "topic_name": "Graph Traversal & Trees",
+      "subject_name": "Physics",
+      "baseline_score_pct": 45.9,
+      "follow_up_score_pct": 60.3,
+      "delta_pct": 14.4,
+      "outcome_status": "marked_improvement",
+      "eval_date": "2026-10-12T14:17:39.378430",
+      "notes": "Verified +14.4% gain on post-intervention clinical re-assessment."
+    }
+  ]
+}
