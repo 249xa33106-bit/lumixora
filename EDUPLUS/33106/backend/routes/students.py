@@ -37,14 +37,18 @@ def get_students(
         avg_score = round(sum(scores) / tests_taken, 1) if tests_taken > 0 else 0.0
 
         # Topic needs practice count
-        # Group student's results by topic to find any with avg < threshold
+        # Topic needs practice count and specific gap names
         topic_scores = {}
+        topic_names = {}
         for tr in s.test_results:
             top_id = tr.assessment.topic_id if tr.assessment else None
+            top_name = tr.assessment.topic.name if (tr.assessment and tr.assessment.topic) else (tr.topic_name or "Core Topic")
             if top_id:
                 topic_scores.setdefault(top_id, []).append(tr.percentage)
+                topic_names[top_id] = top_name
         
-        flagged_count = sum(1 for t_scores in topic_scores.values() if (sum(t_scores)/len(t_scores)) < threshold)
+        gaps = [topic_names[t_id] for t_id, t_scores in topic_scores.items() if (sum(t_scores)/len(t_scores)) < threshold]
+        flagged_count = len(gaps)
 
         if tests_taken == 0:
             status = "insufficient_data"
@@ -70,7 +74,8 @@ def get_students(
             "support_status": status,
             "avg_score_pct": avg_score,
             "tests_taken": tests_taken,
-            "flagged_topics_count": flagged_count
+            "flagged_topics_count": flagged_count,
+            "gaps": gaps
         })
 
     return results

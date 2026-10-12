@@ -288,6 +288,7 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
     return DEFAULT_ACTIONS;
   });
 
+  const [batches, setBatches] = useState(DEFAULT_BATCHES);
   const [topicGaps, setTopicGaps] = useState(DEFAULT_TOPIC_GAPS);
   const [students, setStudents] = useState(DEFAULT_STUDENTS);
   const [evaluations, setEvaluations] = useState(DEFAULT_EVALUATIONS);
@@ -358,7 +359,24 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
       if (healthData?.status === 'healthy') {
         setApiOnline(true);
 
-        // 1. Fetch Students
+        // 1. Fetch Batches
+        const batchesRes = await fetch('http://127.0.0.1:8000/api/institution/batches');
+        if (batchesRes.ok) {
+          const dbBatches = await batchesRes.json();
+          if (Array.isArray(dbBatches) && dbBatches.length > 0) {
+            setBatches(dbBatches.map(b => ({
+              id: b.id,
+              name: b.name,
+              program: b.program,
+              target_year: b.target_year || 2026,
+              studentCount: b.student_count,
+              avgScore: 65.4,
+              department: b.name.includes('AI') ? 'AI&ML' : b.name.includes('ECE') ? 'ECE' : 'CSE'
+            })));
+          }
+        }
+
+        // 2. Fetch Real Students
         const stuRes = await fetch('http://127.0.0.1:8000/api/students');
         if (stuRes.ok) {
           const dbStudents = await stuRes.json();
@@ -372,7 +390,7 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
               avgScore: s.avg_score_pct,
               status: s.support_status === 'mastering' || s.support_status === 'on_track' ? 'on_track' : s.support_status === 'needs_practice' ? 'needs_support' : 'stable',
               testsTaken: s.tests_taken,
-              gaps: s.flagged_topics_count > 0 ? (s.flagged_topics_count > 1 ? ['Graph Traversal & Trees', 'SQL Indexing & Normalization'] : ['Graph Traversal & Trees']) : []
+              gaps: s.gaps && s.gaps.length > 0 ? s.gaps : []
             })));
           }
         }
@@ -1065,15 +1083,15 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
               onClick={() => setSelectedBatchId(null)}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${!selectedBatchId ? 'bg-cyan-400 text-black font-black shadow-lg shadow-cyan-500/25' : 'text-gray-400 hover:text-white'}`}
             >
-              All Cohorts (32)
+              All Cohorts ({students.length})
             </button>
-            {DEFAULT_BATCHES.map(b => (
+            {batches.map(b => (
               <button
                 key={b.id}
                 onClick={() => setSelectedBatchId(b.id)}
                 className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${selectedBatchId === b.id ? 'bg-cyan-400 text-black font-black shadow-lg shadow-cyan-500/25' : 'text-gray-400 hover:text-white'}`}
               >
-                {b.name.split('-')[0].replace('B.Tech ', '')} ({b.studentCount})
+                {b.name.split('-')[0].replace('B.Tech ', '')} ({b.studentCount || students.filter(s => s.batchId === b.id).length})
               </button>
             ))}
           </div>

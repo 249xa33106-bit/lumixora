@@ -59,6 +59,7 @@ class StudentOut(BaseModel):
     avg_score_pct: Optional[float] = 0.0
     tests_taken: Optional[int] = 0
     flagged_topics_count: Optional[int] = 0
+    gaps: Optional[List[str]] = []
     class Config:
         from_attributes = True
 
