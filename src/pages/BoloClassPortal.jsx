@@ -2572,6 +2572,168 @@ function AudioWaveformCanvas({ isSpeaking }) {
   );
 }
 
+// ─── Curated AI Classmate Live Architectural Debates ──────────────────────────
+const BOLOCLASS_CURATED_DEBATES = {
+  'java-data-types': [
+    {
+      topic: "Stack Allocation vs Heap Allocation: Why shouldn't all objects be stack-allocated?",
+      subtitle: "The architectural tension between instantaneous L1 cache locality and heap object lifetime polymorphism.",
+      turns: [
+        {
+          speaker: 'professor',
+          speakerName: 'Prof. Vyomra',
+          avatar: '👨‍🏫',
+          stance: 'Foundational Theory',
+          color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+          argument: "Stack allocation is deterministic and strictly O(1) without GC overhead. However, the thread stack frame is destroyed the nanosecond a method returns! For long-lived polymorphic instances shared across concurrent threads or request lifecycles, shared Heap memory is mandatory."
+        },
+        {
+          speaker: 'alex',
+          speakerName: 'Alex',
+          avatar: '🧑‍💻',
+          stance: 'The Pragmatic Skeptic',
+          color: 'border-amber-400 bg-amber-950/40 text-amber-200',
+          argument: "That sounds clean in theory, but in real enterprise code, developers pass objects through layers of Spring services. If everything had to be stack-pinned, we would suffer stack overflow errors and lose dynamic runtime dispatch!"
+        },
+        {
+          speaker: 'maya',
+          speakerName: 'Maya',
+          avatar: '👩‍💻',
+          stance: 'Hardware Performance Hacker',
+          color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+          argument: "Actually, look at the JVM C2 JIT Compiler! With Escape Analysis, the JVM automatically proves whether an object escapes method scope. When it doesn't, Scalar Replacement decomposes the object into CPU registers—giving us the abstraction of objects with zero heap allocation!"
+        }
+      ]
+    },
+    {
+      topic: "The IntegerCache (-128 to 127) Trap: Is Autoboxing an Anti-Pattern in High-Throughput Engines?",
+      subtitle: "Examining how hidden object allocation cascades into GC Stop-The-World pauses under peak load.",
+      turns: [
+        {
+          speaker: 'alex',
+          speakerName: 'Alex',
+          avatar: '🧑‍💻',
+          stance: 'The Pragmatic Skeptic',
+          color: 'border-amber-400 bg-amber-950/40 text-amber-200',
+          argument: "Autoboxing was supposed to make Java code readable. But `127 == 127` evaluating to `true` while `128 == 128` evaluates to `false` is the number one bug source in junior engineering interviews!"
+        },
+        {
+          speaker: 'professor',
+          speakerName: 'Prof. Vyomra',
+          avatar: '👨‍🏫',
+          stance: 'Foundational Theory',
+          color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+          argument: "The IntegerCache pool exists because profiling showed over 80% of integer values in business logic fall between -128 and 127. Pre-allocating these canonical wrapper objects saves gigabytes of redundant heap allocations across enterprise servers."
+        },
+        {
+          speaker: 'maya',
+          speakerName: 'Maya',
+          avatar: '👩‍💻',
+          stance: 'Hardware Performance Hacker',
+          color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+          argument: "In fintech order-matching engines, boxed wrapper objects are banned entirely! A single primitive `int` takes 4 bytes on stack. Boxed `Integer` consumes 16 bytes of object header + 4-byte pointer (500% memory bloat). Always use primitive arrays or LongStream!"
+        }
+      ]
+    }
+  ],
+  'b-plus-tree-dbms': [
+    {
+      topic: "B+ Tree vs LSM Trees: Is In-Place Page Mutation Obsolete on Modern NVMe Flash SSDs?",
+      subtitle: "Evaluating write amplification, sequential vs random I/O, and read tail-latencies in MySQL InnoDB vs RocksDB.",
+      turns: [
+        {
+          speaker: 'professor',
+          speakerName: 'Prof. Vyomra',
+          avatar: '👨‍🏫',
+          stance: 'Foundational Theory',
+          color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+          argument: "B+ Trees provide deterministic O(log_B N) point read latencies. Because fan-out is ~1,000, 1 billion rows require at most 3 page reads. In read-heavy OLTP workloads, B+ Tree buffer pools consistently beat LSM trees."
+        },
+        {
+          speaker: 'alex',
+          speakerName: 'Alex',
+          avatar: '🧑‍💻',
+          stance: 'The Pragmatic Skeptic',
+          color: 'border-amber-400 bg-amber-950/40 text-amber-200',
+          argument: "What about random writes? Updating a single row in InnoDB writes a full 16KB dirty page to disk. That causes high write amplification and burns flash endurance cycles on modern enterprise SSDs!"
+        },
+        {
+          speaker: 'maya',
+          speakerName: 'Maya',
+          avatar: '👩‍💻',
+          stance: 'Hardware Performance Hacker',
+          color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+          argument: "That is why LSM trees (like RocksDB) append sequentially to Write-Ahead Logs and MemTables, then compact in background. But compaction introduces severe P99 latency spikes! For sub-millisecond tail latency, a tuned B+ Tree with doublewrite buffers remains king."
+        }
+      ]
+    }
+  ],
+  'raft-consensus-engine': [
+    {
+      topic: "Split-Brain Avoidance: Can Randomized Heartbeats Prevent Split Votes 100% of the Time?",
+      subtitle: "The mathematical trade-offs between election timeout jitter, network latency variance, and Raft term monotonicity.",
+      turns: [
+        {
+          speaker: 'alex',
+          speakerName: 'Alex',
+          avatar: '🧑‍💻',
+          stance: 'The Pragmatic Skeptic',
+          color: 'border-amber-400 bg-amber-950/40 text-amber-200',
+          argument: "Randomized timers (150ms - 300ms) only reduce split-vote probability—they do not mathematically eliminate it! In cross-region AWS clusters with network jitter, simultaneous elections can still repeat across multiple terms."
+        },
+        {
+          speaker: 'professor',
+          speakerName: 'Prof. Vyomra',
+          avatar: '👨‍🏫',
+          stance: 'Foundational Theory',
+          color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+          argument: "The brilliance of Raft is safety over liveness! Even if a split vote occurs in term T, no candidate achieves quorum. The term simply advances to T+1, where randomized backoff ensures one candidate starts earlier and captures the majority."
+        },
+        {
+          speaker: 'maya',
+          speakerName: 'Maya',
+          avatar: '👩‍💻',
+          stance: 'Hardware Performance Hacker',
+          color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+          argument: "Production systems like etcd and CockroachDB implement Pre-Vote protocols! Before incrementing the term, a candidate checks if a quorum would grant its vote. This prevents disconnected stale nodes from disrupting healthy leaders when reconnected."
+        }
+      ]
+    }
+  ],
+  'ml-llm-transformers': [
+    {
+      topic: "Scaled Dot-Product: Why scale by sqrt(d_k) before Softmax?",
+      subtitle: "Understanding gradient vanishing, variance scaling, and attention saturation in large transformer models.",
+      turns: [
+        {
+          speaker: 'professor',
+          speakerName: 'Prof. Vyomra',
+          avatar: '👨‍🏫',
+          stance: 'Foundational Theory',
+          color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+          argument: "When vector dimension d_k is large (e.g. 128 in modern LLMs), the dot product of two zero-mean unit-variance vectors grows in magnitude to variance d_k. Large inputs push softmax into regions where gradients are nearly zero! Dividing by sqrt(d_k) restores unit variance."
+        },
+        {
+          speaker: 'alex',
+          speakerName: 'Alex',
+          avatar: '🧑‍💻',
+          stance: 'The Pragmatic Skeptic',
+          color: 'border-amber-400 bg-amber-950/40 text-amber-200',
+          argument: "Why not just use layer normalization or RMSNorm directly on the Query and Key vectors before multiplication?"
+        },
+        {
+          speaker: 'maya',
+          speakerName: 'Maya',
+          avatar: '👩‍💻',
+          stance: 'Hardware Performance Hacker',
+          color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+          argument: "Modern architectures like Gemma and Llama 3 actually do QK-Norm! But scaling by sqrt(d_k) is an elemental fused operation inside GPU Tensor Core kernels (like FlashAttention-2), avoiding extra SRAM read-write rounds."
+        }
+      ]
+    }
+  ]
+};
+
 export default function BoloClassPortal({ setActiveTab }) {
   const { addToast } = useToast?.() || {};
   const { user, userProgress, addXP, addPoints } = useGamification?.() || {};
@@ -2700,6 +2862,283 @@ export default function BoloClassPortal({ setActiveTab }) {
     } catch (e) {}
     return {};
   });
+
+  // ─── AI Classmate Live Debate States ───
+  const [debateRoundIdx, setDebateRoundIdx] = useState(0);
+  const [isDebatePlaying, setIsDebatePlaying] = useState(false);
+  const [activeDebaterSpeaker, setActiveDebaterSpeaker] = useState(null);
+  const [debateVotes, setDebateVotes] = useState({ professor: 18, alex: 24, maya: 31 });
+  const [userDebateVote, setUserDebateVote] = useState(null);
+  const [interjectionInput, setInterjectionInput] = useState('');
+  const [isInterjectionLoading, setIsInterjectionLoading] = useState(false);
+  const [customDebateMessages, setCustomDebateMessages] = useState([]);
+
+  // Active debate topic resolver
+  const currentLessonDebates = BOLOCLASS_CURATED_DEBATES[activeLesson.id] || BOLOCLASS_CURATED_DEBATES['java-data-types'];
+  const currentDebate = currentLessonDebates[debateRoundIdx] || currentLessonDebates[0];
+
+  // ─── Interactive Memory & Data Structure Sandbox States ───
+  const [sandboxTab, setSandboxTab] = useState(() => {
+    if (activeLesson.id.includes('b-plus-tree') || activeLesson.subject.toLowerCase().includes('database')) return 'btree';
+    if (activeLesson.id.includes('ml') || activeLesson.subject.toLowerCase().includes('intelligence')) return 'attention';
+    return 'jvm';
+  });
+
+  // JVM Stack & Heap State
+  const [jvmStackItems, setJvmStackItems] = useState([
+    { id: 's1', slot: 0, name: 'age', type: 'byte', size: '1 Byte', val: '24', isRef: false },
+    { id: 's2', slot: 1, name: 'port', type: 'short', size: '2 Bytes', val: '8080', isRef: false },
+    { id: 's3', slot: 2, name: 'count', type: 'int', size: '4 Bytes', val: '1,000,000', isRef: false },
+    { id: 's4', slot: 3, name: 's1Ref', type: 'String', size: '4B (OOP)', val: '-> 0x7F01 (SCP)', isRef: true, targetAddr: '0x7F01' },
+    { id: 's5', slot: 4, name: 's3Ref', type: 'String', size: '4B (OOP)', val: '-> 0x9A40 (Heap)', isRef: true, targetAddr: '0x9A40' }
+  ]);
+  const [jvmHeapItems, setJvmHeapItems] = useState([
+    { id: 'h1', addr: '0x7F01', title: 'SCP: "Java"', type: 'String Constant Pool', size: '24 Bytes', reachable: true, isScp: true },
+    { id: 'h2', addr: '0x9A40', title: 'Heap Object: "Java"', type: 'Heap Object Instance', size: '24 Bytes (Header 16B + 8B)', reachable: true, isScp: false },
+    { id: 'h3', addr: '0xCC10', title: 'Temp Object [Unreachable]', type: 'Old Object Instance', size: '64 Bytes', reachable: false, isScp: false }
+  ]);
+  const [jvmStats, setJvmStats] = useState({ stackBytes: 15, heapBytes: 112, gcCount: 0, gcLatencyMs: 0 });
+  const [gcSweeping, setGcSweeping] = useState(false);
+
+  // B+ Tree Simulator State
+  const [bTreeSearchKey, setBTreeSearchKey] = useState('');
+  const [bTreeSearchResult, setBTreeSearchResult] = useState(null);
+
+  // Attention Weight Heatmap State
+  const [attentionTemp, setAttentionTemp] = useState(1.0);
+  const [selectedAttnTokenIdx, setSelectedAttnTokenIdx] = useState(0);
+
+  // Debate audio playback loop
+  const handlePlayDebateRound = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (isDebatePlaying) {
+      window.speechSynthesis.cancel();
+      setIsDebatePlaying(false);
+      setActiveDebaterSpeaker(null);
+      return;
+    }
+
+    const turns = currentDebate.turns;
+    setIsDebatePlaying(true);
+    let turnIdx = 0;
+
+    const playNextTurn = () => {
+      if (turnIdx >= turns.length) {
+        setIsDebatePlaying(false);
+        setActiveDebaterSpeaker(null);
+        return;
+      }
+
+      const turn = turns[turnIdx];
+      setActiveDebaterSpeaker(turn.speaker);
+      const utt = new SpeechSynthesisUtterance(cleanSpeechText(turn.argument));
+
+      const { femaleVoice, maleVoice } = findVoicesForLanguage(selectedLanguage, allBrowserVoices);
+      if (turn.speaker === 'maya') {
+        utt.voice = (selectedFemaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedFemaleVoiceURI) : null) || femaleVoice;
+        utt.pitch = femalePitch;
+      } else if (turn.speaker === 'alex') {
+        utt.voice = (selectedMaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedMaleVoiceURI) : null) || maleVoice;
+        utt.pitch = 1.25;
+      } else {
+        utt.voice = (selectedMaleVoiceURI ? allBrowserVoices.find(v => v.voiceURI === selectedMaleVoiceURI) : null) || maleVoice;
+        utt.pitch = malePitch;
+      }
+      utt.rate = speechRate;
+
+      utt.onend = () => {
+        turnIdx++;
+        setTimeout(playNextTurn, 600);
+      };
+
+      utt.onerror = () => {
+        turnIdx++;
+        setTimeout(playNextTurn, 600);
+      };
+
+      window.speechSynthesis.speak(utt);
+    };
+
+    playNextTurn();
+  };
+
+  // Cast vote in debate
+  const handleVoteDebater = (speakerId) => {
+    if (userDebateVote) return;
+    setUserDebateVote(speakerId);
+    setDebateVotes(prev => ({ ...prev, [speakerId]: (prev[speakerId] || 0) + 1 }));
+    addToast?.({
+      type: 'success',
+      message: `🗳️ Voted for ${speakerId.toUpperCase()}! +25 XP earned for architectural judgment.`
+    });
+    if (user?.id) awardXP(user.id, 'DEBATE_VOTE', 25);
+  };
+
+  // Scholar interjection in debate
+  const handleDebateInterjection = async (e) => {
+    e?.preventDefault();
+    if (!interjectionInput.trim() || isInterjectionLoading) return;
+    const userArg = interjectionInput.trim();
+    setInterjectionInput('');
+    setIsInterjectionLoading(true);
+
+    const userEntry = {
+      id: Date.now(),
+      speaker: 'scholar',
+      speakerName: scholarDisplayName,
+      avatar: '🎓',
+      stance: 'Scholar Interjection',
+      color: 'border-emerald-400 bg-emerald-950/40 text-emerald-200',
+      argument: userArg
+    };
+
+    setCustomDebateMessages(prev => [...prev, userEntry]);
+
+    try {
+      const prompt = `You are simulated AI classmates Prof. Vyomra, Alex, and Maya debating: "${currentDebate.topic}".
+Scholar just interjected: "${userArg}".
+Provide a quick, sharp technical response (2 sentences) from either Prof. Vyomra, Alex, or Maya reacting to the scholar's point.`;
+
+      const aiReply = await callAICompletion({ prompt, temperature: 0.3, maxTokens: 150 });
+      const responseEntry = {
+        id: Date.now() + 1,
+        speaker: 'professor',
+        speakerName: 'Prof. Vyomra',
+        avatar: '👨‍🏫',
+        stance: 'Panel Response',
+        color: 'border-purple-400 bg-purple-950/40 text-purple-200',
+        argument: aiReply || "Sharp observation, scholar! Balancing memory locality against architectural flexibility is the quintessential dilemma of systems design."
+      };
+      setCustomDebateMessages(prev => [...prev, responseEntry]);
+      if (user?.id) awardXP(user.id, 'DEBATE_INTERJECTION', 20);
+    } catch (err) {
+      const fallbackEntry = {
+        id: Date.now() + 1,
+        speaker: 'maya',
+        speakerName: 'Maya',
+        avatar: '👩‍💻',
+        stance: 'Panel Response',
+        color: 'border-cyan-400 bg-cyan-950/40 text-cyan-200',
+        argument: "Spot on! That directly impacts CPU cache line alignment and prevents L1 instruction cache thrashing under high concurrency."
+      };
+      setCustomDebateMessages(prev => [...prev, fallbackEntry]);
+    } finally {
+      setIsInterjectionLoading(false);
+    }
+  };
+
+  // JVM Sandbox: Add Primitive int
+  const handlePushPrimitive = () => {
+    const slotNum = jvmStackItems.length;
+    const newItem = {
+      id: 's_' + Date.now(),
+      slot: slotNum,
+      name: `val${slotNum}`,
+      type: 'int',
+      size: '4 Bytes',
+      val: Math.floor(Math.random() * 1000).toString(),
+      isRef: false
+    };
+    setJvmStackItems(prev => [...prev, newItem]);
+    setJvmStats(prev => ({ ...prev, stackBytes: prev.stackBytes + 4 }));
+    addToast?.({ type: 'info', message: '📌 Stack slot pushed: 4 Bytes directly in CPU L1/L2 cache (0 Heap Overhead)' });
+  };
+
+  // JVM Sandbox: Add Heap Object (new String)
+  const handleAllocateHeapObject = () => {
+    const hexAddr = '0x' + Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase();
+    const stackSlot = jvmStackItems.length;
+    const newStack = {
+      id: 's_' + Date.now(),
+      slot: stackSlot,
+      name: `objRef${stackSlot}`,
+      type: 'String',
+      size: '4B (OOP)',
+      val: `-> ${hexAddr} (Heap)`,
+      isRef: true,
+      targetAddr: hexAddr
+    };
+    const newHeap = {
+      id: 'h_' + Date.now(),
+      addr: hexAddr,
+      title: `Heap Object (${hexAddr})`,
+      type: 'Object Instance (Mark 8B + Klass 4B + Payload)',
+      size: '24 Bytes',
+      reachable: true,
+      isScp: false
+    };
+    setJvmStackItems(prev => [...prev, newStack]);
+    setJvmHeapItems(prev => [...prev, newHeap]);
+    setJvmStats(prev => ({ ...prev, stackBytes: prev.stackBytes + 4, heapBytes: prev.heapBytes + 24 }));
+    addToast?.({ type: 'warning', message: `📦 Heap Allocated: 16-byte Object Header + Payload at ${hexAddr}` });
+  };
+
+  // JVM Sandbox: Allocate SCP literal
+  const handleAllocateSCP = () => {
+    const scpAddr = '0x7F01';
+    const stackSlot = jvmStackItems.length;
+    const newStack = {
+      id: 's_' + Date.now(),
+      slot: stackSlot,
+      name: `strLiteral${stackSlot}`,
+      type: 'String',
+      size: '4B (OOP)',
+      val: `-> ${scpAddr} (SCP Reused)`,
+      isRef: true,
+      targetAddr: scpAddr
+    };
+    setJvmStackItems(prev => [...prev, newStack]);
+    setJvmStats(prev => ({ ...prev, stackBytes: prev.stackBytes + 4 }));
+    addToast?.({ type: 'success', message: '⚡ SCP Cache Hit! Reused canonical String Constant Pool address without new heap allocation.' });
+  };
+
+  // JVM Sandbox: Trigger Garbage Collector
+  const handleTriggerGC = () => {
+    setGcSweeping(true);
+    setTimeout(() => {
+      setJvmHeapItems(prev => prev.filter(h => h.reachable));
+      setJvmStats(prev => ({
+        ...prev,
+        heapBytes: Math.max(48, prev.heapBytes - 64),
+        gcCount: prev.gcCount + 1,
+        gcLatencyMs: 0.12
+      }));
+      setGcSweeping(false);
+      addToast?.({ type: 'success', message: '🧹 Garbage Collection Complete! Unreachable objects reclaimed. 0ms STW pause.' });
+      if (user?.id) awardXP(user.id, 'GC_SIMULATION', 15);
+    }, 600);
+  };
+
+  // B+ Tree Simulator: Search Key
+  const handleBTreeSearch = (e) => {
+    e?.preventDefault();
+    const keyNum = parseInt(bTreeSearchKey, 10);
+    if (isNaN(keyNum)) return;
+    const rootPath = "Root Page 0 [Keys: 20, 40] (in RAM Buffer Pool)";
+    let internalPath = "";
+    let leafPath = "";
+    if (keyNum < 20) {
+      internalPath = "Pointer 0 -> Internal Page 1 [Keys: 5, 10, 15]";
+      leafPath = "Leaf Page 1 (Contains keys [5, 10, 15])";
+    } else if (keyNum < 40) {
+      internalPath = "Pointer 1 -> Internal Page 2 [Keys: 25, 30, 35]";
+      leafPath = "Leaf Page 2 (Contains keys [20, 25, 30, 35])";
+    } else {
+      internalPath = "Pointer 2 -> Internal Page 3 [Keys: 45, 50, 60]";
+      leafPath = "Leaf Page 3 (Contains keys [40, 45, 50, 60])";
+    }
+    setBTreeSearchResult({
+      key: keyNum,
+      steps: [
+        { level: "Level 1 (Root)", desc: rootPath, io: "0 I/O (Cached in RAM)" },
+        { level: "Level 2 (Internal)", desc: internalPath, io: "1 Page Read (0.01ms)" },
+        { level: "Level 3 (Leaf)", desc: leafPath, io: "1 Page Read (0.02ms)" }
+      ],
+      totalReads: 2,
+      latency: "0.03 ms"
+    });
+    if (user?.id) awardXP(user.id, 'BTREE_SIMULATION', 15);
+  };
 
   // ── Persistent Synchronizations ──
   useEffect(() => {
@@ -5231,6 +5670,18 @@ ${sc.codeSnippet || 'N/A'}
                         <Terminal className="w-3 h-3" /> Terminal
                       </button>
                     )}
+                    <button
+                      onClick={() => setActiveViewMode('debate')}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'debate' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black shadow-md shadow-rose-500/30' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      <Flame className="w-3 h-3 text-rose-400" /> Live Debate
+                    </button>
+                    <button
+                      onClick={() => setActiveViewMode('sandbox')}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'sandbox' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black shadow-md shadow-cyan-500/30' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      <Brain className="w-3 h-3 text-cyan-300" /> Memory Sandbox
+                    </button>
                   </div>
                 </div>
 
@@ -5579,6 +6030,467 @@ ${sc.codeSnippet || 'N/A'}
                         className="flex-1 bg-transparent border-none outline-none text-white text-xs font-mono placeholder-gray-600"
                       />
                     </form>
+                  </div>
+                )}
+
+                {/* 6. AI Classmate Live Debate Mode */}
+                {activeViewMode === 'debate' && (
+                  <div className="space-y-4 font-sans text-xs">
+                    {/* Debate Header */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/60 via-purple-950/50 to-slate-950 border border-rose-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-xl">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-black uppercase tracking-wider border border-rose-400/40 flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-rose-400 animate-bounce" /> Live Classmate Debate
+                          </span>
+                          <span className="text-gray-400 text-[10px] font-mono">Round {debateRoundIdx + 1} of {currentLessonDebates.length}</span>
+                        </div>
+                        <h3 className="text-sm md:text-base font-black text-white font-sora mt-1">
+                          {currentDebate.topic}
+                        </h3>
+                        <p className="text-[11px] text-gray-300 mt-0.5">
+                          {currentDebate.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={handlePlayDebateRound}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2"
+                        >
+                          {isDebatePlaying ? (
+                            <>
+                              <Pause className="w-4 h-4" />
+                              <span>Pause Audio</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-4 h-4 fill-current" />
+                              <span>Play Debate Audio 🎙️</span>
+                            </>
+                          )}
+                        </button>
+
+                        {currentLessonDebates.length > 1 && (
+                          <button
+                            onClick={() => {
+                              setDebateRoundIdx((prev) => (prev + 1) % currentLessonDebates.length);
+                              setCustomDebateMessages([]);
+                              setUserDebateVote(null);
+                            }}
+                            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 transition-all cursor-pointer flex items-center gap-1"
+                            title="Next Debate Round"
+                          >
+                            <span>Next Round</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Debater Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {currentDebate.turns.map((turn, tIdx) => {
+                        const isSpeaking = activeDebaterSpeaker === turn.speaker;
+                        return (
+                          <div
+                            key={tIdx}
+                            className={`p-4 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between ${turn.color} ${isSpeaking ? 'ring-4 ring-rose-400 scale-[1.02] shadow-2xl' : 'shadow-md opacity-95 hover:opacity-100'}`}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl">{turn.avatar}</span>
+                                  <div>
+                                    <h4 className="font-black text-white text-xs">{turn.speakerName}</h4>
+                                    <span className="text-[10px] text-gray-400 font-mono">{turn.stance}</span>
+                                  </div>
+                                </div>
+                                {isSpeaking && (
+                                  <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase animate-pulse flex items-center gap-1">
+                                    <Activity className="w-2.5 h-2.5" /> Speaking
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs leading-relaxed text-gray-200 bg-black/40 p-3 rounded-xl border border-white/10">
+                                "{turn.argument}"
+                              </p>
+                            </div>
+
+                            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between">
+                              <span className="text-[10px] font-mono text-gray-400">
+                                Votes: <strong className="text-white">{debateVotes[turn.speaker] || 0}</strong>
+                              </span>
+                              <button
+                                onClick={() => handleVoteDebater(turn.speaker)}
+                                disabled={userDebateVote !== null}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${userDebateVote === turn.speaker ? 'bg-emerald-500 text-black font-black' : userDebateVote ? 'opacity-40 cursor-not-allowed bg-white/5' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                              >
+                                <Trophy className="w-3 h-3" />
+                                {userDebateVote === turn.speaker ? 'Voted! (+25 XP)' : 'Vote Point'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Interjection Messages */}
+                    {customDebateMessages.length > 0 && (
+                      <div className="space-y-2 p-3 rounded-2xl bg-black/60 border border-white/10">
+                        <span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider block">Panel Q&A & Interjections:</span>
+                        {customDebateMessages.map((msg) => (
+                          <div key={msg.id} className={`p-3 rounded-xl border ${msg.color} flex items-start gap-2.5`}>
+                            <span className="text-xl">{msg.avatar}</span>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-white text-xs">{msg.speakerName}</span>
+                                <span className="text-[9px] px-2 py-0.2 rounded bg-black/30 text-gray-300 font-mono">{msg.stance}</span>
+                              </div>
+                              <p className="text-xs text-gray-200">{msg.argument}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Scholar Interjection Input Bar */}
+                    <form onSubmit={handleDebateInterjection} className="flex gap-2 p-2 rounded-2xl bg-[#090e1c] border border-rose-500/30">
+                      <div className="flex items-center pl-2 text-rose-400">
+                        <MessageSquare className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        value={interjectionInput}
+                        onChange={(e) => setInterjectionInput(e.target.value)}
+                        placeholder="Interject with your architectural argument (e.g. 'What about L2 CPU cache line alignment?')..."
+                        className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!interjectionInput.trim() || isInterjectionLoading}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-xs disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Send className={'w-3 h-3 ' + (isInterjectionLoading ? 'animate-spin' : '')} />
+                        <span>{isInterjectionLoading ? 'Interjecting...' : 'Interject (+20 XP)'}</span>
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* 7. Interactive Memory & Data Structure Sandbox Mode */}
+                {activeViewMode === 'sandbox' && (
+                  <div className="space-y-4 font-sans text-xs">
+                    {/* Sandbox Switcher & Header */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-indigo-950/50 to-slate-950 border border-cyan-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xl">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-400/40 flex items-center gap-1">
+                            <Brain className="w-3 h-3 text-cyan-400 animate-pulse" /> Live Memory Sandbox
+                          </span>
+                          <span className="text-gray-400 text-[10px] font-mono">60FPS Interactive Hardware Simulation</span>
+                        </div>
+                        <h3 className="text-sm md:text-base font-black text-white font-sora mt-1">
+                          {sandboxTab === 'jvm' && "JVM Stack vs Heap Memory Allocation Engine"}
+                          {sandboxTab === 'btree' && "B+ Tree Fan-Out & Disk Page Traversal Simulator"}
+                          {sandboxTab === 'attention' && "Transformer Self-Attention Heatmap & Temperature Engine"}
+                        </h3>
+                      </div>
+
+                      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 text-[10px]">
+                        <button
+                          onClick={() => setSandboxTab('jvm')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${sandboxTab === 'jvm' ? 'bg-cyan-500 text-black font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                        >
+                          JVM Memory
+                        </button>
+                        <button
+                          onClick={() => setSandboxTab('btree')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${sandboxTab === 'btree' ? 'bg-indigo-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                        >
+                          B+ Tree Simulator
+                        </button>
+                        <button
+                          onClick={() => setSandboxTab('attention')}
+                          className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${sandboxTab === 'attention' ? 'bg-purple-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                        >
+                          Attention Matrix
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* ─── TAB A: JVM STACK VS HEAP MEMORY VISUALIZER ─── */}
+                    {sandboxTab === 'jvm' && (
+                      <div className="space-y-4">
+                        {/* Controls Toolbar */}
+                        <div className="p-3 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              onClick={handlePushPrimitive}
+                              className="px-3 py-1.5 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/40 border border-cyan-400/40 text-cyan-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <span>+ Push int (4B Stack)</span>
+                            </button>
+                            <button
+                              onClick={handleAllocateHeapObject}
+                              className="px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 border border-purple-400/40 text-purple-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <span>+ new String() (Heap 24B)</span>
+                            </button>
+                            <button
+                              onClick={handleAllocateSCP}
+                              className="px-3 py-1.5 rounded-xl bg-amber-600/30 hover:bg-amber-600/40 border border-amber-400/40 text-amber-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <span>+ "Literal" (SCP Deduplicated)</span>
+                            </button>
+                            <button
+                              onClick={handleTriggerGC}
+                              disabled={gcSweeping}
+                              className="px-3 py-1.5 rounded-xl bg-rose-600/30 hover:bg-rose-600/40 border border-rose-400/40 text-rose-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <span>🧹 {gcSweeping ? 'Sweeping...' : 'Trigger GC'}</span>
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-3 text-[11px] font-mono">
+                            <span className="text-cyan-300">Stack: <strong>{jvmStats.stackBytes} Bytes</strong></span>
+                            <span className="text-purple-300">Heap: <strong>{jvmStats.heapBytes} Bytes</strong></span>
+                            <span className="text-emerald-300">GCs: <strong>{jvmStats.gcCount}</strong></span>
+                          </div>
+                        </div>
+
+                        {/* Visual Memory Columns */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Thread Call Stack */}
+                          <div className="p-4 rounded-2xl bg-[#030712] border border-cyan-500/30 space-y-3">
+                            <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
+                              <h4 className="font-black text-cyan-400 font-sora flex items-center gap-1.5 text-xs">
+                                <span>⚡ THREAD CALL STACK</span>
+                                <span className="text-[9px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">L1/L2 Fast</span>
+                              </h4>
+                              <span className="text-[10px] text-gray-400 font-mono">{jvmStackItems.length} Frames</span>
+                            </div>
+
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                              {jvmStackItems.map((slot) => (
+                                <div
+                                  key={slot.id}
+                                  className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${slot.isRef ? 'bg-purple-950/30 border-purple-500/40' : 'bg-cyan-950/30 border-cyan-500/40'}`}
+                                >
+                                  <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-gray-300">Slot {slot.slot}</span>
+                                      <strong className="text-white text-xs">{slot.name}</strong>
+                                      <span className="text-[10px] text-gray-400 font-mono">({slot.type})</span>
+                                    </div>
+                                    <div className="text-[11px] font-mono text-cyan-300 font-bold">{slot.val}</div>
+                                  </div>
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-gray-300 border border-white/5">
+                                    {slot.size}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Shared Heap Space */}
+                          <div className="p-4 rounded-2xl bg-[#030712] border border-purple-500/30 space-y-3">
+                            <div className="flex items-center justify-between pb-2 border-b border-purple-500/20">
+                              <h4 className="font-black text-purple-400 font-sora flex items-center gap-1.5 text-xs">
+                                <span>📦 SHARED HEAP SPACE</span>
+                                <span className="text-[9px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">GC Managed</span>
+                              </h4>
+                              <span className="text-[10px] text-gray-400 font-mono">{jvmHeapItems.length} Objects</span>
+                            </div>
+
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                              {jvmHeapItems.map((obj) => (
+                                <div
+                                  key={obj.id}
+                                  className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${obj.isScp ? 'bg-amber-950/30 border-amber-500/40' : obj.reachable ? 'bg-purple-950/30 border-purple-500/40' : 'bg-rose-950/30 border-rose-500/40 opacity-60'}`}
+                                >
+                                  <div className="space-y-0.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-gray-300">{obj.addr}</span>
+                                      <strong className="text-white text-xs">{obj.title}</strong>
+                                    </div>
+                                    <div className="text-[10px] text-gray-400 font-mono">{obj.type}</div>
+                                  </div>
+                                  <div className="text-right space-y-0.5">
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-purple-300 border border-white/5 block">
+                                      {obj.size}
+                                    </span>
+                                    <span className={`text-[9px] font-mono ${obj.reachable ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                      {obj.reachable ? 'Reachable' : 'Garbage'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ─── TAB B: B+ TREE INTERACTIVE SIMULATOR ─── */}
+                    {sandboxTab === 'btree' && (
+                      <div className="space-y-4">
+                        {/* Search input */}
+                        <form onSubmit={handleBTreeSearch} className="p-3 rounded-2xl bg-black/60 border border-white/10 flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={bTreeSearchKey}
+                            onChange={(e) => setBTreeSearchKey(e.target.value)}
+                            placeholder="Enter key to search in B+ Tree (e.g. 5, 25, 30, 50)..."
+                            className="flex-1 bg-transparent border-none outline-none text-xs text-white placeholder-gray-500"
+                          />
+                          <button
+                            type="submit"
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs transition-all cursor-pointer"
+                          >
+                            Traverse Index ⚡
+                          </button>
+                        </form>
+
+                        {/* B+ Tree Visual Structure */}
+                        <div className="p-4 rounded-2xl bg-[#02050f] border border-indigo-500/30 space-y-4 font-mono text-center">
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-indigo-400 uppercase tracking-widest font-bold">LEVEL 1: ROOT PAGE (CACHED IN RAM BUFFER POOL)</span>
+                            <div className="inline-block p-3 rounded-xl bg-indigo-950/60 border border-indigo-400 text-white font-bold text-xs shadow-lg">
+                              [ Ptr 0 | <strong>Key: 20</strong> | Ptr 1 | <strong>Key: 40</strong> | Ptr 2 ]
+                            </div>
+                          </div>
+
+                          <div className="text-gray-500 text-xs">│ ─────────────── ┼ ─────────────── │</div>
+
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-bold">LEVEL 2: INTERNAL PAGES (HIGH FAN-OUT)</span>
+                            <div className="flex flex-wrap items-center justify-center gap-3">
+                              <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-200 text-xs">
+                                Page 1: [5, 10, 15]
+                              </div>
+                              <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-200 text-xs">
+                                Page 2: [25, 30, 35]
+                              </div>
+                              <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-200 text-xs">
+                                Page 3: [45, 50, 60]
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-gray-500 text-xs">▼ ─────────────── ▼ ─────────────── ▼</div>
+
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-emerald-400 uppercase tracking-widest font-bold">LEVEL 3: LEAF PAGES (DOUBLY LINKED SEQUENTIAL STORAGE)</span>
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                              <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
+                                [Leaf 1: 5, 10, 15]
+                              </div>
+                              <span className="text-emerald-400">⇄</span>
+                              <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
+                                [Leaf 2: 20, 25, 30, 35]
+                              </div>
+                              <span className="text-emerald-400">⇄</span>
+                              <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 text-xs">
+                                [Leaf 3: 40, 45, 50, 60]
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Traversal Results Card */}
+                        {bTreeSearchResult && (
+                          <div className="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-400/50 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-white text-xs">Search Path for Key: {bTreeSearchResult.key}</span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px]">
+                                Total Disk Reads: {bTreeSearchResult.totalReads} (Latency: {bTreeSearchResult.latency})
+                              </span>
+                            </div>
+                            <div className="space-y-1 font-mono text-xs">
+                              {bTreeSearchResult.steps.map((st, i) => (
+                                <div key={i} className="flex items-center justify-between text-gray-300 bg-black/40 p-2 rounded-lg">
+                                  <span>{st.level}: {st.desc}</span>
+                                  <span className="text-cyan-400 font-bold">{st.io}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ─── TAB C: TRANSFORMER ATTENTION WEIGHT HEATMAP ─── */}
+                    {sandboxTab === 'attention' && (
+                      <div className="space-y-4">
+                        <div className="p-3 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-purple-300 font-bold">Softmax Temperature (τ):</span>
+                            <input
+                              type="range"
+                              min="0.2"
+                              max="2.0"
+                              step="0.1"
+                              value={attentionTemp}
+                              onChange={(e) => setAttentionTemp(parseFloat(e.target.value))}
+                              className="accent-purple-500 cursor-pointer"
+                            />
+                            <span className="text-xs font-mono font-bold text-white">{attentionTemp.toFixed(1)}</span>
+                          </div>
+
+                          <span className="text-[10px] text-gray-400 font-mono">Formula: Softmax(QK^T / (sqrt(d_k) * τ))</span>
+                        </div>
+
+                        {/* Interactive Matrix */}
+                        <div className="p-4 rounded-2xl bg-[#05030f] border border-purple-500/30 overflow-x-auto space-y-3">
+                          <div className="text-[11px] text-gray-400 font-mono">
+                            Hover over token to inspect query projection attention distribution:
+                          </div>
+                          {(() => {
+                            const tokens = ["Self", "Attention", "Weights", "Transform", "Context"];
+                            const rawScores = [
+                              [4.2, 2.1, 0.8, 1.2, 0.4],
+                              [1.5, 4.8, 2.3, 0.9, 0.6],
+                              [0.8, 2.5, 4.4, 3.1, 1.2],
+                              [1.1, 1.0, 2.8, 4.6, 3.5],
+                              [0.3, 0.7, 1.4, 3.2, 4.9]
+                            ];
+                            return (
+                              <div className="space-y-2">
+                                {tokens.map((rowToken, rIdx) => {
+                                  const unscaled = rawScores[rIdx].map((s) => Math.exp(s / (Math.sqrt(4) * attentionTemp)));
+                                  const sum = unscaled.reduce((a, b) => a + b, 0);
+                                  const probs = unscaled.map((u) => u / sum);
+                                  return (
+                                    <div key={rIdx} className="flex items-center gap-3">
+                                      <span className="w-24 text-right font-mono font-bold text-xs text-purple-300 truncate">{rowToken}</span>
+                                      <div className="flex items-center gap-1.5 flex-1">
+                                        {probs.map((p, cIdx) => (
+                                          <div
+                                            key={cIdx}
+                                            onMouseEnter={() => setSelectedAttnTokenIdx(cIdx)}
+                                            className="flex-1 h-9 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold text-white transition-all cursor-pointer relative group"
+                                            style={{
+                                              backgroundColor: `rgba(168, 85, 247, ${Math.max(0.15, p * 0.95)})`,
+                                              border: `1px solid rgba(192, 132, 252, ${Math.max(0.3, p)})`
+                                            }}
+                                          >
+                                            <span>{(p * 100).toFixed(0)}%</span>
+                                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-black text-cyan-300 text-[9px] font-mono pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap shadow border border-cyan-500/30">
+                                              Attends to: {tokens[cIdx]}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
