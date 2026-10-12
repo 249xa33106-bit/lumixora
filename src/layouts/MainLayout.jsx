@@ -35,6 +35,7 @@ const QUICK_FEATURES = [
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
   { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle },
   { id: 'attendance', label: 'Attendance', icon: UserCheck },
+  { id: 'edupulse', label: '📊 EduPulse (Test-to-Action)', icon: Activity, highlight: true },
 ];
 
 export default function MainLayout({ children, activeTab, setActiveTab, user, onUpdateUser, onLogout, onExitApp }) {

@@ -61,6 +61,7 @@ import ProofOfSkillCertificates from './pages/ProofOfSkillCertificates';
 import PublicCertificateVerification from './pages/PublicCertificateVerification';
 import CoursesPortal from './pages/CoursesPortal';
 import BoloClassPortal from './pages/BoloClassPortal';
+import EduPulsePortal from './pages/EduPulsePortal';
 
 function App() {
   const [showIntro, setShowIntro] = useState(false);
@@ -68,10 +69,11 @@ function App() {
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
       const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
-      if (hash && ['boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal'].includes(hash)) {
+      if (hash && ['boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal', 'edupulse', 'eduplus', 'test-to-action'].includes(hash)) {
         if (hash === 'boloclass' || hash === 'bolo-class' || hash === 'openmaic' || hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'boloclass';
         if (hash === 'courses-portal' || hash === 'all-courses') return 'courses';
         if (hash === 'academic-tracker' || hash === 'marks' || hash === 'academics') return 'my-academics';
+        if (hash === 'eduplus' || hash === 'test-to-action') return 'edupulse';
         return hash;
       }
     }
@@ -799,6 +801,10 @@ function App() {
       case 'ai-classroom':
       case 'interactive-classroom':
         return <BoloClassPortal user={user} setActiveTab={handleTabChange} />;
+      case 'edupulse':
+      case 'eduplus':
+      case 'test-to-action':
+        return <EduPulsePortal user={user} setActiveTab={handleTabChange} />;
       case 'learning-hub':
       case 'learning':
       case 'resource-academy':
@@ -1072,6 +1078,52 @@ function App() {
                 </div>
 
                 <MyAcademics user={user || { name: 'Student Scholar', email: 'guest_student' }} />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone access to EduPulse Test-to-Action Platform without requiring initial login
+    if (lowerHash.includes('edupulse') || lowerHash.includes('eduplus') || lowerHash.includes('test-to-action')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <div className="min-h-screen bg-[#060a12] text-white p-2 md:p-6 space-y-4">
+              <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl">
+                  <div className="flex items-center gap-3">
+                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-teal-500/30" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-white font-sora">Lumixora EduPulse</span>
+                        <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 text-[10px] font-black border border-teal-500/30 uppercase tracking-wider">
+                          Test-to-Action Platform
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-teal-300 font-mono">Apex Academy of Sciences, Kurnool (AP)</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => { window.location.hash = ''; }} 
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
+                    >
+                      ← Home
+                    </button>
+                    <button 
+                      onClick={() => setShowLogin('student')} 
+                      className="px-4 py-2 bg-gradient-to-r from-teal-400 to-emerald-500 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg shadow-teal-500/20 cursor-pointer"
+                    >
+                      Login
+                    </button>
+                  </div>
+                </div>
+
+                <EduPulsePortal user={user || { name: 'Faculty Member', email: 'faculty@apexacademy.in', role: 'faculty' }} setActiveTab={handleTabChange} />
               </div>
             </div>
             {renderUpdateModal()}

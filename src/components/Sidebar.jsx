@@ -35,6 +35,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield, badge: 'Secure' }] : []),
         ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles, badge: 'Team ⚡' }] : []),
         ...(isFaculty ? [{ id: 'faculty-portal', label: 'Faculty Command', icon: GraduationCap, badge: 'Faculty' }] : []),
+        { id: 'edupulse', label: 'EduPulse Action Centre', icon: Activity, badge: 'AI Action ⚡' },
       ]
     }] : []),
     {
@@ -42,6 +43,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       title: '🎓 Academics & Learning',
       items: [
         { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
+        { id: 'edupulse', label: 'EduPulse Test-to-Action', icon: Activity, badge: 'AI Action 📊' },
         { id: 'courses', label: 'All Courses & Diplomas', icon: BookOpen, badge: 'Diplomas 🎓' },
         { id: 'boloclass', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
         { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', icon: GraduationCap, badge: 'NEW 📊' },
