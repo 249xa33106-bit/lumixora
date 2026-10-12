@@ -5573,13 +5573,82 @@ ${sc.codeSnippet || 'N/A'}
         </div>
       </div>
 
+      {/* ─── ULTRA-PROMINENT INTERACTIVE FEATURE BARS (DEBATE & MEMORY SANDBOX) ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        
+        {/* Card 1: AI Classmate Live Debate Launcher */}
+        <div 
+          onClick={() => {
+            setActiveViewMode('debate');
+            document.getElementById('boloclass-stage')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden flex items-center justify-between gap-4 group ${activeViewMode === 'debate' ? 'bg-gradient-to-r from-rose-900/50 via-purple-900/40 to-black border-rose-400 ring-2 ring-rose-400 shadow-xl shadow-rose-500/25' : 'bg-gradient-to-r from-rose-950/30 via-slate-900/60 to-black border-rose-500/30 hover:border-rose-400/80 hover:scale-[1.01]'}`}
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-rose-600 to-pink-500 flex items-center justify-center text-2xl shadow-lg shadow-rose-500/40 shrink-0 group-hover:rotate-6 transition-transform">
+              🔥
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-white font-sora flex items-center gap-1.5">
+                  AI Classmate Live Debate Mode
+                </h3>
+                <span className="px-2 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider animate-pulse">
+                  NEW FEATURE
+                </span>
+              </div>
+              <p className="text-xs text-rose-200/80 mt-0.5">
+                Prof. Vyomra vs Alex vs Maya panel. Listen with voice synthesis & vote!
+              </p>
+            </div>
+          </div>
+          <button className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${activeViewMode === 'debate' ? 'bg-rose-500 text-white shadow-md' : 'bg-rose-500/20 text-rose-300 group-hover:bg-rose-500 group-hover:text-white'}`}>
+            <span>{activeViewMode === 'debate' ? 'Active Mode' : 'Open Debate 🎙️'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Card 2: Interactive Memory Sandbox Launcher */}
+        <div 
+          onClick={() => {
+            setActiveViewMode('sandbox');
+            document.getElementById('boloclass-stage')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden flex items-center justify-between gap-4 group ${activeViewMode === 'sandbox' ? 'bg-gradient-to-r from-cyan-900/50 via-indigo-900/40 to-black border-cyan-400 ring-2 ring-cyan-400 shadow-xl shadow-cyan-500/25' : 'bg-gradient-to-r from-cyan-950/30 via-slate-900/60 to-black border-cyan-500/30 hover:border-cyan-400/80 hover:scale-[1.01]'}`}
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/40 shrink-0 group-hover:rotate-6 transition-transform">
+              🧠
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-white font-sora flex items-center gap-1.5">
+                  60FPS Memory & Hardware Sandbox
+                </h3>
+                <span className="px-2 py-0.2 rounded-full bg-cyan-400 text-black text-[9px] font-black uppercase tracking-wider animate-pulse">
+                  INTERACTIVE
+                </span>
+              </div>
+              <p className="text-xs text-cyan-200/80 mt-0.5">
+                Inspect JVM Stack/Heap, B+ Tree page splits & Transformer attention weights.
+              </p>
+            </div>
+          </div>
+          <button className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 ${activeViewMode === 'sandbox' ? 'bg-cyan-400 text-black shadow-md' : 'bg-cyan-500/20 text-cyan-300 group-hover:bg-cyan-400 group-hover:text-black'}`}>
+            <span>{activeViewMode === 'sandbox' ? 'Active Mode' : 'Open Sandbox ⚡'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+      </div>
+
       {/* ─── Main Interactive Stage Layout ─────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* ─── LEFT COLUMN: Presentation Slides & Dynamic Visualizer (8 Cols) ─── */}
         <div className="lg:col-span-8 space-y-4">
           
-          <div className="p-5 rounded-3xl bg-[#080c18] border border-white/10 space-y-4 shadow-2xl relative overflow-hidden">
+          <div id="boloclass-stage" className="p-5 rounded-3xl bg-[#080c18] border border-white/10 space-y-4 shadow-2xl relative overflow-hidden">
             
             {/* Top Stage Bar: Professor Profile & Peer Classmates */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3.5">
@@ -5633,23 +5702,42 @@ ${sc.codeSnippet || 'N/A'}
                   </span>
                   
                   {/* View Mode Switcher Tabs */}
-                  <div className="flex bg-white/5 p-0.5 rounded-xl border border-white/10 text-[10px] ml-2">
+                  <div className="flex flex-wrap items-center bg-white/5 p-1 rounded-xl border border-white/10 text-[10px] gap-1">
                     <button
                       onClick={() => setActiveViewMode('slides')}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'slides' ? 'bg-cyan-500 text-black font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeViewMode === 'slides' ? 'bg-cyan-500 text-black font-black shadow-lg shadow-cyan-500/30 ring-1 ring-cyan-300' : 'text-gray-400 hover:text-white'}`}
                     >
-                      <Presentation className="w-3 h-3" /> Lecture Slides
+                      <Presentation className="w-3.5 h-3.5" /> Lecture Slides
                     </button>
+
+                    <button
+                      onClick={() => setActiveViewMode('debate')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeViewMode === 'debate' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black shadow-lg shadow-rose-500/40 ring-2 ring-rose-300' : 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 border border-rose-500/40'}`}
+                    >
+                      <Flame className="w-3.5 h-3.5 text-rose-400 animate-bounce" />
+                      <span>🔥 Live Debate</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[8px] font-black uppercase">NEW</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveViewMode('sandbox')}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeViewMode === 'sandbox' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-300' : 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/40 border border-cyan-500/40'}`}
+                    >
+                      <Brain className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+                      <span>🧠 Memory Sandbox</span>
+                      <span className="px-1.5 py-0.2 rounded-full bg-cyan-400 text-black text-[8px] font-black uppercase">60FPS</span>
+                    </button>
+
                     <button
                       onClick={() => setActiveViewMode('blackboard')}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'blackboard' ? 'bg-purple-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                      className={`px-2.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'blackboard' ? 'bg-purple-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
                     >
-                      <Layers className="w-3 h-3" /> Blackboard Notes
+                      <Layers className="w-3 h-3" /> Blackboard
                     </button>
                     {activeScene.diagram && (
                       <button
                         onClick={() => setActiveViewMode('diagram')}
-                        className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'diagram' ? 'bg-indigo-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
+                        className={`px-2.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'diagram' ? 'bg-indigo-600 text-white font-black shadow' : 'text-gray-400 hover:text-white'}`}
                       >
                         <GitBranch className="w-3 h-3" /> Diagram
                       </button>
@@ -5670,18 +5758,6 @@ ${sc.codeSnippet || 'N/A'}
                         <Terminal className="w-3 h-3" /> Terminal
                       </button>
                     )}
-                    <button
-                      onClick={() => setActiveViewMode('debate')}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'debate' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white font-black shadow-md shadow-rose-500/30' : 'text-gray-400 hover:text-white'}`}
-                    >
-                      <Flame className="w-3 h-3 text-rose-400" /> Live Debate
-                    </button>
-                    <button
-                      onClick={() => setActiveViewMode('sandbox')}
-                      className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${activeViewMode === 'sandbox' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black shadow-md shadow-cyan-500/30' : 'text-gray-400 hover:text-white'}`}
-                    >
-                      <Brain className="w-3 h-3 text-cyan-300" /> Memory Sandbox
-                    </button>
                   </div>
                 </div>
 
