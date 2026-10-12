@@ -1,0 +1,21 @@
+student_id,batch,test_id,subject,topic,score,maximum_score,test_date
+STU-1001,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,74,100,2026-10-05
+STU-1002,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,82,100,2026-10-05
+STU-1003,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,68,100,2026-10-05
+STU-1004,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,61,100,2026-10-05
+STU-1005,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,88,100,2026-10-05
+STU-1006,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,72,100,2026-10-05
+STU-1007,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,65,100,2026-10-05
+STU-1008,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,79,100,2026-10-05
+STU-1009,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,54,100,2026-10-05
+STU-1010,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,70,100,2026-10-05
+STU-1011,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,58,100,2026-10-05
+STU-1012,JEE-2026 Alpha,TEST-PHY-05,Physics,Thermodynamics & Heat,76,100,2026-10-05
+STU-2001,NEET-2026 Achievers,TEST-BIO-04,Biology,Plant Anatomy & Physiology,78,100,2026-10-06
+STU-2002,NEET-2026 Achievers,TEST-BIO-04,Biology,Plant Anatomy & Physiology,84,100,2026-10-06
+STU-2003,NEET-2026 Achievers,TEST-BIO-04,Biology,Plant Anatomy & Physiology,69,100,2026-10-06
+STU-2004,NEET-2026 Achievers,TEST-BIO-04,Biology,Plant Anatomy & Physiology,72,100,2026-10-06
+STU-2005,NEET-2026 Achievers,TEST-BIO-04,Biology,Plant Anatomy & Physiology,89,100,2026-10-06
+STU-3001,EAPCET-2026 Zenith,TEST-MAT-23,Mathematics,Matrices & Determinants,65,100,2026-10-07
+STU-3002,EAPCET-2026 Zenith,TEST-MAT-23,Mathematics,Matrices & Determinants,73,100,2026-10-07
+STU-3003,EAPCET-2026 Zenith,TEST-MAT-23,Mathematics,Matrices & Determinants,60,100,2026-10-07
