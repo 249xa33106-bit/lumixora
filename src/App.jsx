@@ -1104,7 +1104,7 @@ function App() {
                           Test-to-Action Platform
                         </span>
                       </div>
-                      <p className="text-[11px] text-teal-300 font-mono">Apex Academy of Sciences, Kurnool (AP)</p>
+                      <p className="text-[11px] text-teal-300 font-mono">G. Pulla Reddy Engineering College (Autonomous) • Lumixora Student OS</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -1123,7 +1123,7 @@ function App() {
                   </div>
                 </div>
 
-                <EduPulsePortal user={user || { name: 'Faculty Member', email: 'faculty@apexacademy.in', role: 'faculty' }} setActiveTab={handleTabChange} />
+                <EduPulsePortal user={user || { name: 'Faculty Lead', email: 'faculty@gprec.ac.in', role: 'faculty', college: 'GPREC' }} setActiveTab={handleTabChange} />
               </div>
             </div>
             {renderUpdateModal()}

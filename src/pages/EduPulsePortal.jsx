@@ -10,102 +10,105 @@ import {
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 
-// ─── Default Institutional Dataset (Apex Academy, Kurnool) ───────────────────
+// ─── Default Institutional Dataset (Lumixora Autonomous Campus - GPREC Kurnool) ───────
 const DEFAULT_INSTITUTION = {
-  id: 1,
-  name: "Apex Academy of Sciences, Kurnool (AP)",
-  tagline: "Every test should lead to a better next step.",
-  location: "Nandyal Road, Near Birla Gate, Kurnool, Andhra Pradesh 518002"
+  id: 'gprec',
+  name: "G. Pulla Reddy Engineering College (Autonomous)",
+  shortName: "GPREC Kurnool",
+  tagline: "Every diagnostic assessment creates a targeted micro-action path for placement readiness and academic mastery.",
+  location: "G. Pulla Reddy Nagar, Nandyal Road, Kurnool, Andhra Pradesh 518007",
+  accreditation: "NAAC A+ Autonomous • Affiliated to JNTUA",
+  platform: "Lumixora Student OS by VYOMRA"
 };
 
 const DEFAULT_BATCHES = [
-  { id: 1, name: "JEE-2026 Alpha", program: "IIT-JEE", target_year: 2026, studentCount: 12, avgScore: 54.2 },
-  { id: 2, name: "NEET-2026 Achievers", program: "NEET", target_year: 2026, studentCount: 10, avgScore: 61.8 },
-  { id: 3, name: "EAPCET-2026 Zenith", program: "EAPCET", target_year: 2026, studentCount: 10, avgScore: 55.4 }
+  { id: 1, name: "B.Tech CSE - 2026 Alpha", program: "Computer Science & Engineering", target_year: 2026, studentCount: 12, avgScore: 68.5, department: "CSE" },
+  { id: 2, name: "B.Tech AI&ML - 2026 Sigma", program: "Artificial Intelligence & ML", target_year: 2026, studentCount: 10, avgScore: 64.2, department: "AI&ML" },
+  { id: 3, name: "B.Tech ECE - 2026 Zenith", program: "Electronics & Communication", target_year: 2026, studentCount: 10, avgScore: 59.8, department: "ECE" }
 ];
 
 const DEFAULT_FACULTY = [
-  { id: 1, name: "Dr. Sunitha Reddy", role: "Academic Coordinator", subject: "Administration" },
-  { id: 2, name: "Srikanth Sir", role: "Senior Faculty", subject: "Physics" },
-  { id: 3, name: "Dr. Madhavi Rao", role: "Senior Faculty", subject: "Chemistry" },
-  { id: 4, name: "Venkatesh Sir", role: "Senior Faculty", subject: "Mathematics" },
-  { id: 5, name: "Dr. Padmaja Rani", role: "Senior Faculty", subject: "Biology" },
+  { id: 1, name: "Dr. K. Govardhan Reddy", role: "HOD & Academic Lead", subject: "Computer Science & Engineering" },
+  { id: 2, name: "Prof. S. Ramesh Sir", role: "Senior Faculty", subject: "Data Structures & Java" },
+  { id: 3, name: "Dr. M. Lakshmi Devi", role: "Senior Faculty", subject: "DBMS & Operating Systems" },
+  { id: 4, name: "Prof. V. Suresh Sir", role: "Faculty Mentor", subject: "Algorithms & Competitive Coding" },
+  { id: 5, name: "Dr. P. Sreedhar Sir", role: "Faculty Mentor", subject: "Computer Networks & Cloud" },
 ];
 
 const DEFAULT_STUDENTS = [
-  // JEE-2026 Alpha
-  { id: 1, roll: "JEE-A01", name: "K. Sai Teja", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 68.4, status: "on_track", testsTaken: 5, gaps: ["Rotational Dynamics"] },
-  { id: 2, roll: "JEE-A02", name: "P. Keerthi Reddy", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 42.1, status: "needs_support", testsTaken: 5, gaps: ["Rotational Dynamics", "Organic Reaction Mechanisms"] },
-  { id: 3, roll: "JEE-A03", name: "V. Venkat Raman", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 56.5, status: "stable", testsTaken: 5, gaps: ["Differential Calculus"] },
-  { id: 4, roll: "JEE-A04", name: "B. Bhavana Rao", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 74.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 5, roll: "JEE-A05", name: "M. Rahul Varma", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 39.5, status: "needs_support", testsTaken: 5, gaps: ["Rotational Dynamics", "Wave Optics"] },
-  { id: 6, roll: "JEE-A06", name: "C. Divya Sree", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 51.0, status: "stable", testsTaken: 5, gaps: ["Differential Calculus"] },
-  { id: 7, roll: "JEE-A07", name: "N. Karthik Naidu", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 48.0, status: "needs_support", testsTaken: 5, gaps: ["Rotational Dynamics"] },
-  { id: 8, roll: "JEE-A08", name: "G. Anusha Chowdary", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 62.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 9, roll: "JEE-A09", name: "T. Manjunath Swamy", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 44.0, status: "needs_support", testsTaken: 5, gaps: ["Wave Optics"] },
-  { id: 10, roll: "JEE-A10", name: "D. Sneha Latha", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 58.0, status: "stable", testsTaken: 5, gaps: ["Rotational Dynamics"] },
-  { id: 11, roll: "JEE-A11", name: "Y. Tarun Kumar", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 52.5, status: "stable", testsTaken: 5, gaps: ["Differential Calculus"] },
-  { id: 12, roll: "JEE-A12", name: "R. Swathi Priya", batchId: 1, batchName: "JEE-2026 Alpha", avgScore: 53.5, status: "stable", testsTaken: 5, gaps: [] },
+  // B.Tech CSE - 2026 Alpha
+  { id: 1, roll: "249X1A0501", name: "K. Sai Teja", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 78.4, status: "on_track", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
+  { id: 2, roll: "249X1A0502", name: "P. Keerthi Reddy", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 48.1, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees", "SQL Indexing & Normalization"] },
+  { id: 3, roll: "249X1A0503", name: "V. Venkat Raman", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 62.5, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
+  { id: 4, roll: "249X1A0504", name: "B. Bhavana Rao", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 84.0, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 5, roll: "249X1A0505", name: "M. Rahul Varma", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 42.5, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees", "Cache Memory & Paging"] },
+  { id: 6, roll: "249X1A0506", name: "C. Divya Sree", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 56.0, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
+  { id: 7, roll: "249X1A0507", name: "N. Karthik Naidu", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 49.0, status: "needs_support", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
+  { id: 8, roll: "249X1A0508", name: "G. Anusha Chowdary", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 72.5, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 9, roll: "249X1A0509", name: "T. Manjunath Swamy", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 46.0, status: "needs_support", testsTaken: 5, gaps: ["Cache Memory & Paging"] },
+  { id: 10, roll: "249X1A0510", name: "D. Sneha Latha", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 68.0, status: "stable", testsTaken: 5, gaps: ["Graph Traversal & Trees"] },
+  { id: 11, roll: "249X1A0511", name: "Y. Tarun Kumar", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 58.5, status: "stable", testsTaken: 5, gaps: ["Dynamic Programming"] },
+  { id: 12, roll: "249X1A0512", name: "R. Swathi Priya", batchId: 1, batchName: "B.Tech CSE - 2026 Alpha", avgScore: 65.5, status: "stable", testsTaken: 5, gaps: [] },
 
-  // NEET-2026 Achievers
-  { id: 13, roll: "NEET-B01", name: "A. Harika Sharma", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 78.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 14, roll: "NEET-B02", name: "S. Pradeep Kumar", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 46.0, status: "needs_support", testsTaken: 5, gaps: ["Ionic Equilibrium", "Plant Physiology"] },
-  { id: 15, roll: "NEET-B03", name: "M. Lavanya Devi", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 69.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 16, roll: "NEET-B04", name: "K. Dinesh Reddy", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 54.5, status: "stable", testsTaken: 5, gaps: ["Ionic Equilibrium"] },
-  { id: 17, roll: "NEET-B05", name: "J. Sushmitha Paul", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 43.0, status: "needs_support", testsTaken: 5, gaps: ["Ionic Equilibrium", "Current Electricity"] },
-  { id: 18, roll: "NEET-B06", name: "R. Bhanu Prakash", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 61.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 19, roll: "NEET-B07", name: "N. Meghana Rao", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 57.0, status: "stable", testsTaken: 5, gaps: ["Plant Physiology"] },
-  { id: 20, roll: "NEET-B08", name: "E. Ajay Krishna", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 49.5, status: "needs_support", testsTaken: 5, gaps: ["Ionic Equilibrium"] },
-  { id: 21, roll: "NEET-B09", name: "P. Sravani Latha", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 72.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 22, roll: "NEET-B10", name: "V. Chaitanya Prasad", batchId: 2, batchName: "NEET-2026 Achievers", avgScore: 59.0, status: "stable", testsTaken: 5, gaps: [] },
+  // B.Tech AI&ML - 2026 Sigma
+  { id: 13, roll: "249X1A3301", name: "A. Harika Sharma", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 82.5, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 14, roll: "249X1A3302", name: "S. Pradeep Kumar", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 49.0, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop", "Matrix Factorization"] },
+  { id: 15, roll: "249X1A3303", name: "M. Lavanya Devi", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 76.0, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 16, roll: "249X1A3304", name: "K. Dinesh Reddy", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 59.5, status: "stable", testsTaken: 5, gaps: ["Neural Net Backprop"] },
+  { id: 17, roll: "249X1A3305", name: "J. Sushmitha Paul", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 45.0, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop", "Probability & Bayes Models"] },
+  { id: 18, roll: "249X1A3306", name: "R. Bhanu Prakash", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 67.0, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 19, roll: "249X1A3307", name: "N. Meghana Rao", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 61.0, status: "stable", testsTaken: 5, gaps: ["Matrix Factorization"] },
+  { id: 20, roll: "249X1A3308", name: "E. Ajay Krishna", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 51.5, status: "needs_support", testsTaken: 5, gaps: ["Neural Net Backprop"] },
+  { id: 21, roll: "249X1A3309", name: "P. Sravani Latha", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 79.0, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 22, roll: "249X1A3310", name: "V. Chaitanya Prasad", batchId: 2, batchName: "B.Tech AI&ML - 2026 Sigma", avgScore: 63.0, status: "stable", testsTaken: 5, gaps: [] },
 
-  // EAPCET-2026 Zenith
-  { id: 23, roll: "EAP-C01", name: "G. Mahesh Babu", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 52.0, status: "stable", testsTaken: 5, gaps: ["Coordinate Geometry"] },
-  { id: 24, roll: "EAP-C02", name: "T. Sandhya Rani", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 45.0, status: "needs_support", testsTaken: 5, gaps: ["Chemical Bonding", "Coordinate Geometry"] },
-  { id: 25, roll: "EAP-C03", name: "B. Vikram Simha", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 64.0, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 26, roll: "EAP-C04", name: "K. Pavani Kumari", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 47.5, status: "needs_support", testsTaken: 5, gaps: ["Coordinate Geometry"] },
-  { id: 27, roll: "EAP-C05", name: "M. Akhil Tej", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 59.0, status: "stable", testsTaken: 5, gaps: [] },
-  { id: 28, roll: "EAP-C06", name: "D. Rohini Sree", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 66.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 29, roll: "EAP-C07", name: "N. Uday Kiran", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 41.0, status: "needs_support", testsTaken: 5, gaps: ["Chemical Bonding", "Thermodynamics"] },
-  { id: 30, roll: "EAP-C08", name: "S. Geetha Madhuri", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 60.5, status: "on_track", testsTaken: 5, gaps: [] },
-  { id: 31, roll: "EAP-C09", name: "R. Vinay Kumar", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 53.0, status: "stable", testsTaken: 5, gaps: ["Coordinate Geometry"] },
-  { id: 32, roll: "EAP-C10", name: "A. Lakshmi Prasanna", batchId: 3, batchName: "EAPCET-2026 Zenith", avgScore: 65.5, status: "on_track", testsTaken: 5, gaps: [] },
+  // B.Tech ECE - 2026 Zenith
+  { id: 23, roll: "249X1A0401", name: "G. Mahesh Babu", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 58.0, status: "stable", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
+  { id: 24, roll: "249X1A0402", name: "T. Sandhya Rani", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 47.0, status: "needs_support", testsTaken: 5, gaps: ["VLSI CMOS Inverter Sizing", "Digital Signal Processing & DFT"] },
+  { id: 25, roll: "249X1A0403", name: "B. Vikram Simha", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 71.0, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 26, roll: "249X1A0404", name: "K. Pavani Kumari", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 50.5, status: "needs_support", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
+  { id: 27, roll: "249X1A0405", name: "M. Akhil Tej", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 62.0, status: "stable", testsTaken: 5, gaps: [] },
+  { id: 28, roll: "249X1A0406", name: "D. Rohini Sree", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 72.5, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 29, roll: "249X1A0407", name: "N. Uday Kiran", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 43.0, status: "needs_support", testsTaken: 5, gaps: ["VLSI CMOS Inverter Sizing", "Microcontroller Interrupts"] },
+  { id: 30, roll: "249X1A0408", name: "S. Geetha Madhuri", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 65.5, status: "on_track", testsTaken: 5, gaps: [] },
+  { id: 31, roll: "249X1A0409", name: "R. Vinay Kumar", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 56.0, status: "stable", testsTaken: 5, gaps: ["Digital Signal Processing & DFT"] },
+  { id: 32, roll: "249X1A0410", name: "A. Lakshmi Prasanna", batchId: 3, batchName: "B.Tech ECE - 2026 Zenith", avgScore: 70.5, status: "on_track", testsTaken: 5, gaps: [] },
 ];
 
 const DEFAULT_TOPIC_GAPS = [
   {
     id: 1,
-    topicName: "Rotational Dynamics",
-    subject: "Physics",
-    batchName: "JEE-2026 Alpha",
+    topicName: "Graph Traversal & Trees",
+    subject: "Data Structures & Algorithms",
+    batchName: "B.Tech CSE - 2026 Alpha",
     batchId: 1,
-    avgScore: 38.6,
+    avgScore: 41.5,
     testsEvaluated: 2,
     isRecurring: true,
     affectedStudents: 7,
     totalStudents: 12,
     severity: "high",
-    rationale: "Batch-wide concept bottleneck: 7 of 12 students scored below 50% across Test 1 and Test 4. Torque and angular momentum problems show recurring drop."
+    rationale: "Batch-wide concept bottleneck: 7 of 12 scholars scored below 50% across Dijkstra shortest paths and topological sort. Recursive DFS back-tracking shows recurring confusion."
   },
   {
     id: 2,
-    topicName: "Ionic Equilibrium",
-    subject: "Chemistry",
-    batchName: "NEET-2026 Achievers",
+    topicName: "Neural Net Backprop",
+    subject: "Artificial Intelligence & ML",
+    batchName: "B.Tech AI&ML - 2026 Sigma",
     batchId: 2,
-    avgScore: 41.2,
+    avgScore: 43.8,
     testsEvaluated: 2,
     isRecurring: true,
     affectedStudents: 5,
     totalStudents: 10,
     severity: "high",
-    rationale: "Buffer solution pH calculations and solubility product equilibrium show recurring errors across two consecutive NEET tests."
+    rationale: "Matrix gradient derivatives and cross-entropy error minimization show recurring drop across two consecutive assessments."
   },
   {
     id: 3,
-    topicName: "Coordinate Geometry",
-    subject: "Mathematics",
-    batchName: "EAPCET-2026 Zenith",
+    topicName: "Digital Signal Processing & DFT",
+    subject: "Signals & Systems",
+    batchName: "B.Tech ECE - 2026 Zenith",
     batchId: 3,
     avgScore: 44.5,
     testsEvaluated: 2,
@@ -113,13 +116,13 @@ const DEFAULT_TOPIC_GAPS = [
     affectedStudents: 5,
     totalStudents: 10,
     severity: "medium",
-    rationale: "Conic section tangent equations and parabola focal chord properties fell below 50% benchmark."
+    rationale: "Fast Fourier Transform butterfly stages and Z-transform ROC pole-zero cancellation fell below 50% benchmark."
   },
   {
     id: 4,
-    topicName: "Differential Calculus",
-    subject: "Mathematics",
-    batchName: "JEE-2026 Alpha",
+    topicName: "SQL Indexing & Normalization",
+    subject: "DBMS & Systems",
+    batchName: "B.Tech CSE - 2026 Alpha",
     batchId: 1,
     avgScore: 47.8,
     testsEvaluated: 2,
@@ -127,13 +130,13 @@ const DEFAULT_TOPIC_GAPS = [
     affectedStudents: 4,
     totalStudents: 12,
     severity: "medium",
-    rationale: "Single-test variance in Applications of Derivatives (tangents and rate measure). Needs monitoring on next reassessment."
+    rationale: "Single-test variance in B+ Tree leaf lookups and BCNF functional dependencies. Needs monitoring on next reassessment."
   },
   {
     id: 5,
-    topicName: "Wave Optics",
-    subject: "Physics",
-    batchName: "JEE-2026 Alpha",
+    topicName: "Cache Memory & Paging",
+    subject: "Operating Systems",
+    batchName: "B.Tech CSE - 2026 Alpha",
     batchId: 1,
     avgScore: 43.5,
     testsEvaluated: 2,
@@ -141,7 +144,7 @@ const DEFAULT_TOPIC_GAPS = [
     affectedStudents: 4,
     totalStudents: 12,
     severity: "medium",
-    rationale: "Young's Double Slit fringe width shift and path difference calculations show recurring formula confusion."
+    rationale: "Virtual memory address translation, TLB miss penalty calculations, and LRU eviction show recurring formula confusion."
   }
 ];
 
@@ -149,117 +152,117 @@ const DEFAULT_ACTIONS = [
   {
     id: "act-1",
     gapId: 1,
-    title: "Torque & Moment of Inertia Hands-on Problem Clinic",
-    topicName: "Rotational Dynamics",
-    subject: "Physics",
-    batchName: "JEE-2026 Alpha",
+    title: "Dijkstra & BFS Step-by-Step Problem Clinic",
+    topicName: "Graph Traversal & Trees",
+    subject: "Data Structures & Algorithms",
+    batchName: "B.Tech CSE - 2026 Alpha",
     batchId: 1,
     strategy: "1-on-1 Concept Clinic",
-    assignedTo: "Srikanth Sir",
+    assignedTo: "Prof. S. Ramesh Sir",
     dueDate: "2026-10-18",
     status: "in_progress",
     targetCohort: ["P. Keerthi Reddy", "M. Rahul Varma", "N. Karthik Naidu", "T. Manjunath Swamy"],
-    notes: "Conducting step-by-step free-body diagram breakdown for rolling without slipping."
+    notes: "Conducting step-by-step priority queue trace and adjacency list representations."
   },
   {
     id: "act-2",
     gapId: 2,
-    title: "Buffer Solutions & Solubility Product Problem Set",
-    topicName: "Ionic Equilibrium",
-    subject: "Chemistry",
-    batchName: "NEET-2026 Achievers",
+    title: "Gradient Vectors & Matrix Chain Rule Practice Sheet",
+    topicName: "Neural Net Backprop",
+    subject: "Artificial Intelligence & ML",
+    batchName: "B.Tech AI&ML - 2026 Sigma",
     batchId: 2,
     strategy: "Targeted Practice Problem Sheet",
-    assignedTo: "Dr. Madhavi Rao",
+    assignedTo: "Dr. K. Govardhan Reddy",
     dueDate: "2026-10-19",
     status: "assigned",
     targetCohort: ["S. Pradeep Kumar", "K. Dinesh Reddy", "J. Sushmitha Paul", "E. Ajay Krishna"],
-    notes: "Distributing 30 curated NEET previous year questions focusing on Henderson-Hasselbalch equation."
+    notes: "Distributing 25 curated computational practice questions with step-by-step weight updates."
   },
   {
     id: "act-3",
     gapId: 3,
-    title: "Conic Sections Tangent Formulas Doubt Workshop",
-    topicName: "Coordinate Geometry",
-    subject: "Mathematics",
-    batchName: "EAPCET-2026 Zenith",
+    title: "FFT Butterfly Structures & ROC Doubt Workshop",
+    topicName: "Digital Signal Processing & DFT",
+    subject: "Signals & Systems",
+    batchName: "B.Tech ECE - 2026 Zenith",
     batchId: 3,
     strategy: "Doubt Clearing Workshop",
-    assignedTo: "Venkatesh Sir",
+    assignedTo: "Prof. V. Suresh Sir",
     dueDate: "2026-10-16",
     status: "completed",
     targetCohort: ["T. Sandhya Rani", "K. Pavani Kumari", "N. Uday Kiran", "R. Vinay Kumar"],
-    notes: "45-minute evening workshop conducted. All 4 students cleared tangent parametric forms.",
+    notes: "45-minute lab workshop conducted. All 4 scholars demonstrated full mastery on twiddle factors.",
     measuredGain: "+18.5%"
   },
   {
     id: "act-4",
     gapId: 4,
-    title: "15-Minute Reassessment on Maxima & Minima",
-    topicName: "Differential Calculus",
-    subject: "Mathematics",
-    batchName: "JEE-2026 Alpha",
+    title: "15-Minute Reassessment on B-Tree Query Execution",
+    topicName: "SQL Indexing & Normalization",
+    subject: "DBMS & Systems",
+    batchName: "B.Tech CSE - 2026 Alpha",
     batchId: 1,
     strategy: "15-min Diagnostic Reassessment",
-    assignedTo: "Venkatesh Sir",
+    assignedTo: "Dr. M. Lakshmi Devi",
     dueDate: "2026-10-20",
     status: "pending_review",
     targetCohort: ["V. Venkat Raman", "C. Divya Sree", "Y. Tarun Kumar"],
-    notes: "Testing whether the single-test drop was transient or a conceptual gap."
+    notes: "Validating whether query cost drop was transient or a conceptual bottleneck."
   }
 ];
 
 const DEFAULT_EVALUATIONS = [
   {
     id: 1,
-    actionTitle: "Conic Sections Tangent Formulas Workshop",
-    topic: "Coordinate Geometry",
-    batch: "EAPCET-2026 Zenith",
+    actionTitle: "FFT Butterfly Structures Workshop",
+    topic: "Digital Signal Processing & DFT",
+    batch: "B.Tech ECE - 2026 Zenith",
     baselineScore: 42.0,
     followUpScore: 60.5,
     delta: 18.5,
     outcome: "marked_gain",
     strategy: "Doubt Clearing Workshop",
-    faculty: "Venkatesh Sir",
+    faculty: "Prof. V. Suresh Sir",
     date: "2026-10-11"
   },
   {
     id: 2,
-    actionTitle: "Chemical Bonding Hybridisation Diagnostic Relecture",
-    topic: "Chemical Bonding",
-    batch: "NEET-2026 Achievers",
+    actionTitle: "BCNF Functional Dependencies Diagnostic Relecture",
+    topic: "SQL Indexing & Normalization",
+    batch: "B.Tech CSE - 2026 Alpha",
     baselineScore: 48.5,
     followUpScore: 59.8,
     delta: 11.3,
     outcome: "moderate_gain",
     strategy: "Foundational Re-lecture",
-    faculty: "Dr. Madhavi Rao",
+    faculty: "Dr. M. Lakshmi Devi",
     date: "2026-10-09"
   },
   {
     id: 3,
-    actionTitle: "Current Electricity Kirchhoff Laws Speed Drill",
-    topic: "Current Electricity",
-    batch: "JEE-2026 Alpha",
+    actionTitle: "Graph Shortest Path Dijkstra Speed Drill",
+    topic: "Graph Traversal & Trees",
+    batch: "B.Tech CSE - 2026 Alpha",
     baselineScore: 45.0,
     followUpScore: 62.0,
     delta: 17.0,
     outcome: "marked_gain",
     strategy: "Targeted Practice Sheet",
-    faculty: "Srikanth Sir",
+    faculty: "Prof. S. Ramesh Sir",
     date: "2026-10-06"
   },
   {
     id: 4,
-    actionTitle: "Plant Physiology Water Potential Concept Clinic",
-    topic: "Plant Physiology",
-    batch: "NEET-2026 Achievers",
+    actionTitle: "Virtual Paging & TLB Concept Clinic",
+    topic: "Cache Memory & Paging",
+    batch: "B.Tech CSE - 2026 Alpha",
     baselineScore: 51.0,
     followUpScore: 54.0,
     delta: 3.0,
     outcome: "stable",
     strategy: "1-on-1 Concept Clinic",
-    faculty: "Dr. Padmaja Rani",
+    faculty: "Dr. P. Sreedhar Sir",
     date: "2026-10-04"
   }
 ];
@@ -297,12 +300,12 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionForm, setActionForm] = useState({
     title: '',
-    topicName: 'Rotational Dynamics',
-    subject: 'Physics',
-    batchName: 'JEE-2026 Alpha',
+    topicName: 'Graph Traversal & Trees',
+    subject: 'Data Structures & Algorithms',
+    batchName: 'B.Tech CSE - 2026 Alpha',
     batchId: 1,
-    strategy: 'Doubt Clearing Workshop',
-    assignedTo: 'Srikanth Sir',
+    strategy: '1-on-1 Concept Clinic',
+    assignedTo: 'Prof. S. Ramesh Sir',
     dueDate: '2026-10-25',
     targetCohort: 'P. Keerthi Reddy, M. Rahul Varma',
     notes: ''
@@ -416,12 +419,12 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
     setIsActionModalOpen(false);
     setActionForm({
       title: '',
-      topicName: 'Rotational Dynamics',
-      subject: 'Physics',
-      batchName: 'JEE-2026 Alpha',
+      topicName: 'Graph Traversal & Trees',
+      subject: 'Data Structures & Algorithms',
+      batchName: 'B.Tech CSE - 2026 Alpha',
       batchId: 1,
-      strategy: 'Doubt Clearing Workshop',
-      assignedTo: 'Srikanth Sir',
+      strategy: '1-on-1 Concept Clinic',
+      assignedTo: 'Prof. S. Ramesh Sir',
       dueDate: '2026-10-25',
       targetCohort: 'P. Keerthi Reddy, M. Rahul Varma',
       notes: ''
@@ -429,7 +432,7 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
 
     addToast?.({
       type: 'success',
-      message: `🚀 New intervention scheduled for ${newAction.assignedTo}! (+35 XP)`
+      message: `🚀 New intervention scheduled for ${newAction.assignedTo}! (+35 AP)`
     });
     if (addXP) addXP(35);
   };
@@ -443,11 +446,11 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
       const parts = line.split(',').map(p => p.trim());
       return {
         id: idx + 1,
-        studentId: parts[0] || 'STU-1001',
-        batch: parts[1] || 'JEE-2026 Alpha',
+        studentId: parts[0] || '249X1A0501',
+        batch: parts[1] || 'B.Tech CSE - 2026 Alpha',
         testId: parts[2] || 'T-101',
-        subject: parts[3] || 'Physics',
-        topic: parts[4] || 'Kinematics',
+        subject: parts[3] || 'Data Structures & Algorithms',
+        topic: parts[4] || 'Graph Traversal & Trees',
         score: parseFloat(parts[5]) || 0,
         maxScore: parseFloat(parts[6]) || 100,
         date: parts[7] || '2026-10-12',
@@ -461,41 +464,43 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
   const handleDownloadSampleCsv = () => {
     const header = "student_id,batch,test_id,subject,topic,score,maximum_score,test_date\n";
     const sample = [
-      "STU-1001,JEE-2026 Alpha,TEST-01,Physics,Rotational Dynamics,38,100,2026-10-10",
-      "STU-1002,JEE-2026 Alpha,TEST-01,Physics,Rotational Dynamics,42,100,2026-10-10",
-      "STU-1005,JEE-2026 Alpha,TEST-01,Physics,Rotational Dynamics,35,100,2026-10-10",
-      "STU-2001,NEET-2026 Achievers,TEST-02,Chemistry,Ionic Equilibrium,40,100,2026-10-11",
-      "STU-2002,NEET-2026 Achievers,TEST-02,Chemistry,Ionic Equilibrium,44,100,2026-10-11"
+      "249X1A0501,B.Tech CSE - 2026 Alpha,TEST-01,Data Structures & Algorithms,Graph Traversal & Trees,42,100,2026-10-10",
+      "249X1A0502,B.Tech CSE - 2026 Alpha,TEST-01,Data Structures & Algorithms,Graph Traversal & Trees,38,100,2026-10-10",
+      "249X1A0505,B.Tech CSE - 2026 Alpha,TEST-01,Data Structures & Algorithms,Graph Traversal & Trees,35,100,2026-10-10",
+      "249X1A3302,B.Tech AI&ML - 2026 Sigma,TEST-02,Artificial Intelligence & ML,Neural Net Backprop,44,100,2026-10-11",
+      "249X1A0402,B.Tech ECE - 2026 Zenith,TEST-03,Signals & Systems,Digital Signal Processing & DFT,40,100,2026-10-11"
     ].join('\n');
     const blob = new Blob([header + sample], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = "edupulse_sample_test_results.csv";
+    a.download = "lumixora_edupulse_sample_assessments.csv";
     a.click();
     addToast?.({ type: 'info', message: '📥 Sample Assessment CSV downloaded successfully!' });
   };
 
+  const institutionName = user?.college || DEFAULT_INSTITUTION.name;
+
   return (
     <div className="space-y-6 font-sans text-gray-100 pb-16">
-      {/* ─── INSTITUTION BRANDING & APEX HEADER BAR ─── */}
-      <div className="p-5 md:p-6 rounded-3xl bg-gradient-to-r from-[#03131d] via-[#041a27] to-[#010911] border border-teal-500/30 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      {/* ─── INSTITUTION BRANDING & LUMIXORA HEADER BAR ─── */}
+      <div className="p-5 md:p-6 rounded-3xl bg-gradient-to-r from-[#050b17] via-[#09152b] to-[#040813] border border-cyan-500/30 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="space-y-1.5 z-10">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-black uppercase tracking-widest border border-teal-400/40 flex items-center gap-1.5">
-              <Compass className="w-3 h-3 text-teal-400 animate-spin" /> EduPulse • Test-to-Action Platform
+            <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-widest border border-cyan-400/40 flex items-center gap-1.5">
+              <Compass className="w-3 h-3 text-cyan-400 animate-spin" /> Lumixora EduPulse™ • Test-to-Action Platform
             </span>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono flex items-center gap-1 border ${apiOnline ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300' : 'bg-amber-500/20 border-amber-400/40 text-amber-300'}`}>
-              <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-              {apiOnline ? 'FastAPI Backend Online (8000)' : 'Client Local Storage Mode'}
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono flex items-center gap-1 border ${apiOnline ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300' : 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300'}`}>
+              <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-400 animate-pulse' : 'bg-cyan-400'}`} />
+              {apiOnline ? 'FastAPI Diagnostic Engine Online (8000)' : 'Client Local Storage Mode'}
             </span>
           </div>
 
-          <h1 className="text-xl md:text-2xl font-black text-white font-sora tracking-tight">
-            {DEFAULT_INSTITUTION.name}
+          <h1 className="text-xl md:text-2xl font-black text-white font-sora tracking-tight flex items-center gap-2">
+            <span>{institutionName}</span>
           </h1>
-          <p className="text-xs md:text-sm text-teal-200/80 font-medium">
-            "{DEFAULT_INSTITUTION.tagline}" • <span className="text-gray-400 text-xs">Dr. Sunitha Reddy (Lead Coordinator)</span>
+          <p className="text-xs md:text-sm text-cyan-200/80 font-medium">
+            "{DEFAULT_INSTITUTION.tagline}" • <span className="text-gray-400 text-xs font-mono">Dr. K. Govardhan Reddy (Academic Lead & HOD - CSE)</span>
           </p>
         </div>
 
@@ -504,24 +509,24 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
           <div className="bg-black/50 p-1 rounded-2xl border border-white/10 flex items-center text-xs">
             <button
               onClick={() => setSelectedBatchId(null)}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${!selectedBatchId ? 'bg-teal-500 text-black font-black shadow-lg shadow-teal-500/25' : 'text-gray-400 hover:text-white'}`}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${!selectedBatchId ? 'bg-cyan-400 text-black font-black shadow-lg shadow-cyan-500/25' : 'text-gray-400 hover:text-white'}`}
             >
-              All Batches (32)
+              All Cohorts (32)
             </button>
             {DEFAULT_BATCHES.map(b => (
               <button
                 key={b.id}
                 onClick={() => setSelectedBatchId(b.id)}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${selectedBatchId === b.id ? 'bg-teal-500 text-black font-black shadow-lg shadow-teal-500/25' : 'text-gray-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${selectedBatchId === b.id ? 'bg-cyan-400 text-black font-black shadow-lg shadow-cyan-500/25' : 'text-gray-400 hover:text-white'}`}
               >
-                {b.name.split('-')[0]} ({b.studentCount})
+                {b.name.split('-')[0].replace('B.Tech ', '')} ({b.studentCount})
               </button>
             ))}
           </div>
 
           <button
             onClick={() => setIsActionModalOpen(true)}
-            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-black font-black text-xs shadow-lg shadow-teal-500/30 transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-black font-black text-xs shadow-lg shadow-cyan-500/30 transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>+ New Action</span>
@@ -529,7 +534,7 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
         </div>
 
         {/* Ambient background glow */}
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* ─── NAVIGATION TABS STRIP ─── */}
@@ -1070,14 +1075,14 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
             </div>
             <button
               onClick={() => {
-                const csv = "batch,students,avg_score\nJEE-2026 Alpha,12,54.2\nNEET-2026 Achievers,10,61.8\nEAPCET-2026 Zenith,10,55.4\n";
+                const csv = "cohort,program,scholars,avg_score\nB.Tech CSE - 2026 Alpha,Computer Science & Engineering,12,68.5\nB.Tech AI&ML - 2026 Sigma,Artificial Intelligence & ML,10,64.2\nB.Tech ECE - 2026 Zenith,Electronics & Communication,10,59.8\n";
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "batch_performance_audit.csv";
+                a.download = "lumixora_cohort_performance_audit.csv";
                 a.click();
-                addToast?.({ type: 'info', message: '📥 Batch Audit Report exported!' });
+                addToast?.({ type: 'info', message: '📥 Cohort Audit Report exported!' });
               }}
               className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
@@ -1091,17 +1096,17 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
               <span className="text-2xl">📊</span>
               <h4 className="font-bold text-white text-sm">Intervention Efficacy Master</h4>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Paired pre/post intervention deltas across all physics, chemistry, and mathematics workshops.
+                Longitudinal pre/post diagnostic deltas across Data Structures, AI, Database, and Signals labs.
               </p>
             </div>
             <button
               onClick={() => {
-                const csv = "action,topic,baseline,post_score,gain\nRotational Dynamics Clinic,Physics,38.6,56.0,+17.4%\nBuffer Solution Practice,Chemistry,41.2,55.0,+13.8%\n";
+                const csv = "action,topic,subject,baseline,post_score,gain\nFFT Butterfly Structures Workshop,DSP,Signals & Systems,42.0,60.5,+18.5%\nBCNF Dependencies Diagnostic Relecture,SQL Indexing,DBMS,48.5,59.8,+11.3%\nGraph Shortest Path Dijkstra Drill,Graph Traversal,DSA,45.0,62.0,+17.0%\nVirtual Paging Concept Clinic,Cache Memory,Operating Systems,51.0,54.0,+3.0%\n";
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "intervention_efficacy_master.csv";
+                a.download = "lumixora_intervention_efficacy_master.csv";
                 a.click();
                 addToast?.({ type: 'info', message: '📥 Intervention Efficacy Master exported!' });
               }}
@@ -1115,16 +1120,16 @@ export default function EduPulsePortal({ user: propUser, setActiveTab }) {
           <div className="p-5 rounded-3xl bg-[#020b16] border border-white/10 space-y-3 flex flex-col justify-between">
             <div className="space-y-1.5">
               <span className="text-2xl">🎓</span>
-              <h4 className="font-bold text-white text-sm">Student Diagnostic Dossier</h4>
+              <h4 className="font-bold text-white text-sm">Scholar Diagnostic Dossier</h4>
               <p className="text-xs text-gray-400 leading-relaxed">
-                Individual report card breakdown with subject mastery, topic bottlenecks, and non-punitive guidance.
+                Individual verified dossier breakdown with subject mastery, concept bottlenecks, and non-punitive guidance.
               </p>
             </div>
             <button
               onClick={() => {
-                addToast?.({ type: 'success', message: '📄 Student Diagnostic Dossier generated for Dr. Sunitha Reddy.' });
+                addToast?.({ type: 'success', message: '📄 Scholar Diagnostic Dossier generated successfully!' });
               }}
-              className="px-3 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-black font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              className="px-3 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>Generate Dossier</span>
