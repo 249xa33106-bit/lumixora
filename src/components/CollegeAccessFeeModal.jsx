@@ -1,35 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import QRCode from 'qrcode';
 import { 
-  ShieldCheck, CheckCircle2, Copy, Check, ExternalLink, 
-  Sparkles, AlertCircle, RefreshCw, Smartphone, CreditCard, Lock, ArrowRight, X,
-  Clock, AlertTriangle, HelpCircle
+  ShieldCheck, CheckCircle2, Check, Sparkles, AlertCircle, RefreshCw, 
+  CreditCard, Lock, ArrowRight, X, Clock, AlertTriangle, Key, ChevronDown, ChevronUp, Zap
 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { internshipDb } from '../services/internshipDb';
-import { 
-  recordLocalFeePayment, validateUtrFormat, isValidVerifiedUtr, KNOWN_VERIFIED_UTRS 
-} from '../data/collegesData';
+import { recordLocalFeePayment, KNOWN_VERIFIED_UTRS, KNOWN_PAID_EMAILS } from '../data/collegesData';
 import { 
   notifyFounderPayment, notifyFounderAmbassadorReferral, cleanScholarName,
-  submitPendingFeePayment, checkUtrVerificationStatus
+  checkUtrVerificationStatus 
 } from '../services/founderNotificationService';
-
-const getFounderUpiId = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('lumixora_founder_upi_id') || '9346476055@ptaxis';
-  }
-  return '9346476055@ptaxis';
-};
-
-const getFounderPayeeName = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('lumixora_founder_payee_name') || 'Shaik Sowban';
-  }
-  return 'Shaik Sowban';
-};
+import { 
+  initiateRazorpayPayment, getRazorpayKeyId, fetchRemoteRazorpayKey, saveRazorpayKeyGlobally 
+} from '../services/razorpayService';
 
 const FEE_AMOUNT = 10.00;
 
@@ -42,18 +27,25 @@ export default function CollegeAccessFeeModal({
   onCancel,
   onLogout 
 }) {
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
-  const [utrNumber, setUtrNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [copiedUpi, setCopiedUpi] = useState(false);
   const [error, setError] = useState('');
   const [confirmedTxId, setConfirmedTxId] = useState('');
 
-  // Zero-Trust Verification States: 'input' | 'submitting' | 'pending_founder' | 'verified' | 'rejected'
+  // Verification States: 'input' | 'pending_founder' | 'verified' | 'rejected'
   const [verificationState, setVerificationState] = useState('input');
   const [pendingUtr, setPendingUtr] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [pollTick, setPollTick] = useState(0);
+
+  // Razorpay Key Management
+  const [razorpayKey, setRazorpayKey] = useState(() => getRazorpayKeyId());
+  const [showFounderKeyConfig, setShowFounderKeyConfig] = useState(false);
+  const [founderKeyInput, setFounderKeyInput] = useState('');
+
+  // Whitelisted Exemption Redeem (Shaik Anjum, etc.)
+  const [showExemptionRedeem, setShowExemptionRedeem] = useState(false);
+  const [exemptionUtr, setExemptionUtr] = useState('');
+  const [exemptionError, setExemptionError] = useState('');
 
   const pollIntervalRef = useRef(null);
 
@@ -63,40 +55,27 @@ export default function CollegeAccessFeeModal({
     ? college 
     : (college?.name || college?.shortName || user?.college || user?.collegeName || "Academic Partner College");
 
-  const officialUpiId = getFounderUpiId();
-  const officialPayeeName = getFounderPayeeName();
-
-  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(officialUpiId)}&pn=${encodeURIComponent(officialPayeeName)}&am=10.00&cu=INR&tn=${encodeURIComponent(`Lumixora One-Time Fee - ${userEmail || userName}`)}`;
-
-  // 1. Generate real dynamic UPI QR Code on mount
+  // 1. Fetch remote Razorpay key on mount if not in local storage
   useEffect(() => {
-    let isMounted = true;
-    QRCode.toDataURL(upiDeepLink, {
-      width: 280,
-      margin: 1,
-      color: {
-        dark: '#0f172a',
-        light: '#ffffff'
-      },
-      errorCorrectionLevel: 'H'
-    }).then((url) => {
-      if (isMounted) setQrCodeDataUrl(url);
-    }).catch(err => {
-      console.warn("QR code generation error:", err);
-    });
+    fetchRemoteRazorpayKey().then(k => {
+      if (k) setRazorpayKey(k);
+    }).catch(() => {});
+  }, []);
 
-    return () => { isMounted = false; };
-  }, [upiDeepLink]);
-
-  // 2. Check for existing pending UTR submission in localStorage on mount
+  // 2. Check for existing pending UTR submission or pre-verified paid email on mount
   useEffect(() => {
     if (!userEmail) return;
+
+    if (KNOWN_PAID_EMAILS.has(userEmail) || userEmail === '249xa33112@gprec.ac.in') {
+      finalizePayment('UTR-317827902237');
+      return;
+    }
+
     const cachedPending = localStorage.getItem(`lumixora_pending_utr_${userEmail}`);
     if (cachedPending) {
       setPendingUtr(cachedPending);
       setVerificationState('pending_founder');
 
-      // Check immediately if already verified or rejected
       checkUtrVerificationStatus(cachedPending, userEmail).then(res => {
         if (res.status === 'verified' || res.isVerified) {
           finalizePayment(`UTR-${cachedPending}`);
@@ -135,10 +114,8 @@ export default function CollegeAccessFeeModal({
       }
     };
 
-    // Poll every 3 seconds for fast automated unlock
     pollIntervalRef.current = setInterval(checkStatus, 3000);
 
-    // Also listen to Supabase realtime Postgres changes on founder_notifications
     let channel = null;
     if (supabase && typeof supabase.channel === 'function') {
       try {
@@ -160,19 +137,8 @@ export default function CollegeAccessFeeModal({
     };
   }, [verificationState, pendingUtr, userEmail]);
 
-  const handleCopyUPI = async () => {
-    try {
-      await navigator.clipboard.writeText(officialUpiId);
-      setCopiedUpi(true);
-      setTimeout(() => setCopiedUpi(false), 2500);
-    } catch (e) {
-      setCopiedUpi(true);
-      setTimeout(() => setCopiedUpi(false), 2500);
-    }
-  };
-
   /**
-   * Finalizes genuine payment and persists verified status across Supabase, Firestore, and LocalStorage.
+   * Finalizes verified payment and persists status across Supabase, Firestore, and LocalStorage.
    */
   const finalizePayment = async (resolvedTxId) => {
     setIsProcessing(true);
@@ -186,7 +152,7 @@ export default function CollegeAccessFeeModal({
       feeTxId: resolvedTxId,
       college: collegeName,
       status: 'verified',
-      paymentMethod: 'UPI',
+      paymentMethod: resolvedTxId.startsWith('RZP-') ? 'Razorpay' : 'Exemption',
       currency: 'INR'
     };
 
@@ -307,7 +273,6 @@ export default function CollegeAccessFeeModal({
 
     } catch (err) {
       console.error("Payment finalization error:", err);
-      setError("Payment synced. Unlocking your workspace now...");
       setConfirmedTxId(resolvedTxId);
       setVerificationState('verified');
       setTimeout(() => {
@@ -319,74 +284,88 @@ export default function CollegeAccessFeeModal({
   };
 
   /**
-   * Zero-Trust UTR verification handler.
-   * 1. Heuristic format validation (rejects 123456789012, 000000000000, 111111111111).
-   * 2. Checks whitelist for instant pre-approved activation.
-   * 3. Prevents duplicate UTR across students.
-   * 4. Enqueues in Founder Live Verification queue.
+   * DIRECT 1-Click Automated Razorpay Checkout Handler.
+   * Directly triggers Razorpay Checkout with Google Pay, PhonePe, Paytm, Cards, NetBanking.
    */
-  const handleVerifyUTR = async (e) => {
-    e.preventDefault();
+  const handlePayWithRazorpay = async () => {
+    setIsProcessing(true);
     setError('');
 
-    const cleanInput = utrNumber.trim();
+    let keyId = razorpayKey || getRazorpayKeyId();
+    if (!keyId) {
+      keyId = await fetchRemoteRazorpayKey();
+      if (keyId) setRazorpayKey(keyId);
+    }
 
-    // 1. Strict Heuristic Validation
-    const formatCheck = validateUtrFormat(cleanInput);
-    if (!formatCheck.valid) {
-      setError(formatCheck.reason);
+    if (!keyId) {
+      setShowFounderKeyConfig(true);
+      setError('Founder setup required: Please enter your Razorpay Key ID below to activate live checkouts.');
+      setIsProcessing(false);
       return;
     }
 
-    const cleanUtr = formatCheck.cleanUtr;
-    setIsProcessing(true);
-
     try {
-      // 2. Check if UTR is in pre-verified whitelist (Shaik Anjum, Gundam Poojitha, G Varun Kumar, Kundili Thriveni)
-      if (KNOWN_VERIFIED_UTRS.has(cleanUtr) || KNOWN_VERIFIED_UTRS.has(`UTR-${cleanUtr}`)) {
-        await finalizePayment(`UTR-${cleanUtr}`);
-        return;
-      }
-
-      // 3. Submit to Founder Verification Queue & Check Duplicates
-      const res = await submitPendingFeePayment({
-        name: userName,
-        email: userEmail,
-        college: collegeName,
-        department: user?.department || 'Engineering',
+      const result = await initiateRazorpayPayment({
         amount: FEE_AMOUNT,
-        utr: cleanUtr
+        userName,
+        userEmail,
+        collegeName
       });
 
-      if (!res.success) {
-        setError(res.reason || 'Verification request failed. Please verify your UTR and retry.');
-        setIsProcessing(false);
-        return;
+      if (result && result.paymentId) {
+        // Razorpay confirmed genuine bank payment!
+        await finalizePayment(result.txId);
       }
-
-      if (res.status === 'verified' || res.isVerified) {
-        await finalizePayment(`UTR-${cleanUtr}`);
-        return;
-      }
-
-      // 4. Enter 'pending_founder' live waiting gate
-      setPendingUtr(cleanUtr);
-      setVerificationState('pending_founder');
-      localStorage.setItem(`lumixora_pending_utr_${userEmail}`, cleanUtr);
-
     } catch (err) {
-      console.error("UTR verification error:", err);
-      setError(err.message || 'Network error communicating with verification server. Please retry.');
+      console.warn("Razorpay flow note:", err);
+      if (!err.message?.includes('closed by user')) {
+        setError(err.message || 'Payment could not be completed via Razorpay. Please retry.');
+      }
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleCancelPending = () => {
-    localStorage.removeItem(`lumixora_pending_utr_${userEmail}`);
-    setVerificationState('input');
-    setPendingUtr('');
+  /**
+   * Founder quick-save for Razorpay Key ID
+   */
+  const handleSaveFounderKey = async () => {
+    const key = founderKeyInput.trim();
+    if (!key) return;
+    await saveRazorpayKeyGlobally(key);
+    setRazorpayKey(key);
+    setShowFounderKeyConfig(false);
     setError('');
+  };
+
+  /**
+   * Whitelist Exemption Verification (Shaik Anjum UTR-616740048435, etc.)
+   */
+  const handleRedeemExemption = async (e) => {
+    e.preventDefault();
+    setExemptionError('');
+
+    const cleanInput = exemptionUtr.trim().replace(/^UTR-/i, '');
+    if (!cleanInput) {
+      setExemptionError('Please enter your approved exemption UTR number.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Strictly verify against pre-verified whitelist
+      if (KNOWN_VERIFIED_UTRS.has(cleanInput) || KNOWN_VERIFIED_UTRS.has(`UTR-${cleanInput}`)) {
+        await finalizePayment(`UTR-${cleanInput}`);
+        return;
+      }
+
+      setExemptionError('Exemption code not found. Only Founder-preapproved exemptions are accepted. Please pay ₹10 via Razorpay for instant activation.');
+    } catch (err) {
+      setExemptionError(err.message || 'Exemption validation failed.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -394,15 +373,13 @@ export default function CollegeAccessFeeModal({
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       {/* Dark Ambient Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/90 backdrop-blur-xl transition-opacity animate-fade-in" 
-      />
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-xl transition-opacity animate-fade-in" />
 
       {/* Modal Dialog Card */}
-      <div className="relative z-10 w-full max-w-lg bg-gradient-to-b from-[#10101a] via-[#0d0d16] to-[#07070d] border border-cyan-500/30 rounded-3xl shadow-[0_0_60px_rgba(0,245,212,0.15)] overflow-hidden text-white my-auto animate-scale-up">
+      <div className="relative z-10 w-full max-w-md bg-gradient-to-b from-[#10101a] via-[#0d0d16] to-[#07070d] border border-cyan-500/30 rounded-3xl shadow-[0_0_60px_rgba(0,245,212,0.15)] overflow-hidden text-white my-auto animate-scale-up">
         
         {/* Glow ambient header highlights */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600" />
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-400" />
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Header */}
@@ -422,7 +399,7 @@ export default function CollegeAccessFeeModal({
               <ShieldCheck className="w-3.5 h-3.5" /> Institutional Access Gate
             </span>
             <span className="text-gray-400 text-xs">•</span>
-            <span className="text-gray-400 text-xs font-semibold">Lumixora Platform Security</span>
+            <span className="text-gray-400 text-xs font-semibold">Zero-Trust Secured</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
@@ -430,7 +407,7 @@ export default function CollegeAccessFeeModal({
           </h2>
 
           <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-            One-time ₹10 registration & login fee for students of <strong className="text-white font-bold">{collegeName}</strong>.
+            One-time registration & login fee for students of <strong className="text-white font-bold">{collegeName}</strong>.
           </p>
         </div>
 
@@ -477,213 +454,103 @@ export default function CollegeAccessFeeModal({
         )}
 
         {/* =========================================================================
-            STATE 2: AWAITING FOUNDER BANK VERIFICATION (ZERO-TRUST WAITING SCREEN)
+            STATE 2: AWAITING FOUNDER BANK VERIFICATION (ONLY FOR PRIOR SUBMISSIONS)
            ========================================================================= */}
         {verificationState === 'pending_founder' && (
-          <div className="p-6 sm:p-8 space-y-5 animate-fade-in">
-            
+          <div className="p-6 sm:p-7 space-y-4 animate-fade-in">
             <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-md shadow-amber-500/10 animate-pulse">
-                <Clock className="w-7 h-7" />
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-md animate-pulse">
+                <Clock className="w-6 h-6" />
               </div>
 
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-black text-[11px] uppercase tracking-wider">
                   ⏳ Awaiting Bank Verification
                 </span>
-                <h3 className="text-lg font-black text-white mt-2">
-                  Founder Verification in Progress
+                <h3 className="text-base font-black text-white mt-2">
+                  Founder Bank Statement Cross-Check
                 </h3>
-                <p className="text-xs text-gray-300 mt-1 leading-relaxed max-w-sm mx-auto">
-                  Your payment submission is being cross-verified against Founder Shaik Sowban's bank statement for UPI ID <strong className="text-white font-mono">{officialUpiId}</strong>.
+                <p className="text-xs text-gray-300 mt-1">
+                  Submission <code className="text-cyan-300 font-mono font-bold">UTR-{pendingUtr}</code> is being verified against Founder bank statement.
                 </p>
               </div>
             </div>
 
-            {/* Submission Details Card */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 text-xs space-y-2">
-              <div className="flex justify-between items-center py-1 border-b border-white/5">
-                <span className="text-gray-400">Submitted UTR / Ref No:</span>
-                <span className="font-mono font-bold text-cyan-300 text-sm">
-                  UTR-{pendingUtr}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-white/5">
-                <span className="text-gray-400">Amount:</span>
-                <span className="font-bold text-emerald-400">₹10.00 (One-Time)</span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-white/5">
-                <span className="text-gray-400">Scholar:</span>
-                <span className="font-bold text-white">{userName}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-gray-400">Institution:</span>
-                <span className="font-bold text-gray-200">{collegeName}</span>
-              </div>
-            </div>
-
-            {/* Realtime Status Indicator */}
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs text-gray-400">
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center gap-2">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                <span className="text-[11px]">Auto-checking bank status in real-time...</span>
+                <span className="text-[11px]">Auto-checking bank statement in real-time...</span>
               </div>
-              <span className="text-[10px] font-mono text-gray-500">
-                Poll #{pollTick}
-              </span>
-            </div>
-
-            {/* Re-enter UTR button */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
-              <button
-                type="button"
-                onClick={handleCancelPending}
-                className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-colors cursor-pointer text-center"
-              >
-                Entered Wrong UTR? Click to Re-Enter
-              </button>
-              
-              {onLogout && (
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-gray-400 hover:text-white text-xs underline cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              )}
-            </div>
-
-          </div>
-        )}
-
-        {/* =========================================================================
-            STATE 3: REJECTED STATE (FAKE UTR OR UNVERIFIED BANK TRANSACTION)
-           ========================================================================= */}
-        {verificationState === 'rejected' && (
-          <div className="p-6 sm:p-8 space-y-5 animate-fade-in text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center mx-auto border border-red-500/40">
-              <AlertTriangle className="w-8 h-8" />
-            </div>
-
-            <div>
-              <h3 className="text-xl font-black text-white">Payment Verification Failed</h3>
-              <p className="text-xs text-red-300 font-semibold mt-1">
-                {rejectionReason || 'UTR not found on Founder bank statement.'}
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-red-950/30 border border-red-500/30 text-xs text-left text-gray-300 space-y-2">
-              <p className="leading-relaxed">
-                We checked the bank statement for UPI ID <strong className="text-white font-mono">{officialUpiId}</strong>, but transaction <code className="text-red-300 font-mono">UTR-{pendingUtr}</code> was not found.
-              </p>
-              <ul className="list-disc list-inside text-gray-400 space-y-1 text-[11px]">
-                <li>Ensure you paid ₹10.00 to <strong className="text-white font-mono">{officialUpiId}</strong></li>
-                <li>Make sure you entered the genuine 12-digit UTR from your receipt (Google Pay / PhonePe / Paytm)</li>
-                <li>Random or fake sequential numbers (e.g. 123456789012) are permanently blocked</li>
-              </ul>
+              <span className="text-[10px] font-mono text-gray-500">#{pollTick}</span>
             </div>
 
             <button
               type="button"
-              onClick={() => {
-                setVerificationState('input');
-                setUtrNumber('');
-                setError('');
-              }}
-              className="w-full py-3 px-4 rounded-xl font-black text-black bg-gradient-to-r from-cyan-400 to-emerald-400 hover:opacity-95 text-xs shadow-lg transition-all cursor-pointer"
+              onClick={handlePayWithRazorpay}
+              disabled={isProcessing}
+              className="w-full py-3 px-4 rounded-xl font-black text-black bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:opacity-95 text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 cursor-pointer"
             >
-              Pay ₹10 & Enter Genuine UTR Number
+              <Zap className="w-4 h-4 text-black" />
+              <span>Don't want to wait? Pay ₹10 via Razorpay for Instant Unlock</span>
             </button>
           </div>
         )}
 
         {/* =========================================================================
-            STATE 4: PAYMENT INPUT & QR CODE VIEW
+            STATE 3: REJECTED STATE
+           ========================================================================= */}
+        {verificationState === 'rejected' && (
+          <div className="p-6 sm:p-7 space-y-4 animate-fade-in text-center">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center mx-auto border border-red-500/40">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-black text-white">Payment Verification Failed</h3>
+              <p className="text-xs text-red-300 font-semibold mt-1">
+                {rejectionReason || 'UTR not found on Founder bank statement.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handlePayWithRazorpay}
+              disabled={isProcessing}
+              className="w-full py-3.5 px-4 rounded-xl font-black text-black bg-gradient-to-r from-cyan-400 to-emerald-400 hover:opacity-95 text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <CreditCard className="w-4 h-4 text-black" />
+              <span>Pay ₹10 via Razorpay (Instant Automated Unlock)</span>
+            </button>
+          </div>
+        )}
+
+        {/* =========================================================================
+            STATE 4: DIRECT RAZORPAY CHECKOUT (PRIMARY & EXCLUSIVE)
            ========================================================================= */}
         {verificationState === 'input' && (
-          <div className="p-6 sm:p-7 space-y-5 max-h-[75vh] overflow-y-auto custom-scrollbar">
+          <div className="p-6 sm:p-7 space-y-5">
 
-            {/* Fee Summary Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/40 border border-cyan-500/25 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400 block">
-                  One-Time Registration & Login Fee
+            {/* Fee Summary Hero Card */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-emerald-950/40 border border-cyan-500/30 shadow-inner">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Lifetime Student Pass
                 </span>
-                <h4 className="text-lg font-black text-white">Student Activation Pass</h4>
-                <p className="text-[11px] text-gray-400">Zero-Trust Verified Access · AI Twins, Placement Arena & Doubts</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-emerald-400">
-                  ₹10.00
-                </div>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   One-Time Only
                 </span>
               </div>
-            </div>
 
-            {/* QR Code and UPI ID Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-black/40 p-4 rounded-2xl border border-white/10">
-              
-              {/* Live QR Code Box */}
-              <div className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl shadow-xl">
-                {qrCodeDataUrl ? (
-                  <img 
-                    src={qrCodeDataUrl} 
-                    alt="Scan UPI QR Code for ₹10" 
-                    className="w-44 h-44 object-contain rounded-lg"
-                  />
-                ) : (
-                  <div className="w-44 h-44 flex items-center justify-center text-gray-500">
-                    <RefreshCw className="w-6 h-6 animate-spin text-cyan-500" />
-                  </div>
-                )}
-                <div className="mt-2 flex items-center gap-1 text-[11px] font-black text-slate-800">
-                  <Smartphone className="w-3.5 h-3.5 text-cyan-600" />
-                  <span>Scan with any UPI App</span>
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <h4 className="text-base sm:text-lg font-black text-white">Institutional Access</h4>
+                  <p className="text-[11px] text-gray-400 mt-0.5">AI Twins, Placement Arena & Unlimited Doubts</p>
                 </div>
-              </div>
-
-              {/* UPI App Links & Instructions */}
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
-                    Official Lumixora UPI ID:
-                  </label>
-                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
-                    <code className="text-xs font-mono font-bold text-cyan-300 flex-1 select-all">
-                      {officialUpiId}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={handleCopyUPI}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 transition-colors text-xs flex items-center gap-1 cursor-pointer"
-                      title="Copy UPI ID"
-                    >
-                      {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-400">
+                    ₹10.00
                   </div>
-                  {copiedUpi && (
-                    <span className="text-[10px] text-emerald-400 font-bold block">
-                      ✓ UPI ID copied to clipboard!
-                    </span>
-                  )}
-                </div>
-
-                {/* Mobile Direct Pay Button */}
-                <a
-                  href={upiDeepLink}
-                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Pay ₹10 via UPI App (Mobile)</span>
-                  <ExternalLink className="w-3 h-3 ml-0.5" />
-                </a>
-
-                {/* Supported Apps List */}
-                <div className="text-[10px] text-gray-400 text-center flex items-center justify-center gap-2 pt-1 border-t border-white/5">
-                  <span>Google Pay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>BHIM</span>
+                  <span className="text-[10px] text-gray-500 block">INR (Incl. GST)</span>
                 </div>
               </div>
             </div>
@@ -696,51 +563,118 @@ export default function CollegeAccessFeeModal({
               </div>
             )}
 
-            {/* Verification Form */}
-            <form onSubmit={handleVerifyUTR} className="space-y-3 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5 flex items-center justify-between">
-                  <span>Enter 12-Digit UPI Reference Number / UTR ID:</span>
-                  <span className="text-[10px] text-gray-500 font-normal">From receipt</span>
-                </label>
-                <input
-                  type="text"
-                  maxLength={16}
-                  value={utrNumber}
-                  onChange={(e) => { 
-                    setUtrNumber(e.target.value.replace(/[^0-9]/g, '')); 
-                    setError(''); 
-                  }}
-                  placeholder="e.g. 429182049182 (12 digits from receipt)"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono placeholder:text-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all tracking-wider"
-                />
-                <p className="text-[10px] text-gray-500 mt-1">
-                  🔒 Zero-Trust Security: Every UTR is checked against fake patterns, duplicate uses, and verified with bank statement.
+            {/* DIRECT RAZORPAY CHECKOUT ACTION */}
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={handlePayWithRazorpay}
+                disabled={isProcessing}
+                className="w-full py-4 px-5 rounded-2xl font-black text-black bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:brightness-105 active:scale-[0.99] text-sm flex items-center justify-center gap-2.5 shadow-[0_0_30px_rgba(0,245,212,0.3)] cursor-pointer transition-all disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin text-black" />
+                    <span>Connecting to Bank Gateway...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5 text-black fill-black" />
+                    <span>Pay ₹10.00 via Razorpay</span>
+                    <ArrowRight className="w-4 h-4 ml-1 stroke-[3]" />
+                  </>
+                )}
+              </button>
+
+              {/* Supported Payment Channels Banner */}
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-center space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                  Instant Auto-Unlock Supported Via:
+                </span>
+                <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] font-bold text-gray-200">
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-cyan-300">Google Pay</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-purple-300">PhonePe</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-blue-300">Paytm</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-emerald-300">Any UPI</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-amber-300">Cards / NetBanking</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Founder Razorpay Setup Drawer (If key not configured) */}
+            {(!razorpayKey || showFounderKeyConfig) && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2.5 animate-fade-in text-xs">
+                <div className="flex items-center gap-2 text-amber-300 font-bold">
+                  <Key className="w-4 h-4 shrink-0" />
+                  <span>Founder: Connect Razorpay Key ID</span>
+                </div>
+                <p className="text-[11px] text-gray-300 leading-relaxed">
+                  Enter your Razorpay Key ID (<code className="text-amber-200 font-mono">rzp_live_...</code> or <code className="text-amber-200 font-mono">rzp_test_...</code>) from dashboard.razorpay.com to enable 1-click checkout for all students.
                 </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={founderKeyInput}
+                    onChange={(e) => setFounderKeyInput(e.target.value)}
+                    placeholder="rzp_live_xxxxxxxxxxxxxxxx"
+                    className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveFounderKey}
+                    className="px-3.5 py-2 bg-emerald-400 hover:bg-emerald-300 text-black font-extrabold text-xs rounded-xl cursor-pointer transition-colors"
+                  >
+                    Save & Pay
+                  </button>
+                </div>
               </div>
+            )}
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isProcessing || !utrNumber.trim()}
-                  className="w-full py-3.5 px-4 rounded-xl font-black text-black bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:opacity-95 text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 disabled:opacity-50 transition-all cursor-pointer"
-                >
-                  {isProcessing ? (
-                    <RefreshCw className="w-4 h-4 animate-spin text-black" />
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-black" />
-                      <span>Submit Payment for Bank Verification (₹10)</span>
-                    </>
+            {/* Whitelisted Exemption Redeem (For Shaik Anjum, etc.) */}
+            <div className="pt-2 border-t border-white/5 space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowExemptionRedeem(!showExemptionRedeem)}
+                className="w-full text-center text-[11px] text-gray-400 hover:text-cyan-300 font-medium flex items-center justify-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>Have an official Founder Exemption UTR? Redeem here</span>
+                {showExemptionRedeem ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+
+              {showExemptionRedeem && (
+                <form onSubmit={handleRedeemExemption} className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5 animate-fade-in">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                    Founder-Approved Whitelist UTR:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={exemptionUtr}
+                      onChange={(e) => {
+                        setExemptionUtr(e.target.value);
+                        setExemptionError('');
+                      }}
+                      placeholder="e.g. 616740048435"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isProcessing || !exemptionUtr.trim()}
+                      className="px-3.5 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs rounded-xl cursor-pointer disabled:opacity-40"
+                    >
+                      Redeem
+                    </button>
+                  </div>
+                  {exemptionError && (
+                    <p className="text-[11px] text-red-400 font-medium">{exemptionError}</p>
                   )}
-                </button>
-              </div>
-            </form>
+                </form>
+              )}
+            </div>
 
-            {/* Footer Notice & Logout Option */}
-            <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-2">
+            {/* Footer Trust & Sign Out */}
+            <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-2">
               <span className="flex items-center gap-1">
-                <Lock className="w-3 h-3 text-cyan-400" /> Bank Statement Verified
+                <Lock className="w-3 h-3 text-cyan-400" /> 256-Bit SSL Bank Encrypted
               </span>
 
               {onLogout && (

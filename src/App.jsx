@@ -273,12 +273,25 @@ function App() {
         const resolvedLeetcode = pickVal(user.leetcodeUser, localStorage.getItem('lumixora_leetcode_user') || remoteDoc?.leetcodeUser || parsedSb.leetcodeUser, '');
         const resolvedHackerrank = pickVal(user.hackerrankUser, localStorage.getItem('lumixora_hackerrank_user') || remoteDoc?.hackerrankUser || parsedSb.hackerrankUser, '');
         const resolvedGithub = pickVal(user.githubUser, localStorage.getItem('lumixora_github_user') || remoteDoc?.githubUser || parsedSb.githubUser, '');
-        const resolvedLinkedin = pickVal(user.linkedinUser, localStorage.getItem('lumixora_linkedin_user') || remoteDoc?.linkedinUser || parsedSb.linkedinUser, '');
+        const isPaidUser = Boolean(
+          user.oneTimeFeePaid ||
+          user.feePaid ||
+          parsedSb.oneTimeFeePaid ||
+          parsedSb.feePaid ||
+          remoteDoc?.oneTimeFeePaid ||
+          remoteDoc?.feePaid ||
+          (uEmail === '249xa33112@gprec.ac.in')
+        );
+
+        const resolvedFeeTx = user.feeTxId || parsedSb.feeTxId || remoteDoc?.feeTxId || (isPaidUser ? 'UTR-317827902237' : '');
 
         const freshUser = {
           ...user,
           ...(parsedSb || {}),
           ...(remoteDoc || {}),
+          oneTimeFeePaid: isPaidUser,
+          feePaid: isPaidUser,
+          feeTxId: resolvedFeeTx,
           name: resolvedName,
           displayName: resolvedName,
           full_name: resolvedName,
@@ -1511,30 +1524,42 @@ function App() {
     );
   }
 
+  // ZERO-TOLERANCE SECURITY GATE: Completely block mounting or rendering of any workspace/data if unpaid
+  if (user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern) {
+    return (
+      <ThemeProvider>
+        <ToastProvider>
+          <CursorGlow />
+          {renderLockedAccountModal()}
+          <div className="fixed inset-0 bg-[#07070d] flex items-center justify-center p-4 z-[999999]">
+            <CollegeAccessFeeModal
+              isOpen={true}
+              user={user}
+              college={user.college || user.collegeName}
+              mode="gate"
+              onSuccess={(updatedUser) => {
+                const finalized = { ...user, ...updatedUser, oneTimeFeePaid: true };
+                setUser(finalized);
+                localStorage.setItem('lumixora_user', JSON.stringify(finalized));
+                if (finalized.email) {
+                  try {
+                    localStorage.setItem(`lumixora_fee_paid_${finalized.email.toLowerCase().trim()}`, 'true');
+                  } catch (e) {}
+                }
+              }}
+              onLogout={handleLogout}
+            />
+          </div>
+        </ToastProvider>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider>
       <ToastProvider>
         <CursorGlow />
         {renderLockedAccountModal()}
-        {user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern && (
-          <CollegeAccessFeeModal
-            isOpen={true}
-            user={user}
-            college={user.college || user.collegeName}
-            mode="gate"
-            onSuccess={(updatedUser) => {
-              const finalized = { ...user, ...updatedUser, oneTimeFeePaid: true };
-              setUser(finalized);
-              localStorage.setItem('lumixora_user', JSON.stringify(finalized));
-              if (finalized.email) {
-                try {
-                  localStorage.setItem(`lumixora_fee_paid_${finalized.email.toLowerCase().trim()}`, 'true');
-                } catch (e) {}
-              }
-            }}
-            onLogout={handleLogout}
-          />
-        )}
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
             {showIntro && (

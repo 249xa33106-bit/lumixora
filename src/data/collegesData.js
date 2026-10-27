@@ -594,10 +594,17 @@ export const isAnjum = (userOrEmail) => {
   return false;
 };
 
+export const KNOWN_PAID_EMAILS = new Set([
+  '249xa33112@gprec.ac.in', // Mahendrakar Akhil (Paid ₹10 via UPI Ref 317827902237)
+  '259xa05010@gprec.ac.in', // Avula Bhanu Priya (Paid ₹10 via Razorpay pay_TswlcoI1dleMdi)
+  '259xa33230@gprec.ac.in',
+  '259xa05269@gprec.ac.in'
+]);
+
 /**
  * Validates whether an entity is completely exempt from payment gates.
  * ONLY the platform founders/super-admins and Anjum are permitted.
- * Everyone else (including all GPREC and other college students) MUST pay the ?10 fee.
+ * Everyone else (including all GPREC and other college students) MUST pay the ₹10 fee.
  */
 export const isExemptFromPayment = (userOrEmail) => {
   if (!userOrEmail) return false;
@@ -610,6 +617,11 @@ export const isExemptFromPayment = (userOrEmail) => {
     email === '249xa33106@gprec.ac.in' ||
     email.endsWith('@lumixora.com')
   ) {
+    return true;
+  }
+
+  // 1.1 Verified Paid Scholars Whitelist
+  if (email && KNOWN_PAID_EMAILS.has(email)) {
     return true;
   }
 
