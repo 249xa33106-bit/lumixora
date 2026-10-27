@@ -19,7 +19,13 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  FileText,
+  UploadCloud,
+  CheckCheck,
+  Zap,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { approveFeePayment, rejectFeePayment } from '../services/founderNotificationService';
@@ -35,6 +41,12 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
   const [loadingPending, setLoadingPending] = useState(false);
   const [actionInProgress, setActionInProgress] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Bank Statement Reconciliation State
+  const [showStatementReconciler, setShowStatementReconciler] = useState(false);
+  const [statementText, setStatementText] = useState('');
+  const [statementParseResults, setStatementParseResults] = useState(null);
+  const [isAutoVerifyingAll, setIsAutoVerifyingAll] = useState(false);
 
   // 1. Fetch pending payment verifications from Supabase
   const loadPendingPayments = useCallback(async () => {
@@ -131,6 +143,82 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
       setActionInProgress(null);
       setTimeout(() => setToastMessage(''), 5000);
     }
+  };
+
+  // Parse and match bank statement against pending queue
+  const handleReconcileStatement = () => {
+    if (!statementText.trim()) return;
+
+    // Extract all 12-digit and 16-digit numbers from the pasted statement
+    const rawMatches = statementText.match(/\b\d{12}\b|\b\d{16}\b/g) || [];
+    const extractedUtrs = Array.from(new Set(rawMatches));
+
+    if (extractedUtrs.length === 0) {
+      setStatementParseResults({
+        totalUtrsFound: 0,
+        matched: [],
+        unmatchedPending: pendingPayments,
+        extractedUtrs: []
+      });
+      return;
+    }
+
+    const matched = [];
+    const unmatchedPending = [];
+
+    pendingPayments.forEach(item => {
+      const itemUtr = (item.meta?.utr || item.meta?.cleanUtr || '').trim();
+      if (extractedUtrs.includes(itemUtr)) {
+        matched.push(item);
+      } else {
+        unmatchedPending.push(item);
+      }
+    });
+
+    setStatementParseResults({
+      totalUtrsFound: extractedUtrs.length,
+      matched,
+      unmatchedPending,
+      extractedUtrs
+    });
+  };
+
+  // 1-Click Auto-Verify all matched scholars
+  const handleAutoVerifyAllMatched = async () => {
+    if (!statementParseResults?.matched?.length) return;
+    setIsAutoVerifyingAll(true);
+    let successCount = 0;
+
+    for (const item of statementParseResults.matched) {
+      try {
+        const res = await approveFeePayment(item.id, item.meta);
+        if (res.success) successCount++;
+      } catch (e) {
+        console.warn("Auto-verify item notice:", e);
+      }
+    }
+
+    setToastMessage(`✅ Auto-verified ${successCount} scholars from your bank statement! All matching workspaces unlocked.`);
+    setStatementParseResults(null);
+    setStatementText('');
+    setShowStatementReconciler(false);
+    setIsAutoVerifyingAll(false);
+    await loadPendingPayments();
+    if (onRefresh) onRefresh();
+    setTimeout(() => setToastMessage(''), 6000);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (typeof content === 'string') {
+        setStatementText(content);
+      }
+    };
+    reader.readAsText(file);
   };
 
   // Extract paid users strictly (those who paid the ₹10 or ₹5 fee with valid Tx/UTR)
@@ -367,15 +455,132 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
             </div>
           </div>
 
-          <button
-            onClick={loadPendingPayments}
-            disabled={loadingPending}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold border border-white/10 transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loadingPending ? 'animate-spin text-cyan-400' : ''}`} />
-            <span>Refresh Queue</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {/* Auto-Reconcile With Bank Statement Toggle Button */}
+            <button
+              onClick={() => setShowStatementReconciler(!showStatementReconciler)}
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              title="Automatically match pending UTRs against your bank statement text or CSV"
+            >
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Check With Bank Statement</span>
+              {showStatementReconciler ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+
+            <button
+              onClick={loadPendingPayments}
+              disabled={loadingPending}
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold border border-white/10 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingPending ? 'animate-spin text-cyan-400' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
+
+        {/* =========================================================================
+            BANK STATEMENT RECONCILIATION PANEL (EXPANDABLE)
+           ========================================================================= */}
+        {showStatementReconciler && (
+          <div className="p-5 bg-gradient-to-b from-[#0e1628] to-[#0b101d] border-b border-cyan-500/30 space-y-4 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h4 className="font-extrabold text-white text-xs flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span>Bank Statement Automated UTR Reconciler</span>
+                </h4>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  Paste your bank SMS messages, UPI app statement, or Axis Bank statement text. Lumixora automatically extracts every 12-digit UTR and matches it against pending students.
+                </p>
+              </div>
+
+              <label className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-gray-200 font-bold border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors self-start sm:self-auto shrink-0">
+                <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Upload Statement (.txt / .csv)</span>
+                <input type="file" accept=".txt,.csv" onChange={handleFileUpload} className="hidden" />
+              </label>
+            </div>
+
+            {/* Statement Textarea */}
+            <textarea
+              rows={4}
+              value={statementText}
+              onChange={(e) => setStatementText(e.target.value)}
+              placeholder="Paste your Axis Bank statement, transaction SMS, or UTR list here... e.g.&#10;Rs 10.00 credited to A/c ... UPI/152935571978/Payment from Poojitha&#10;Rs 10.00 credited via UPI Ref 240884229421..."
+              className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white font-mono placeholder:text-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all custom-scrollbar"
+            />
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleReconcileStatement}
+                disabled={!statementText.trim()}
+                className="px-4 py-2 rounded-xl font-black text-black bg-gradient-to-r from-cyan-400 to-emerald-400 hover:opacity-95 text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 disabled:opacity-40 transition-all cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 fill-black" />
+                <span>Scan & Cross-Check With Statement</span>
+              </button>
+
+              {statementParseResults && statementParseResults.matched.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleAutoVerifyAllMatched}
+                  disabled={isAutoVerifyingAll}
+                  className="px-4 py-2 rounded-xl font-black text-black bg-emerald-400 hover:bg-emerald-300 text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer animate-bounce"
+                >
+                  {isAutoVerifyingAll ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCheck className="w-4 h-4 stroke-[3]" />}
+                  <span>✅ Auto-Verify All {statementParseResults.matched.length} Matched Scholars Now</span>
+                </button>
+              )}
+            </div>
+
+            {/* Reconciliation Parse Results */}
+            {statementParseResults && (
+              <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3 animate-fade-in text-xs">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="font-bold text-gray-300">
+                    Statement Scan Results: Found <strong className="text-cyan-400 font-mono">{statementParseResults.totalUtrsFound}</strong> UTRs in statement.
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-black text-[11px]">
+                    {statementParseResults.matched.length} Matching Pending Scholars
+                  </span>
+                </div>
+
+                {statementParseResults.matched.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold text-emerald-400 block uppercase tracking-wider">
+                      Confirmed Matches on Statement:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {statementParseResults.matched.map(item => (
+                        <div key={item.id} className="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
+                          <div>
+                            <span className="font-bold text-white block">{item.meta?.name}</span>
+                            <span className="font-mono text-[10px] text-cyan-300">UTR-{item.meta?.utr}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">
+                            Matched ₹10
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {statementParseResults.unmatchedPending.length > 0 && (
+                  <div className="space-y-1 pt-1 border-t border-white/5">
+                    <span className="text-[11px] font-bold text-amber-400 block uppercase tracking-wider">
+                      Pending Submissions NOT Found on Statement ({statementParseResults.unmatchedPending.length}):
+                    </span>
+                    <p className="text-[10px] text-gray-400">
+                      These students entered UTRs that did not appear in the statement snippet above (may be fake or delayed bank credits).
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {pendingPayments.length === 0 ? (
           <div className="p-8 text-center text-gray-400 text-xs space-y-1">
@@ -482,7 +687,7 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
                             onClick={() => handleApprove(item)}
                             disabled={isBusy}
                             className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-black text-xs shadow-md shadow-emerald-500/20 disabled:opacity-50 transition-all flex items-center gap-1 cursor-pointer"
-                            title="Confirm receipt of ₹10 and unlock student workspace"
+                            title="Confirm receipt of ₹10 on your bank statement and unlock student workspace"
                           >
                             {isBusy ? (
                               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
