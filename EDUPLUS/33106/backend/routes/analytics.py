@@ -78,33 +78,33 @@ def get_dashboard_summary(
         {
             "id": 1,
             "type": "intervention_completed",
-            "title": "Srikanth Sir completed Doubt Clinic on Rotational Dynamics",
+            "title": "Prof. S. Ramesh Sir completed Doubt Clinic on Graph Traversal & Trees",
             "time": "2 days ago",
-            "batch": "JEE-2026 Alpha",
+            "batch": "B.Tech CSE - 2026 Alpha",
             "delta": "+18.5%"
         },
         {
             "id": 2,
             "type": "assessment_recorded",
-            "title": "Rotational Dynamics Post-Intervention Reassessment uploaded",
+            "title": "Graph Traversal Post-Intervention Reassessment uploaded",
             "time": "3 days ago",
-            "batch": "JEE-2026 Alpha",
+            "batch": "B.Tech CSE - 2026 Alpha",
             "delta": None
         },
         {
             "id": 3,
             "type": "gap_flagged",
-            "title": "Recurring gap detected in Cell Biology & Genetics (46.5% avg)",
+            "title": "Recurring gap detected in Neural Net Backprop (44.5% avg)",
             "time": "5 days ago",
-            "batch": "NEET-2026 Achievers",
+            "batch": "B.Tech AI&ML - 2026 Sigma",
             "delta": None
         },
         {
             "id": 4,
             "type": "action_assigned",
-            "title": "Conic Sections Practice Sheet assigned to Venkatesh Sir",
+            "title": "Fourier Transform & Filters Practice Sheet assigned to Dr. P. Sreedhar Sir",
             "time": "1 week ago",
-            "batch": "EAPCET-2026 Zenith",
+            "batch": "B.Tech ECE - 2026 Zenith",
             "delta": None
         }
     ]

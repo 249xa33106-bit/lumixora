@@ -19,12 +19,15 @@ import CodingPractice from './pages/CodingPractice';
 import CodeEditorPage from './pages/CodeEditorPage';
 import PersonalMentor from './pages/PersonalMentor';
 import MyAcademics from './pages/MyAcademics';
-import { isValidInstitutionalEmail } from './data/collegesData';
+import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from './data/collegesData';
+import CollegeAccessFeeModal from './components/CollegeAccessFeeModal';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './config/firebase';
 import { supabase } from './config/supabase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
+import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { checkUserAccessStatus, cleanScholarName, isFounderEmail } from './utils/authSecurity';
 import StudyWithMe from './pages/StudyWithMe';
 import ReportBug from './pages/ReportBug';
 import LifeReplay from './pages/LifeReplay';
@@ -62,37 +65,38 @@ import PublicCertificateVerification from './pages/PublicCertificateVerification
 import CoursesPortal from './pages/CoursesPortal';
 import BoloClassPortal from './pages/BoloClassPortal';
 import EduPulsePortal from './pages/EduPulsePortal';
+import RelayPortal from './pages/RelayPortal';
+import InternshipPortal from './pages/InternshipPortal';
+import InternWorkspacePortal from './pages/InternWorkspacePortal';
+import ProjectVerse from './pages/ProjectVerse';
 
 function App() {
   const [showIntro, setShowIntro] = useState(false);
   const [showTomAndJerryIntro, setShowTomAndJerryIntro] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
-      if (hash && ['boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'courses', 'courses-portal', 'all-courses', 'my-academics', 'academics', 'certificates', 'proof-of-skill', 'interview', 'coding-practice', 'dashboard', 'founder-portal', 'team-portal', 'faculty-portal', 'edupulse', 'eduplus', 'test-to-action'].includes(hash)) {
-        if (hash === 'boloclass' || hash === 'bolo-class' || hash === 'openmaic' || hash === 'openmaic-classroom' || hash === 'ai-classroom' || hash === 'interactive-classroom') return 'boloclass';
-        if (hash === 'courses-portal' || hash === 'all-courses') return 'courses';
-        if (hash === 'academic-tracker' || hash === 'marks' || hash === 'academics') return 'my-academics';
-        if (hash === 'eduplus' || hash === 'test-to-action') return 'edupulse';
-        return hash;
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname.toLowerCase();
+      if (pathname === '/verify' || pathname.startsWith('/verify/')) return 'verify';
+      if (window.location.hash) {
+        const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+        if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
       }
-    }
-    const savedUser = localStorage.getItem('lumixora_user');
-    if (savedUser) {
-      try {
-        const u = JSON.parse(savedUser);
-        const email = (u?.email || '').toLowerCase().trim();
-        const isF = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
-        if (isF) return 'founder-portal';
-        const isTeammate = u?.role === 'teammate' || u?.role === 'team' || u?.role === 'team_member' || email.endsWith('@lumixora.com');
-        if (isTeammate) return 'team-portal';
-        const isFaculty = u?.role === 'faculty' || u?.role === 'mentor';
-        if (isFaculty) return 'faculty-portal';
-      } catch (e) {}
     }
     return 'dashboard';
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const saved = localStorage.getItem('lumixora_user');
+    if (saved) {
+      try {
+        const u = JSON.parse(saved);
+        const access = checkUserAccessStatus(u);
+        if (!access.allowed) return false;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      return false;
+    }
     return localStorage.getItem('lumixora_isAuthenticated') === 'true';
   });
   const [currentHash, setCurrentHash] = useState(() => typeof window !== 'undefined' ? window.location.hash.toLowerCase() : '');
@@ -106,26 +110,38 @@ function App() {
     window.addEventListener('hashchange', handleHashSync);
     return () => window.removeEventListener('hashchange', handleHashSync);
   }, []);
+  const [lockedAccountInfo, setLockedAccountInfo] = useState(() => {
+    const saved = localStorage.getItem('lumixora_user');
+    if (saved) {
+      try {
+        const u = JSON.parse(saved);
+        const access = checkUserAccessStatus(u);
+        if (!access.allowed) {
+          return {
+            email: u.email,
+            name: cleanScholarName(u.name || u.displayName),
+            role: u.role || 'faculty',
+            department: u.department || u.branch || 'CSE',
+            reason: access.reason,
+            message: access.message
+          };
+        }
+      } catch (e) {}
+    }
+    return null;
+  });
+
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('lumixora_user');
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const email = (u?.email || '').toLowerCase().trim();
-        const isFounderOrAdmin = u?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
-        
-        if (u?.is_blocked === true || !isValidInstitutionalEmail(email)) {
+        const access = checkUserAccessStatus(u);
+        if (!access.allowed) {
           localStorage.removeItem('lumixora_user');
           localStorage.removeItem('lumixora_isAuthenticated');
           signOut(auth).catch(() => {});
-          return null;
-        }
-
-        const isFaculty = u?.role === 'faculty' || u?.role === 'mentor';
-        const isApproved = u?.isApproved === true || u?.is_approved === true;
-        if (isFaculty && !isApproved && !isFounderOrAdmin) {
-          localStorage.removeItem('lumixora_user');
-          localStorage.removeItem('lumixora_isAuthenticated');
+          supabase.auth.signOut().catch(() => {});
           return null;
         }
         return u;
@@ -301,6 +317,26 @@ function App() {
           }
         }
 
+        const accessCheck = checkUserAccessStatus(freshUser);
+        if (!accessCheck.allowed) {
+          console.warn("[Security Gate] hydrateLatestProfile rejected unauthorized user:", freshUser.email, accessCheck.reason);
+          setUser(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem('lumixora_user');
+          localStorage.removeItem('lumixora_isAuthenticated');
+          signOut(auth).catch(() => {});
+          supabase.auth.signOut().catch(() => {});
+          setLockedAccountInfo({
+            email: freshUser.email,
+            name: cleanScholarName(freshUser.name),
+            role: freshUser.role || 'faculty',
+            department: freshUser.department || freshUser.branch || 'CSE',
+            reason: accessCheck.reason,
+            message: accessCheck.message
+          });
+          return;
+        }
+
         setUser(freshUser);
         localStorage.setItem('lumixora_user', JSON.stringify(freshUser));
       } catch (err) {
@@ -406,8 +442,16 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation'].includes(tab)) {
-          setActiveTab(tab);
+        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'ai-twin', 'ai-future-twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace', 'relay'].includes(tab)) {
+          if (['internship', 'internship-portal', 'apply-internship'].includes(tab)) {
+            setActiveTab('internships');
+          } else if (['intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+            setActiveTab('intern-portal');
+          } else if (['twin', 'ai-twin', 'ai-future-twin', 'careerverse'].includes(tab)) {
+            setActiveTab('future-twin');
+          } else {
+            setActiveTab(tab);
+          }
         }
       } else {
         setActiveTab(defaultHomeTab);
@@ -429,6 +473,9 @@ function App() {
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
     window.location.hash = newTab;
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
@@ -499,14 +546,123 @@ function App() {
     );
   };
 
+  const renderLockedAccountModal = () => {
+    if (!lockedAccountInfo) return null;
+
+    const isPendingApproval = lockedAccountInfo.reason === 'faculty_pending';
+
+    return (
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[999999] flex items-center justify-center p-4 animate-fade-in">
+        <div className="glass-panel w-full max-w-md rounded-3xl p-6 md:p-8 border border-orange-500/30 bg-[#0d1117] text-center space-y-5 shadow-2xl relative overflow-hidden">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 mx-auto shadow-lg shadow-orange-500/10">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-mono font-bold uppercase tracking-wider">
+              {isPendingApproval ? 'LOCKED / PENDING APPROVAL' : 'ACCOUNT ACCESS SUSPENDED'}
+            </span>
+            <h2 className="text-lg md:text-xl font-black text-white font-sora pt-1">
+              {isPendingApproval ? 'Faculty Account Pending Founder Approval' : 'Account Access Blocked'}
+            </h2>
+            <p className="text-xs text-gray-400 leading-relaxed max-w-sm mx-auto">
+              {lockedAccountInfo.message || (isPendingApproval 
+                ? 'Your registration has been submitted and is currently in the Founder Security Approval Queue.'
+                : 'Your access has been suspended by the administrator.')
+              }
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-left space-y-1.5 font-mono text-xs text-gray-300">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Name:</span>
+              <strong className="text-white font-bold">{lockedAccountInfo.name || 'Faculty Member'}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Email:</span>
+              <span className="text-orange-400 font-bold truncate max-w-[200px]">{lockedAccountInfo.email}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Role:</span>
+              <span className="text-gray-300 uppercase">{lockedAccountInfo.role || 'Faculty'}</span>
+            </div>
+            {lockedAccountInfo.department && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Department:</span>
+                <span className="text-gray-300">{lockedAccountInfo.department}</span>
+              </div>
+            )}
+            <div className="flex justify-between pt-1 border-t border-white/5">
+              <span className="text-gray-500">Security Status:</span>
+              <span className="text-orange-400 font-bold uppercase">{isPendingApproval ? 'Awaiting Approval' : 'Locked'}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            {isPendingApproval && (
+              <button
+                onClick={async () => {
+                  try {
+                    const { data } = await supabase.from('users').select('*').ilike('email', lockedAccountInfo.email);
+                    if (data && data.length > 0 && (data[0].is_approved === true || data[0].isApproved === true)) {
+                      setLockedAccountInfo(null);
+                      handleLogin({ ...data[0], role: data[0].role || 'faculty' });
+                    } else {
+                      alert('Account checked: Your faculty access is still in the Pending Approval Queue. Please wait for Founder sign-off.');
+                    }
+                  } catch (e) {
+                    alert('Unable to reach verification service. Please try again.');
+                  }
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Check Approval Status</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                setLockedAccountInfo(null);
+                setUser(null);
+                setIsAuthenticated(false);
+                localStorage.removeItem('lumixora_user');
+                localStorage.removeItem('lumixora_isAuthenticated');
+                signOut(auth).catch(() => {});
+                supabase.auth.signOut().catch(() => {});
+              }}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Back to Login</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (user) {
-      if (user.is_blocked === true || user.is_deleted === true) {
+      const access = checkUserAccessStatus(user);
+      if (!access.allowed) {
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('lumixora_user');
         localStorage.removeItem('lumixora_isAuthenticated');
         signOut(auth).catch(() => {});
+        supabase.auth.signOut().catch(() => {});
+        setLockedAccountInfo({
+          email: user.email,
+          name: cleanScholarName(user.name || user.displayName),
+          role: user.role || 'faculty',
+          department: user.department || user.branch || 'CSE',
+          reason: access.reason,
+          message: access.message
+        });
         return;
       }
       localStorage.setItem('lumixora_user', JSON.stringify(user));
@@ -539,48 +695,8 @@ function App() {
 
         const cleanName = fbUser.displayName || email.split('@')[0];
 
-        const immediateProfile = {
-          id: fbUser.uid,
-          uid: fbUser.uid,
-          name: cleanName,
-          email: email,
-          password: 'google_oauth_managed',
-          qualification: 'B.Tech',
-          college: 'GPREC',
-          place: 'Kurnool',
-          year: '1st Year',
-          cgpa: '9.0',
-          targetCGPA: '9.0',
-          careerGoal: 'Placement',
-          department: 'CSE',
-          sem: '1',
-          sec: 'A',
-          learningStyle: 'Practical',
-          weakSubjects: 'None',
-          strongSubjects: 'None',
-          subjects: 'Computer Science',
-          xp: 50,
-          coins: 100,
-          level: 1,
-          streak: 1,
-          longestStreak: 1,
-          streakFreezeCount: 1,
-          badges: ['first_login'],
-          purchasedThemes: ['default'],
-          purchasedFrames: ['none'],
-          currentTheme: 'default',
-          currentFrame: 'none',
-          created_at: new Date().toISOString(),
-          role: isF ? 'founder' : 'user',
-          emailVerified: true,
-          is_approved: true,
-          isApproved: true
-        };
-
-        // Log in immediately
-        handleLogin(immediateProfile);
-
-        // Background sync with database profile
+        // ⚡ STRICT DB ACCESS CHECK BEFORE LOGGING IN:
+        let dbUser = null;
         try {
           const { data: sbUsers } = await supabase.from('users').select('*').ilike('email', email);
           if (sbUsers && sbUsers.length > 0) {
@@ -591,23 +707,74 @@ function App() {
                 unpackedData = JSON.parse(rawName.substring(rawName.indexOf('{')));
               } catch (e) {}
             }
-            const displayName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
-            const merged = { 
-              ...unpackedData,
-              ...sbUsers[0], 
-              id: fbUser.uid, 
-              uid: fbUser.uid, 
-              name: displayName || cleanName,
-              emailVerified: true, 
-              role: isF ? 'founder' : (sbUsers[0].role || 'user') 
-            };
-            setUser(merged);
-            localStorage.setItem('lumixora_user', JSON.stringify(merged));
-          } else {
-            await supabase.from('users').upsert([immediateProfile], { onConflict: 'email' });
+            dbUser = { ...unpackedData, ...sbUsers[0] };
           }
         } catch (syncErr) {
-          console.warn("Background user sync notice:", syncErr);
+          console.warn("Supabase user query notice:", syncErr);
+        }
+
+        if (!dbUser && db) {
+          try {
+            const [s1, s2] = await Promise.allSettled([
+              getDoc(doc(db, 'users', fbUser.uid)),
+              getDoc(doc(db, 'Users', fbUser.uid))
+            ]);
+            if (s1.status === 'fulfilled' && s1.value.exists()) {
+              dbUser = s1.value.data();
+            } else if (s2.status === 'fulfilled' && s2.value.exists()) {
+              dbUser = s2.value.data();
+            }
+          } catch (fsErr) {
+            console.warn("Firestore user query notice:", fsErr);
+          }
+        }
+
+        const candidateUser = dbUser || {
+          id: fbUser.uid,
+          uid: fbUser.uid,
+          name: cleanName,
+          email: email,
+          role: isF ? 'founder' : 'user',
+          is_approved: true,
+          isApproved: true
+        };
+
+        const accessStatus = checkUserAccessStatus(candidateUser);
+        if (!accessStatus.allowed) {
+          console.warn(`[Security Gate] Access denied for ${email}: ${accessStatus.reason}`);
+          try { await signOut(auth); } catch (e) {}
+          try { await supabase.auth.signOut(); } catch (e) {}
+          setUser(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem('lumixora_user');
+          localStorage.removeItem('lumixora_isAuthenticated');
+          setLockedAccountInfo({
+            email,
+            name: cleanScholarName(candidateUser.name || cleanName),
+            role: candidateUser.role || 'faculty',
+            department: candidateUser.department || candidateUser.branch || 'CSE',
+            reason: accessStatus.reason,
+            message: accessStatus.message
+          });
+          return;
+        }
+
+        // Access is granted!
+        setLockedAccountInfo(null);
+        const resolvedProfile = {
+          id: fbUser.uid,
+          uid: fbUser.uid,
+          name: cleanScholarName(candidateUser.name || cleanName),
+          email: email,
+          ...candidateUser,
+          role: isF ? 'founder' : (candidateUser.role || 'user'),
+          emailVerified: true
+        };
+
+        handleLogin(resolvedProfile);
+
+        if (!dbUser) {
+          supabase.from('users').upsert([resolvedProfile], { onConflict: 'email' }).catch(() => {});
         }
       }
     });
@@ -689,6 +856,27 @@ function App() {
             await supabase.from('users').upsert([userProfile], { onConflict: 'email' });
           }
 
+          const accessStatus = checkUserAccessStatus(userProfile);
+          if (!accessStatus.allowed) {
+            console.warn(`[Security Gate] Access denied for ${sbEmail}: ${accessStatus.reason}`);
+            await supabase.auth.signOut().catch(() => {});
+            try { await signOut(auth); } catch (e) {}
+            setUser(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem('lumixora_user');
+            localStorage.removeItem('lumixora_isAuthenticated');
+            setLockedAccountInfo({
+              email: sbEmail,
+              name: cleanScholarName(userProfile.name || cleanName),
+              role: userProfile.role || 'faculty',
+              department: userProfile.department || userProfile.branch || 'CSE',
+              reason: accessStatus.reason,
+              message: accessStatus.message
+            });
+            return;
+          }
+
+          setLockedAccountInfo(null);
           handleLogin(userProfile);
         } catch (e) {
           console.warn("Supabase auth session sync notice:", e);
@@ -704,14 +892,37 @@ function App() {
 
   const handleLogin = (userData) => {
     if (!userData) return;
+
+    const accessStatus = checkUserAccessStatus(userData);
+    if (!accessStatus.allowed) {
+      console.warn("[Security Gate] handleLogin rejected unauthorized user:", userData.email, accessStatus.reason);
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('lumixora_user');
+      localStorage.removeItem('lumixora_isAuthenticated');
+      try { signOut(auth); } catch (e) {}
+      try { supabase.auth.signOut(); } catch (e) {}
+      setLockedAccountInfo({
+        email: userData.email,
+        name: cleanScholarName(userData.name || userData.displayName),
+        role: userData.role || 'faculty',
+        department: userData.department || userData.branch || 'CSE',
+        reason: accessStatus.reason,
+        message: accessStatus.message
+      });
+      return;
+    }
+
     const email = (userData?.email || '').toLowerCase().trim();
-    const isF = userData?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+    const isF = userData?.role === 'founder' || isFounderEmail(email);
     const isTeammate = userData?.role === 'teammate' || userData?.role === 'team' || userData?.role === 'team_member' || email.endsWith('@lumixora.com');
+    const isFeeSatisfied = isExemptFromPayment(userData) || hasPaidCollegeFee(userData) || userData?.role === 'intern' || userData?.isIntern;
                 
     const finalizedUser = {
       ...userData,
       role: isF ? 'founder' : (userData.role || 'user'),
-      emailVerified: true
+      emailVerified: true,
+      oneTimeFeePaid: isFeeSatisfied
     };
 
     setUser(finalizedUser);
@@ -719,19 +930,17 @@ function App() {
     setShowLogin(null);
     localStorage.setItem('lumixora_user', JSON.stringify(finalizedUser));
     localStorage.setItem('lumixora_isAuthenticated', 'true');
-    
-    // Check if there was a pending join link
-    const pendingJoin = sessionStorage.getItem('lumixora_pending_join');
-    if (pendingJoin) {
-      sessionStorage.removeItem('lumixora_pending_join');
-      setActiveTab('join-group');
-      window.location.hash = pendingJoin;
-    } else {
-      // Set default tab hash on login
-      const defaultTab = isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard');
-      setActiveTab(defaultTab);
-      window.location.hash = defaultTab;
+    if (isFeeSatisfied && finalizedUser.email) {
+      try {
+        localStorage.setItem(`lumixora_fee_paid_${finalizedUser.email.toLowerCase().trim()}`, 'true');
+      } catch (e) {}
     }
+    
+    // Whenever ANY user logs in or registers into website, ALWAYS open Dashboard directly. Never open other portals randomly.
+    setActiveTab('dashboard');
+    try {
+      window.location.hash = 'dashboard';
+    } catch (e) {}
   };
 
   const handleLogout = () => {
@@ -769,6 +978,10 @@ function App() {
       case 'placement-commander':
         return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
       case 'future-twin':
+      case 'twin':
+      case 'ai-twin':
+      case 'ai-future-twin':
+      case 'careerverse':
         return <AiFutureTwin user={user} setActiveTab={handleTabChange} />;
       case 'coding-practice':
         return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
@@ -805,6 +1018,24 @@ function App() {
       case 'eduplus':
       case 'test-to-action':
         return <EduPulsePortal user={user} setActiveTab={handleTabChange} />;
+      case 'projectverse':
+      case 'project-verse':
+      case 'projects-hub':
+        return <ProjectVerse user={user} setActiveTab={handleTabChange} />;
+      case 'relay':
+      case 'lumixora-relay':
+      case 'fusion':
+      case 'project-dna':
+        return <RelayPortal user={user} setActiveTab={handleTabChange} />;
+      case 'internship':
+      case 'internships':
+      case 'internship-portal':
+      case 'apply-internship':
+        return <InternshipPortal user={user} setActiveTab={handleTabChange} />;
+      case 'intern-portal':
+      case 'interns':
+      case 'intern-workspace':
+        return <InternWorkspacePortal user={user} setActiveTab={handleTabChange} onLogin={handleLogin} />;
       case 'learning-hub':
       case 'learning':
       case 'resource-academy':
@@ -865,11 +1096,13 @@ function App() {
         return <Marketplace user={user} />;
       case 'community':
         return <CommunityPortal user={user} />;
+      case 'verify':
       case 'verify-cert':
       case 'cert-verify':
+      case 'credential-verify':
         const certHash = window.location.hash.substring(1);
         const certIdFromHash = certHash.split('/')[1] || '';
-        return <PublicCertificateVerification certId={certIdFromHash} onBack={() => handleTabChange('proof-of-skill')} />;
+        return <PublicCertificateVerification certId={certIdFromHash} onBack={() => handleTabChange('dashboard')} />;
       case 'join-group':
         const joinHash = window.location.hash.substring(1);
         const joinGroupId = joinHash.split('/')[1] || null;
@@ -904,16 +1137,37 @@ function App() {
     }
   };
 
+  if (lockedAccountInfo) {
+    return (
+      <ThemeProvider>
+        <ToastProvider>
+          <CursorGlow />
+          {renderLockedAccountModal()}
+        </ToastProvider>
+      </ThemeProvider>
+    );
+  }
+
   if (!isAuthenticated) {
     const lowerHash = currentHash;
     
-    // Public Vyomra Proof-of-Skill Certificate Verification URL (Recruiters / Employers)
-    if (lowerHash.includes('verify-cert/') || lowerHash.includes('cert-verify/')) {
+    // Public Lumixora Credential Verification URL (lumixora.in/verify, #verify, #verify-cert/...)
+    const isVerifyPath = typeof window !== 'undefined' && (
+      window.location.pathname.toLowerCase() === '/verify' ||
+      window.location.pathname.toLowerCase().startsWith('/verify/')
+    );
+    if (isVerifyPath || lowerHash.includes('verify') || lowerHash.includes('cert-verify')) {
       return (
         <ThemeProvider>
           <ToastProvider>
             <CursorGlow />
-            <PublicCertificateVerification onBack={() => { window.location.hash = ''; }} />
+            <PublicCertificateVerification onBack={() => { 
+              if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/verify')) {
+                window.location.href = '/';
+              } else {
+                window.location.hash = ''; 
+              }
+            }} />
           </ToastProvider>
         </ThemeProvider>
       );
@@ -1132,6 +1386,103 @@ function App() {
       );
     }
 
+    // Direct standalone access to LUMIXORA RELAY (Component Intelligence & Fusion)
+    if (lowerHash.includes('relay') || lowerHash.includes('fusion') || lowerHash.includes('project-dna')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <div className="min-h-screen bg-[#F7F8FC] text-[#17172B] p-2 md:p-6 space-y-4">
+              <div className="max-w-7xl mx-auto space-y-4">
+                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-violet-200" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-[#17172B] font-sora">LUMIXORA RELAY™</span>
+                        <span className="px-2 py-0.5 rounded bg-violet-100 text-[#6C4DFF] text-[10px] font-black border border-violet-200 uppercase tracking-wider">
+                          Project Intelligence & Component Fusion
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-mono">Transform Unfinished Projects into Opportunities</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button 
+                      onClick={() => { window.location.hash = ''; setActiveTab('dashboard'); }} 
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    >
+                      ← Home
+                    </button>
+                    <button 
+                      onClick={() => setShowLogin('student')} 
+                      className="px-4 py-2 bg-gradient-to-r from-[#6C4DFF] to-[#3878FF] hover:opacity-95 text-white text-xs font-black rounded-xl transition-all shadow-md shadow-violet-500/20 cursor-pointer"
+                    >
+                      Login
+                    </button>
+                  </div>
+                </div>
+
+                <RelayPortal user={user || { name: 'Innovation Architect', email: 'architect@lumixora.com', role: 'student' }} setActiveTab={handleTabChange} />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone public access to LUMIXORA INTERN WORKSPACE & SUBPORTAL
+    if (lowerHash.includes('intern-portal') || lowerHash.includes('intern-workspace') || lowerHash.includes('interns')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <div className="min-h-screen bg-[#070913] text-slate-100 p-2 md:p-6 space-y-4">
+              <div className="max-w-7xl mx-auto space-y-4">
+                <InternWorkspacePortal 
+                  user={user || { name: 'Lumixora Intern', email: 'intern@lumixora.in', role: 'intern' }} 
+                  setActiveTab={handleTabChange} 
+                  onLogin={handleLogin}
+                />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone public access to LUMIXORA INTERNSHIP PORTAL (Batch 01)
+    if (lowerHash.includes('internship') || lowerHash.includes('apply-internship')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <div className="min-h-screen bg-[#F7F8FC] text-[#17172B] p-2 md:p-6 space-y-4">
+              <div className="max-w-7xl mx-auto space-y-4">
+                <InternshipPortal user={user || { name: 'Guest Candidate', email: 'applicant@lumixora.in', role: 'student' }} setActiveTab={handleTabChange} />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone public access to LUMIXORA PROJECTVERSE™
+    if (lowerHash.includes('projectverse') || lowerHash.includes('project-verse') || lowerHash.includes('projects-hub')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <div className="min-h-screen bg-slate-50 text-slate-900 p-2 md:p-6">
+              <div className="max-w-7xl mx-auto">
+                <ProjectVerse user={user || { name: 'Guest Explorer', email: 'student@lumixora.in', role: 'student', branch: 'CSE', year: '2nd Year' }} />
+              </div>
+            </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     if (showLogin) {
       return (
         <ThemeProvider>
@@ -1164,6 +1515,26 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <CursorGlow />
+        {renderLockedAccountModal()}
+        {user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern && (
+          <CollegeAccessFeeModal
+            isOpen={true}
+            user={user}
+            college={user.college || user.collegeName}
+            mode="gate"
+            onSuccess={(updatedUser) => {
+              const finalized = { ...user, ...updatedUser, oneTimeFeePaid: true };
+              setUser(finalized);
+              localStorage.setItem('lumixora_user', JSON.stringify(finalized));
+              if (finalized.email) {
+                try {
+                  localStorage.setItem(`lumixora_fee_paid_${finalized.email.toLowerCase().trim()}`, 'true');
+                } catch (e) {}
+              }
+            }}
+            onLogout={handleLogout}
+          />
+        )}
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
             {showIntro && (

@@ -38,11 +38,10 @@ export const callAICompletion = async (params) => {
     return m;
   });
 
-  // 1. Primary High-Speed Engine: Groq API (qwen/qwen3.8-27b, openai/gpt-oss-120b, openai/gpt-oss-20b)
+  // 1. Primary High-Speed Engine: Groq API (llama-3.3-70b-versatile, llama-3.1-8b-instant, llama3-70b-8192)
   if (groqKey) {
     const hasImage = messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'image_url'));
-    // Prioritize high-accuracy conversational and multimodal model qwen/qwen3.8-27b first
-    const groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
 
     for (const model of groqModels) {
       try {
@@ -186,6 +185,58 @@ export async function generateDoubtResolution(questionOrContext, subject = 'Gene
     const rawQuery = typeof questionOrContext === 'string' ? questionOrContext : JSON.stringify(questionOrContext);
     const queryStr = rawQuery.trim();
 
+    // ⚡ Conversational & Identity Intent Interception
+    const normalized = queryStr.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+    const isIdentityQuery = 
+      normalized === 'who are you' || 
+      normalized.includes('who are you') || 
+      normalized === 'what are you' ||
+      normalized.includes('what are you') ||
+      normalized === 'what is your name' ||
+      normalized.includes('who created you') ||
+      normalized.includes('who made you') ||
+      normalized.includes('who built you') ||
+      normalized.includes('tell me about yourself') ||
+      normalized === 'who is sowban' ||
+      normalized.includes('who is sowban') ||
+      normalized.includes('what is lumixora');
+
+    if (isIdentityQuery) {
+      return `### ⚡ Hello! I am Lumixora's Academic AI Assistant
+
+I am an autonomous academic intelligence and master doubt-solving tutor built by **Vyomra** (founded by **Shaik Sowban**) engineered specifically for engineering and degree scholars.
+
+#### What I Can Help You With:
+1. **Academic Doubt Solving**: Step-by-step derivations, textbook formulas, conceptual proofs, and numerical solutions across your syllabus (Computer Science, Mathematics, Physics, Electronics, etc.).
+2. **Code & Systems Architecture**: Debugging errors, explaining algorithms, analyzing computational complexity, and implementing production code.
+3. **Sessional & University Exam Prep**: 2-mark short conceptual answers, 10-mark essay derivations, and model question papers.
+4. **Mentor Review**: Need human clarification? Toggle **"Request Human Mentor Review"** anytime to escalate your doubt directly to verified faculty and peer mentors.
+
+> **How to ask:** Simply type any question, paste a problem statement, upload an exam diagram, or ask for an algorithm walkthrough!`;
+    }
+
+    const isGreeting = 
+      normalized === 'hi' || 
+      normalized === 'hello' || 
+      normalized === 'hey' || 
+      normalized === 'hai' || 
+      normalized === 'good morning' || 
+      normalized === 'good evening' ||
+      normalized === 'help' ||
+      normalized === 'how to use';
+
+    if (isGreeting) {
+      return `### 👋 Welcome to Lumixora Academic Doubt Solver!
+
+I'm your 24/7 AI Master Tutor for **${subject}**. How can I assist your study session today?
+
+- **Ask a theory question**: e.g. *"Explain Virtual Memory paging vs segmentation"*, *"Derive Navier-Stokes equation"*
+- **Ask a code problem**: e.g. *"Implement Red-Black tree deletion with balance logic"*, *"Solve Two-Sum in O(N)"*
+- **Upload an image**: Click the image button below to upload diagrams, textbook figures, or handwritten equations.
+
+Type your question below and I'll break it down step-by-step!`;
+    }
+
     const systemPrompt = `You are Vyomra AI Academic Master Tutor — an elite, world-class doubt solver for ${subject} with deep mastery across Computer Science, Mathematics, Physics, Chemistry, and Engineering.
 
 Formatting Rules:
@@ -241,40 +292,44 @@ Formatting Rules:
     let aiResponse = await callAICompletion({ messages, temperature: 0.3, maxTokens: 2048 });
     
     if (!aiResponse) {
-      const topicName = (queryStr && queryStr.length > 2 && queryStr.toLowerCase() !== 'explain') ? queryStr : subject;
-      aiResponse = `### 📚 Academic Mastery Guide: ${topicName}
+      // Intelligent fallback that never formats conversational text as an academic topic
+      const cleanSubject = subject || 'Computer Science & Engineering';
+      const isConversational = queryStr.length < 25 && (queryStr.includes('?') || ['who', 'what', 'how', 'why', 'can', 'are'].some(w => queryStr.toLowerCase().startsWith(w)));
+      const topicName = (!isConversational && queryStr && queryStr.length > 2 && queryStr.toLowerCase() !== 'explain') ? queryStr : `${cleanSubject} Core Foundations`;
+
+      aiResponse = `### 📚 Academic Concept Guide: ${topicName}
 
 #### 1. Core Concept & Intuition
-**${topicName}** is a cornerstone topic in **${subject}**. It enables systematic problem solving through rigorous mathematical and algorithmic models.
+In **${cleanSubject}**, understanding **${topicName}** requires decomposing the core architectural principles, invariants, and step-by-step algorithms.
 
-> **Key Principle:** Always decompose the problem into standard boundary conditions, analyze invariants, and verify step-by-step.
+> **Key Principle:** Always decompose the problem into standard boundary conditions, analyze state transitions, and verify algorithmic complexity.
 
-#### 2. Mathematical Formulation & Key Equations
-For academic evaluation, standard mathematical models follow:
+#### 2. Theoretical Breakdown & Governing Equations
+For university academic evaluation, the primary mathematical formulation follows:
 $$\\sum_{i=1}^{n} X_i = \\text{Total System State}$$
 $$\\lim_{n \\to \\infty} \\frac{f(n)}{g(n)} = L$$
 
 #### 3. Step-by-Step Problem Solving Approach
-Step 1: **Identify the given variables and constraints**: Extract known values, target outputs, and coordinate systems.
-Step 2: **Apply the governing formulas**: Substitute known values into the primary theoretical equation.
-Step 3: **Derive the final solution**: Simplify algebraic terms, verify units, and test edge conditions.
+1. **Identify Boundary Conditions**: Extract input parameters, edge constraints, and target return types.
+2. **Apply Theoretical Invariant**: Verify pre-conditions and post-conditions systematically.
+3. **Analyze Complexity**: Confirm time complexity $O(n)$ or $O(\\log n)$ and auxiliary space bounds.
 
-#### 4. Practical Implementation / Code
+#### 4. Reference Code Implementation
 \`\`\`python
-# Vyomra Academic Demonstration for ${topicName}
+# Vyomra Academic Architecture Example for ${topicName}
 def solve_problem(inputs):
     """
-    Computes optimal solution with O(1) auxiliary space complexity.
+    Computes optimal solution with verified boundary checks.
     """
-    result = {"status": "Verified", "domain": "${subject}", "topic": "${topicName}"}
+    result = {"status": "Verified", "domain": "${cleanSubject}", "topic": "${topicName}"}
     return result
 
-# Example Execution
+# Verification Execution
 output = solve_problem({"param": 42})
 print("Solution Output:", output)
 \`\`\`
 
-> **Summary:** Always verify dimensional consistency and review edge-case behavior before final submission.`;
+> **Pro-Tip:** If you need human faculty or peer review for this exact numerical or code, toggle **"Request Human Mentor Review"** above!`;
     }
 
     return aiResponse;
@@ -908,21 +963,65 @@ Guidelines:
 4. Conclude with a short motivating checkpoint question.
 5. Return clean Markdown structure without long fluff.`;
 
-    const formattedMessages = [
-      { role: "system", content: systemPrompt },
-      ...messages
-    ];
+    let reply = null;
+    try {
+      reply = await callAICompletion({
+        messages: formattedMessages,
+        temperature: 0.7,
+        maxTokens: 1000
+      });
+    } catch (apiErr) {
+      console.warn("AI Twin Completion network note:", apiErr);
+    }
 
-    const reply = await callAICompletion({
-      messages: formattedMessages,
-      temperature: 0.7,
-      maxTokens: 1000
-    });
+    if (reply && typeof reply === 'string' && reply.trim().length > 10) {
+      return reply.trim();
+    }
 
-    return reply;
+    // High-Fidelity Cognitive Double Fallback Generator
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+    const queryLower = (typeof lastUserMessage === 'string' ? lastUserMessage : '').toLowerCase();
+    const studentName = twinData?.profile?.name || 'Scholar';
+    const dept = twinData?.profile?.department || 'CSE';
+    const college = twinData?.profile?.college || 'GPREC';
+
+    if (queryLower.includes('dsa') || queryLower.includes('tree') || queryLower.includes('graph') || queryLower.includes('array') || queryLower.includes('dp') || queryLower.includes('dynamic programming')) {
+      return `Hey ${studentName}! 🚀 Looking at your ${dept} track at ${college}, mastering core Data Structures & Algorithms is your #1 leverage for Tier-1 placements.
+
+### 📌 Targeted Roadmap for this Topic:
+1. **Foundation Pattern**: Understand the time vs. space complexity trade-offs (e.g., recursive overhead vs. memoization).
+2. **Standard Interview Edge-Cases**: Always check empty inputs, single-element collections, and negative/overflow limits.
+3. **Active Practice**: Head over to our **Code Arena** to practice 2 curated problems on this exact pattern right now.
+
+*Checkpoint Question*: Would you like me to generate a 3-question targeted quiz or walk you through a step-by-step code example?`;
+    }
+
+    if (queryLower.includes('placement') || queryLower.includes('interview') || queryLower.includes('resume') || queryLower.includes('job') || queryLower.includes('ctc') || queryLower.includes('salary')) {
+      return `Hello ${studentName}! 💼 Based on your current profile metrics, here is your high-impact placement readiness sprint:
+
+- **1. Technical Rounds**: Prioritize solving 2 DSA problems daily and revising Core CS (OS, DBMS, Computer Networks).
+- **2. Full-Stack / Project Defense**: Ensure your portfolio highlights end-to-end architecture (APIs, Database normalization, and Cloud deployment).
+- **3. Mock Defense**: Practice explaining trade-offs in our **AI Mock Interview Room** to build articulation speed.
+
+*Next Action*: Check out your **Public AI Twin Portfolio** to audit your external LeetCode & HackerRank synergy score!`;
+    }
+
+    if (queryLower.includes('exam') || queryLower.includes('cgpa') || queryLower.includes('marks') || queryLower.includes('study') || queryLower.includes('backlog') || queryLower.includes('syllabus')) {
+      return `Hey ${studentName}! 📚 Maintaining a solid academic GPA is key for shortlisting:
+
+1. **Focus on High-Weightage Units**: Unit 1 & Unit 2 usually form 50% of the mid-term paper. Complete all definitions and proofs first.
+2. **Previous Year Questions (PYQs)**: Solve at least 3 years of past papers—our data shows 65%+ repetition in core university questions.
+3. **Sessional Consistency**: Keep your attendance above 80% to maintain exam defense and safeguard your internal assessment scores.
+
+What specific subject or unit would you like to drill down into today?`;
+    }
+
+    return `Hello ${studentName}! ⚡ I am your Lumixora AI Academic Twin™ synchronized with your ${dept} curriculum at ${college}.
+
+I am tracking your study consistency, quiz accuracy, and placement milestones. How can I assist your revision or coding prep today? (Ask me to explain any topic, generate a quiz, or test your logic!)`;
   } catch (error) {
     console.error("Error generating twin response:", error);
-    return `Hi! I am your AI Twin. Looking at your profile, your momentum is strong! What concept or problem set shall we solve together now?`;
+    return `Hi! I am your AI Academic Twin™. Your academic trajectory is on track. What concept or problem set shall we solve together?`;
   }
 }
 

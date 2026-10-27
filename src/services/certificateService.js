@@ -538,10 +538,7 @@ export const issueNewCertificate = ({
 
 export const getCertificateById = (certId) => {
   if (!certId) return null;
-  let cleanId = certId.trim().toUpperCase();
-  if (!cleanId.startsWith('LMX-CERT-')) {
-    cleanId = `LMX-CERT-${cleanId}`;
-  }
+  const cleanId = certId.trim().toUpperCase();
 
   // 1. Check direct global storage
   try {
@@ -550,7 +547,7 @@ export const getCertificateById = (certId) => {
   } catch (e) {}
 
   // 2. Check in default templates
-  const matchDefault = DEFAULT_CERTIFICATES.find(c => c.id.toUpperCase() === cleanId || c.id.toUpperCase().includes(cleanId));
+  const matchDefault = DEFAULT_CERTIFICATES.find(c => c.id.toUpperCase() === cleanId);
   if (matchDefault) return matchDefault;
 
   // 3. Scan all local storage cert keys
@@ -560,39 +557,24 @@ export const getCertificateById = (certId) => {
       try {
         const certs = JSON.parse(localStorage.getItem(key));
         if (Array.isArray(certs)) {
-          const found = certs.find(c => c.id.toUpperCase() === cleanId || c.id.toUpperCase().includes(cleanId));
+          const found = certs.find(c => c.id.toUpperCase() === cleanId);
           if (found) return found;
         }
       } catch (e) {}
     }
   }
 
-  // 4. Synthesize verifiable response for any lookup hash
-  return {
-    id: cleanId,
-    title: 'Lumixora Certified Professional Scholar (VYOMRA)',
-    category: 'Placement & Technical Competency',
-    issuedTo: 'Verified Lumixora Scholar (VYOMRA)',
-    college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    issueDate: 'September 2026',
-    expiryDate: 'Lifetime Verifiable',
-    score: '96%',
-    grade: 'Elite Distinction (A+)',
-    badgeIcon: '🛡️',
-    badgeColor: 'from-cyan-400 to-blue-600',
-    skills: ['Problem Solving', 'Data Structures & Algorithms', 'Full-Stack Architecture'],
-    verifiedBy: 'Lumixora Autonomous AI Placement Board (VYOMRA)',
-    verificationUrl: `${window.location.origin}/#verify-cert/${cleanId}`
-  };
+  // Strictly LIVE DATA: return null if not found
+  return null;
 };
 
 export const generateLinkedInAddUrl = (cert) => {
   if (!cert) return '#';
   const name = encodeURIComponent(cert.title);
-  const organizationName = encodeURIComponent('Lumixora by VYOMRA');
+  const organizationName = encodeURIComponent('Lumixora — a product of Vyomra');
   const issueYear = new Date().getFullYear();
   const issueMonth = new Date().getMonth() + 1;
-  const certUrl = encodeURIComponent(cert.verificationUrl || `https://lumixora-93cca.web.app/#verify-cert/${cert.id}`);
+  const certUrl = encodeURIComponent(cert.verificationUrl || `https://lumixora.in/verify?id=${cert.id}`);
   const certId = encodeURIComponent(cert.id);
 
   return `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${name}&organizationName=${organizationName}&issueYear=${issueYear}&issueMonth=${issueMonth}&certUrl=${certUrl}&certId=${certId}`;

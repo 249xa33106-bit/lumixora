@@ -19,7 +19,7 @@ export default function ProofOfSkillCertificates({ user, setActiveTab }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [copiedId, setCopiedId] = useState(null);
   const [searchVerifyId, setSearchVerifyId] = useState('');
-  const [certTheme, setCertTheme] = useState('cyber'); // 'cyber' | 'gold' | 'executive' | 'emerald' | 'sapphire'
+  const [certTheme, setCertTheme] = useState('executive_ivory'); // 'executive_ivory' | 'gold_midnight' | 'sapphire_executive' | 'classic_parchment'
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const certRef = useRef(null);
 
@@ -303,7 +303,6 @@ export default function ProofOfSkillCertificates({ user, setActiveTab }) {
                           : 'text-gray-400 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <span>{st.icon}</span>
                       <span>{st.name}</span>
                     </button>
                   ))}
@@ -433,6 +432,7 @@ export default function ProofOfSkillCertificates({ user, setActiveTab }) {
               styleId={certTheme}
               qrCodeDataUrl={qrCodeDataUrl}
               certRef={certRef}
+              user={user}
             />
 
             {/* Action Bar (LinkedIn / Print / Share) */}

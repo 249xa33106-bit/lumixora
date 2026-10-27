@@ -3,12 +3,13 @@ import {
   Search, X, Sparkles, BookOpen, Code, GraduationCap, 
   HelpCircle, Trophy, Briefcase, Mic, Film, Map, 
   ClipboardList, ArrowRight, CornerDownLeft, Clock,
-  Layers, ChevronRight, Hash, Compass
+  Layers, ChevronRight, Hash, Compass, Flame, GitFork
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
 const SEARCHABLE_PORTALS = [
   { id: 'dashboard', title: 'Dashboard', desc: 'Main academic home, stats & daily roadmap', category: 'General', icon: Sparkles, keywords: ['home', 'overview', 'stats', 'analytics'] },
+  { id: 'relay', title: 'LUMIXORA RELAY™ (Component Fusion)', desc: 'Transform unfinished & abandoned projects into new opportunities via AI DNA extraction & component fusion', category: 'Innovation', icon: GitFork, badge: 'NEW', keywords: ['relay', 'fusion', 'dna', 'projects', 'salvage', 'abandoned', 'reusable', 'components', 'graph'] },
   { id: 'my-academics', title: 'My Academics', desc: 'Track SGPA, CGPA, semester marks & attendance', category: 'Academics', icon: GraduationCap, badge: 'NEW', keywords: ['marks', 'cgpa', 'sgpa', 'semester', 'grades', 'subjects', 'attendance'] },
   { id: 'doubts', title: 'Doubt Solver', desc: 'Instant AI & mentor step-by-step LaTeX academic solutions', category: 'Academics', icon: HelpCircle, badge: 'AI 24/7', keywords: ['questions', 'help', 'math', 'derivation', 'homework', 'equations'] },
   { id: 'learning-hub', title: 'Learning & Video Hub', desc: 'Video lectures, enhanced AI study notes & PPTs', category: 'Academics', icon: BookOpen, keywords: ['notes', 'lectures', 'videos', 'courses', 'curriculum'] },

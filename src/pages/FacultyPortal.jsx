@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   GraduationCap, Users, ClipboardList, CheckCircle, FileText, 
   HelpCircle, Search, Filter, Save, X, Edit2, Trash2, 
@@ -47,13 +47,24 @@ export default function FacultyPortal({ user, setActiveTab }) {
   const facultyDept = user?.department || 'CSE';
   const [activeFacultyCollege, setActiveFacultyCollege] = useState(() => {
     const activeName = localStorage.getItem('lumixora_active_campus_name');
-    return (user?.role === 'founder' && activeName && activeName !== 'All Campuses (HQ)') ? activeName : (user?.college || 'GPREC');
+    return (user?.role === 'founder' && activeName && activeName !== 'All Campuses (HQ)') 
+      ? activeName 
+      : (user?.college || 'GPREC');
+  });
+
+  const [activeFacultyCampusId, setActiveFacultyCampusId] = useState(() => {
+    return localStorage.getItem('lumixora_active_campus_id') || 'all';
   });
 
   useEffect(() => {
     const handleCampusEvt = (e) => {
-      if (e.detail?.campusName && e.detail.campusId !== 'all') {
-        setActiveFacultyCollege(e.detail.campusName);
+      if (e.detail) {
+        if (e.detail.campusName) {
+          setActiveFacultyCollege(e.detail.campusName);
+        }
+        if (e.detail.campusId) {
+          setActiveFacultyCampusId(e.detail.campusId);
+        }
       }
     };
     window.addEventListener('lumixora_campus_changed', handleCampusEvt);
@@ -133,12 +144,27 @@ export default function FacultyPortal({ user, setActiveTab }) {
           const xp = (u.xp !== undefined && u.xp !== null) ? u.xp : (meta.xp || 50);
           const coins = (u.coins !== undefined && u.coins !== null) ? u.coins : (meta.coins || 100);
 
+          let resolvedCollege = meta.college || '';
+          if (!resolvedCollege || resolvedCollege === 'GPREC') {
+            if (email && (email.includes('annamacharya') || email.includes('aits'))) {
+              resolvedCollege = 'Annamacharya University';
+            } else if (email && (email.includes('ashoka') || email.includes('ashokacollege'))) {
+              resolvedCollege = "Ashoka Women's Engineering College";
+            } else if (email && (email.includes('bitsadoni') || email.includes('bits.ac') || email.includes('bits.edu'))) {
+              resolvedCollege = 'Bheema Institute Of Technology & Science';
+            } else if (u.college && u.college !== 'GPREC') {
+              resolvedCollege = u.college;
+            } else {
+              resolvedCollege = meta.college || u.college || 'GPREC';
+            }
+          }
+
           const scholarObj = {
             id: u.id,
             uid: u.id,
             name: cName,
             email: u.email || '',
-            college: u.college || meta.college || 'GPREC',
+            college: resolvedCollege,
             department,
             branch: department,
             year,
@@ -169,6 +195,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
             if (data.cleanName) existing.name = data.cleanName;
             if (data.rollNumber) existing.rollNumber = data.rollNumber;
             if (data.department) existing.department = data.department;
+            if (data.college) existing.college = data.college;
             if (data.xp) existing.xp = data.xp;
             if (data.coins) existing.coins = data.coins;
           }
@@ -190,8 +217,77 @@ export default function FacultyPortal({ user, setActiveTab }) {
     fetchFacultyScholars();
   }, []);
 
+  // College Matching Helper for Faculty Portal Roster Isolation
+  const isScholarOfActiveCampus = useCallback((scholar) => {
+    if (!scholar) return false;
+    
+    // If founder is explicitly viewing All Campuses HQ
+    if (user?.role === 'founder' && (activeFacultyCampusId === 'all' || activeFacultyCollege === 'All Campuses (HQ)')) {
+      return true;
+    }
+
+    const currentCollegeStr = (facultyCollege || '').toLowerCase().trim();
+    const currentId = (activeFacultyCampusId || '').toLowerCase().trim();
+
+    const sCol = (scholar.college || '').toLowerCase().trim();
+    const sEmail = (scholar.email || '').toLowerCase().trim();
+    const sRoll = (scholar.rollNumber || '').toLowerCase().trim();
+
+    // 1. Annamacharya University (AU Rajampet)
+    if (
+      currentId === 'annamacharya' || 
+      currentCollegeStr.includes('annamacharya') || 
+      currentCollegeStr.includes('rajampet') || 
+      currentCollegeStr === 'au' || 
+      currentCollegeStr === 'au rajampet'
+    ) {
+      if (sEmail.includes('annamacharya') || sEmail.includes('aits')) return true;
+      if (sCol.includes('annamacharya') || sCol.includes('aits') || sCol === 'au' || sCol.includes('rajampet')) return true;
+      return false;
+    }
+
+    // 2. Ashoka Women's Engineering College
+    if (currentId === 'ashoka' || currentCollegeStr.includes('ashoka')) {
+      if (sEmail.includes('ashoka')) return true;
+      if (sCol.includes('ashoka')) return true;
+      return false;
+    }
+
+    // 3. Bheema Institute Of Technology & Science (BITS Adoni)
+    if (
+      currentId === 'bits' || 
+      currentCollegeStr.includes('bits') || 
+      currentCollegeStr.includes('bheema') || 
+      currentCollegeStr.includes('adoni')
+    ) {
+      if (sEmail.includes('bitsadoni') || sEmail.includes('bits.ac') || sEmail.includes('bits.edu')) return true;
+      if (sCol.includes('bits') || sCol.includes('bheema') || sCol.includes('adoni')) return true;
+      return false;
+    }
+
+    // 4. G. Pulla Reddy Engineering College (GPREC Kurnool)
+    if (currentId === 'gprec' || currentCollegeStr.includes('gprec') || currentCollegeStr.includes('pulla reddy')) {
+      if (sEmail.endsWith('@gprec.ac.in') || sEmail.includes('gprec.ac.in')) return true;
+      if (sCol.includes('gprec') || sCol.includes('pulla reddy') || sCol === 'gprec') return true;
+      if (sRoll.startsWith('249xa') || sRoll.startsWith('259xa') || sRoll.startsWith('239xa') || sRoll.startsWith('229xa')) return true;
+      // Default GPREC if no other college domain matches
+      if (!sCol.includes('annamacharya') && !sCol.includes('aits') && !sCol.includes('ashoka') && !sCol.includes('bits') && !sCol.includes('bheema') && !sEmail.includes('annamacharya') && !sEmail.includes('ashoka') && !sEmail.includes('bits')) {
+        return true;
+      }
+      return false;
+    }
+
+    // General substring match
+    return sCol.includes(currentCollegeStr) || sCol.includes(currentId);
+  }, [facultyCollege, activeFacultyCampusId, user?.role, activeFacultyCollege]);
+
+  // Scholars strictly belonging to the active campus
+  const campusScholars = useMemo(() => {
+    return scholarsList.filter(isScholarOfActiveCampus);
+  }, [scholarsList, isScholarOfActiveCampus]);
+
   const filteredScholars = useMemo(() => {
-    return scholarsList.filter(s => {
+    return campusScholars.filter(s => {
       const matchesSearch = 
         (s.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (s.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,7 +298,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
 
       return matchesSearch && matchesDept;
     });
-  }, [scholarsList, searchTerm, selectedDept]);
+  }, [campusScholars, searchTerm, selectedDept]);
 
   // Open Edit Modal
   const handleOpenEdit = (scholar) => {
@@ -455,7 +551,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Users className="w-4 h-4" /> Department Scholars ({scholarsList.length})
+            <Users className="w-4 h-4" /> Department Scholars ({campusScholars.length})
           </button>
 
           <button
@@ -515,7 +611,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
               </div>
               <div>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Total Scholars</span>
-                <span className="text-lg font-black text-white">{scholarsList.length}</span>
+                <span className="text-lg font-black text-white">{campusScholars.length}</span>
               </div>
             </div>
 
@@ -534,9 +630,11 @@ export default function FacultyPortal({ user, setActiveTab }) {
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">CSE Dept</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">
+                  {selectedDept === 'All' ? 'CSE Dept' : `${selectedDept} Dept`}
+                </span>
                 <span className="text-lg font-black text-purple-300">
-                  {scholarsList.filter(s => (s.department || '').toUpperCase().includes('CSE')).length}
+                  {campusScholars.filter(s => (s.department || '').toUpperCase().includes('CSE')).length}
                 </span>
               </div>
             </div>
@@ -548,7 +646,7 @@ export default function FacultyPortal({ user, setActiveTab }) {
               <div>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Avg Aura (AP)</span>
                 <span className="text-lg font-black text-amber-300">
-                  {scholarsList.length ? Math.round(scholarsList.reduce((a, b) => a + (b.xp || 0), 0) / scholarsList.length) : 0} AP
+                  {campusScholars.length ? Math.round(campusScholars.reduce((a, b) => a + (b.xp || 0), 0) / campusScholars.length) : 0} AP
                 </span>
               </div>
             </div>
@@ -607,7 +705,18 @@ export default function FacultyPortal({ user, setActiveTab }) {
                     </tr>
                   ) : filteredScholars.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="p-8 text-center text-gray-400">No scholars match the search criteria.</td>
+                      <td colSpan="7" className="p-12 text-center text-gray-400">
+                        <div className="max-w-md mx-auto space-y-2">
+                          <p className="text-sm font-bold text-gray-300">
+                            No scholars found for {facultyCollege}.
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {facultyCollege === 'All Campuses (HQ)' 
+                              ? 'No student accounts match the search criteria.' 
+                              : `Students of ${facultyCollege} will appear here once they sign in with their verified official institutional email.`}
+                          </p>
+                        </div>
+                      </td>
                     </tr>
                   ) : (
                     filteredScholars.map(s => {

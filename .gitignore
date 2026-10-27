@@ -37,6 +37,9 @@ dist-ssr
 scratch/
 temp_openmaic/
 *.xlsx
+playstore-release/
+*.apk
+*.aab
 
 # Python bytecode & cache
 __pycache__/

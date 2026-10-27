@@ -38,6 +38,8 @@
     "qrcode": "^1.5.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-is": "^19.3.0",
+    "recharts": "^3.10.1",
     "tailwindcss": "^4.3.2",
     "three": "^0.185.1",
     "xlsx": "^0.18.5"

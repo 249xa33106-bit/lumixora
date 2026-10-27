@@ -6,7 +6,7 @@ import {
   Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power,
   Bot, Award, HelpCircle, BookOpen, CheckSquare, UserCheck, Rocket, FileText,
   Building2, Check, Plus, Layers, Trophy, CheckCircle2, TrendingUp, Download, 
-  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2
+  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -24,18 +24,19 @@ import { FRAMES } from '../services/gamificationService';
 import { DEFAULT_COLLEGES } from '../data/collegesData';
 
 const QUICK_FEATURES = [
-  { id: 'dashboard', label: '🌌 Omiverse Hub', icon: Home, highlight: true },
-  { id: 'coding-practice', label: '💻 Codeverse', icon: Code, highlight: true },
-  { id: 'learning-hub', label: '📚 Learnverse', icon: BookOpen },
-  { id: 'projects', label: '🛠️ Buildverse', icon: Rocket },
-  { id: 'community', label: '🌐 Connectverse', icon: Users },
-  { id: 'future-twin', label: '🎯 Careerverse', icon: Bot },
-  { id: 'assigned-tasks', label: '🌟 Talentverse', icon: Award },
+  { id: 'dashboard', label: 'Omiverse Hub', icon: Home, highlight: true },
+  { id: 'coding-practice', label: 'Codeverse', icon: Code, highlight: true },
+  { id: 'learning-hub', label: 'Learnverse', icon: BookOpen },
+  { id: 'projects', label: 'Buildverse', icon: Rocket },
+  { id: 'community', label: 'Connectverse', icon: Users },
+  { id: 'future-twin', label: 'Careerverse', icon: Bot },
+  { id: 'assigned-tasks', label: 'Talentverse', icon: Award },
   { id: 'resume', label: 'AI Resume PDF', icon: FileText },
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
   { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle },
   { id: 'attendance', label: 'Attendance', icon: UserCheck },
-  { id: 'edupulse', label: '📊 EduPulse (Test-to-Action)', icon: Activity, highlight: true },
+  { id: 'edupulse', label: 'EduPulse (Test-to-Action)', icon: Activity, highlight: true },
+  { id: 'relay', label: 'LUMIXORA RELAY', icon: GitFork, highlight: true },
 ];
 
 export default function MainLayout({ children, activeTab, setActiveTab, user, onUpdateUser, onLogout, onExitApp }) {

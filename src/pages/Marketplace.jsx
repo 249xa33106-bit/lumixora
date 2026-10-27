@@ -151,8 +151,10 @@ const Marketplace = () => {
             ...formData,
             images: [imageUrl],
             price: Number(formData.price),
-            sellerId: user.uid,
+            sellerId: user.uid || user.id || 'scholar',
             sellerName: cleanScholarName(user.name || user.email),
+            sellerEmail: user.email || formData.contactDetails || 'scholar@gprec.ac.in',
+            contactPhone: formData.contactDetails || '',
             college: college,
           });
           

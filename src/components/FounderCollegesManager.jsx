@@ -4,14 +4,28 @@ import {
   Users, Sparkles, MapPin, X, Award, ShieldCheck, DollarSign, Calendar, 
   Check, ExternalLink, ArrowRight, Layers, Eye
 } from 'lucide-react';
-import { DEFAULT_COLLEGES, B2B_LICENSING_TIERS } from '../data/collegesData';
+import { 
+  DEFAULT_COLLEGES, B2B_LICENSING_TIERS, getStoredCustomColleges, 
+  saveCustomCollegesToStorage, fetchCollegesFromSupabase, saveCollegeToSupabase 
+} from '../data/collegesData';
 import { db } from '../config/firebase';
+import { supabase } from '../config/supabase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 
 export default function FounderCollegesManager() {
   const { addToast } = useToast();
-  const [colleges, setColleges] = useState(DEFAULT_COLLEGES);
+  const [colleges, setColleges] = useState(() => {
+    const stored = getStoredCustomColleges();
+    const map = new Map();
+    DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
+    stored.forEach(c => {
+      if (c && c.id && !c.is_deleted && !c.isDeleted) {
+        map.set(c.id, { ...(map.get(c.id) || {}), ...c });
+      }
+    });
+    return Array.from(map.values());
+  });
   const [editingCollege, setEditingCollege] = useState(null);
   const [activeCampusId, setActiveCampusId] = useState(() => {
     return localStorage.getItem('lumixora_active_campus_id') || 'all';
@@ -35,32 +49,85 @@ export default function FounderCollegesManager() {
     description: ''
   });
 
-  // Load in real-time from Firestore
+  // Load and sync in real-time across Supabase Cloud & Local Storage
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'college_tenants'),
-      (snap) => {
-        const fetched = [];
-        snap.forEach(d => {
-          if (d.id === 'init') return;
-          const data = d.data();
-          if (!data.is_deleted && !data.isDeleted) {
-            fetched.push({ id: d.id, ...data });
+    // 1. Initial sync from local storage
+    const stored = getStoredCustomColleges();
+    if (stored.length > 0) {
+      setColleges(() => {
+        const map = new Map();
+        DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
+        stored.forEach(c => {
+          if (c && c.id && !c.is_deleted && !c.isDeleted) {
+            map.set(c.id, { ...(map.get(c.id) || {}), ...c });
           }
         });
+        return Array.from(map.values());
+      });
+    }
 
-        // Ensure all DEFAULT_COLLEGES (GPREC, Ashoka, etc.) are present
-        const existingIds = new Set(fetched.map(c => c.id));
-        const missingDefaults = DEFAULT_COLLEGES.filter(c => !existingIds.has(c.id));
-        const finalList = [...missingDefaults, ...fetched];
-        setColleges(finalList);
-      },
-      (err) => {
-        console.warn("Error listening to college tenants:", err);
+    // 2. Fetch fresh cloud partner colleges from Supabase
+    const syncFromCloud = async () => {
+      try {
+        const customList = await fetchCollegesFromSupabase();
+        if (customList && customList.length > 0) {
+          setColleges(() => {
+            const map = new Map();
+            DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
+            customList.forEach(c => {
+              if (c && c.id && !c.is_deleted && !c.isDeleted) {
+                map.set(c.id, { ...(map.get(c.id) || {}), ...c });
+              }
+            });
+            return Array.from(map.values());
+          });
+        }
+      } catch (e) {}
+    };
+    syncFromCloud();
+
+    // 3. Listen to custom event when colleges change
+    const handleUpdate = (e) => {
+      if (e?.detail) {
+        setColleges(() => {
+          const map = new Map();
+          DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
+          e.detail.forEach(c => {
+            if (c && c.id && !c.is_deleted && !c.isDeleted) {
+              map.set(c.id, { ...(map.get(c.id) || {}), ...c });
+            }
+          });
+          return Array.from(map.values());
+        });
       }
-    );
+    };
+    window.addEventListener('lumixora_colleges_updated', handleUpdate);
 
-    return () => unsub();
+    // 4. Supabase real-time channel subscription
+    let channel = null;
+    if (supabase && typeof supabase.channel === 'function') {
+      try {
+        channel = supabase.channel('college_tenants_realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'college_tenants' }, () => {
+            syncFromCloud();
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_notifications' }, (payload) => {
+            if (payload?.new?.type === 'college_tenant') syncFromCloud();
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+
+    // 5. Periodic polling fallback
+    const pollTimer = setInterval(syncFromCloud, 15000);
+
+    return () => {
+      window.removeEventListener('lumixora_colleges_updated', handleUpdate);
+      clearInterval(pollTimer);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch (e) {}
+      }
+    };
   }, []);
 
   const handleSwitchCampus = (campusId, campusName) => {
@@ -109,12 +176,14 @@ export default function FounderCollegesManager() {
 
     const updated = [formatted, ...colleges.filter(c => c.id !== tenantId)];
     setColleges(updated);
+    saveCustomCollegesToStorage(updated);
 
     try {
-      await setDoc(doc(db, 'college_tenants', tenantId), formatted, { merge: true });
-      addToast({ message: `Partner college "${newCollege.name}" licensed & onboarded!`, type: 'success' });
+      await saveCollegeToSupabase(formatted);
+      if (db) setDoc(doc(db, 'college_tenants', tenantId), formatted, { merge: true }).catch(() => {});
+      addToast({ message: `Partner college "${newCollege.name}" licensed & synced nationwide!`, type: 'success' });
     } catch (err) {
-      console.error("Firestore error:", err);
+      console.warn("College sync notice:", err);
       addToast({ message: `College "${newCollege.name}" registered.`, type: 'success' });
     }
 
@@ -155,12 +224,14 @@ export default function FounderCollegesManager() {
 
     const updatedColleges = colleges.map(c => c.id === editingCollege.id ? updatedCollege : c);
     setColleges(updatedColleges);
+    saveCustomCollegesToStorage(updatedColleges);
 
     try {
-      await setDoc(doc(db, 'college_tenants', editingCollege.id), updatedCollege, { merge: true });
+      await saveCollegeToSupabase(updatedCollege);
+      if (db) setDoc(doc(db, 'college_tenants', editingCollege.id), updatedCollege, { merge: true }).catch(() => {});
       addToast({ message: `Updated licensing details for ${editingCollege.name}!`, type: 'success' });
     } catch (err) {
-      console.error("Firestore error:", err);
+      console.warn("Firestore error:", err);
       addToast({ message: `Updated details for ${editingCollege.name}!`, type: 'success' });
     }
 
@@ -170,13 +241,18 @@ export default function FounderCollegesManager() {
   const handleDeleteCollege = async (tenantId, collegeName) => {
     if (!window.confirm(`Are you sure you want to delete "${collegeName}" from the Vyomra network?`)) return;
 
-    setColleges(prev => prev.filter(c => c.id !== tenantId));
+    const updated = colleges.filter(c => c.id !== tenantId);
+    setColleges(updated);
+    saveCustomCollegesToStorage(updated);
 
     try {
-      await deleteDoc(doc(db, 'college_tenants', tenantId));
+      if (supabase && typeof supabase.from === 'function') {
+        await supabase.from('college_tenants').update({ active: false }).eq('id', tenantId);
+      }
+      if (db) await deleteDoc(doc(db, 'college_tenants', tenantId)).catch(() => {});
       addToast({ message: `Deleted institution "${collegeName}".`, type: 'success' });
     } catch (err) {
-      console.error("Firestore delete error:", err);
+      console.error("Delete error:", err);
     }
   };
 

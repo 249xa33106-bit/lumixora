@@ -5,7 +5,7 @@ import {
   Mail, Trophy, Code, Clock, AlertTriangle, Users, Film, Shield, 
   Target, ClipboardList, ShoppingCart, MessageCircle, Map, 
   Activity, Power, Cpu, ShieldCheck, Rocket, Video, Search, Briefcase,
-  Mic, Award, ChevronDown, ChevronRight, Brain
+  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp }) {
@@ -19,6 +19,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                      userEmail.endsWith('@lumixora.com') || 
                      isFounder;
   const isFaculty = user?.role === 'faculty' || user?.role === 'mentor' || isFounder;
+  const isIntern = user?.role === 'intern' || userEmail.includes('intern');
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState({});
@@ -28,11 +29,20 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   };
 
   const menuSections = [
+    ...(isIntern ? [{
+      key: 'intern',
+      title: '💼 Intern Workspace Hub',
+      items: [
+        { id: 'intern-portal', label: 'Intern Workspace', icon: Briefcase, badge: 'Active ⚡' },
+        { id: 'internships', label: 'Application Status', icon: Trophy, badge: 'Track' },
+      ]
+    }] : []),
     ...(isFounder || isTeammate || isFaculty ? [{
       key: 'admin',
       title: '🛡️ Command & Administration',
       items: [
         ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield, badge: 'Secure' }] : []),
+        ...(isFounder || isTeammate ? [{ id: 'intern-portal', label: 'Interns & Tasks Hub', icon: Users, badge: 'Review 💼' }] : []),
         ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles, badge: 'Team ⚡' }] : []),
         ...(isFaculty ? [{ id: 'faculty-portal', label: 'Faculty Command', icon: GraduationCap, badge: 'Faculty' }] : []),
         { id: 'edupulse', label: 'EduPulse Action Centre', icon: Activity, badge: 'AI Action ⚡' },
@@ -43,6 +53,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       title: '🎓 Academics & Learning',
       items: [
         { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
+        { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Interactive ⚛️' },
         { id: 'edupulse', label: 'EduPulse Test-to-Action', icon: Activity, badge: 'AI Action 📊' },
         { id: 'courses', label: 'All Courses & Diplomas', icon: BookOpen, badge: 'Diplomas 🎓' },
         { id: 'boloclass', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
@@ -57,10 +68,15 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       key: 'career',
       title: '🚀 Placement & Career Hub',
       items: [
-        { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW 🔥' },
+        { id: 'projectverse', label: 'PROJECTVERSE™', icon: Rocket, badge: 'Flagship 🚀' },
+        { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW' },
+        { id: 'relay', label: 'LUMIXORA RELAY™', icon: GitFork, badge: 'Fusion AI' },
+        { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Visualizer ⚛️' },
         { id: 'interview', label: 'AI Mock Interview Room', icon: Mic, badge: 'Live AI 🎙️' },
         { id: 'coding-practice', label: 'Code Arena & 30D Java', icon: Code, badge: 'DSA' },
         { id: 'certificates', label: 'Proof-of-Skill Badges', icon: Award, badge: 'LinkedIn 📜' },
+        { id: 'intern-portal', label: 'Intern Workspace & Pass', icon: Briefcase, badge: 'Portal 💼' },
+        { id: 'internships', label: 'Lumixora Internships', icon: Briefcase, badge: 'Batch 01' },
         { id: 'alumni-referrals', label: 'Alumni & Off-Campus Jobs', icon: Briefcase, badge: 'Referrals' },
         { id: 'future-twin', label: 'AI Future Twin™', icon: Sparkles, badge: 'PRO' },
         { id: 'career-roadmap', label: 'Career Roadmap', icon: Map },

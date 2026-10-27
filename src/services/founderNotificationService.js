@@ -184,9 +184,17 @@ export const recordFounderNotification = async (notification) => {
       type: notification.type || 'login', // 'login' | 'register' | 'submission' | 'doubt' | 'task' | 'grievance'
       name: cleanName,
       email: (notification.email || '').toLowerCase().trim(),
+      phone: notification.phone || '',
       role: notification.role || 'user',
       college: notification.college || 'GPREC',
       department: notification.department || 'CSE',
+      year: notification.year || '',
+      rollNumber: notification.rollNumber || '',
+      appId: notification.appId || '',
+      linkedin: notification.linkedin || '',
+      whyJoin: notification.whyJoin || '',
+      priorExperience: notification.priorExperience || '',
+      status: notification.status || 'pending_review',
       details: notification.details || '',
       score: notification.score !== undefined ? notification.score : null,
       total: notification.total !== undefined ? notification.total : null,
@@ -210,21 +218,53 @@ export const recordFounderNotification = async (notification) => {
     // 2. Store to Supabase founder_notifications table
     if (supabase && typeof supabase.from === 'function') {
       try {
+        const notifTitle = notifObj.type === 'login' 
+          ? `Active Scholar Login: ${notifObj.name || notifObj.email}`
+          : notifObj.type === 'register'
+          ? `New Scholar Enrolled: ${notifObj.name || notifObj.email}`
+          : notifObj.type === 'submission'
+          ? `Test Submission: ${notifObj.testTitle || 'Test'} (${notifObj.name})`
+          : notifObj.type === 'payment'
+          ? `College Fee Received: ${notifObj.name || notifObj.email}`
+          : notifObj.type === 'ambassador_application'
+          ? `Ambassador Application: ${notifObj.name || notifObj.email}`
+          : `${notifObj.name || 'Scholar'} - ${notifObj.details || notifObj.type}`;
+
+        const notifMessage = notifObj.details || `${notifObj.name} · ${notifObj.department || 'CSE'} (${notifObj.college || 'Institution'})`;
+
         supabase.from('founder_notifications').insert([{
-          id: notifObj.id,
-          type: notifObj.type,
-          name: notifObj.name,
-          email: notifObj.email,
-          role: notifObj.role,
-          college: notifObj.college,
-          department: notifObj.department,
-          details: notifObj.details,
-          score: notifObj.score,
-          total: notifObj.total,
-          test_title: notifObj.testTitle,
-          created_at: notifObj.createdAt
-        }]).then(() => {}).catch(() => {});
-      } catch (sbInsertErr) {}
+          title: notifTitle,
+          message: notifMessage,
+          type: notifObj.type || 'login',
+          meta: {
+            id: notifObj.id,
+            appId: notifObj.appId,
+            name: notifObj.name,
+            email: notifObj.email,
+            phone: notifObj.phone,
+            role: notifObj.role || 'user',
+            college: notifObj.college || 'GPREC',
+            department: notifObj.department || 'CSE',
+            year: notifObj.year,
+            rollNumber: notifObj.rollNumber,
+            linkedin: notifObj.linkedin,
+            whyJoin: notifObj.whyJoin,
+            priorExperience: notifObj.priorExperience,
+            status: notifObj.status,
+            details: notifObj.details || notifMessage,
+            score: notifObj.score,
+            total: notifObj.total,
+            testTitle: notifObj.testTitle,
+            createdAt: notifObj.createdAt
+          },
+          read: false,
+          created_at: notifObj.createdAt || new Date().toISOString()
+        }]).then(({ error }) => {
+          if (error) console.warn("Supabase notification insert notice:", error.message);
+        }).catch((err) => console.warn("Supabase notification insert err:", err));
+      } catch (sbInsertErr) {
+        console.warn("Supabase notification insert catch:", sbInsertErr);
+      }
     }
 
     // 3. Broadcast via Supabase Realtime channel
@@ -433,7 +473,8 @@ export const buildAggregatedNotifications = (usersList = [], remoteNotifs = [], 
 
   const processNotificationItem = (n, fallbackPrefix) => {
     if (!n) return;
-    const email = (n.email || '').toLowerCase().trim();
+    const meta = (n.meta && typeof n.meta === 'object') ? n.meta : {};
+    const email = (n.email || meta.email || '').toLowerCase().trim();
     
     // Filter out anonymous guest sessions and randomized hash accounts
     if (
@@ -446,25 +487,42 @@ export const buildAggregatedNotifications = (usersList = [], remoteNotifs = [], 
       return;
     }
 
-    const cleanName = cleanScholarName(n.name, n.email);
+    const rawName = n.name || meta.name || n.title || 'Scholar';
+    const cleanName = cleanScholarName(rawName, email);
     if (cleanName.includes('Rahul Sharma') || cleanName.includes('Sneha Reddy') || cleanName.includes('Kavita')) {
       return;
     }
 
     const rawTime = parseItemTime(n) || Date.now();
+    const details = n.details || n.message || meta.details || '';
+    const testTitle = n.testTitle || meta.testTitle || n.test_title || '';
+    const college = n.college || meta.college || 'GPREC';
+    const department = n.department || meta.department || 'CSE';
+    const rollNumber = n.rollNumber || meta.rollNumber || '';
+    const role = n.role || meta.role || 'user';
+    const type = n.type || meta.type || 'login';
 
     // Deduplicate by content fingerprint
-    const fingerprint = `${n.type || 'info'}_${email}_${n.testTitle || n.details || ''}_${Math.round(rawTime / 10000)}`;
+    const fingerprint = `${type}_${email}_${testTitle || details}_${Math.round(rawTime / 10000)}`;
     if (seenFingerprints.has(fingerprint)) return;
     seenFingerprints.add(fingerprint);
 
-    const notifId = n.id || `${fallbackPrefix}_${rawTime}_${email || Math.random().toString(36).slice(2, 6)}`;
+    const notifId = String(n.id || `${fallbackPrefix}_${rawTime}_${email || Math.random().toString(36).slice(2, 6)}`);
     if (clearedIds.has(notifId)) return;
 
     map.set(notifId, {
       ...n,
+      ...meta,
       id: notifId,
+      type,
       name: cleanName,
+      email,
+      role,
+      college,
+      department,
+      rollNumber,
+      details,
+      testTitle,
       _sortTime: rawTime,
       createdAt: new Date(rawTime).toISOString(),
       read: readSet.has(notifId) || n.read === true
@@ -593,3 +651,289 @@ export const clearNotificationsStorage = async (currentNotifications = []) => {
     console.warn('Clear notifications error:', e);
   }
 };
+
+export const notifyFounderPayment = (paymentData) => {
+  if (!paymentData) return;
+  return recordFounderNotification({
+    type: 'payment',
+    name: paymentData.name || 'Scholar',
+    email: paymentData.email || '',
+    role: paymentData.role || 'user',
+    college: paymentData.college || 'External College',
+    department: paymentData.department || 'CSE',
+    amount: paymentData.amount || 10,
+    txId: paymentData.txId || 'MANUAL-UPI',
+    details: `₹${paymentData.amount || 10} One-Time Platform Access Fee Verified · Tx: ${paymentData.txId || 'Verified'}`
+  });
+};
+
+export const notifyFounderAmbassadorApplication = (appData) => {
+  if (!appData) return;
+  return recordFounderNotification({
+    type: 'ambassador_application',
+    name: appData.name || 'Scholar Applicant',
+    email: appData.email || '',
+    phone: appData.phone || '',
+    college: appData.college || 'University',
+    department: appData.department || 'Engineering',
+    year: appData.year || 'Student',
+    role: 'ambassador_applicant',
+    appId: appData.appId || '',
+    rollNumber: appData.rollNumber || '',
+    linkedin: appData.linkedin || '',
+    whyJoin: appData.whyJoin || '',
+    priorExperience: appData.priorExperience || '',
+    status: appData.status || 'pending_review',
+    details: `Campus Ambassador Application [${appData.appId || 'N/A'}] · ${appData.college || 'College'} (${appData.department || 'Dept'}) · WhatsApp: ${appData.phone || 'N/A'}`
+  });
+};
+
+export const notifyFounderAmbassadorReferral = (refData) => {
+  if (!refData) return;
+  return recordFounderNotification({
+    type: 'ambassador_referral',
+    name: refData.scholarName || 'New Scholar',
+    email: refData.scholarEmail || '',
+    college: refData.college || 'College',
+    department: refData.department || '',
+    role: 'scholar',
+    details: `🎟️ Ambassador Referral: ${refData.scholarName || 'Scholar'} joined using Code [${refData.code || 'N/A'}] · ${refData.college || 'College'}`
+  });
+};
+
+/**
+ * Submits a new ₹10 UPI payment verification request to Founder Shaik Sowban's queue.
+ * Strictly prevents duplicate submissions across students.
+ */
+export const submitPendingFeePayment = async ({
+  name = 'Scholar',
+  email = '',
+  college = 'Academic Institution',
+  department = 'CSE',
+  amount = 10,
+  utr = ''
+}) => {
+  if (!email || !utr) return { success: false, reason: 'Email and UTR are required.' };
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanUtr = utr.trim().replace(/^UTR-?/i, '');
+  const nowIso = new Date().toISOString();
+
+  try {
+    // 1. Check for Duplicate UTR in Supabase
+    if (supabase && typeof supabase.from === 'function') {
+      const { data: existingNotifs } = await supabase
+        .from('founder_notifications')
+        .select('*')
+        .in('type', ['payment', 'payment_pending']);
+
+      if (existingNotifs && existingNotifs.length > 0) {
+        for (const n of existingNotifs) {
+          const nUtr = (n.meta?.utr || n.meta?.cleanUtr || n.meta?.txId || '').replace(/^UTR-?/i, '').trim();
+          const nEmail = (n.meta?.email || '').toLowerCase().trim();
+          if (nUtr && nUtr === cleanUtr) {
+            // If already verified or submitted by ANOTHER user: strictly block!
+            if (nEmail && nEmail !== cleanEmail) {
+              return {
+                success: false,
+                duplicate: true,
+                reason: `Duplicate UTR Blocked: Reference [${cleanUtr}] has already been submitted or claimed by another account. Re-using UTRs across students is strictly prohibited.`
+              };
+            }
+            // If already verified for the same user: return verified!
+            if (n.meta?.status === 'verified' || n.meta?.is_verified === true || n.type === 'payment') {
+              return {
+                success: true,
+                status: 'verified',
+                isVerified: true,
+                utr: cleanUtr,
+                notificationId: n.id
+              };
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Insert new pending verification record
+    const notifTitle = `⏳ Pending ₹10 Fee Verification: ${name}`;
+    const notifMessage = `Scholar ${name} (${cleanEmail}) from ${college} submitted UTR [UTR-${cleanUtr}] for ₹10 Platform Fee verification.`;
+    const notifMeta = {
+      id: `pay_pending_${Date.now()}_${cleanUtr.slice(-4)}`,
+      utr: cleanUtr,
+      cleanUtr: cleanUtr,
+      txId: `UTR-${cleanUtr}`,
+      email: cleanEmail,
+      name: name,
+      college: college,
+      department: department,
+      amount: amount,
+      status: 'pending_verification',
+      is_verified: false,
+      submittedAt: nowIso
+    };
+
+    let insertedId = null;
+    if (supabase && typeof supabase.from === 'function') {
+      const { data, error } = await supabase.from('founder_notifications').insert([{
+        title: notifTitle,
+        message: notifMessage,
+        type: 'payment_pending',
+        meta: notifMeta,
+        read: false
+      }]).select();
+
+      if (!error && data && data.length > 0) {
+        insertedId = data[0].id;
+      }
+    }
+
+    return {
+      success: true,
+      status: 'pending_verification',
+      isVerified: false,
+      utr: cleanUtr,
+      notificationId: insertedId,
+      submittedAt: nowIso
+    };
+  } catch (err) {
+    console.warn("submitPendingFeePayment error:", err);
+    return { success: false, reason: err.message || 'Submission failed. Please check network connection.' };
+  }
+};
+
+/**
+ * Checks the live verification status of a submitted UTR from Supabase.
+ */
+export const checkUtrVerificationStatus = async (cleanUtr, email) => {
+  if (!cleanUtr) return { status: 'none', isVerified: false };
+  const targetUtr = cleanUtr.replace(/^UTR-?/i, '').trim();
+  const targetEmail = (email || '').toLowerCase().trim();
+
+  try {
+    if (supabase && typeof supabase.from === 'function') {
+      const { data, error } = await supabase
+        .from('founder_notifications')
+        .select('*')
+        .in('type', ['payment', 'payment_pending'])
+        .order('id', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        for (const n of data) {
+          const nUtr = (n.meta?.utr || n.meta?.cleanUtr || n.meta?.txId || '').replace(/^UTR-?/i, '').trim();
+          const nEmail = (n.meta?.email || '').toLowerCase().trim();
+
+          if (nUtr === targetUtr || (targetEmail && nEmail === targetEmail)) {
+            if (n.meta?.status === 'verified' || n.meta?.is_verified === true || n.type === 'payment') {
+              return { status: 'verified', isVerified: true, notification: n };
+            }
+            if (n.meta?.status === 'rejected') {
+              return { status: 'rejected', isVerified: false, reason: n.meta?.rejection_reason || 'UTR not found on bank statement.' };
+            }
+            if (n.meta?.status === 'pending_verification' || n.type === 'payment_pending') {
+              return { status: 'pending_verification', isVerified: false, notification: n };
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("checkUtrVerificationStatus notice:", e);
+  }
+
+  return { status: 'pending_verification', isVerified: false };
+};
+
+/**
+ * Founder Portal Action: Approves and activates a scholar who paid ₹10.
+ * Updates both founder_notifications and users table in Supabase in real-time.
+ */
+export const approveFeePayment = async (notificationId, paymentMeta = {}) => {
+  if (!notificationId) return { success: false, reason: 'Notification ID required' };
+  const nowIso = new Date().toISOString();
+  const utr = paymentMeta.utr || paymentMeta.cleanUtr || '';
+  const email = (paymentMeta.email || '').toLowerCase().trim();
+  const name = paymentMeta.name || 'Scholar';
+
+  try {
+    // 1. Update founder_notifications row
+    if (supabase && typeof supabase.from === 'function') {
+      const updatedMeta = {
+        ...paymentMeta,
+        status: 'verified',
+        is_verified: true,
+        verified_at: nowIso
+      };
+      await supabase.from('founder_notifications').update({
+        type: 'payment',
+        title: `College Fee Received: ${name}`,
+        message: `₹10 One-Time Platform Access Fee Verified · Tx: UTR-${utr}`,
+        meta: updatedMeta,
+        read: true
+      }).eq('id', notificationId);
+
+      // 2. Update users table in Supabase
+      if (email) {
+        const { data: userRows } = await supabase.from('users').select('*').ilike('email', email);
+        if (userRows && userRows.length > 0) {
+          const userRow = userRows[0];
+          const raw = userRow.name || '';
+          let meta = {};
+          if (raw.includes('{')) {
+            try { meta = JSON.parse(raw.substring(raw.indexOf('{'))); } catch (e) {}
+          }
+          const clean = raw.includes('{') ? raw.split('{')[0].trim() : raw;
+          const updatedUserMeta = {
+            ...meta,
+            oneTimeFeePaid: true,
+            feeAmount: 10,
+            feePaidAt: nowIso,
+            feeTxId: `UTR-${utr}`,
+            status: 'verified'
+          };
+          const packedName = `${clean} ${JSON.stringify(updatedUserMeta)}`;
+          await supabase.from('users').update({
+            name: packedName,
+            is_approved: true
+          }).eq('id', userRow.id);
+        }
+      }
+    }
+
+    return { success: true, message: `Payment verified for ${name}! Access unlocked.` };
+  } catch (err) {
+    console.error("approveFeePayment error:", err);
+    return { success: false, reason: err.message };
+  }
+};
+
+/**
+ * Founder Portal Action: Rejects a fake or unverifiable UTR.
+ */
+export const rejectFeePayment = async (notificationId, reason = 'Transaction not found on bank statement') => {
+  if (!notificationId) return { success: false, reason: 'Notification ID required' };
+  try {
+    if (supabase && typeof supabase.from === 'function') {
+      const { data: row } = await supabase.from('founder_notifications').select('meta').eq('id', notificationId).single();
+      const currentMeta = row?.meta || {};
+      const updatedMeta = {
+        ...currentMeta,
+        status: 'rejected',
+        is_verified: false,
+        rejection_reason: reason,
+        rejected_at: new Date().toISOString()
+      };
+      await supabase.from('founder_notifications').update({
+        meta: updatedMeta,
+        read: true
+      }).eq('id', notificationId);
+    }
+    return { success: true };
+  } catch (err) {
+    console.error("rejectFeePayment error:", err);
+    return { success: false, reason: err.message };
+  }
+};
+
+
+
+

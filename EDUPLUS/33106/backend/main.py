@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models, seed_data
-from routes import auth, institutions, students, topics, actions, interventions, imports, reports, analytics
+from routes import auth, institutions, students, topics, actions, interventions, imports, reports, analytics, relay
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -12,9 +12,9 @@ Base.metadata.create_all(bind=engine)
 seed_data.seed_database()
 
 app = FastAPI(
-    title="EduPulse API",
-    description="AI-Powered Test-to-Action Intelligence Platform for Competitive Exam Coaching Centres",
-    version="1.0.0"
+    title="Lumixora Platform API",
+    description="EduPulse & LUMIXORA RELAY Component Intelligence Engine",
+    version="1.2.0"
 )
 
 # Enable CORS for local Vite dev server and production
@@ -36,6 +36,7 @@ app.include_router(interventions.router)
 app.include_router(imports.router)
 app.include_router(reports.router)
 app.include_router(analytics.router)
+app.include_router(relay.router)
 
 @app.get("/api/health")
 def health_check():

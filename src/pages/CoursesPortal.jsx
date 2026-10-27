@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   BookOpen, Award, CheckCircle2, PlayCircle, Clock, ShieldCheck, 
   Sparkles, Trophy, ChevronRight, FileText, Code2, ArrowLeft,
@@ -6,7 +6,8 @@ import {
   HelpCircle, AlertCircle, BarChart3, Layers, BookCheck, Monitor,
   Zap, CheckCheck, Play, ArrowRight, BookMarked, Copy, CheckSquare,
   XCircle, Info, ChevronLeft, Lightbulb, AlertTriangle, Building2,
-  GraduationCap, Terminal, Type
+  GraduationCap, Terminal, Type, Volume2, VolumeX, Maximize2, Minimize2,
+  PanelLeftClose, PanelLeft, Sun, Moon, Coffee, Mic, Square
 } from 'lucide-react';
 import { ALL_COURSES } from '../data/coursesData';
 import { getTextbookForCourse } from '../data/textbooks';
@@ -30,6 +31,26 @@ export default function CoursesPortal({ user, setActiveTab }) {
   const [copiedCodeSnippet, setCopiedCodeSnippet] = useState(null);
   const [selfCheckAnswers, setSelfCheckAnswers] = useState({});
   const [completedLessons, setCompletedLessons] = useState({});
+
+  // 📖 Digital Textbook Reader Customization (Themes, Fullscreen, Bolo Class Voice)
+  const [readerTheme, setReaderTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_reader_theme');
+      if (saved) return saved;
+      if (typeof document !== 'undefined') {
+        const isAppLight = document.documentElement.classList.contains('light') || 
+                           document.body.classList.contains('light') ||
+                           localStorage.getItem('lumixora_theme') === 'light';
+        return isAppLight ? 'light' : 'dark';
+      }
+    } catch (e) {}
+    return 'light'; // Default to clean academic paper theme for high readability!
+  });
+  const [isTextbookMaximized, setIsTextbookMaximized] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isBoloVoiceSpeaking, setIsBoloVoiceSpeaking] = useState(false);
+  const [boloVoiceSpeed, setBoloVoiceSpeed] = useState(1.0);
+  const [boloVoiceLang, setBoloVoiceLang] = useState('en'); // 'en' | 'bilingual'
   
   // Grand Test State
   const [activeTestCourse, setActiveTestCourse] = useState(null);
@@ -122,6 +143,151 @@ export default function CoursesPortal({ user, setActiveTab }) {
       searchQuery: ''
     });
   };
+
+  // ── 🎙️ Bolo Class Chapter Voice Controller ──
+  const handlePlayBoloChapterVoice = (chapter) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      addToast?.({ message: 'Audio synthesis is not supported on this device/browser.', type: 'warning' });
+      return;
+    }
+
+    if (isBoloVoiceSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsBoloVoiceSpeaking(false);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    // Construct crystal-clear conversational notes narration
+    let speechScript = '';
+    if (boloVoiceLang === 'bilingual') {
+      speechScript = `Namaste scholars! Welcome to Bolo Class AI voice notes. Today we are exploring ${chapter.title}. ${chapter.summary}. Let us go through the main engineering concepts. `;
+    } else {
+      speechScript = `Welcome to Bolo Class AI Voice lecture. Today's chapter is ${chapter.chapterNumber || 'Chapter'}: ${chapter.title}. Key concept overview: ${chapter.summary}. `;
+    }
+
+    if (chapter.sections && chapter.sections.length > 0) {
+      chapter.sections.slice(0, 3).forEach((sec, idx) => {
+        speechScript += `Point number ${idx + 1}: ${sec.heading}. ${sec.content ? sec.content.slice(0, 180) : ''}. `;
+      });
+    }
+
+    if (chapter.caseStudy) {
+      speechScript += `In real-world production, ${chapter.caseStudy.company} applied this: ${chapter.caseStudy.takeaway}. `;
+    }
+
+    speechScript += `You can now review the architecture diagrams, mathematical equations, and production code implementations below. Happy learning!`;
+
+    const cleanText = speechScript.replace(/[*#`_$\\]/g, ' ').replace(/\s+/g, ' ').trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = boloVoiceSpeed || 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang && v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Samantha') || v.name.includes('David'))) ||
+      voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+    if (preferredVoice) utterance.voice = preferredVoice;
+
+    utterance.onend = () => setIsBoloVoiceSpeaking(false);
+    utterance.onerror = () => setIsBoloVoiceSpeaking(false);
+
+    setIsBoloVoiceSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+    addToast?.({ message: '🎙️ Bolo Class Voice is explaining this chapter...', type: 'info' });
+  };
+
+  const handleStopBoloVoice = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsBoloVoiceSpeaking(false);
+  };
+
+  // Stop audio whenever modal closes or chapter switches
+  useEffect(() => {
+    handleStopBoloVoice();
+  }, [selectedFullTextbook?.pageIndex, selectedLessonModal]);
+
+  // Clean reader theme styling tokens
+  const readerThemeClasses = useMemo(() => {
+    if (readerTheme === 'light') {
+      return {
+        overlay: 'bg-slate-900/50 backdrop-blur-md',
+        card: 'bg-[#ffffff] text-slate-800 border-slate-200 shadow-2xl',
+        header: 'bg-gradient-to-r from-slate-100 via-white to-slate-50 border-b border-slate-200 text-slate-900',
+        sidebar: 'bg-slate-50 border-r border-slate-200 text-slate-800',
+        sidebarSearch: 'bg-white border-slate-200 text-slate-900 placeholder-slate-400',
+        sidebarItemActive: 'bg-blue-50 border-blue-500 text-blue-900 font-bold shadow-sm',
+        sidebarItemInactive: 'hover:bg-slate-100 text-slate-600',
+        sidebarFooter: 'bg-slate-100 border-t border-slate-200 text-slate-500',
+        readingPane: 'bg-[#ffffff] text-slate-800',
+        banner: 'bg-gradient-to-r from-slate-100 via-white to-slate-50 border-b border-slate-200',
+        title: 'text-slate-950',
+        summary: 'text-slate-600',
+        sectionHeading: 'text-cyan-950',
+        paragraph: 'text-slate-700 font-sans',
+        ascii: 'bg-slate-900 text-cyan-300 border-slate-700',
+        formula: 'bg-amber-50 border-amber-300 text-amber-950 shadow-sm',
+        codeWrap: 'bg-slate-900 border-slate-800 text-slate-100',
+        caseStudy: 'bg-emerald-50/80 border-emerald-300 text-emerald-950 shadow-sm',
+        pearlCard: 'bg-indigo-50/60 border-indigo-200 text-indigo-950 shadow-sm',
+        pearlAnswer: 'bg-white border border-indigo-100 text-slate-700',
+        bottomBar: 'bg-slate-100 border-t border-slate-200 text-slate-700',
+        boloBar: 'bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border-purple-200 text-purple-950'
+      };
+    }
+    if (readerTheme === 'sepia') {
+      return {
+        overlay: 'bg-black/60 backdrop-blur-md',
+        card: 'bg-[#fbf0d9] text-[#2c1d11] border-[#e2cca4] shadow-2xl',
+        header: 'bg-gradient-to-r from-[#f5e6c8] via-[#fbf0d9] to-[#f0ddb8] border-b border-[#e2cca4] text-[#2c1d11]',
+        sidebar: 'bg-[#f5e6c8] border-r border-[#e2cca4] text-[#2c1d11]',
+        sidebarSearch: 'bg-[#fffaf0] border-[#d8be97] text-[#3b2413] placeholder-[#9c7857]',
+        sidebarItemActive: 'bg-[#ecd3a3] border-[#a06830] text-[#4a2608] font-bold shadow-sm',
+        sidebarItemInactive: 'hover:bg-[#efe0be] text-[#5c3e23]',
+        sidebarFooter: 'bg-[#efe0be] border-t border-[#e2cca4] text-[#7a5735]',
+        readingPane: 'bg-[#fbf0d9] text-[#2c1d11]',
+        banner: 'bg-gradient-to-r from-[#f5e6c8] via-[#fbf0d9] to-[#f0ddb8] border-b border-[#e2cca4]',
+        title: 'text-[#381f0b]',
+        summary: 'text-[#5c3e23]',
+        sectionHeading: 'text-[#844b16]',
+        paragraph: 'text-[#2c1d11] font-serif',
+        ascii: 'bg-[#3b2818] text-[#f7dfb0] border-[#6b4728]',
+        formula: 'bg-[#faebd0] border-[#d4aa70] text-[#4a280c] shadow-sm',
+        codeWrap: 'bg-[#2b1b10] border-[#5e381b] text-[#fdf4e3]',
+        caseStudy: 'bg-[#eef3dc] border-[#a9bf72] text-[#2e400c] shadow-sm',
+        pearlCard: 'bg-[#faecd9] border-[#d19a62] text-[#42220b] shadow-sm',
+        pearlAnswer: 'bg-[#fffaf0] border-[#e2cca4] text-[#3b2413]',
+        bottomBar: 'bg-[#f5e6c8] border-t border-[#e2cca4] text-[#4a2b10]',
+        boloBar: 'bg-gradient-to-r from-[#edd3bc] via-[#faebd9] to-[#ebd0b5] border-[#c99a6d] text-[#4a280c]'
+      };
+    }
+    // 'dark' (Midnight Obsidian)
+    return {
+      overlay: 'bg-black/95 backdrop-blur-2xl',
+      card: 'bg-[#090e1c] text-white border-cyan-500/50 shadow-[0_25px_90px_rgba(6,182,212,0.2)]',
+      header: 'bg-gradient-to-r from-[#0d1527] via-[#090f1d] to-[#060a14] border-b border-white/10 text-white',
+      sidebar: 'bg-[#070b16] border-r border-white/10 text-gray-400',
+      sidebarSearch: 'bg-white/5 border-white/10 text-white placeholder-gray-500',
+      sidebarItemActive: 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-transparent border-cyan-400 text-white shadow-md',
+      sidebarItemInactive: 'hover:bg-white/5 text-gray-400 hover:text-gray-200',
+      sidebarFooter: 'bg-[#090e1c] border-t border-white/10 text-gray-400',
+      readingPane: 'bg-[#090e1c] text-gray-200',
+      banner: 'bg-gradient-to-r from-[#0d162a] via-[#09101f] to-[#070c17] border-b border-white/10',
+      title: 'text-white',
+      summary: 'text-gray-300',
+      sectionHeading: 'text-cyan-300',
+      paragraph: 'text-gray-300 font-sans',
+      ascii: 'bg-[#04070f] text-cyan-300 border-cyan-500/30 shadow-inner',
+      formula: 'bg-[#0c1424] border-cyan-400/30 text-cyan-200 shadow-md',
+      codeWrap: 'bg-[#04070f] border-white/10 text-gray-200 shadow-lg',
+      caseStudy: 'bg-gradient-to-br from-emerald-950/30 via-[#0a121d] to-black border-emerald-500/40 text-emerald-200 shadow-xl',
+      pearlCard: 'bg-[#0e1424] border-amber-500/30 text-white',
+      pearlAnswer: 'bg-black/40 border-white/5 text-gray-300',
+      bottomBar: 'bg-[#070b16] border-t border-white/10 text-gray-400',
+      boloBar: 'bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-blue-950/40 border-purple-500/30 text-purple-200'
+    };
+  }, [readerTheme]);
 
   const getCourseProgress = (course) => {
     const allLessonIds = course.modules.flatMap(m => m.lessons.map(l => l.id));
@@ -673,45 +839,103 @@ export default function CoursesPortal({ user, setActiveTab }) {
       {/* DEDICATED FULL-SCREEN DIGITAL TEXTBOOK VOLUME VIEWER (30+ PAGES / CHAPTERS) */}
       {selectedFullTextbook && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 bg-black/95 backdrop-blur-2xl overflow-y-auto cursor-pointer animate-fadeIn"
+          className={`fixed inset-0 z-50 flex ${isTextbookMaximized ? 'p-0 m-0 w-screen h-screen' : 'items-center justify-center p-2 md:p-6'} ${readerThemeClasses.overlay} overflow-y-auto cursor-pointer animate-fadeIn`}
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedFullTextbook(null);
           }}
         >
           <div 
-            className="w-full max-w-7xl h-[92vh] bg-[#090e1c] border border-cyan-500/50 rounded-3xl shadow-[0_25px_90px_rgba(6,182,212,0.2)] flex flex-col overflow-hidden my-auto cursor-default relative"
+            className={`w-full ${isTextbookMaximized ? 'h-full max-w-none rounded-none' : 'max-w-7xl h-[94vh] rounded-3xl'} ${readerThemeClasses.card} border flex flex-col overflow-hidden my-auto cursor-default relative transition-all duration-300`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Textbook Top Header */}
-            <div className="p-4 md:p-5 border-b border-white/10 bg-gradient-to-r from-[#0d1527] via-[#090f1d] to-[#060a14] flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+            <div className={`p-4 md:p-5 border-b ${readerThemeClasses.header} flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0`}>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-2xl text-black font-black shadow-lg shadow-cyan-500/20 border border-cyan-200">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-2xl text-black font-black shadow-lg shadow-cyan-500/20 border border-cyan-200 shrink-0">
                   📖
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-cyan-300 font-black uppercase tracking-wider bg-cyan-500/15 px-2.5 py-0.5 rounded-full border border-cyan-400/30">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-mono text-cyan-600 dark:text-cyan-300 font-black uppercase tracking-wider bg-cyan-500/15 px-2.5 py-0.5 rounded-full border border-cyan-400/30">
                       {selectedFullTextbook.textbook.edition || 'Academic Digital Edition'}
                     </span>
-                    <span className="text-[11px] text-gray-400 font-mono">
+                    <span className="text-[11px] opacity-75 font-mono">
                       {selectedFullTextbook.textbook.chapters?.length || 30} Chapters • 30+ Pages
                     </span>
                   </div>
-                  <h2 className="text-base md:text-lg font-black text-white mt-0.5 font-sora">
+                  <h2 className="text-base md:text-lg font-black mt-0.5 font-sora">
                     {selectedFullTextbook.textbook.title}
                   </h2>
                 </div>
               </div>
 
-              {/* Reader Controls: Font Size, Prev/Next & Close */}
-              <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {/* Reader Controls: Theme, TOC Toggle, Fullscreen, Font Size, Prev/Next & Close */}
+              <div className="flex items-center gap-2 md:gap-2.5 shrink-0 flex-wrap">
+                {/* 🎨 Reader Theme Switcher */}
+                <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/10 dark:border-white/10 gap-0.5">
+                  <button
+                    type="button"
+                    title="Paper Light Theme (High Contrast Academic)"
+                    onClick={() => {
+                      setReaderTheme('light');
+                      localStorage.setItem('lumixora_reader_theme', 'light');
+                    }}
+                    className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${readerTheme === 'light' ? 'bg-amber-400 text-black shadow-sm font-black' : 'opacity-60 hover:opacity-100'}`}
+                  >
+                    <Sun className="w-3.5 h-3.5" /> Paper
+                  </button>
+                  <button
+                    type="button"
+                    title="Sepia Book Theme (Comfortable Reading)"
+                    onClick={() => {
+                      setReaderTheme('sepia');
+                      localStorage.setItem('lumixora_reader_theme', 'sepia');
+                    }}
+                    className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${readerTheme === 'sepia' ? 'bg-[#c99a6d] text-white shadow-sm font-black' : 'opacity-60 hover:opacity-100'}`}
+                  >
+                    <Coffee className="w-3.5 h-3.5" /> Sepia
+                  </button>
+                  <button
+                    type="button"
+                    title="Midnight Dark Theme (Obsidian OLED)"
+                    onClick={() => {
+                      setReaderTheme('dark');
+                      localStorage.setItem('lumixora_reader_theme', 'dark');
+                    }}
+                    className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${readerTheme === 'dark' ? 'bg-cyan-500 text-black shadow-sm font-black' : 'opacity-60 hover:opacity-100'}`}
+                  >
+                    <Moon className="w-3.5 h-3.5" /> Dark
+                  </button>
+                </div>
+
+                {/* ◫ Toggle Sidebar (Collapse TOC for 100% Full-Width Reading) */}
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  title={isSidebarCollapsed ? "Show Table of Contents" : "Hide Table of Contents (Full Reading Width)"}
+                  className="px-2.5 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                >
+                  {isSidebarCollapsed ? <PanelLeft className="w-3.5 h-3.5 text-cyan-500" /> : <PanelLeftClose className="w-3.5 h-3.5 text-cyan-500" />}
+                  <span className="hidden sm:inline">{isSidebarCollapsed ? 'Show TOC' : 'Hide TOC'}</span>
+                </button>
+
+                {/* ⛶ Fullscreen / Maximize Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsTextbookMaximized(!isTextbookMaximized)}
+                  title={isTextbookMaximized ? "Exit Fullscreen" : "Full View Canvas"}
+                  className="p-1.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-xs font-bold transition-all cursor-pointer flex items-center justify-center"
+                >
+                  {isTextbookMaximized ? <Minimize2 className="w-4 h-4 text-cyan-500" /> : <Maximize2 className="w-4 h-4 text-cyan-500" />}
+                </button>
+
                 {/* Font Size Selector */}
-                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+                <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/10 dark:border-white/10">
                   <button
                     type="button"
                     title="Normal Text"
                     onClick={() => setReaderFontSize('normal')}
-                    className={'px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'normal' ? 'bg-cyan-400 text-black' : 'text-gray-400 hover:text-white')}
+                    className={'px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'normal' ? 'bg-cyan-500 text-black' : 'opacity-60 hover:opacity-100')}
                   >
                     A
                   </button>
@@ -719,7 +943,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
                     type="button"
                     title="Large Text"
                     onClick={() => setReaderFontSize('large')}
-                    className={'px-2.5 py-1 rounded-lg text-sm font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'large' ? 'bg-cyan-400 text-black' : 'text-gray-400 hover:text-white')}
+                    className={'px-2 py-0.5 rounded-lg text-sm font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'large' ? 'bg-cyan-500 text-black' : 'opacity-60 hover:opacity-100')}
                   >
                     A+
                   </button>
@@ -727,30 +951,30 @@ export default function CoursesPortal({ user, setActiveTab }) {
                     type="button"
                     title="Huge Text"
                     onClick={() => setReaderFontSize('huge')}
-                    className={'px-2.5 py-1 rounded-lg text-base font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'huge' ? 'bg-cyan-400 text-black' : 'text-gray-400 hover:text-white')}
+                    className={'px-2 py-0.5 rounded-lg text-base font-mono font-bold transition-all cursor-pointer ' + (readerFontSize === 'huge' ? 'bg-cyan-500 text-black' : 'opacity-60 hover:opacity-100')}
                   >
                     A++
                   </button>
                 </div>
 
                 {/* Page Navigation Shortcut Buttons */}
-                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+                <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/10 dark:border-white/10">
                   <button
                     disabled={selectedFullTextbook.pageIndex <= 0}
                     onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
                     title="Previous Page (Left Arrow)"
-                    className="px-3 py-1 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all cursor-pointer flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" /> Prev
                   </button>
-                  <span className="text-xs font-mono px-2 font-bold text-cyan-400">
-                    Page {selectedFullTextbook.pageIndex + 1} of {selectedFullTextbook.textbook.chapters?.length || 30}
+                  <span className="text-xs font-mono px-2 font-bold text-cyan-600 dark:text-cyan-400">
+                    {selectedFullTextbook.pageIndex + 1}/{selectedFullTextbook.textbook.chapters?.length || 30}
                   </span>
                   <button
                     disabled={selectedFullTextbook.pageIndex >= (selectedFullTextbook.textbook.chapters?.length || 30) - 1}
                     onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: Math.min((prev.textbook.chapters?.length || 30) - 1, prev.pageIndex + 1) }))}
                     title="Next Page (Right Arrow)"
-                    className="px-3 py-1 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-white transition-all cursor-pointer flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1"
                   >
                     Next <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -760,7 +984,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
                   type="button"
                   onClick={() => setSelectedFullTextbook(null)}
                   title="Close Reader (ESC)"
-                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-red-500/30 text-gray-300 hover:text-red-300 border border-white/10 flex items-center justify-center cursor-pointer transition-all"
+                  className="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/30 text-red-600 dark:text-red-300 border border-red-500/20 flex items-center justify-center cursor-pointer transition-all"
                 >
                   ✕
                 </button>
@@ -770,134 +994,222 @@ export default function CoursesPortal({ user, setActiveTab }) {
             {/* Main Textbook Studio Split View: Sidebar + Reading Pane */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
               
-              {/* LEFT SIDEBAR: Table of Contents & In-Book Search (4 Cols) */}
-              <div className="md:col-span-4 bg-[#070b16] border-r border-white/10 flex flex-col h-full overflow-hidden">
-                {/* Search Box */}
-                <div className="p-3.5 border-b border-white/10 bg-[#0a0f1e] shrink-0">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="🔍 Search in all 30 chapters (e.g. V8, Raft, Monotonic)..."
-                      value={selectedFullTextbook.searchQuery}
-                      onChange={(e) => setSelectedFullTextbook(prev => ({ ...prev, searchQuery: e.target.value }))}
-                      className="w-full px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 font-sans"
-                    />
-                    {selectedFullTextbook.searchQuery && (
-                      <button
-                        onClick={() => setSelectedFullTextbook(prev => ({ ...prev, searchQuery: '' }))}
-                        className="absolute right-2.5 top-2 text-gray-400 hover:text-white text-xs cursor-pointer"
-                      >
-                        ✕
-                      </button>
-                    )}
+              {/* LEFT SIDEBAR: Table of Contents & In-Book Search (Hidden if collapsed) */}
+              {!isSidebarCollapsed && (
+                <div className="md:col-span-4 border-r flex flex-col h-full overflow-hidden transition-all duration-300" style={{ backgroundColor: readerTheme === 'light' ? '#f8fafc' : (readerTheme === 'sepia' ? '#f5e6c8' : '#070b16') }}>
+                  {/* Search Box */}
+                  <div className="p-3.5 border-b shrink-0" style={{ borderColor: readerTheme === 'light' ? '#e2e8f0' : (readerTheme === 'sepia' ? '#e2cca4' : 'rgba(255,255,255,0.1)') }}>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="🔍 Search all 30 chapters (V8, Raft, B-Tree)..."
+                        value={selectedFullTextbook.searchQuery}
+                        onChange={(e) => setSelectedFullTextbook(prev => ({ ...prev, searchQuery: e.target.value }))}
+                        className={`w-full px-3.5 py-2 rounded-xl text-xs outline-none font-sans ${readerThemeClasses.sidebarSearch}`}
+                      />
+                      {selectedFullTextbook.searchQuery && (
+                        <button
+                          onClick={() => setSelectedFullTextbook(prev => ({ ...prev, searchQuery: '' }))}
+                          className="absolute right-2.5 top-2 opacity-50 hover:opacity-100 text-xs cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Chapter List */}
+                  <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                    {(selectedFullTextbook.textbook.chapters || []).map((ch, idx) => {
+                      const isSelected = selectedFullTextbook.pageIndex === idx;
+                      const query = (selectedFullTextbook.searchQuery || '').toLowerCase();
+                      const matches = !query || 
+                        ch.title?.toLowerCase().includes(query) || 
+                        ch.summary?.toLowerCase().includes(query) ||
+                        ch.chapterNumber?.toLowerCase().includes(query) ||
+                        ch.sections?.some(s => s.heading?.toLowerCase().includes(query) || s.content?.toLowerCase().includes(query));
+
+                      if (!matches) return null;
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: idx }))}
+                          className={`w-full text-left p-3 rounded-2xl transition-all cursor-pointer flex items-start gap-3 border ${isSelected ? readerThemeClasses.sidebarItemActive : readerThemeClasses.sidebarItemInactive}`}
+                        >
+                          <span className={`w-7 h-7 rounded-xl text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? 'bg-cyan-500 text-black' : 'bg-black/5 dark:bg-white/5 opacity-70'}`}>
+                            {idx + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between text-[10px] font-mono">
+                              <span className={isSelected ? 'text-cyan-600 dark:text-cyan-300 font-bold' : 'opacity-60'}>
+                                {ch.chapterNumber}
+                              </span>
+                              <span className="opacity-60">{ch.readingTime}</span>
+                            </div>
+                            <p className="text-xs font-bold truncate mt-0.5">
+                              {ch.title}
+                            </p>
+                            <p className="text-[11px] opacity-70 truncate mt-0.5">
+                              {ch.summary}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Sidebar Footer Info */}
+                  <div className={`p-3 border-t text-[11px] flex items-center justify-between font-mono shrink-0 ${readerThemeClasses.sidebarFooter}`}>
+                    <span>Author: Lumixora Faculty</span>
+                    <span className="text-cyan-600 dark:text-cyan-400 font-bold">120 Total Volume Pages</span>
                   </div>
                 </div>
+              )}
 
-                {/* Chapter List */}
-                <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-                  {(selectedFullTextbook.textbook.chapters || []).map((ch, idx) => {
-                    const isSelected = selectedFullTextbook.pageIndex === idx;
-                    const query = (selectedFullTextbook.searchQuery || '').toLowerCase();
-                    const matches = !query || 
-                      ch.title?.toLowerCase().includes(query) || 
-                      ch.summary?.toLowerCase().includes(query) ||
-                      ch.chapterNumber?.toLowerCase().includes(query) ||
-                      ch.sections?.some(s => s.heading?.toLowerCase().includes(query) || s.content?.toLowerCase().includes(query));
-
-                    if (!matches) return null;
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: idx }))}
-                        className={'w-full text-left p-3 rounded-2xl transition-all cursor-pointer flex items-start gap-3 border ' + (isSelected ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-transparent border-cyan-400 text-white shadow-md' : 'bg-transparent border-transparent hover:bg-white/5 text-gray-400 hover:text-gray-200')}
-                      >
-                        <span className={'w-7 h-7 rounded-xl text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5 ' + (isSelected ? 'bg-cyan-400 text-black' : 'bg-white/5 text-gray-400')}>
-                          {idx + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between text-[10px] font-mono">
-                            <span className={isSelected ? 'text-cyan-300 font-bold' : 'text-gray-500'}>
-                              {ch.chapterNumber}
-                            </span>
-                            <span className="text-gray-500">{ch.readingTime}</span>
-                          </div>
-                          <p className={'text-xs font-bold truncate mt-0.5 ' + (isSelected ? 'text-white' : 'text-gray-300')}>
-                            {ch.title}
-                          </p>
-                          <p className="text-[11px] text-gray-500 truncate mt-0.5">
-                            {ch.summary}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Sidebar Footer Info */}
-                <div className="p-3 border-t border-white/10 bg-[#090e1c] text-[11px] text-gray-400 flex items-center justify-between font-mono shrink-0">
-                  <span>Author: Lumixora Faculty</span>
-                  <span className="text-cyan-400 font-bold">120 Total Volume Pages</span>
-                </div>
-              </div>
-
-              {/* RIGHT READING PANE: Selected Chapter Reader (8 Cols) */}
+              {/* RIGHT READING PANE: Selected Chapter Reader (Full width if TOC collapsed) */}
               {(() => {
                 const currentChapter = selectedFullTextbook.textbook.chapters?.[selectedFullTextbook.pageIndex] || selectedFullTextbook.textbook.chapters?.[0];
                 if (!currentChapter) {
                   return (
-                    <div className="md:col-span-8 p-12 text-center text-gray-400 flex items-center justify-center">
-                      <p>Select a chapter from the sidebar table of contents.</p>
+                    <div className={`${isSidebarCollapsed ? 'col-span-12' : 'md:col-span-8'} p-12 text-center opacity-60 flex items-center justify-center`}>
+                      <p>Select a chapter from the table of contents.</p>
                     </div>
                   );
                 }
 
                 return (
-                  <div className="md:col-span-8 bg-[#090e1c] flex flex-col h-full overflow-hidden">
+                  <div className={`${isSidebarCollapsed ? 'col-span-12' : 'md:col-span-8'} ${readerThemeClasses.readingPane} flex flex-col h-full overflow-hidden transition-all duration-300`}>
+                    
                     {/* Chapter Header Banner */}
-                    <div className="p-6 border-b border-white/10 bg-gradient-to-r from-[#0d162a] via-[#09101f] to-[#070c17] shrink-0 space-y-2">
+                    <div className={`p-5 md:p-6 border-b shrink-0 space-y-3 ${readerThemeClasses.banner}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="px-3 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 font-mono text-xs font-bold border border-cyan-400/30">
+                          <span className="px-3 py-0.5 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-mono text-xs font-bold border border-cyan-400/30">
                             {currentChapter.chapterNumber} • Page {selectedFullTextbook.pageIndex + 1}
                           </span>
-                          <span className="text-xs text-gray-400 font-mono flex items-center gap-1">
+                          <span className="text-xs opacity-75 font-mono flex items-center gap-1">
                             <Clock className="w-3.5 h-3.5" /> {currentChapter.readingTime}
                           </span>
                         </div>
-                        <span className="text-[11px] font-mono text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
+                        <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
                           {selectedFullTextbook.textbook.title.split('—')[0]}
                         </span>
                       </div>
 
-                      <h1 className="text-xl md:text-2xl font-black text-white font-sora leading-tight">
+                      <h1 className={`text-xl md:text-2xl font-black font-sora leading-tight ${readerThemeClasses.title}`}>
                         {currentChapter.title}
                       </h1>
-                      <p className="text-xs text-gray-300 leading-relaxed max-w-4xl">
+                      <p className={`text-xs md:text-sm leading-relaxed max-w-4xl ${readerThemeClasses.summary}`}>
                         {currentChapter.summary}
                       </p>
+
+                      {/* 🎙️ BOLO CLASS AI VOICE EXPLANATION BAR */}
+                      <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${readerThemeClasses.boloBar}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base shrink-0 transition-all ${isBoloVoiceSpeaking ? 'bg-purple-600 text-white animate-pulse shadow-md' : 'bg-purple-500/20 text-purple-700'}`}>
+                            <Mic className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-600/20 text-purple-800 dark:text-purple-300 border border-purple-400/30">
+                                🎙️ Bolo Class Voice Lecture
+                              </span>
+                              {isBoloVoiceSpeaking && (
+                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 animate-pulse flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping"></span> Narrating Chapter...
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-semibold mt-0.5">
+                              Audio explanation of {currentChapter.chapterNumber} notes
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Language Toggle */}
+                          <div className="flex items-center bg-white/70 dark:bg-black/40 p-0.5 rounded-lg border border-purple-300/40 text-[11px] font-bold">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleStopBoloVoice();
+                                setBoloVoiceLang('en');
+                              }}
+                              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${boloVoiceLang === 'en' ? 'bg-purple-600 text-white' : 'opacity-70 hover:opacity-100'}`}
+                            >
+                              English
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleStopBoloVoice();
+                                setBoloVoiceLang('bilingual');
+                              }}
+                              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${boloVoiceLang === 'bilingual' ? 'bg-purple-600 text-white' : 'opacity-70 hover:opacity-100'}`}
+                              title="Bilingual Telugu/English Summary"
+                            >
+                              Telugu/Eng
+                            </button>
+                          </div>
+
+                          {/* Speed Toggle */}
+                          <select
+                            value={boloVoiceSpeed}
+                            onChange={(e) => {
+                              handleStopBoloVoice();
+                              setBoloVoiceSpeed(parseFloat(e.target.value));
+                            }}
+                            className="px-2 py-1 bg-white/70 dark:bg-black/40 border border-purple-300/40 rounded-lg text-xs font-bold text-purple-900 dark:text-purple-200 outline-none cursor-pointer"
+                          >
+                            <option value={0.85}>0.85x</option>
+                            <option value={1.0}>1.0x</option>
+                            <option value={1.25}>1.25x</option>
+                            <option value={1.5}>1.5x</option>
+                          </select>
+
+                          {/* Play / Stop Button */}
+                          {isBoloVoiceSpeaking ? (
+                            <button
+                              type="button"
+                              onClick={handleStopBoloVoice}
+                              className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                            >
+                              <Square className="w-3.5 h-3.5 fill-current" /> Stop Audio
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handlePlayBoloChapterVoice(currentChapter)}
+                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20 cursor-pointer transition-all"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-current" /> Play Bolo Voice
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Chapter Reading Content Body */}
-                    <div className={'flex-1 overflow-y-auto p-6 md:p-8 space-y-8 text-gray-200 custom-scrollbar ' + fontSizeClass}>
+                    <div className={`flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar ${fontSizeClass}`}>
                       
                       {/* Chapter Sections */}
                       {(currentChapter.sections || []).map((sec, sIdx) => (
-                        <div key={sIdx} className="space-y-4 pt-4 border-t border-white/5 first:border-t-0 first:pt-0">
-                          <h2 className="text-base md:text-lg font-bold text-cyan-300 flex items-center gap-2 font-sora">
-                            <span className="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-300 text-xs font-mono flex items-center justify-center font-bold">
+                        <div key={sIdx} className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5 first:border-t-0 first:pt-0">
+                          <h2 className={`text-base md:text-lg font-bold flex items-center gap-2 font-sora ${readerThemeClasses.sectionHeading}`}>
+                            <span className="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-mono flex items-center justify-center font-bold">
                               {sIdx + 1}
                             </span>
                             {sec.heading}
                           </h2>
 
-                          <p className="text-gray-300 leading-relaxed font-sans">
+                          <p className={`leading-relaxed ${readerThemeClasses.paragraph}`}>
                             {sec.content}
                           </p>
 
                           {/* ASCII Architecture Flow / Memory Layout Diagram */}
                           {sec.asciiDiagram && (
-                            <div className="p-4 rounded-2xl bg-[#04070f] border border-cyan-500/30 font-mono text-[11px] text-cyan-300 overflow-x-auto shadow-inner">
+                            <div className={`p-4 rounded-2xl font-mono text-[11px] overflow-x-auto shadow-inner ${readerThemeClasses.ascii}`}>
                               <pre className="leading-tight">
                                 {sec.asciiDiagram}
                               </pre>
@@ -906,18 +1218,18 @@ export default function CoursesPortal({ user, setActiveTab }) {
 
                           {/* Mathematical / Asymptotic Formula Callout */}
                           {sec.formula && (
-                            <div className="p-4 rounded-2xl bg-[#0c1424] border border-cyan-400/30 text-cyan-200 font-mono text-xs flex items-start gap-3 shadow-md">
+                            <div className={`p-4 rounded-2xl font-mono text-xs flex items-start gap-3 shadow-md ${readerThemeClasses.formula}`}>
                               <span className="text-2xl shrink-0">📐</span>
                               <div>
-                                <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Formula / Computational Law:</p>
-                                <p className="mt-0.5 text-white font-semibold font-mono text-xs md:text-sm">{sec.formula}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-wider opacity-75">Formula / Computational Law:</p>
+                                <p className="mt-0.5 font-semibold font-mono text-xs md:text-sm">{sec.formula}</p>
                               </div>
                             </div>
                           )}
 
                           {/* Code Snippet Box with Copy Button */}
                           {sec.code && (
-                            <div className="rounded-2xl bg-[#04070f] border border-white/10 overflow-hidden shadow-lg">
+                            <div className={`rounded-2xl overflow-hidden shadow-lg border ${readerThemeClasses.codeWrap}`}>
                               <div className="px-4 py-2.5 bg-white/5 border-b border-white/10 flex items-center justify-between text-[11px] font-mono text-gray-400">
                                 <span className="flex items-center gap-1.5 text-cyan-300 font-bold uppercase">
                                   <Code2 className="w-3.5 h-3.5" /> {sec.language || 'code'} implementation
@@ -949,16 +1261,16 @@ export default function CoursesPortal({ user, setActiveTab }) {
 
                       {/* Industry Case Study */}
                       {currentChapter.caseStudy && (
-                        <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-950/30 via-[#0a121d] to-black border border-emerald-500/40 space-y-3 shadow-xl">
+                        <div className={`p-6 rounded-3xl space-y-3 shadow-xl border ${readerThemeClasses.caseStudy}`}>
                           <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-3">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-xl text-emerald-300">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-xl text-emerald-600 dark:text-emerald-300">
                               🏭
                             </div>
                             <div>
-                              <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                              <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
                                 Real-World Production Case Study
                               </span>
-                              <h3 className="text-base font-bold text-white">
+                              <h3 className="text-base font-bold">
                                 {currentChapter.caseStudy.title} ({currentChapter.caseStudy.company})
                               </h3>
                             </div>
@@ -966,16 +1278,16 @@ export default function CoursesPortal({ user, setActiveTab }) {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div className="space-y-1">
-                              <span className="font-bold text-emerald-400 uppercase tracking-wider text-[10px]">Challenge & Scenario:</span>
-                              <p className="text-gray-300 leading-relaxed">{currentChapter.caseStudy.scenario}</p>
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider text-[10px]">Challenge & Scenario:</span>
+                              <p className="leading-relaxed opacity-90">{currentChapter.caseStudy.scenario}</p>
                             </div>
                             <div className="space-y-1">
-                              <span className="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">Architectural Solution:</span>
-                              <p className="text-gray-300 leading-relaxed">{currentChapter.caseStudy.architecture}</p>
+                              <span className="font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wider text-[10px]">Architectural Solution:</span>
+                              <p className="leading-relaxed opacity-90">{currentChapter.caseStudy.architecture}</p>
                             </div>
                           </div>
 
-                          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs">
+                          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
                             <span className="font-bold">Architectural Takeaway: </span>
                             <span>{currentChapter.caseStudy.takeaway}</span>
                           </div>
@@ -984,23 +1296,23 @@ export default function CoursesPortal({ user, setActiveTab }) {
 
                       {/* Senior/Staff Interview Pearls & Model Answers */}
                       {currentChapter.interviewPearls && currentChapter.interviewPearls.length > 0 && (
-                        <div className="space-y-4 pt-4 border-t border-white/10">
-                          <h3 className="text-base font-bold text-amber-300 flex items-center gap-2 font-sora">
-                            <GraduationCap className="w-5 h-5 text-amber-400" />
+                        <div className="space-y-4 pt-4 border-t border-black/10 dark:border-white/10">
+                          <h3 className="text-base font-bold text-amber-600 dark:text-amber-300 flex items-center gap-2 font-sora">
+                            <GraduationCap className="w-5 h-5 text-amber-500" />
                             Senior & Staff Engineer Interview Pearls (Model Answers)
                           </h3>
 
                           <div className="space-y-3">
                             {currentChapter.interviewPearls.map((pearl, pIdx) => (
-                              <div key={pIdx} className="p-5 rounded-2xl bg-[#0e1424] border border-amber-500/30 space-y-2.5">
-                                <p className="text-xs md:text-sm font-bold text-white flex items-start gap-2">
-                                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-mono text-[10px] shrink-0 mt-0.5">
+                              <div key={pIdx} className={`p-5 rounded-2xl border space-y-2.5 ${readerThemeClasses.pearlCard}`}>
+                                <p className="text-xs md:text-sm font-bold flex items-start gap-2">
+                                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] shrink-0 mt-0.5">
                                     Q{pIdx + 1}
                                   </span>
                                   {pearl.question}
                                 </p>
-                                <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 text-xs text-gray-300 leading-relaxed">
-                                  <span className="font-bold text-cyan-400 block mb-1">Staff Engineer Architectural Answer:</span>
+                                <div className={`p-3.5 rounded-xl text-xs leading-relaxed ${readerThemeClasses.pearlAnswer}`}>
+                                  <span className="font-bold text-cyan-700 dark:text-cyan-400 block mb-1">Staff Engineer Architectural Answer:</span>
                                   {pearl.answer}
                                 </div>
                               </div>
@@ -1012,23 +1324,23 @@ export default function CoursesPortal({ user, setActiveTab }) {
                     </div>
 
                     {/* Reading Pane Bottom Controls */}
-                    <div className="p-4 border-t border-white/10 bg-[#070b16] flex items-center justify-between gap-4 shrink-0">
+                    <div className={`p-4 border-t flex items-center justify-between gap-4 shrink-0 ${readerThemeClasses.bottomBar}`}>
                       <button
                         disabled={selectedFullTextbook.pageIndex <= 0}
                         onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
-                        className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold text-gray-200 transition-all cursor-pointer flex items-center gap-1.5"
+                        className="px-4 py-2.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                       >
                         <ChevronLeft className="w-4 h-4" /> Previous Chapter
                       </button>
 
-                      <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-gray-400">
-                        <span>Navigate with keyboard <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] text-cyan-300">←</kbd> and <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] text-cyan-300">→</kbd></span>
+                      <div className="hidden sm:flex items-center gap-2 text-xs font-mono opacity-60">
+                        <span>Navigate with keyboard <kbd className="px-1.5 py-0.5 bg-black/10 dark:bg-white/10 rounded text-[10px]">←</kbd> and <kbd className="px-1.5 py-0.5 bg-black/10 dark:bg-white/10 rounded text-[10px]">→</kbd></span>
                       </div>
 
                       <button
                         disabled={selectedFullTextbook.pageIndex >= (selectedFullTextbook.textbook.chapters?.length || 30) - 1}
                         onClick={() => setSelectedFullTextbook(prev => ({ ...prev, pageIndex: Math.min((prev.textbook.chapters?.length || 30) - 1, prev.pageIndex + 1) }))}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black text-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 hover:opacity-95 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-cyan-500/20"
                       >
                         Next Chapter <ChevronRight className="w-4 h-4" />
                       </button>

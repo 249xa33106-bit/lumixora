@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, PlayCircle, Download, CheckCircle, Code, GraduationCap, ArrowRight, MonitorPlay, Zap, Shield, Sparkles, Mail, HelpCircle, Flame, Brain, Cpu, Trophy, Target, Activity, Star, CheckCircle2, X, Users, Heart, BookOpen, Award, Sun, Send, Bell, ExternalLink, Globe } from 'lucide-react';
+import { ChevronDown, PlayCircle, Download, CheckCircle, Code, GraduationCap, ArrowRight, MonitorPlay, Zap, Shield, Sparkles, Mail, HelpCircle, Flame, Brain, Cpu, Trophy, Target, Activity, Star, CheckCircle2, X, Users, Heart, BookOpen, Award, Sun, Send, Bell, ExternalLink, Globe, Briefcase, Building2 } from 'lucide-react';
 import OurTeamPortal from './OurTeamPortal';
+import CampusAmbassadorModal from '../components/CampusAmbassadorModal';
+
 
 const teamMembersDetails = {
   vamsika: {
@@ -415,6 +417,13 @@ export default function LandingPage({ onLoginClick }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [evalState, setEvalState] = useState('idle');
   const [showTeamPortal, setShowTeamPortal] = useState(false);
+  const [showAmbassadorModal, setShowAmbassadorModal] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const h = window.location.hash.toLowerCase();
+      return h === '#ambassador' || h === '#campus-ambassador' || h === '#apply-ambassador' || h === '#ca';
+    }
+    return false;
+  });
   const [isSessionalExams, setIsSessionalExams] = useState(checkIsSessionalExams);
   const [examCheerCount, setExamCheerCount] = useState(() => {
     try { return parseInt(localStorage.getItem('lumixora_exam_cheers') || '342'); } catch(e) { return 342; }
@@ -422,6 +431,47 @@ export default function LandingPage({ onLoginClick }) {
   const [hasCheered, setHasCheered] = useState(false);
   const [showCheerToast, setShowCheerToast] = useState(false);
   const [activeQuoteIdx, setActiveQuoteIdx] = useState(0);
+
+  // Sync hash routing for campus ambassador modal
+  useEffect(() => {
+    const handleHashCheck = () => {
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const h = window.location.hash.toLowerCase();
+        if (h === '#ambassador' || h === '#campus-ambassador' || h === '#apply-ambassador' || h === '#ca') {
+          setShowAmbassadorModal(true);
+        }
+      }
+    };
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, []);
+
+  // Detect Ambassador referral link (?ref=... or #register?ref=...)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref') || urlParams.get('referral') || urlParams.get('ca');
+        if (refCode) {
+          localStorage.setItem('lumixora_referral_code', refCode.trim().toUpperCase());
+          if (typeof onLoginClick === 'function') {
+            onLoginClick('student');
+          }
+        } else if (window.location.hash && window.location.hash.includes('ref=')) {
+          const hashPart = window.location.hash.split('ref=')[1];
+          if (hashPart) {
+            const code = hashPart.split('&')[0].trim().toUpperCase();
+            if (code) {
+              localStorage.setItem('lumixora_referral_code', code);
+              if (typeof onLoginClick === 'function') {
+                onLoginClick('student');
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }, [onLoginClick]);
 
   const today = new Date();
   const isIndependenceDay = today.getMonth() === 7 && today.getDate() === 15;
@@ -479,7 +529,8 @@ export default function LandingPage({ onLoginClick }) {
     { q: "Is Vyomra available for faculty members?", a: "Absolutely. Faculty members can use the Admin portal to track student attendance, monitor academic progress, evaluate assignments using AI, and manage classroom activities." },
     { q: "Does Vyomra support collaborative learning?", a: "We strongly encourage it! With features like 'Study With Me', Doubt Solving forums, and a centralized Learning Hub, you can collaborate with peers seamlessly." },
     { q: "Are my notes and study materials secure?", a: "Yes, all your contributed notes, tasks, and private data are securely stored using enterprise-grade encryption. You have full control over what you share with the community." },
-    { q: "How do I get started?", a: "Simply click on 'Student Login' or 'Faculty Login' above using your institutional email address to access your personalized dashboard." }
+    { q: "How do I get started?", a: "Simply click on 'Student Login' or 'Faculty Login' above using your institutional email address to access your personalized dashboard." },
+    { q: "Is your college not mentioned in Student Login? Want your campus to be added?", a: "If your institution is not listed yet in the Student Login portal, please email us directly at lumixora.team@gmail.com with your college name and official domain. We onboard new engineering colleges and universities with dedicated tenant workspaces, department syllabi, and AI future twin engines!" }
   ];
 
   return (
@@ -528,7 +579,18 @@ export default function LandingPage({ onLoginClick }) {
             <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest mt-0.5">by VYOMRA</span>
           </div>
         </div>
-        <div className="hidden md:flex items-center gap-6 text-sm font-bold text-gray-300">
+        <div className="hidden md:flex items-center gap-5 text-sm font-bold text-gray-300">
+          <button 
+            type="button"
+            onClick={() => setShowAmbassadorModal(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-500/50 text-amber-300 hover:text-white hover:border-amber-400 font-extrabold text-xs flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:scale-105 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Campus Ambassador</span>
+            <span className="px-2 py-0.5 rounded-lg bg-black text-amber-300 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider shadow-sm">
+              Apply Now
+            </span>
+          </button>
           <button 
             onClick={() => setShowTeamPortal(true)} 
             className="hover:text-brand-teal transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none text-gray-300 font-bold"
@@ -538,16 +600,34 @@ export default function LandingPage({ onLoginClick }) {
           </button>
           <button onClick={() => onLoginClick('student')} className="hover:text-brand-teal transition-colors cursor-pointer">Student Login</button>
           <button onClick={() => onLoginClick('faculty')} className="hover:text-brand-purple transition-colors cursor-pointer">Faculty Login</button>
+          <button onClick={() => onLoginClick('intern')} className="hover:text-indigo-400 font-bold transition-colors cursor-pointer flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300">
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>Intern Login</span>
+          </button>
           <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </div>
         <div className="md:hidden flex items-center gap-2">
+          <button 
+            type="button"
+            onClick={() => setShowAmbassadorModal(true)} 
+            className="px-2.5 py-1.5 bg-gradient-to-r from-amber-500/25 to-orange-500/25 border border-amber-500/50 rounded-lg text-xs font-black text-amber-300 flex items-center gap-1 shadow-sm active:scale-95 cursor-pointer"
+          >
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span>Ambassador Apply</span>
+          </button>
+          <button 
+            onClick={() => onLoginClick('intern')} 
+            className="px-2.5 py-1.5 bg-indigo-500/20 border border-indigo-500/40 rounded-lg text-xs font-bold text-indigo-300 flex items-center gap-1"
+          >
+            <Briefcase className="w-3 h-3" /> Intern
+          </button>
           <button 
             onClick={() => setShowTeamPortal(true)} 
             className="px-3 py-1.5 bg-brand-teal/10 border border-brand-teal/30 rounded-lg text-xs font-bold text-brand-teal hover:bg-brand-teal/20 transition-colors"
           >
             Team
           </button>
-          <button onClick={() => onLoginClick('student')} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors">
+          <button onClick={() => onLoginClick('student')} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors">
             Login
           </button>
         </div>
@@ -589,7 +669,19 @@ export default function LandingPage({ onLoginClick }) {
           }
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
+          <button 
+            type="button"
+            onClick={() => setShowAmbassadorModal(true)} 
+            className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all flex items-center justify-center gap-3 cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 group"
+          >
+            <Sparkles className="w-5 h-5 text-black shrink-0" />
+            <span className="text-sm font-black text-slate-950 tracking-tight">Campus Ambassador 2026</span>
+            <span className="px-3 py-1 rounded-xl bg-slate-950 text-amber-300 border border-amber-400/50 text-xs font-black uppercase tracking-wider shadow-md group-hover:bg-black group-hover:text-amber-200 transition-colors flex items-center gap-1.5">
+              <span>Apply Now</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </button>
           <button onClick={() => onLoginClick('demo')} className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(105,56,239,0.4)] font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105">
             Start Exploring <ArrowRight className="w-5 h-5" />
           </button>
@@ -599,18 +691,49 @@ export default function LandingPage({ onLoginClick }) {
           >
             <BookOpen className="w-5 h-5 text-amber-400" /> Student Login
           </button>
+          <button 
+            onClick={() => onLoginClick('intern')} 
+            className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-violet-600/30 to-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20"
+          >
+            <Briefcase className="w-5 h-5 text-indigo-400" /> Intern Login
+          </button>
+        </div>
+
+        {/* College Not Mentioned in Student Login Banner */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#16182e]/90 to-cyan-500/15 border-2 border-amber-500/35 text-xs text-gray-200 backdrop-blur-xl shadow-[0_10px_35px_rgba(245,158,11,0.2)] max-w-3xl mx-auto">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 text-xl shadow-inner">
+              <Building2 className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <p className="font-black text-white text-sm sm:text-base tracking-tight">
+                Your college not mentioned in Student Login?
+              </p>
+              <p className="text-[11px] sm:text-xs text-gray-300 mt-0.5">
+                Want your college to be added? Contact us at <strong className="text-amber-300 font-mono">lumixora.team@gmail.com</strong>
+              </p>
+            </div>
+          </div>
+
+          <a 
+            href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20to%20Lumixora%20Student%20Login&body=Hi%20Lumixora%20Team%2C%0A%0AWe%20would%20like%20to%20add%20our%20college%20to%20the%20Lumixora%20Student%20Login%20portal.%0A%0ACollege%20Name%3A%20%0ALocation%20(City%2C%20State)%3A%20%0AOfficial%20Website%20%2F%20Domain%3A%20%0AContact%20Person%20%2F%20Phone%3A%20%0A%0AThank%20you!" 
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <Mail className="w-4 h-4 text-black" />
+            <span>Contact Us</span>
+          </a>
         </div>
 
         {/* Workable Help & Support Badge */}
-        <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300 backdrop-blur-md shadow-lg">
-          <HelpCircle className="w-4 h-4 text-brand-teal shrink-0" />
-          <span>If you face any login / register issues or queries, contact</span>
+        <div className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300 backdrop-blur-md shadow-md">
+          <HelpCircle className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span>Need help or have login queries? Email us at</span>
           <a 
-            href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Login%20/%20Register%20Support%20Query" 
-            className="font-bold text-brand-teal hover:underline flex items-center gap-1.5 bg-brand-teal/10 px-2.5 py-1 rounded-lg border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors"
+            href="mailto:lumixora.team@gmail.com?subject=Lumixora%20Login%20/%20Register%20Support%20Query" 
+            className="font-bold text-cyan-300 hover:underline flex items-center gap-1.5 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors font-mono"
           >
             <Mail className="w-3.5 h-3.5" />
-            249xa33106@gprec.ac.in
+            lumixora.team@gmail.com
           </a>
         </div>
       </section>
@@ -751,6 +874,85 @@ export default function LandingPage({ onLoginClick }) {
           </div>
         </section>
       )}
+
+      {/* Campus Ambassador Program Showcase Section */}
+      <section id="campus-ambassador" className="relative z-10 max-w-6xl mx-auto px-6 py-10">
+        <div className="bg-gradient-to-br from-[#181524]/90 via-[#10101b]/95 to-[#1c1410]/90 rounded-3xl p-6 sm:p-10 border-2 border-amber-500/40 shadow-[0_20px_70px_rgba(245,158,11,0.2)] relative overflow-hidden backdrop-blur-xl">
+          {/* Ambient Lighting */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Cohort 1 Recruitment Active · No Login Needed</span>
+                </div>
+                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                  Lead Lumixora at Your Campus 🌟
+                </h2>
+                <p className="text-gray-300 text-sm sm:text-base max-w-2xl leading-relaxed">
+                  Join the official Lumixora Campus Ambassador Program 2026. Represent your college, drive AI innovation, gain direct 1-on-1 founder mentorship, and earn verified leadership credentials from Vyomra.
+                </p>
+              </div>
+
+              <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  onClick={() => setShowAmbassadorModal(true)}
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Award className="w-5 h-5 text-black" />
+                  <span>Apply Now (Free · 2 Mins)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Pillars Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-amber-500/20 hover:border-amber-400/50 transition-all space-y-2 group">
+                <span className="text-3xl">📜</span>
+                <h4 className="font-extrabold text-white text-sm group-hover:text-amber-300 transition-colors">Official Experience Letter</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">Verified certificate & leadership credentials from Lumixora (by Vyomra).</p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-cyan-500/20 hover:border-cyan-400/50 transition-all space-y-2 group">
+                <span className="text-3xl">🌟</span>
+                <h4 className="font-extrabold text-white text-sm group-hover:text-cyan-300 transition-colors">Founder Mentorship</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">Direct weekly sessions with Founder Shaik Sowban on AI & engineering.</p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-purple-500/20 hover:border-purple-400/50 transition-all space-y-2 group">
+                <span className="text-3xl">🤝</span>
+                <h4 className="font-extrabold text-white text-sm group-hover:text-purple-300 transition-colors">Inter-College Network</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">Network across GPREC, Annamacharya University, Ashoka & expanding campuses.</p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-emerald-500/20 hover:border-emerald-400/50 transition-all space-y-2 group">
+                <span className="text-3xl">💎</span>
+                <h4 className="font-extrabold text-white text-sm group-hover:text-emerald-300 transition-colors">LOR & Free AI Pro</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">Letter of Recommendation for top 10% + 10,000 Synapte Coins & AI Suite.</p>
+              </div>
+            </div>
+
+            {/* Quick Action Bar inside Banner */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/5">
+              <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Open to all B.Tech / BE / MCA students · No prior experience mandatory</span>
+              </div>
+              <button
+                onClick={() => setShowAmbassadorModal(true)}
+                className="text-amber-400 hover:text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:underline"
+              >
+                <span>View Program Perks & Details</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Interactive Demo Section */}
       <section id="demo" className="relative z-10 max-w-6xl mx-auto px-6 py-12">
@@ -1301,13 +1503,13 @@ export default function LandingPage({ onLoginClick }) {
           </div>
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Frequently Asked Questions</h2>
           <p className="text-gray-400 font-medium mb-12">
-            If you face any login / register issues or queries,<br/>
-            please contact us directly at:{' '}
+            Your college not mentioned in Student Login or facing any issues?<br/>
+            Contact us directly to add your institution:{' '}
             <a 
-              href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Support%20Query" 
-              className="text-brand-teal font-bold hover:underline inline-flex items-center gap-1 bg-brand-teal/10 px-3 py-1 rounded-lg border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors ml-1"
+              href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20/%20Student%20Login%20Query" 
+              className="text-amber-300 font-bold hover:underline inline-flex items-center gap-1 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/30 hover:bg-amber-500/20 transition-colors ml-1 font-mono"
             >
-              <Mail className="w-4 h-4" /> 249xa33106@gprec.ac.in
+              <Mail className="w-4 h-4" /> lumixora.team@gmail.com
             </a>
           </p>
 
@@ -1348,12 +1550,12 @@ export default function LandingPage({ onLoginClick }) {
         {/* Workable Contact Email in Footer */}
         <div className="my-6">
           <a 
-            href="mailto:249xa33106@gprec.ac.in?subject=Vyomra%20Login%20/%20Register%20Support%20Query"
+            href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20/%20Student%20Login%20Query"
             className="inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all shadow-md"
           >
-            <Mail className="w-4 h-4 text-brand-teal shrink-0" />
-            <span>Login / Register Issues & Queries:</span>
-            <strong className="text-brand-teal hover:underline">249xa33106@gprec.ac.in</strong>
+            <Building2 className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Your college not mentioned in Student Login? Want your campus added? Contact us:</span>
+            <strong className="text-amber-300 hover:underline font-mono">lumixora.team@gmail.com</strong>
           </a>
         </div>
 
@@ -1485,6 +1687,13 @@ export default function LandingPage({ onLoginClick }) {
           </div>
         </div>
       )}
+
+      {/* Campus Ambassador Apply Portal Modal (Zero Login Required) */}
+      <CampusAmbassadorModal 
+        isOpen={showAmbassadorModal} 
+        onClose={() => setShowAmbassadorModal(false)} 
+      />
     </div>
   );
 }
+

@@ -26,7 +26,11 @@ import {
   Download,
   FileSpreadsheet,
   Mail,
-  Copy
+  Copy,
+  Briefcase,
+  Trophy,
+  CreditCard,
+  IndianRupee
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -43,6 +47,9 @@ import FounderFrequentUsers from '../components/FounderFrequentUsers';
 import FounderAssignedTasks from '../components/FounderAssignedTasks';
 import FounderAttendanceManager from '../components/FounderAttendanceManager';
 import FounderCommunityManager from '../components/FounderCommunityManager';
+import FounderAmbassadorManager from '../components/FounderAmbassadorManager';
+import FounderRevenueManager from '../components/FounderRevenueManager';
+import InternshipPortal from './InternshipPortal';
 import { 
   buildAggregatedNotifications, 
   markNotificationsAsRead, 
@@ -83,12 +90,12 @@ export const cleanScholarName = (str, email = '') => {
 
   return 'Scholar';
 };
+import FounderMarketplaceApprovals from '../components/FounderMarketplaceApprovals';
 import FounderFacultyApprovals from '../components/FounderFacultyApprovals';
 import FounderCollegesManager from '../components/FounderCollegesManager';
 import FounderClubsManager from '../components/FounderClubsManager';
 import FounderFeedbackManager from '../components/FounderFeedbackManager';
-import FounderMarketplaceApprovals from '../components/FounderMarketplaceApprovals';
-import { DEFAULT_COLLEGES } from '../data/collegesData';
+import { DEFAULT_COLLEGES, fetchCollegesFromSupabase, getStoredCustomColleges, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from '../data/collegesData';
 
 // --- Mentor Connect & Doubt Manager ---
 function FounderDoubtManager() {
@@ -232,9 +239,9 @@ export default function FounderPortal({ user, setActiveTab }) {
   
   // Filter States (Synchronized with Global Campus Switcher)
   const [selectedCollege, setSelectedCollege] = useState(() => {
-    const activeId = localStorage.getItem('lumixora_active_campus_id');
-    const activeName = localStorage.getItem('lumixora_active_campus_name');
-    if (!activeId || activeId === 'all') return 'All';
+    const activeId = (localStorage.getItem('lumixora_active_campus_id') || '').toLowerCase();
+    const activeName = (localStorage.getItem('lumixora_active_campus_name') || '').trim();
+    if (!activeId || activeId === 'all' || !activeName || activeName.toLowerCase().startsWith('all')) return 'All';
     return activeName || 'All';
   });
   const [selectedDept, setSelectedDept] = useState('All');
@@ -254,10 +261,12 @@ export default function FounderPortal({ user, setActiveTab }) {
   useEffect(() => {
     const handleCampusEvt = (e) => {
       if (e.detail) {
-        if (e.detail.campusId === 'all') {
+        const cId = (e.detail.campusId || '').toLowerCase();
+        const cName = (e.detail.campusName || '').trim();
+        if (cId === 'all' || !cName || cName.toLowerCase().startsWith('all') || cName.toLowerCase().includes('enterprise hq')) {
           setSelectedCollege('All');
         } else {
-          setSelectedCollege(e.detail.campusName || 'All');
+          setSelectedCollege(cName || 'All');
         }
       }
     };
@@ -382,12 +391,32 @@ export default function FounderPortal({ user, setActiveTab }) {
             }
             const registerDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
             const cleanName = cleanScholarName(u.name, u.email);
-            const college = u.college || parsed.college || 'GPREC';
-            const department = u.department || u.branch || parsed.department || 'CSE';
-            const year = u.year || parsed.year || '1st Year';
-            const sem = u.sem || parsed.sem || '1';
-            const sec = u.sec || parsed.sec || 'A';
-            const rollNumber = u.rollNumber || (u.email && u.email.endsWith('@gprec.ac.in') ? u.email.split('@')[0].toUpperCase() : '');
+            const userEmailLower = (u.email || '').toLowerCase().trim();
+            const rawColStr = (parsed.college || u.college || '').trim();
+            const rawColLower = rawColStr.toLowerCase();
+            let college = '';
+            if (rawColLower.includes('bits') || rawColLower.includes('bheema') || rawColLower.includes('adoni') || userEmailLower.includes('bitsadoni') || userEmailLower.includes('bits.ac') || userEmailLower.includes('bits.edu')) {
+              college = 'Bheema Institute Of Technology & Science';
+            } else if (rawColLower.includes('annamacharya') || rawColLower.includes('aits') || rawColLower.includes('rajampet') || rawColLower === 'au' || userEmailLower.includes('annamacharya') || userEmailLower.includes('aits')) {
+              college = 'Annamacharya University';
+            } else if (rawColLower.includes('ashoka') || userEmailLower.includes('ashoka')) {
+              college = "Ashoka Women's Engineering College";
+            } else if (rawColLower.includes('svce') || rawColLower.includes('venkateshwara') || rawColLower.includes('tirupathi') || userEmailLower.includes('svce')) {
+              college = 'Sri Venkateshwara College Of Engineering';
+            } else if (rawColLower.includes('nec') || rawColLower.includes('narayana') || rawColLower.includes('gudur') || userEmailLower.includes('nec')) {
+              college = 'Narayana Engineering College';
+            } else if (userEmailLower.endsWith('@gprec.ac.in') || userEmailLower.includes('gprec.ac.in') || rawColLower.includes('gprec') || rawColLower.includes('pulla reddy')) {
+              college = 'G. Pulla Reddy Engineering College';
+            } else if (rawColStr && rawColStr !== 'GPREC') {
+              college = rawColStr;
+            } else {
+              college = 'G. Pulla Reddy Engineering College';
+            }
+            const department = parsed.department || parsed.branch || u.department || u.branch || 'CSE';
+            const year = parsed.year || u.year || '1st Year';
+            const sem = parsed.sem || u.sem || '1';
+            const sec = parsed.sec || u.sec || 'A';
+            const rollNumber = u.roll_number || u.rollNumber || parsed.rollNumber || (u.email && u.email.endsWith('@gprec.ac.in') ? u.email.split('@')[0].toUpperCase() : '');
 
             const userObj = {
               id: userId,
@@ -395,6 +424,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               name: cleanName,
               email: u.email || '',
               college,
+              rawCollege: rawColStr,
               department,
               branch: department,
               year,
@@ -428,8 +458,23 @@ export default function FounderPortal({ user, setActiveTab }) {
               is_approved: u.is_approved !== undefined ? u.is_approved : (u.isApproved !== undefined ? u.isApproved : false),
               isApproved: u.isApproved !== undefined ? u.isApproved : (u.is_approved !== undefined ? u.is_approved : false),
               is_deleted: u.is_deleted || false,
-              metadata: parsed
+              referredBy: u.referred_by || u.referredBy || parsed.referredBy || parsed.referralCode || '',
+              referralCode: u.referred_by || u.referredBy || parsed.referredBy || parsed.referralCode || '',
+              rawName: u.name || '',
+              metadata: parsed,
+              oneTimeFeePaid: Boolean(u.oneTimeFeePaid || u.feePaid || parsed.oneTimeFeePaid || parsed.feePaid),
+              feePaid: Boolean(u.feePaid || u.oneTimeFeePaid || parsed.feePaid || parsed.oneTimeFeePaid),
+              feeAmount: Number(u.feeAmount || parsed.feeAmount || (u.oneTimeFeePaid || u.feePaid || parsed.oneTimeFeePaid || parsed.feePaid ? 10 : 0)),
+              feeTxId: u.feeTxId || u.feePaymentId || parsed.feeTxId || parsed.feePaymentId || '',
+              feePaidAt: u.feePaidAt || parsed.feePaidAt || null
             };
+            if (userEmailLower === 'shaikanjumfaijan@gmail.com' || userEmailLower.includes('25afcsm015')) {
+              userObj.oneTimeFeePaid = true;
+              userObj.feePaid = true;
+              userObj.feeAmount = 5;
+              userObj.feeTxId = userObj.feeTxId || 'UTR-616740048435';
+              userObj.feePaidAt = userObj.feePaidAt || '2026-10-24T16:57:09.000Z';
+            }
             const mapKey = (u.email || userId).toLowerCase().trim();
             mergedMap.set(mapKey, userObj);
           });
@@ -475,6 +520,13 @@ export default function FounderPortal({ user, setActiveTab }) {
               if (u.level !== undefined && u.level > 0) existing.level = u.level;
               if (u.coins !== undefined && u.coins > 0) existing.coins = u.coins;
               if (u.streak !== undefined && u.streak > 0) existing.streak = u.streak;
+              if (u.oneTimeFeePaid || u.feePaid || parsedFb.oneTimeFeePaid || parsedFb.feePaid) {
+                existing.oneTimeFeePaid = true;
+                existing.feePaid = true;
+                existing.feeAmount = Number(u.feeAmount || parsedFb.feeAmount || existing.feeAmount || 10);
+                if (u.feeTxId || u.feePaymentId || parsedFb.feeTxId) existing.feeTxId = u.feeTxId || u.feePaymentId || parsedFb.feeTxId;
+                if (u.feePaidAt || parsedFb.feePaidAt) existing.feePaidAt = u.feePaidAt || parsedFb.feePaidAt;
+              }
             } else {
               const newObj = {
                 id: docSnap.id,
@@ -511,8 +563,22 @@ export default function FounderPortal({ user, setActiveTab }) {
                 is_approved: u.is_approved !== undefined ? u.is_approved : true,
                 isApproved: true,
                 is_deleted: u.is_deleted || false,
-                metadata: parsedFb
+                referredBy: u.referredBy || u.referred_by || u.referralCode || parsedFb.referredBy || parsedFb.referralCode || '',
+                referralCode: u.referredBy || u.referred_by || u.referralCode || parsedFb.referredBy || parsedFb.referralCode || '',
+                metadata: parsedFb,
+                oneTimeFeePaid: Boolean(u.oneTimeFeePaid || u.feePaid || parsedFb.oneTimeFeePaid || parsedFb.feePaid),
+                feePaid: Boolean(u.feePaid || u.oneTimeFeePaid || parsedFb.feePaid || parsedFb.oneTimeFeePaid),
+                feeAmount: Number(u.feeAmount || parsedFb.feeAmount || (u.oneTimeFeePaid || u.feePaid || parsedFb.oneTimeFeePaid || parsedFb.feePaid ? 10 : 0)),
+                feeTxId: u.feeTxId || u.feePaymentId || parsedFb.feeTxId || parsedFb.feePaymentId || '',
+                feePaidAt: u.feePaidAt || parsedFb.feePaidAt || null
               };
+              if (key === 'shaikanjumfaijan@gmail.com' || key.includes('25afcsm015')) {
+                newObj.oneTimeFeePaid = true;
+                newObj.feePaid = true;
+                newObj.feeAmount = 5;
+                newObj.feeTxId = newObj.feeTxId || 'UTR-616740048435';
+                newObj.feePaidAt = newObj.feePaidAt || '2026-10-24T16:57:09.000Z';
+              }
               mergedMap.set(key, newObj);
             }
           });
@@ -529,8 +595,8 @@ export default function FounderPortal({ user, setActiveTab }) {
             { data: sbNotifs },
             { data: sbTests }
           ] = await Promise.allSettled([
-            supabase.from('founder_notifications').select('*').order('created_at', { ascending: false }).limit(60),
-            supabase.from('test_results').select('*').order('created_at', { ascending: false }).limit(60)
+            supabase.from('founder_notifications').select('*').order('created_at', { ascending: false }).limit(200),
+            supabase.from('test_results').select('*').order('created_at', { ascending: false }).limit(100)
           ]).then(results => [
             results[0].status === 'fulfilled' ? results[0].value : { data: [] },
             results[1].status === 'fulfilled' ? results[1].value : { data: [] }
@@ -538,6 +604,162 @@ export default function FounderPortal({ user, setActiveTab }) {
 
           if (sbNotifs && sbNotifs.length > 0) {
             remoteNotifsRef.current = [...sbNotifs, ...remoteNotifsRef.current];
+            sbNotifs.forEach(n => {
+              if (!n || !n.type) return;
+
+              // Payment notifications: live sync paid scholars & revenue
+              if (n.type === 'payment') {
+                const meta = n.meta || {};
+                const payEmail = (meta.email || '').toLowerCase().trim();
+                let feeAmt = 10;
+                if (n.message && n.message.includes('₹5')) feeAmt = 5;
+                else if (meta.amount) feeAmt = Number(meta.amount);
+                else if (n.message && n.message.includes('₹10')) feeAmt = 10;
+
+                let feeTx = meta.txId || meta.paymentId || meta.utr || '';
+                if (!feeTx && n.message) {
+                  const m = n.message.match(/UTR[-:\s]*([A-Za-z0-9]+)/i);
+                  if (m) feeTx = m[0];
+                }
+                const paidAt = meta.paidAt || meta.createdAt || n.created_at || new Date().toISOString();
+
+                if (payEmail) {
+                  const existingU = mergedMap.get(payEmail);
+                  if (existingU) {
+                    existingU.oneTimeFeePaid = true;
+                    existingU.feePaid = true;
+                    existingU.feeAmount = feeAmt;
+                    if (feeTx) existingU.feeTxId = feeTx;
+                    if (paidAt) existingU.feePaidAt = paidAt;
+                  } else {
+                    const cleanPayName = cleanScholarName(meta.name || n.title, payEmail);
+                    mergedMap.set(payEmail, {
+                      id: meta.id || `pay_${n.id}`,
+                      uid: meta.id || `pay_${n.id}`,
+                      name: cleanPayName,
+                      email: payEmail,
+                      college: meta.college || 'Sri Venkateshwara College Of Engineering',
+                      rawCollege: meta.college || '',
+                      department: meta.department || 'CSE',
+                      branch: meta.department || 'CSE',
+                      year: meta.year || '1st Year',
+                      sem: '1',
+                      sec: 'A',
+                      rollNumber: meta.rollNumber || '',
+                      place: meta.place || '',
+                      qualification: 'B.Tech',
+                      role: meta.role || 'user',
+                      xp: 100,
+                      level: 1,
+                      coins: 100,
+                      streak: 1,
+                      created_at: n.created_at ? new Date(n.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+                      created_at_raw: n.created_at ? new Date(n.created_at).getTime() : Date.now(),
+                      loginCount: 1,
+                      lastLoginDate: n.created_at || new Date().toISOString(),
+                      source: 'Payment Verified',
+                      oneTimeFeePaid: true,
+                      feePaid: true,
+                      feeAmount: feeAmt,
+                      feeTxId: feeTx,
+                      feePaidAt: paidAt,
+                      badges: ['Fee Verified'],
+                      is_blocked: false,
+                      is_approved: true,
+                      isApproved: true,
+                      is_deleted: false,
+                      metadata: meta
+                    });
+                  }
+                }
+                return;
+              }
+
+              // Ambassador referrals: enrich scholar record with referral attribution
+              if (n.type === 'ambassador_referral') {
+                const meta = n.meta || {};
+                const refEmail = (meta.email || meta.scholarEmail || '').toLowerCase().trim();
+                const details = meta.details || n.message || '';
+                let refCode = (meta.code || meta.referralCode || '').trim();
+                if (!refCode && details.includes('using Code [')) {
+                  const m = details.match(/using Code \[([^\]]+)\]/i);
+                  if (m) refCode = m[1].trim();
+                }
+                if (!refCode && details.includes('[')) {
+                  const m = details.match(/\[([A-Z0-9\-_]+)\]/i);
+                  if (m) refCode = m[1].trim();
+                }
+                if (refEmail && refCode && mergedMap.has(refEmail)) {
+                  const existingU = mergedMap.get(refEmail);
+                  if (existingU) {
+                    existingU.referredBy = refCode;
+                    existingU.referralCode = refCode;
+                  }
+                }
+                return;
+              }
+
+              // Ambassador applications, doubts, grievances, tasks must NEVER be synthesized into active scholars list!
+              if (
+                n.type === 'ambassador_application' || 
+                n.type === 'doubt' || 
+                n.type === 'grievance' || 
+                n.type === 'college_tenant' || 
+                n.type === 'task'
+              ) {
+                return;
+              }
+              if (n.type !== 'register' && n.type !== 'registration') {
+                return;
+              }
+
+              const meta = n.meta || {};
+              const nEmail = (meta.email || '').toLowerCase().trim();
+              if (nEmail && !mergedMap.has(nEmail)) {
+                const cleanNName = cleanScholarName(meta.name || n.title, nEmail);
+                const userObj = {
+                  id: meta.id || `notif_${n.id}`,
+                  uid: meta.id || `notif_${n.id}`,
+                  name: cleanNName,
+                  email: nEmail,
+                  college: meta.college || 'GPREC',
+                  rawCollege: meta.college || '',
+                  department: meta.department || 'CSE',
+                  branch: meta.department || 'CSE',
+                  year: meta.year || '1st Year',
+                  sem: '1',
+                  sec: 'A',
+                  rollNumber: meta.rollNumber || (nEmail.includes('@') ? nEmail.split('@')[0].toUpperCase() : ''),
+                  place: 'Andhra Pradesh',
+                  qualification: 'B.Tech',
+                  role: meta.role || 'user',
+                  xp: 100,
+                  level: 1,
+                  coins: 100,
+                  streak: 1,
+                  created_at: n.created_at ? new Date(n.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+                  created_at_raw: n.created_at ? new Date(n.created_at).getTime() : Date.now(),
+                  source: 'Supabase Sync',
+                  badges: ['verified_scholar'],
+                  completedDays: [],
+                  studyHours: 0,
+                  quizScore: 0,
+                  notesShared: 0,
+                  learningStyle: 'Practical',
+                  weakSubjects: '',
+                  careerGoal: 'Placement',
+                  cgpa: '9.0',
+                  is_blocked: false,
+                  is_approved: meta.is_approved !== undefined ? meta.is_approved : true,
+                  isApproved: true,
+                  is_deleted: false,
+                  rawName: cleanNName,
+                  metadata: meta,
+                  oneTimeFeePaid: Boolean(meta.feePaid || meta.oneTimeFeePaid)
+                };
+                mergedMap.set(nEmail, userObj);
+              }
+            });
           }
           if (sbTests && sbTests.length > 0) {
             remoteTestsRef.current = [...sbTests, ...remoteTestsRef.current];
@@ -695,8 +917,14 @@ export default function FounderPortal({ user, setActiveTab }) {
             }
           });
           
-          const hasGprec = fetched.some(c => c.id === 'gprec');
-          const finalList = hasGprec ? fetched : [...DEFAULT_COLLEGES, ...fetched];
+          const existingIds = new Set(fetched.map(c => c.id));
+          const missingDefaults = DEFAULT_COLLEGES.filter(c => !existingIds.has(c.id));
+          if (missingDefaults.length > 0) {
+            missingDefaults.forEach(col => {
+              setDoc(doc(db, 'college_tenants', col.id), col, { merge: true }).catch(() => {});
+            });
+          }
+          const finalList = [...missingDefaults, ...fetched];
           setOnboardedTenants(finalList);
         }, () => {});
       } catch (e) {}
@@ -746,10 +974,14 @@ export default function FounderPortal({ user, setActiveTab }) {
       markSingleNotificationRead(notif.id);
       setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
     }
-    const searchVal = notif.rollNumber || notif.email || notif.name;
+    const searchVal = notif.email || notif.rollNumber || notif.name;
     if (searchVal) {
+      setSelectedCollege('All');
+      setSelectedDept('All');
+      setSelectedRole('All');
+      setActiveView('scholars');
       setSearchTerm(searchVal);
-      setActiveTab('users');
+      if (typeof setActiveTab === 'function') setActiveTab('users');
       setShowNotifDropdown(false);
       addToast({ message: `Filtering table for ${cleanScholarName(notif.name, notif.email)}`, type: "info" });
     }
@@ -785,34 +1017,125 @@ export default function FounderPortal({ user, setActiveTab }) {
           (u.id || '').toLowerCase().includes(cleanSearch);
         
         let matchesCollege = true;
-        if (selectedCollege !== 'All') {
+        const isAllColleges = !selectedCollege || selectedCollege === 'All' || selectedCollege.toLowerCase().startsWith('all');
+        
+        if (!isAllColleges) {
           const allColleges = (onboardedTenants && onboardedTenants.length > 0) ? onboardedTenants : DEFAULT_COLLEGES;
           const targetTenant = allColleges.find(c =>
-            (c.shortName || c.name || c.code || '').toLowerCase() === selectedCollege.toLowerCase()
+            (c.id && c.id.toLowerCase() === selectedCollege.toLowerCase()) ||
+            (c.code && c.code.toLowerCase() === selectedCollege.toLowerCase()) ||
+            (c.shortName && c.shortName.toLowerCase() === selectedCollege.toLowerCase()) ||
+            (c.name && c.name.toLowerCase() === selectedCollege.toLowerCase())
           );
 
+          const uCol = (u.college || '').toLowerCase().trim();
+          const uRawCol = (u.rawCollege || '').toLowerCase().trim();
+          const uEmail = (u.email || '').toLowerCase().trim();
+          const metaCollege = (u.metadata?.college || '').toLowerCase().trim();
+          const rawNameCollege = (u.rawName && u.rawName.includes('{')) ? (() => {
+            try { return (JSON.parse(u.rawName.slice(u.rawName.indexOf('{'))).college || '').toLowerCase(); } catch (e) { return ''; }
+          })() : '';
+          const metaStr = u.metadata ? JSON.stringify(u.metadata).toLowerCase() : '';
+
           if (targetTenant) {
-            const uCol = (u.college || '').toLowerCase().trim();
-            const uEmail = (u.email || '').toLowerCase().trim();
+            const targetId = (targetTenant.id || '').toLowerCase();
             const targetCode = (targetTenant.code || '').toLowerCase();
             const targetShort = (targetTenant.shortName || '').toLowerCase();
             const targetName = (targetTenant.name || '').toLowerCase();
+            const targetDomains = (targetTenant.domains || []).map(d => d.toLowerCase().replace(/^@/, ''));
 
-            const isColNameMatch = uCol && (
-              uCol.includes(targetCode) || 
-              uCol.includes(targetShort) || 
-              targetName.includes(uCol) ||
-              targetShort.includes(uCol)
-            );
+            const isAuTenant = targetId === 'annamacharya' || targetCode === 'au' || targetShort.includes('rajampet') || targetName.includes('annamacharya');
+            const isAshokaTenant = targetId === 'ashoka' || targetCode === 'ashoka' || targetShort.includes('ashoka');
+            const isBitsTenant = targetId === 'bits' || targetCode === 'bits' || targetShort.includes('bits') || targetName.includes('bheema');
+            const isSvceTenant = targetId === 'svce' || targetCode === 'svce' || targetShort.includes('svce') || targetName.includes('venkateshwara');
+            const isNecTenant = targetId === 'nec' || targetCode === 'nec' || targetShort.includes('nec') || targetName.includes('narayana');
+            const isGprecTenant = targetId === 'gprec' || targetCode === 'gprec' || targetShort.includes('gprec');
 
-            let isDomainMatch = false;
-            if (targetTenant.domains && Array.isArray(targetTenant.domains)) {
-              isDomainMatch = targetTenant.domains.some(dom => uEmail.endsWith(`@${dom}`));
+            if (isAshokaTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('ashoka') ||
+                uRawCol.includes('ashoka') ||
+                metaCollege.includes('ashoka') ||
+                rawNameCollege.includes('ashoka') ||
+                metaStr.includes('ashoka') ||
+                uEmail.includes('ashoka') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isAuTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('annamacharya') || uCol.includes('aits') || uCol.includes('rajampet') || uCol === 'au' ||
+                uRawCol.includes('annamacharya') || uRawCol.includes('aits') || uRawCol.includes('rajampet') || uRawCol === 'au' ||
+                metaCollege.includes('annamacharya') || metaCollege.includes('aits') || metaCollege.includes('rajampet') || metaCollege === 'au' ||
+                rawNameCollege.includes('annamacharya') || rawNameCollege.includes('aits') || rawNameCollege.includes('rajampet') ||
+                metaStr.includes('annamacharya') || metaStr.includes('aits') || metaStr.includes('rajampet') ||
+                uEmail.includes('annamacharya') || uEmail.includes('aits') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isBitsTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('bits') || uCol.includes('bheema') || uCol.includes('adoni') ||
+                uRawCol.includes('bits') || uRawCol.includes('bheema') || uRawCol.includes('adoni') ||
+                metaCollege.includes('bits') || metaCollege.includes('bheema') || metaCollege.includes('adoni') ||
+                rawNameCollege.includes('bits') || rawNameCollege.includes('bheema') || rawNameCollege.includes('adoni') ||
+                metaStr.includes('bits') || metaStr.includes('bheema') || metaStr.includes('adoni') ||
+                uEmail.includes('bitsadoni') || uEmail.includes('bits.ac') || uEmail.includes('bits.edu') ||
+                targetDomains.some(dom => dom !== 'gmail.com' && uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isSvceTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('svce') || uCol.includes('venkateshwara') || uCol.includes('tirupathi') ||
+                uRawCol.includes('svce') || uRawCol.includes('venkateshwara') || uRawCol.includes('tirupathi') ||
+                metaCollege.includes('svce') || metaCollege.includes('venkateshwara') || metaCollege.includes('tirupathi') ||
+                rawNameCollege.includes('svce') || rawNameCollege.includes('venkateshwara') || rawNameCollege.includes('tirupathi') ||
+                metaStr.includes('svce') || metaStr.includes('venkateshwara') ||
+                uEmail.includes('svce') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isNecTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('nec') || uCol.includes('narayana') || uCol.includes('gudur') ||
+                uRawCol.includes('nec') || uRawCol.includes('narayana') || uRawCol.includes('gudur') ||
+                metaCollege.includes('nec') || metaCollege.includes('narayana') || metaCollege.includes('gudur') ||
+                rawNameCollege.includes('nec') || rawNameCollege.includes('narayana') || rawNameCollege.includes('gudur') ||
+                metaStr.includes('nec') || metaStr.includes('narayana') ||
+                uEmail.includes('nec') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isGprecTenant) {
+              // Exclude scholars who explicitly belong to another partner institution
+              const isOtherInstitution = (
+                uCol.includes('ashoka') || uRawCol.includes('ashoka') || metaCollege.includes('ashoka') || rawNameCollege.includes('ashoka') || metaStr.includes('ashoka') || uEmail.includes('ashoka') ||
+                uCol.includes('annamacharya') || uRawCol.includes('annamacharya') || metaCollege.includes('annamacharya') || rawNameCollege.includes('annamacharya') || metaStr.includes('annamacharya') || uCol.includes('aits') || uEmail.includes('annamacharya') || uEmail.includes('aits') ||
+                uCol.includes('bits') || uRawCol.includes('bits') || metaCollege.includes('bits') || rawNameCollege.includes('bits') || metaStr.includes('bits') || uCol.includes('bheema') || uEmail.includes('bitsadoni') ||
+                uCol.includes('svce') || uRawCol.includes('svce') || metaCollege.includes('svce') || rawNameCollege.includes('svce') || metaStr.includes('svce') || uCol.includes('venkateshwara') || uEmail.includes('svce') ||
+                uCol.includes('nec') || uRawCol.includes('nec') || metaCollege.includes('nec') || rawNameCollege.includes('nec') || metaStr.includes('nec') || uCol.includes('narayana') || uEmail.includes('nec')
+              );
+              if (isOtherInstitution) {
+                matchesCollege = false;
+              } else {
+                matchesCollege = Boolean(
+                  uEmail.endsWith('@gprec.ac.in') || uEmail.includes('gprec.ac.in') || uEmail.endsWith('@gprec.in') ||
+                  uCol.includes('gprec') || uCol.includes('pulla reddy') || uRawCol.includes('gprec') || uRawCol.includes('pulla reddy') ||
+                  !uCol || uCol === 'gprec'
+                );
+              }
+            } else {
+              // Custom partner college
+              const isColNameMatch = Boolean(
+                (uCol && (uCol.includes(targetShort) || targetName.includes(uCol) || targetShort.includes(uCol))) ||
+                (uRawCol && (uRawCol.includes(targetShort) || targetName.includes(uRawCol))) ||
+                (metaCollege && (metaCollege.includes(targetShort) || targetName.includes(metaCollege)))
+              );
+              const isDomainMatch = targetDomains.length > 0 && targetDomains.some(dom => uEmail.endsWith(`@${dom}`));
+              matchesCollege = isColNameMatch || isDomainMatch;
             }
-
-            matchesCollege = isColNameMatch || isDomainMatch;
           } else {
-            matchesCollege = (u.college === selectedCollege);
+            const cleanTarget = selectedCollege.toLowerCase().trim();
+            matchesCollege = Boolean(
+              uCol.includes(cleanTarget) ||
+              uRawCol.includes(cleanTarget) ||
+              metaCollege.includes(cleanTarget)
+            );
           }
         }
 
@@ -822,8 +1145,20 @@ export default function FounderPortal({ user, setActiveTab }) {
         return matchesSearch && matchesCollege && matchesDept && matchesRole;
       })
       .sort((a, b) => {
+        // If viewing new users or sorting by created_at, sort by raw timestamp descending
+        if (activeView === 'newUsers' || sortBy === 'created_at' || sortBy === 'created_at_raw') {
+          const timeA = a.created_at_raw || (a.created_at && a.created_at !== 'N/A' ? new Date(a.created_at).getTime() : 0) || 0;
+          const timeB = b.created_at_raw || (b.created_at && b.created_at !== 'N/A' ? new Date(b.created_at).getTime() : 0) || 0;
+          return sortOrder === 'asc' ? (timeA - timeB) : (timeB - timeA);
+        }
+
         let valA = a[sortBy];
         let valB = b[sortBy];
+
+        // Numerical sorting for xp, coins, level, streak
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortOrder === 'asc' ? (valA - valB) : (valB - valA);
+        }
 
         // String conversions for sorting
         if (typeof valA === 'string') valA = valA.toLowerCase();
@@ -850,7 +1185,7 @@ export default function FounderPortal({ user, setActiveTab }) {
   // Extract filter sets - STRICTLY KEEP ONLY ACTIVE ONBOARDED COLLEGES!
   const collegeOptions = useMemo(() => {
     const list = (onboardedTenants && onboardedTenants.length > 0) ? onboardedTenants : DEFAULT_COLLEGES;
-    const junkIds = ['mcet', 'mec', 'pec', 'vmtw', 'rgukt', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
+    const junkIds = ['mcet', 'pec', 'vmtw', 'rgukt', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
     
     const validColleges = list.filter(c => {
       if (!c) return false;
@@ -895,13 +1230,35 @@ export default function FounderPortal({ user, setActiveTab }) {
       return ts && (now - ts) <= oneDayMs;
     }).length;
 
+    // Live Revenue & Paid Users metrics
+    const paidScholars = activeScholars.filter(u => {
+      return Boolean(
+        u.oneTimeFeePaid === true ||
+        u.feePaid === true ||
+        (u.feeTxId && u.feeTxId !== 'GPREC-FREE' && !u.feeTxId.includes('FREE')) ||
+        (u.metadata?.oneTimeFeePaid === true) ||
+        (u.metadata?.feePaid === true) ||
+        (u.metadata?.feeTxId && !u.metadata.feeTxId.includes('FREE'))
+      );
+    });
+
+    const totalRevenue = paidScholars.reduce((acc, u) => {
+      const amt = Number(u.feeAmount || u.metadata?.feeAmount || 10);
+      return acc + (isNaN(amt) || amt <= 0 ? 10 : amt);
+    }, 0);
+
+    const totalPaidUsers = paidScholars.length;
+
     return {
       totalScholars,
       totalXp,
       totalCoins,
       founderCount,
       scholarsThisWeek,
-      scholarsToday
+      scholarsToday,
+      totalRevenue,
+      totalPaidUsers,
+      paidScholars
     };
   }, [usersList]);
 
@@ -1055,17 +1412,27 @@ export default function FounderPortal({ user, setActiveTab }) {
 
   const isUserBlocked = (u) => {
     if (!u) return false;
-    if (u.is_blocked === true || u.is_deleted === true) return true;
+    if (u.is_blocked === true || u.is_blocked === 'true' || u.is_blocked === 1 || u.is_deleted === true || u.is_deleted === 'true' || u.status === 'blocked' || u.blocked === true) return true;
     const email = (u.email || '').toLowerCase().trim();
-    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
     if (isSpecial) return false;
-    if (email.endsWith('@gprec.ac.in')) return false;
-    return !(u.is_blocked === false && (u.is_approved === true || u.isApproved === true));
+
+    // Explicitly unapproved or revoked
+    if (u.is_approved === false || u.isApproved === false) return true;
+
+    // College institutional domains: default allowed unless explicitly blocked
+    if (email.endsWith('@gprec.ac.in') || email.includes('.ac.in') || email.includes('.edu') || email.endsWith('@lumixora.com') || email.endsWith('@lumixora.in')) {
+      return false;
+    }
+
+    // Any other personal / unverified domains must have explicit approval
+    const isExplicitlyApproved = (u.is_approved === true || u.isApproved === true) && !u.is_blocked;
+    return !isExplicitlyApproved;
   };
 
   const handleToggleBlock = async (userObj) => {
     const email = (userObj.email || '').toLowerCase().trim();
-    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
     if (isSpecial) {
       addToast({ message: "Founder accounts cannot be blocked.", type: "error" });
       return;
@@ -1078,9 +1445,13 @@ export default function FounderPortal({ user, setActiveTab }) {
     if (!window.confirm(`Are you sure you want to ${actionText} access for ${userObj.name || userObj.email || 'this user'}?`)) return;
 
     try {
+      const sbUpdateData = {
+        is_blocked: nextBlockState,
+        is_approved: !nextBlockState
+      };
+
       const updateData = {
         is_blocked: nextBlockState,
-        is_deleted: nextBlockState,
         isApproved: !nextBlockState,
         is_approved: !nextBlockState
       };
@@ -1092,7 +1463,6 @@ export default function FounderPortal({ user, setActiveTab }) {
           return {
             ...u,
             is_blocked: nextBlockState,
-            is_deleted: nextBlockState,
             isApproved: !nextBlockState,
             is_approved: !nextBlockState
           };
@@ -1101,10 +1471,12 @@ export default function FounderPortal({ user, setActiveTab }) {
       }));
 
       try {
-        if (userObj.id) await supabase.from('users').update(updateData).eq('id', userObj.id);
-        if (userObj.uid && userObj.uid !== userObj.id) await supabase.from('users').update(updateData).eq('id', userObj.uid);
-        if (email) await supabase.from('users').update(updateData).eq('email', email);
-      } catch (e) {}
+        if (userObj.id) await supabase.from('users').update(sbUpdateData).eq('id', userObj.id);
+        if (userObj.uid && userObj.uid !== userObj.id) await supabase.from('users').update(sbUpdateData).eq('id', userObj.uid);
+        if (email) await supabase.from('users').update(sbUpdateData).ilike('email', email);
+      } catch (e) {
+        console.warn("Supabase toggle block error:", e);
+      }
 
       try {
         if (userObj.id) {
@@ -1154,6 +1526,7 @@ export default function FounderPortal({ user, setActiveTab }) {
 
       if (sbError && fbError) throw new Error(`SB: ${sbError.message || sbError} | FB: ${fbError.message || fbError}`);
 
+      setUsersList(prev => prev.filter(u => u.id !== userId));
       addToast({ message: 'Scholar permanently deleted.', type: 'success' });
       loadUsersData();
     } catch (err) {
@@ -1983,9 +2356,15 @@ export default function FounderPortal({ user, setActiveTab }) {
                               ? 'bg-[#451a03]/80 text-[#fbbf24] border border-[#f59e0b]/40'
                               : n.type === 'grievance'
                               ? 'bg-[#881337]/80 text-[#fb7185] border border-[#f43f5e]/40'
+                              : n.type === 'ambassador_application'
+                              ? 'bg-[#78350f]/90 text-[#fde047] border border-[#eab308]/60 shadow-[0_0_12px_rgba(234,179,8,0.25)]'
+                              : n.type === 'ambassador_referral'
+                              ? 'bg-[#701a75]/90 text-[#f472b6] border border-[#d946ef]/60 shadow-[0_0_12px_rgba(217,70,239,0.25)]'
+                              : n.type === 'payment'
+                              ? 'bg-[#064e3b]/90 text-[#6ee7b7] border border-[#10b981]/60'
                               : 'bg-[#172554]/80 text-[#60a5fa] border border-[#3b82f6]/40'
                           }`}>
-                            {n.type === 'register' ? '⏪ SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '📋 TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : '🔑 ACTIVE LOGIN'}
+                            {n.type === 'register' ? '⏪ SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '📋 TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : n.type === 'ambassador_application' ? '🌟 AMBASSADOR APPLIED' : n.type === 'ambassador_referral' ? '🎟️ AMBASSADOR REFERRAL' : n.type === 'payment' ? '💳 UPI ACCESS FEE' : '🔑 ACTIVE LOGIN'}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-400 font-normal">
@@ -2016,6 +2395,15 @@ export default function FounderPortal({ user, setActiveTab }) {
                           <span className="text-gray-600 font-bold">·</span>
                           <span className="text-gray-300 font-semibold uppercase">{n.college || 'GPREC'}</span>
                         </div>
+
+                        {/* Line 4: Contextual Details (if present) */}
+                        {n.details && (
+                          <div className="pt-1">
+                            <p className="text-[11px] text-amber-200/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 font-medium leading-relaxed">
+                              {n.details}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -2035,13 +2423,19 @@ export default function FounderPortal({ user, setActiveTab }) {
               <Users className="w-4 h-4" /> Scholars
             </button>
             <button
+              onClick={() => setActiveView('revenue')}
+              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'revenue' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-md' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'}`}
+            >
+              <CreditCard className="w-4 h-4 text-emerald-400" /> Revenue & Paid Users ({statistics.totalPaidUsers || 0})
+            </button>
+            <button
               onClick={() => setActiveView('colleges')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'colleges' ? 'bg-brand-pink/20 text-brand-pink border-brand-pink/50 shadow-md' : 'bg-brand-pink/10 text-brand-pink border-brand-pink/30 hover:bg-brand-pink/20'}`}
             >
               <Award className="w-4 h-4 text-brand-pink" /> 🏫 Partner Colleges (SaaS Tenants)
             </button>
             <button
-              onClick={() => { setActiveView('newUsers'); loadUsersData(); }}
+              onClick={() => { setActiveView('newUsers'); setSortBy('created_at_raw'); setSortOrder('desc'); loadUsersData(); }}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap relative ${activeView === 'newUsers' ? 'bg-green-500/10 text-green-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-green-400 hover:bg-white/5'}`}
             >
               <Bell className="w-4 h-4" />
@@ -2086,7 +2480,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               onClick={() => setActiveView('approvals')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'approvals' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
             >
-              <ShoppingCart className="w-4 h-4" /> Approvals
+              <ShoppingCart className="w-4 h-4" /> Market Approvals
             </button>
             <button
               onClick={() => setActiveView('feedbacks')}
@@ -2117,6 +2511,18 @@ export default function FounderPortal({ user, setActiveTab }) {
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'faculty_approvals' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
             >
               <CheckCircle className="w-4 h-4" /> Faculty Approvals
+            </button>
+            <button
+              onClick={() => setActiveView('internships')}
+              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'internships' ? 'bg-[#6C4DFF]/15 text-[#6C4DFF] shadow-sm border border-[#6C4DFF]/30' : 'text-[var(--text-secondary)] hover:text-[#6C4DFF] hover:bg-white/5'}`}
+            >
+              <Briefcase className="w-4 h-4 text-[#6C4DFF]" /> Batch 01 Internships
+            </button>
+            <button
+              onClick={() => setActiveView('ambassadors')}
+              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'ambassadors' ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-md' : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'}`}
+            >
+              <Trophy className="w-4 h-4 text-amber-400" /> Campus Ambassadors
             </button>
             <button
               onClick={() => setActiveView('clubs')}
@@ -2194,7 +2600,9 @@ export default function FounderPortal({ user, setActiveTab }) {
   </div>
 
 
-      {activeView === 'submissions' ? (
+      {activeView === 'revenue' ? (
+        <FounderRevenueManager usersList={usersList} onRefresh={loadUsersData} />
+      ) : activeView === 'submissions' ? (
         <FounderSubmissionsManager />
       ) : activeView === 'tests' ? (
         <FounderTestManager />
@@ -2205,7 +2613,7 @@ export default function FounderPortal({ user, setActiveTab }) {
       ) : activeView === 'attendance' ? (
         <FounderAttendanceManager />
       ) : activeView === 'approvals' ? (
-        <FounderMarketplaceApprovals />
+        <FounderMarketplaceApprovals college={selectedCollege} />
       ) : activeView === 'feedbacks' ? (
         <FounderFeedbackManager />
       ) : activeView === 'doubts' ? (
@@ -2218,11 +2626,15 @@ export default function FounderPortal({ user, setActiveTab }) {
         <FounderCollegesManager />
       ) : activeView === 'community' ? (
         <FounderCommunityManager />
+      ) : activeView === 'internships' ? (
+        <InternshipPortal user={user} initialView="submissions" />
+      ) : activeView === 'ambassadors' ? (
+        <FounderAmbassadorManager allUsers={usersList} />
       ) : (
         <>
           {/* Analytics widgets */}
           {activeView !== 'trash' && (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Scholars Card - PURPLE */}
         <div className="glass-panel p-[22px] px-[24px] rounded-[16px] border border-[var(--border-color)] relative overflow-hidden flex items-center gap-5 bg-[var(--bg-card)]">
@@ -2237,6 +2649,30 @@ export default function FounderPortal({ user, setActiveTab }) {
               {statistics.scholarsThisWeek > 0 
                 ? `↑ ${statistics.scholarsThisWeek} registered this week`
                 : '🟢 Live Real-Time Network'}
+            </span>
+          </div>
+        </div>
+
+        {/* Total Revenue & Paid Users Card - EMERALD */}
+        <div 
+          onClick={() => setActiveView('revenue')}
+          className="glass-panel p-[22px] px-[24px] rounded-[16px] border border-emerald-500/30 hover:border-emerald-500/60 relative overflow-hidden flex items-center gap-5 bg-gradient-to-br from-emerald-950/30 to-[var(--bg-card)] cursor-pointer transition-all hover:scale-[1.01] group shadow-lg"
+          title="Click to view Revenue & Paid Users Details"
+        >
+          <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <IndianRupee className="w-6 h-6 text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-inter text-emerald-400 font-bold uppercase block tracking-wider">Total Revenue</span>
+              <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Live Gate</span>
+            </div>
+            <span className="text-2xl md:text-[30px] font-sora font-extrabold text-emerald-400 mt-1 block">
+              ₹{(statistics.totalRevenue || 0).toLocaleString()}
+            </span>
+            <span className="text-[11px] font-inter text-emerald-300/80 font-semibold mt-1.5 flex items-center gap-1.5 truncate">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+              <span className="truncate">⚡ {statistics.totalPaidUsers || 0} Paid Scholars Verified</span>
             </span>
           </div>
         </div>
@@ -2299,7 +2735,7 @@ export default function FounderPortal({ user, setActiveTab }) {
           <div className="flex items-center gap-1.5 bg-[var(--bg-card)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] text-xs text-[var(--text-main)]">
             <Filter className="w-3.5 h-3.5 text-[var(--primary)]" />
             <select
-              value={selectedCollege}
+              value={(!selectedCollege || selectedCollege.toLowerCase().startsWith('all')) ? 'All' : selectedCollege}
               onChange={(e) => setSelectedCollege(e.target.value)}
               className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px] text-[var(--text-main)] [&>option]:bg-[#13131f]"
             >
@@ -2339,6 +2775,25 @@ export default function FounderPortal({ user, setActiveTab }) {
             </select>
           </div>
 
+          <div className="flex items-center gap-1.5 bg-[var(--bg-card)] px-3 py-1.5 rounded-xl border border-[var(--border-color)] text-xs text-[var(--text-main)]">
+            <ArrowUpDown className="w-3.5 h-3.5 text-[var(--primary)]" />
+            <select
+              value={`${sortBy}_${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split('_');
+                setSortBy(field);
+                setSortOrder(order);
+              }}
+              className="bg-transparent outline-none cursor-pointer font-semibold tracking-wide text-[10px] text-[var(--text-main)] [&>option]:bg-[#13131f]"
+            >
+              <option value="created_at_desc" className="bg-[#13131f]">Newest First ⚡</option>
+              <option value="created_at_asc" className="bg-[#13131f]">Oldest First</option>
+              <option value="xp_desc" className="bg-[#13131f]">Highest XP</option>
+              <option value="name_asc" className="bg-[#13131f]">Name (A-Z)</option>
+              <option value="college_asc" className="bg-[#13131f]">College</option>
+            </select>
+          </div>
+
         </div>
 
       </div>
@@ -2361,6 +2816,12 @@ export default function FounderPortal({ user, setActiveTab }) {
                     <ArrowUpDown className="w-3 h-3" />
                   </div>
                 </th>
+                <th className="p-4 cursor-pointer hover:text-white" onClick={() => toggleSort('created_at')}>
+                  <div className="flex items-center gap-1">
+                    <span>Joined / Registered</span>
+                    <ArrowUpDown className="w-3 h-3" />
+                  </div>
+                </th>
 
                 <th className="p-4 text-center">Sync Source</th>
                 <th className="p-4 text-center w-24">Management</th>
@@ -2369,7 +2830,7 @@ export default function FounderPortal({ user, setActiveTab }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="p-16 text-center">
+                  <td colSpan={5} className="p-16 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-8 h-8 border-4 border-brand-teal border-t-transparent rounded-full animate-spin"></div>
                       <span className="text-xs text-gray-400 font-semibold mt-2">Connecting to secure core database...</span>
@@ -2378,7 +2839,7 @@ export default function FounderPortal({ user, setActiveTab }) {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-16 text-center text-xs text-gray-500 italic">
+                  <td colSpan={5} className="p-16 text-center text-xs text-gray-500 italic">
                     {activeView === 'newUsers'
                       ? '✅ No new registrations in the last 24 hours. Check back after users sign up!'
                       : 'No scholars found matching the queries.'}
@@ -2403,12 +2864,20 @@ export default function FounderPortal({ user, setActiveTab }) {
                         <span className="text-[13px] font-semibold text-[var(--text-main)] flex items-center gap-2 flex-wrap">
                           {cleanScholarName(u.name)}
                           {isUserBlocked(u) ? (
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">
                               Login Blocked
+                            </span>
+                          ) : (!isExemptFromPayment(u) && !hasPaidCollegeFee(u)) ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                              ₹10 Fee Pending
+                            </span>
+                          ) : isAnjum(u) ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              Verified Scholar (Anjum)
                             </span>
                           ) : (
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                              Access Allowed
+                              Access Allowed (Paid ₹10)
                             </span>
                           )}
                           {u.created_at_raw && (Date.now() - u.created_at_raw) <= 24 * 60 * 60 * 1000 && (
@@ -2427,6 +2896,10 @@ export default function FounderPortal({ user, setActiveTab }) {
                       <span>{u.college || 'GPREC'}</span>
                       <span className="text-[10px] text-[var(--text-secondary)] block font-semibold uppercase">{u.department || 'CSE'} • {u.year || '1st Year'}</span>
                     </div>
+                  </td>
+
+                  <td className="p-4 text-xs font-semibold text-[var(--text-secondary)] whitespace-nowrap">
+                    <span className="block text-[var(--text-main)] font-mono text-[11px]">{u.created_at || 'Recent'}</span>
                   </td>
 
                   <td className="p-4 text-center text-[10px] font-bold text-[var(--text-secondary)]">
@@ -2470,6 +2943,15 @@ export default function FounderPortal({ user, setActiveTab }) {
                             }`}
                           >
                             {isUserBlocked(u) ? 'Unblock' : 'Block'}
+                          </button>
+                        )}
+                        {u.role !== 'founder' && (
+                          <button 
+                            onClick={() => handlePermanentDeleteUser(u.id)}
+                            title="Delete Scholar from Database"
+                            className="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white font-bold text-[10px] tracking-wide transition-all cursor-pointer flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3 h-3" /> Delete
                           </button>
                         )}
                       </div>
@@ -2684,7 +3166,22 @@ export default function FounderPortal({ user, setActiveTab }) {
               )}
 
               {/* Buttons */}
-              <div className="flex gap-4 pt-4 border-t border-white/5">
+              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                {selectedUser.role !== 'founder' && (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const id = selectedUser.id;
+                      setIsEditModalOpen(false);
+                      setSelectedUser(null);
+                      handlePermanentDeleteUser(id);
+                    }}
+                    className="py-3 px-4 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold text-xs tracking-wide rounded-2xl border border-red-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </button>
+                )}
                 <button 
                   type="button"
                   onClick={() => { setIsEditModalOpen(false); setSelectedUser(null); }}

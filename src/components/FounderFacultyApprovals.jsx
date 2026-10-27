@@ -110,13 +110,23 @@ export default function FounderFacultyApprovals() {
       const email = facultyMember.email;
       const id = facultyMember.id || facultyMember.docId;
 
-      // 1. Update Supabase
+      // 1. Update Supabase (strictly valid schema columns: is_approved, is_blocked)
       try {
+        const sbPayload = { 
+          is_approved: shouldApprove, 
+          is_blocked: !shouldApprove 
+        };
         if (email) {
           await supabase
             .from('users')
-            .update({ isApproved: shouldApprove, is_approved: shouldApprove, is_blocked: false })
-            .or(`email.eq.${email},id.eq.${id}`);
+            .update(sbPayload)
+            .ilike('email', email.toLowerCase().trim());
+        }
+        if (id) {
+          await supabase
+            .from('users')
+            .update(sbPayload)
+            .eq('id', id);
         }
       } catch (sbErr) {
         console.warn("Supabase approval update notice:", sbErr);

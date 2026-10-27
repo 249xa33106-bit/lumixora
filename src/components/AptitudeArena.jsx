@@ -128,17 +128,17 @@ export default function AptitudeArena({ user, isFounder }) {
     e.target.value = '';
   };
 
-  // Handler: Load 1,000+ Questions JSON Dataset directly
+  // Handler: Load 2,000+ Questions JSON Dataset directly
   const handleLoad1000Questions = async () => {
     try {
-      addToast({ message: 'Loading 1,000+ Aptitude Questions dataset...', type: 'info' });
-      const res = await fetch('/aptitude_1000_questions.json');
-      if (!res.ok) throw new Error('Failed to fetch 1000 questions dataset');
-      const data = await res.json();
-      processBulkQuestions(data);
+      addToast({ message: 'Loading 2,350+ Aptitude Questions dataset...', type: 'info' });
+      const res = await fetch('/aptitude_2000_questions.json');
+      const data = res.ok ? await res.json() : await (await fetch('/aptitude_1000_questions.json')).json();
+      setDatasetQuestions(data);
+      addToast({ message: `Successfully loaded ${data.length} Aptitude Questions (Easy, Medium & Hard)!`, type: 'success' });
     } catch (err) {
       console.error(err);
-      addToast({ message: `Failed to load 1000 questions dataset: ${err.message}`, type: 'error' });
+      addToast({ message: `Failed to load questions dataset: ${err.message}`, type: 'error' });
     }
   };
 
@@ -200,6 +200,37 @@ export default function AptitudeArena({ user, isFounder }) {
     }
   });
 
+  // Master 2,000+ Aptitude Questions dataset loaded automatically
+  const [datasetQuestions, setDatasetQuestions] = useState([]);
+  const [isLoadingDataset, setIsLoadingDataset] = useState(true);
+  const [displayLimit, setDisplayLimit] = useState(40);
+
+  // Auto-fetch the complete 2,000+ questions dataset on component mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch('/aptitude_2000_questions.json');
+        if (!res.ok) {
+          const fallbackRes = await fetch('/aptitude_1000_questions.json');
+          if (fallbackRes.ok) {
+            const data = await fallbackRes.json();
+            if (isMounted) setDatasetQuestions(data);
+          }
+        } else {
+          const data = await res.json();
+          if (isMounted) setDatasetQuestions(data);
+        }
+      } catch (err) {
+        console.warn('Notice: aptitude questions dataset fetch:', err);
+      } finally {
+        if (isMounted) setIsLoadingDataset(false);
+      }
+    };
+    fetchQuestions();
+    return () => { isMounted = false; };
+  }, []);
+
   // Formula Handbook Modal State
   const [showFormulaHandbook, setShowFormulaHandbook] = useState(false);
 
@@ -222,10 +253,28 @@ export default function AptitudeArena({ user, isFounder }) {
     explanation: ''
   });
 
-  // Combined Questions list
+  // Combined Questions list (prioritizes 2,000+ dataset questions)
   const allQuestions = useMemo(() => {
-    return [...INITIAL_APTITUDE_QUESTIONS, ...customQuestions];
-  }, [customQuestions]);
+    const base = datasetQuestions.length > 0 ? datasetQuestions : INITIAL_APTITUDE_QUESTIONS;
+    const combined = [...base, ...customQuestions];
+    const seen = new Set();
+    return combined.filter(q => {
+      if (!q.id || seen.has(q.id)) return false;
+      seen.add(q.id);
+      return true;
+    });
+  }, [datasetQuestions, customQuestions]);
+
+  // Difficulty Level Counts for Level-Wise Navigation
+  const levelCounts = useMemo(() => {
+    const counts = { All: allQuestions.length, Easy: 0, Medium: 0, Hard: 0 };
+    allQuestions.forEach(q => {
+      if (q.difficulty && counts[q.difficulty] !== undefined) {
+        counts[q.difficulty]++;
+      }
+    });
+    return counts;
+  }, [allQuestions]);
 
   // Derived available Sub-Topics for selected category
   const availableSubTopics = useMemo(() => {
@@ -251,6 +300,16 @@ export default function AptitudeArena({ user, isFounder }) {
       return matchCat && matchSubTopic && matchComp && matchDiff && matchSearch;
     });
   }, [allQuestions, selectedCategory, selectedSubTopic, selectedCompany, selectedDifficulty, searchQuery]);
+
+  // Reset pagination limit when filters change
+  useEffect(() => {
+    setDisplayLimit(40);
+  }, [selectedCategory, selectedSubTopic, selectedCompany, selectedDifficulty, searchQuery]);
+
+  // Paginated visible questions slice
+  const visibleQuestions = useMemo(() => {
+    return filteredQuestions.slice(0, displayLimit);
+  }, [filteredQuestions, displayLimit]);
 
   // Telemetry Weakness Analytics
   const telemetry = useMemo(() => {
@@ -484,7 +543,7 @@ Keep response structured, concise, and engaging.`;
           <div className="space-y-2 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-purple/20 border border-white/10 text-brand-purple text-xs font-bold tracking-wide">
               <Brain className="w-4 h-4" />
-              <span>Campus Placement Aptitude Sub-Portal</span>
+              <span>Campus Placement Aptitude Portal • 2,350+ Questions (Easy, Medium & Hard Levels)</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
               Aptitude & Technical Reasoning Arena
@@ -582,6 +641,74 @@ Keep response structured, concise, and engaging.`;
       {/* ─── MODE 1: SELF-PACED PRACTICE MODE ─── */}
       {mode === 'practice' && (
         <div className="space-y-6">
+
+          {/* Level-Wise Difficulty Bar (Easy, Medium, Hard) */}
+          <div className="glass-panel p-4 rounded-2xl border border-white/10 bg-gradient-to-r from-black/80 via-slate-900/50 to-black/80 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-purple to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md">
+                <Award className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+                  Level-Wise Training Tracks
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/30">
+                    {levelCounts.All} Questions
+                  </span>
+                </span>
+                <p className="text-[11px] text-gray-400">Master aptitude progressively from easy foundations to elite Amazon OA challenges</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 bg-black/60 p-1 rounded-2xl border border-white/10 self-start md:self-auto">
+              <button
+                onClick={() => setSelectedDifficulty('All')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedDifficulty === 'All'
+                    ? 'bg-gradient-to-r from-brand-purple to-indigo-600 text-white shadow-md'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <span>🌐 All Levels</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full bg-white/20 text-white font-mono">{levelCounts.All}</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedDifficulty('Easy')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedDifficulty === 'Easy'
+                    ? 'bg-emerald-600 text-white font-black shadow-md shadow-emerald-500/30'
+                    : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                }`}
+              >
+                <span>🟢 Easy Level</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full bg-black/40 text-emerald-300 font-mono font-bold">{levelCounts.Easy}</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedDifficulty('Medium')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedDifficulty === 'Medium'
+                    ? 'bg-amber-600 text-white font-black shadow-md shadow-amber-500/30'
+                    : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                }`}
+              >
+                <span>🟡 Medium Level</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full bg-black/40 text-amber-300 font-mono font-bold">{levelCounts.Medium}</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedDifficulty('Hard')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedDifficulty === 'Hard'
+                    ? 'bg-rose-600 text-white font-black shadow-md shadow-rose-500/30'
+                    : 'text-rose-400 hover:text-rose-300 hover:bg-rose-500/10'
+                }`}
+              >
+                <span>🔴 Hard Level</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full bg-black/40 text-rose-300 font-mono font-bold">{levelCounts.Hard}</span>
+              </button>
+            </div>
+          </div>
           
           {/* Filters Bar */}
           <div className="glass-panel p-5 rounded-2xl border border-white/5 space-y-4">
@@ -701,184 +828,217 @@ Keep response structured, concise, and engaging.`;
               </button>
             </div>
           ) : (
-            <div className="space-y-6">
-              {filteredQuestions.map((q, qIndex) => {
-                const userAns = userAnswers[q.id];
-                const isAnswered = userAns !== undefined;
-                const isCorrect = userAns === q.correctAnswer;
-                const isExplanationOpen = showExplanations[q.id];
-                const aiState = aiCoachResponses[q.id];
+            <>
+              <div className="space-y-6">
+                {visibleQuestions.map((q, qIndex) => {
+                  const userAns = userAnswers[q.id];
+                  const isAnswered = userAns !== undefined;
+                  const isCorrect = userAns === q.correctAnswer;
+                  const isExplanationOpen = showExplanations[q.id];
+                  const aiState = aiCoachResponses[q.id];
 
-                return (
-                  <div 
-                    key={q.id}
-                    className={`glass-panel p-6 rounded-3xl border transition-all text-left space-y-4 ${
-                      isAnswered 
-                        ? (isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5')
-                        : 'border-white/5 hover:border-white/10'
-                    }`}
-                  >
-                    {/* Header Badges & Actions */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-bold bg-brand-purple/20 text-brand-purple border border-brand-purple/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                          {q.category}
-                        </span>
-                        
-                        {/* Clickable Sub-Topic Badge */}
-                        <button
-                          onClick={() => setSelectedSubTopic(q.subTopic)}
-                          className={`text-[10px] font-semibold border px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                            selectedSubTopic === q.subTopic 
-                              ? 'bg-brand-purple text-white border-brand-purple font-bold shadow-sm' 
-                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-brand-purple/20 hover:text-brand-purple'
-                          }`}
-                          title={`Click to filter all questions for "${q.subTopic}"`}
-                        >
-                          {q.subTopic}
-                        </button>
+                  return (
+                    <div 
+                      key={q.id}
+                      className={`glass-panel p-6 rounded-3xl border transition-all text-left space-y-4 ${
+                        isAnswered 
+                          ? (isCorrect ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5')
+                          : 'border-white/5 hover:border-white/10'
+                      }`}
+                    >
+                      {/* Header Badges & Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-bold bg-brand-purple/20 text-brand-purple border border-brand-purple/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            {q.category}
+                          </span>
+                          
+                          {/* Clickable Sub-Topic Badge */}
+                          <button
+                            onClick={() => setSelectedSubTopic(q.subTopic)}
+                            className={`text-[10px] font-semibold border px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                              selectedSubTopic === q.subTopic 
+                                ? 'bg-brand-purple text-white border-brand-purple font-bold shadow-sm' 
+                                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-brand-purple/20 hover:text-brand-purple'
+                            }`}
+                            title={`Click to filter all questions for "${q.subTopic}"`}
+                          >
+                            {q.subTopic}
+                          </button>
 
-                        <span className="text-[10px] font-bold bg-brand-teal/10 text-brand-teal border border-brand-teal/20 px-2.5 py-1 rounded-full flex items-center gap-1">
-                          <Briefcase className="w-3 h-3" />
-                          <span>{q.company}</span>
-                        </span>
+                          <span className="text-[10px] font-bold bg-brand-teal/10 text-brand-teal border border-brand-teal/20 px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <Briefcase className="w-3 h-3" />
+                            <span>{q.company}</span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* Open Scratchpad Canvas */}
+                          <button
+                            onClick={() => { setActiveScratchQuestion(q); setShowScratchpad(true); }}
+                            className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer"
+                            title="Open rough scribble pad for calculations"
+                          >
+                            <Edit2 className="w-3 h-3 text-brand-teal" />
+                            <span>Rough Scratchpad</span>
+                          </button>
+
+                          {/* Enhanced Level Badge */}
+                          <button
+                            onClick={() => setSelectedDifficulty(q.difficulty)}
+                            className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 border transition-all cursor-pointer ${
+                              q.difficulty === 'Easy' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25' :
+                              q.difficulty === 'Medium' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25' : 
+                              'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:bg-rose-500/25'
+                            }`}
+                            title={`Click to filter only ${q.difficulty} level questions`}
+                          >
+                            <span>{q.difficulty === 'Easy' ? '🟢' : q.difficulty === 'Medium' ? '🟡' : '🔴'}</span>
+                            <span>{q.difficulty} Level</span>
+                          </button>
+                          <span className="text-xs text-gray-500 font-mono">Q{qIndex + 1}</span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {/* Open Scratchpad Canvas */}
-                        <button
-                          onClick={() => { setActiveScratchQuestion(q); setShowScratchpad(true); }}
-                          className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer"
-                          title="Open rough scribble pad for calculations"
-                        >
-                          <Edit2 className="w-3 h-3 text-brand-teal" />
-                          <span>Rough Scratchpad</span>
-                        </button>
-
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded uppercase ${
-                          q.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                          q.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {q.difficulty}
-                        </span>
-                        <span className="text-xs text-gray-500 font-mono">Q{qIndex + 1}</span>
+                      {/* Question Text */}
+                      <div className="space-y-3">
+                        <p className="text-sm md:text-base font-semibold text-gray-100 leading-relaxed whitespace-pre-wrap">
+                          {q.question}
+                        </p>
                       </div>
-                    </div>
 
-                    {/* Question Text */}
-                    <div className="space-y-3">
-                      <p className="text-sm md:text-base font-semibold text-gray-100 leading-relaxed whitespace-pre-wrap">
-                        {q.question}
-                      </p>
-                    </div>
-
-                    {/* Options Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                      {(q.options || []).map((optText, optIdx) => {
-                        let btnStyle = "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10";
-                        if (isAnswered) {
-                          if (optIdx === q.correctAnswer) {
-                            btnStyle = "bg-green-500/20 border-green-500 text-green-300 font-bold";
-                          } else if (userAns === optIdx) {
-                            btnStyle = "bg-red-500/20 border-red-500 text-red-300 font-bold";
-                          } else {
-                            btnStyle = "bg-white/5 border-white/5 text-gray-500 opacity-60";
+                      {/* Options Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        {(q.options || []).map((optText, optIdx) => {
+                          let btnStyle = "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10";
+                          if (isAnswered) {
+                            if (optIdx === q.correctAnswer) {
+                              btnStyle = "bg-green-500/20 border-green-500 text-green-300 font-bold";
+                            } else if (userAns === optIdx) {
+                              btnStyle = "bg-red-500/20 border-red-500 text-red-300 font-bold";
+                            } else {
+                              btnStyle = "bg-white/5 border-white/5 text-gray-500 opacity-60";
+                            }
                           }
-                        }
 
-                        return (
+                          return (
+                            <button
+                              key={optIdx}
+                              disabled={isAnswered}
+                              onClick={() => handleSelectOption(q.id, optIdx, optIdx === q.correctAnswer)}
+                              className={`p-3.5 rounded-2xl border text-left text-xs transition-all flex items-start gap-3 cursor-pointer ${btnStyle}`}
+                            >
+                              <span className="w-5 h-5 rounded-full bg-black/40 border border-white/10 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                                {String.fromCharCode(65 + optIdx)}
+                              </span>
+                              <span className="flex-1 font-medium leading-relaxed">{optText}</span>
+                              {isAnswered && optIdx === q.correctAnswer && (
+                                <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                              )}
+                              {isAnswered && userAns === optIdx && optIdx !== q.correctAnswer && (
+                                <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Action buttons row: Explanation & AI Copilot Coach & Video */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5">
+                        <div className="flex flex-wrap items-center gap-3">
+                          {isAnswered ? (
+                            <button
+                              onClick={() => toggleExplanation(q.id)}
+                              className="text-xs text-brand-teal hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <HelpCircle className="w-3.5 h-3.5" />
+                              <span>{isExplanationOpen ? 'Hide Solution Breakdown' : 'View Step-by-Step Solution Breakdown'}</span>
+                              {isExplanationOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-500 italic">Select an option to unlock detailed explanation and AI tricks.</span>
+                          )}
+
+                          {/* Video Concept Explainer Button */}
                           <button
-                            key={optIdx}
-                            disabled={isAnswered}
-                            onClick={() => handleSelectOption(q.id, optIdx, optIdx === q.correctAnswer)}
-                            className={`p-3.5 rounded-2xl border text-left text-xs transition-all flex items-start gap-3 cursor-pointer ${btnStyle}`}
+                            onClick={() => setActiveVideoModal({
+                              name: `${q.company || 'Campus'} - ${q.subTopic || q.category} Concept Video`,
+                              videoUrl: q.videoUrl || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q.subTopic + ' ' + q.category + ' aptitude trick placement')}`,
+                              videoTitle: `${q.subTopic || q.category} Placement Shortcuts & Formulas`,
+                              channelName: 'Top Placement Educator',
+                              videoDuration: '15:00',
+                              videoTopicsCovered: [q.category, q.subTopic, 'Shortcuts', 'Tricks']
+                            })}
+                            className="px-2.5 py-1 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/25 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer"
+                            title="Watch video solution and shortcuts for this question topic"
                           >
-                            <span className="w-5 h-5 rounded-full bg-black/40 border border-white/10 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
-                              {String.fromCharCode(65 + optIdx)}
-                            </span>
-                            <span className="flex-1 font-medium leading-relaxed">{optText}</span>
-                            {isAnswered && optIdx === q.correctAnswer && (
-                              <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                            )}
-                            {isAnswered && userAns === optIdx && optIdx !== q.correctAnswer && (
-                              <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                            )}
+                            <Video className="w-3.5 h-3.5 text-red-500" />
+                            <span>▶ Concept Video</span>
                           </button>
-                        );
-                      })}
-                    </div>
+                        </div>
 
-                    {/* Action buttons row: Explanation & AI Copilot Coach & Video */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/5">
-                      <div className="flex flex-wrap items-center gap-3">
-                        {isAnswered ? (
-                          <button
-                            onClick={() => toggleExplanation(q.id)}
-                            className="text-xs text-brand-teal hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                          >
-                            <HelpCircle className="w-3.5 h-3.5" />
-                            <span>{isExplanationOpen ? 'Hide Solution Breakdown' : 'View Step-by-Step Solution Breakdown'}</span>
-                            {isExplanationOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-gray-500 italic">Select an option to unlock detailed explanation and AI tricks.</span>
-                        )}
-
-                        {/* Video Concept Explainer Button */}
+                        {/* Ask AI Aptitude Coach Button */}
                         <button
-                          onClick={() => setActiveVideoModal({
-                            name: `${q.company || 'Campus'} - ${q.subTopic || q.category} Concept Video`,
-                            videoUrl: q.videoUrl || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q.subTopic + ' ' + q.category + ' aptitude trick placement')}`,
-                            videoTitle: `${q.subTopic || q.category} Placement Shortcuts & Formulas`,
-                            channelName: 'Top Placement Educator',
-                            videoDuration: '15:00',
-                            videoTopicsCovered: [q.category, q.subTopic, 'Shortcuts', 'Tricks']
-                          })}
-                          className="px-2.5 py-1 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/25 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer"
-                          title="Watch video solution and shortcuts for this question topic"
+                          onClick={() => handleAskAiCoach(q)}
+                          disabled={aiState?.loading}
+                          className="px-3.5 py-1.5 rounded-xl bg-brand-purple/20 hover:bg-brand-purple/30 border border-brand-purple/30 text-brand-purple font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                         >
-                          <Video className="w-3.5 h-3.5 text-red-500" />
-                          <span>▶ Concept Video</span>
+                          <Sparkles className={`w-3.5 h-3.5 ${aiState?.loading ? 'animate-spin' : ''}`} />
+                          <span>{aiState?.text ? 'View AI Coach Shortcut' : aiState?.loading ? 'Analyzing Shortcut...' : '🤖 Ask AI Copilot for Trick'}</span>
                         </button>
                       </div>
 
-                      {/* Ask AI Aptitude Coach Button */}
-                      <button
-                        onClick={() => handleAskAiCoach(q)}
-                        disabled={aiState?.loading}
-                        className="px-3.5 py-1.5 rounded-xl bg-brand-purple/20 hover:bg-brand-purple/30 border border-brand-purple/30 text-brand-purple font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        <Sparkles className={`w-3.5 h-3.5 ${aiState?.loading ? 'animate-spin' : ''}`} />
-                        <span>{aiState?.text ? 'View AI Coach Shortcut' : aiState?.loading ? 'Analyzing Shortcut...' : '🤖 Ask AI Copilot for Trick'}</span>
-                      </button>
+                      {/* Explanation Drawer */}
+                      {isAnswered && isExplanationOpen && (
+                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2 text-xs text-gray-300 font-normal leading-relaxed animate-fade-in">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-brand-teal block">
+                            Step-by-Step Derivation & Logic:
+                          </span>
+                          <p className="whitespace-pre-wrap">{q.explanation}</p>
+                        </div>
+                      )}
+
+                      {/* AI Coach Response Card */}
+                      {aiState?.text && (
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-purple/10 to-transparent border border-brand-purple/30 space-y-2 text-xs text-gray-200 leading-relaxed animate-fade-in">
+                          <div className="flex items-center gap-2 text-brand-purple font-bold text-[10px] uppercase tracking-wider">
+                            <Lightbulb className="w-4 h-4" />
+                            <span>Vyomra AI Aptitude Coach Pro-Tip</span>
+                          </div>
+                          <div className="prose prose-invert max-w-none text-xs leading-relaxed whitespace-pre-wrap">
+                            {aiState.text}
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
 
-                    {/* Explanation Drawer */}
-                    {isAnswered && isExplanationOpen && (
-                      <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2 text-xs text-gray-300 font-normal leading-relaxed animate-fade-in">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-brand-teal block">
-                          Step-by-Step Derivation & Logic:
-                        </span>
-                        <p className="whitespace-pre-wrap">{q.explanation}</p>
-                      </div>
-                    )}
-
-                    {/* AI Coach Response Card */}
-                    {aiState?.text && (
-                      <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-purple/10 to-transparent border border-brand-purple/30 space-y-2 text-xs text-gray-200 leading-relaxed animate-fade-in">
-                        <div className="flex items-center gap-2 text-brand-purple font-bold text-[10px] uppercase tracking-wider">
-                          <Lightbulb className="w-4 h-4" />
-                          <span>Vyomra AI Aptitude Coach Pro-Tip</span>
-                        </div>
-                        <div className="prose prose-invert max-w-none text-xs leading-relaxed whitespace-pre-wrap">
-                          {aiState.text}
-                        </div>
-                      </div>
-                    )}
+              {/* Pagination / Load More Controls */}
+              {filteredQuestions.length > displayLimit && (
+                <div className="flex flex-col items-center justify-center gap-2 pt-6 pb-4">
+                  <p className="text-xs text-gray-400 font-semibold">
+                    Showing <strong className="text-white font-mono">{visibleQuestions.length}</strong> of <strong className="text-white font-mono">{filteredQuestions.length}</strong> {selectedDifficulty === 'All' ? '' : `${selectedDifficulty} Level `}Questions
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setDisplayLimit(prev => Math.min(filteredQuestions.length, prev + 50))}
+                      className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-brand-purple/20 transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      <span>Load Next 50 Questions</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDisplayLimit(filteredQuestions.length)}
+                      className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-gray-300 text-xs font-bold border border-white/10 transition-all cursor-pointer"
+                    >
+                      Show All ({filteredQuestions.length})
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -1286,13 +1446,13 @@ Keep response structured, concise, and engaging.`;
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                {/* One-Click Load 1000+ Dataset */}
+                {/* One-Click Load 2,000+ Dataset */}
                 <button
                   onClick={handleLoad1000Questions}
                   className="px-3 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-pink hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                 >
                   <Sparkles className="w-4 h-4 fill-current" />
-                  <span>⚡ Load 1,000+ Questions Dataset</span>
+                  <span>⚡ Load 2,350+ Questions Dataset (Easy, Medium & Hard)</span>
                 </button>
 
                 {/* Download Sample JSON Template Button */}
