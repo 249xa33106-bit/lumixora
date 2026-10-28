@@ -69,6 +69,7 @@ import RelayPortal from './pages/RelayPortal';
 import InternshipPortal from './pages/InternshipPortal';
 import InternWorkspacePortal from './pages/InternWorkspacePortal';
 import ProjectVerse from './pages/ProjectVerse';
+import SpeakVersePortal from './pages/SpeakVersePortal';
 
 function App() {
   const [showIntro, setShowIntro] = useState(false);
@@ -1035,6 +1036,11 @@ function App() {
       case 'eduplus':
       case 'test-to-action':
         return <EduPulsePortal user={user} setActiveTab={handleTabChange} />;
+      case 'speakverse':
+      case 'speak-verse':
+      case 'lumixora-speakverse':
+      case 'speaking-coach':
+        return <SpeakVersePortal user={user} setActiveTab={handleTabChange} />;
       case 'projectverse':
       case 'project-verse':
       case 'projects-hub':
