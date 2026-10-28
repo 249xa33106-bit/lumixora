@@ -27,7 +27,20 @@ import {
 } from 'lucide-react';
 import { cleanScholarName } from '../utils/authSecurity';
 
+const SPEAKVERSE_LIVE_URL = 'https://installing-incidence-vpn-similarly.trycloudflare.com';
 const SPEAKVERSE_LOCAL_URL = 'http://localhost:3000';
+
+const getSpeakVerseBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // If on production domain (lumixora.in, lumixora.pages.dev, etc.), use the live Cloudflare Tunnel
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return SPEAKVERSE_LIVE_URL;
+    }
+    // If on localhost, check if port 3000 or live tunnel is preferred (defaults to localhost:3000)
+    return SPEAKVERSE_LOCAL_URL;
+  }
+  return SPEAKVERSE_LIVE_URL;
+};
 
 const SPEAKVERSE_MODULES = [
   {
@@ -107,7 +120,7 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
       college: scholarCollege,
       target: targetPath
     });
-    return `${SPEAKVERSE_LOCAL_URL}/sso?${params.toString()}`;
+    return `${getSpeakVerseBaseUrl()}/sso?${params.toString()}`;
   };
 
   const [currentFrameUrl, setCurrentFrameUrl] = useState(() => buildSsoUrl('/speakverse/home'));
