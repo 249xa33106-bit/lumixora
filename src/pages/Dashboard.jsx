@@ -482,6 +482,13 @@ Do NOT use markdown backticks. Return raw JSON.`
           </div>
           <div className="flex flex-wrap gap-3 mt-4">
             <button 
+              onClick={() => setActiveTab('speakverse')}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:opacity-95 text-white font-black text-xs shadow-lg shadow-purple-500/25 transition-all cursor-pointer flex items-center gap-1.5 border border-purple-400/30"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              <span>👑 SpeakVerse™ AI (Premium)</span>
+            </button>
+            <button 
               onClick={() => setActiveTab('my-academics')}
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-[#030712] font-black text-xs shadow-lg shadow-teal-500/20 transition-all cursor-pointer flex items-center gap-1.5"
             >

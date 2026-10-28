@@ -68,6 +68,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       key: 'career',
       title: '🚀 Placement & Career Hub',
       items: [
+        { id: 'speakverse', label: 'SpeakVerse™ AI', icon: Mic, badge: 'PREMIUM 👑' },
         { id: 'projectverse', label: 'PROJECTVERSE™', icon: Rocket, badge: 'Flagship 🚀' },
         { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW' },
         { id: 'relay', label: 'LUMIXORA RELAY™', icon: GitFork, badge: 'Fusion AI' },
