@@ -79,50 +79,77 @@ export const callAICompletion = async (params) => {
     }
   }
 
-  // 2. Secondary Engine: Gemini API (if key is valid AIzaSy... format)
-  if (geminiKey && geminiKey.startsWith('AIzaSy')) {
+  // 2. Secondary High-Speed Engine: Gemini 3.8 Flash API
+  if (geminiKey && geminiKey.length > 15) {
     try {
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const promptText = sanitizedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-      const result = await model.generateContent(promptText);
-      const text = result.response.text();
-      if (text && text.trim()) return text.trim();
+      const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature,
+            maxOutputTokens: Math.min(maxTokens, 2048)
+          }
+        })
+      });
+
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        const candidateText = gData?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (candidateText && candidateText.trim().length > 5) {
+          return candidateText.trim();
+        }
+      }
     } catch (gErr) {
       console.warn("Gemini request fallback note:", gErr);
     }
   }
 
-  // 3. Fallback: OpenRouter API
+  // 3. Fallback: OpenRouter High-Availability Models (including verified free models)
   if (openRouterKey) {
-    try {
-      const body = {
-        model: "meta-llama/llama-3.3-70b-instruct",
-        messages: sanitizedMessages,
-        temperature,
-        max_tokens: Math.min(maxTokens, 1500)
-      };
-      if (responseFormat) body.response_format = responseFormat;
+    const openRouterModels = [
+      "nvidia/nemotron-3.5-lightning:free",
+      "liquid/lfm-2.5-2.6b:free",
+      "nvidia/nemotron-3.5-super-vl:free",
+      "google/gemma-4-26b-a4b-it:free",
+      "meta-llama/llama-3.3-70b-instruct"
+    ];
 
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openRouterKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : 'https://lumixora-93cca.web.app',
-          "X-Title": "Vyomra"
-        },
-        body: JSON.stringify(body)
-      });
+    for (const model of openRouterModels) {
+      try {
+        const body = {
+          model,
+          messages: sanitizedMessages,
+          temperature,
+          max_tokens: Math.min(maxTokens, 1500)
+        };
+        if (responseFormat) body.response_format = responseFormat;
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          return data.choices[0].message.content;
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : 'https://lumixora.in',
+            "X-Title": "Lumixora AI"
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+            const content = data.choices[0].message.content.trim();
+            if (content.length > 5) {
+              return content;
+            }
+          }
         }
+      } catch (orErr) {
+        console.warn(`OpenRouter (${model}) request note:`, orErr);
       }
-    } catch (orErr) {
-      console.warn("OpenRouter request error:", orErr);
     }
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Target, Plus, Trash2, Edit2, Play, Save, X, PlusCircle, AlignLeft, Code, FileText, CheckCircle, Clock, RotateCcw } from 'lucide-react';
+import { Target, Plus, Trash2, Edit2, Play, Save, X, PlusCircle, AlignLeft, Code, FileText, CheckCircle, Clock, RotateCcw, Camera, CameraOff } from 'lucide-react';
 import { db } from '../config/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, writeBatch, setDoc } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
@@ -28,6 +28,7 @@ export default function FounderTestManager() {
     duration: 15,
     type: 'quiz', // 'quiz', 'coding', 'both'
     category: 'test', // 'test' or 'assignment'
+    requireCamera: true, // true: enforce webcam, false: no camera
     active: true,
     scheduledTime: '',
     dueDate: '',
@@ -107,6 +108,7 @@ export default function FounderTestManager() {
       duration: category === 'assignment' ? 60 : 15, 
       type: 'quiz', 
       category: category,
+      requireCamera: category === 'assignment' ? false : true,
       active: true, 
       scheduledTime: '', 
       dueDate: '',
@@ -234,6 +236,7 @@ export default function FounderTestManager() {
         duration: parseInt(formData.duration, 10) || (isAssignment ? 60 : 15),
         type: formData.type,
         category: formData.category || 'test',
+        requireCamera: formData.requireCamera !== false,
         active: formData.active,
         scheduledTime: formData.scheduledTime || '',
         dueDate: formData.dueDate || formData.scheduledTime || '',
@@ -463,6 +466,14 @@ export default function FounderTestManager() {
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide ${item.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-500'}`}>
                       {item.active ? 'Active' : 'Inactive'}
                     </span>
+
+                    {/* Camera Requirement Badge */}
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide flex items-center gap-1 ${
+                      item.requireCamera ? 'bg-brand-teal/20 text-brand-teal border border-brand-teal/30' : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                    }`}>
+                      {item.requireCamera ? <Camera className="w-3 h-3" /> : <CameraOff className="w-3 h-3" />}
+                      {item.requireCamera ? 'Camera On' : 'No Camera'}
+                    </span>
                   </div>
 
                   <span className="text-[10px] font-bold uppercase bg-white/5 border border-white/10 px-2.5 py-1 rounded-md text-gray-300 flex items-center gap-1">
@@ -653,6 +664,63 @@ export default function FounderTestManager() {
                       <option key={s} value={s}>Sec {s}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* ── 🎥 CAMERA / WEBCAM PROCTORING ENFORCEMENT OPTION ── */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-brand-teal" />
+                    <span className="text-xs font-bold text-white tracking-wide">Webcam & AI Facial Proctoring</span>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                    formData.requireCamera ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-gray-500/20 text-gray-400 border border-gray-500/40'
+                  }`}>
+                    {formData.requireCamera ? 'Camera Required' : 'No Camera'}
+                  </span>
+                </div>
+                
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Choose whether students must keep their webcam and face surveillance active during this {formData.category === 'assignment' ? 'assignment' : 'test'}.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, requireCamera: true })}
+                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                      formData.requireCamera
+                        ? 'bg-brand-teal/15 border-brand-teal text-white font-bold ring-1 ring-brand-teal shadow-md'
+                        : 'bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <Camera className={`w-4 h-4 mt-0.5 shrink-0 ${formData.requireCamera ? 'text-brand-teal' : 'text-gray-500'}`} />
+                    <div>
+                      <span className="text-xs font-bold block text-white">Enable Camera Proctoring</span>
+                      <span className="text-[10px] text-gray-400 leading-tight block mt-0.5">
+                        Students must allow webcam. Live camera feed, face tracking, and biometric photo verification are enforced.
+                      </span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, requireCamera: false })}
+                    className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                      !formData.requireCamera
+                        ? 'bg-purple-500/15 border-purple-500 text-white font-bold ring-1 ring-purple-500 shadow-md'
+                        : 'bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <CameraOff className={`w-4 h-4 mt-0.5 shrink-0 ${!formData.requireCamera ? 'text-purple-400' : 'text-gray-500'}`} />
+                    <div>
+                      <span className="text-xs font-bold block text-white">No Camera Required</span>
+                      <span className="text-[10px] text-gray-400 leading-tight block mt-0.5">
+                        No webcam required. Students can take on any device. Fullscreen & 3-strike tab switch protection still active.
+                      </span>
+                    </div>
+                  </button>
                 </div>
               </div>
 

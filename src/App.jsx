@@ -787,7 +787,9 @@ function App() {
         handleLogin(resolvedProfile);
 
         if (!dbUser) {
-          supabase.from('users').upsert([resolvedProfile], { onConflict: 'email' }).catch(() => {});
+          if (isExemptFromPayment(resolvedProfile) || hasPaidCollegeFee(resolvedProfile)) {
+            supabase.from('users').upsert([resolvedProfile], { onConflict: 'email' }).catch(() => {});
+          }
         }
       }
     });
@@ -866,7 +868,9 @@ function App() {
               is_approved: true,
               isApproved: true
             };
-            await supabase.from('users').upsert([userProfile], { onConflict: 'email' });
+            if (isExemptFromPayment(userProfile) || hasPaidCollegeFee(userProfile)) {
+              await supabase.from('users').upsert([userProfile], { onConflict: 'email' });
+            }
           }
 
           const accessStatus = checkUserAccessStatus(userProfile);

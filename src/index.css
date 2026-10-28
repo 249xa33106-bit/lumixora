@@ -873,6 +873,128 @@ html {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* 7. AI MOCK INTERVIEW DIAGNOSTIC REPORT PRINTING (A4 MULTI-PAGE HIGH CONTRAST) */
+  body.mock-interview-report-open,
+  body.print-mock-interview-report {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+  }
+
+  body.mock-interview-report-open .no-print,
+  body.print-mock-interview-report .no-print,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* When printing the report, hide the underlying room UI */
+  body.mock-interview-report-open .interview-room-content,
+  body.print-mock-interview-report .interview-room-content {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Reset outer fixed modal container */
+  body.mock-interview-report-open .mock-interview-report-backdrop,
+  body.print-mock-interview-report .mock-interview-report-backdrop,
+  .mock-interview-report-backdrop {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    inset: auto !important;
+    z-index: auto !important;
+  }
+
+  /* Reset modal card to standard full-width printable page */
+  body.mock-interview-report-open .mock-interview-report-modal,
+  body.print-mock-interview-report .mock-interview-report-modal,
+  .mock-interview-report-modal {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure all text inside the report modal is dark, high-contrast, and visible on paper */
+  .mock-interview-report-modal,
+  .mock-interview-report-modal * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    text-shadow: none !important;
+    visibility: visible !important;
+  }
+
+  /* Remove any background clipping on gradients so text doesn't turn transparent */
+  .mock-interview-report-modal [class*="bg-clip-text"] {
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    background: none !important;
+    color: #003875 !important;
+    -webkit-text-fill-color: #003875 !important;
+  }
+
+  /* Stylize cards for white paper */
+  .mock-interview-report-modal .rounded-3xl,
+  .mock-interview-report-modal .rounded-2xl {
+    border-radius: 8px !important;
+  }
+
+  .mock-interview-report-modal .border,
+  .mock-interview-report-modal .border-b,
+  .mock-interview-report-modal .border-t {
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Hero cards & summary boxes */
+  .mock-interview-report-modal .grid > div {
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Question cards */
+  .mock-interview-report-modal .question-analysis-card {
+    background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important;
+    margin-bottom: 14px !important;
+    padding: 12px 14px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ideal model answer callout */
+  .mock-interview-report-modal pre,
+  .mock-interview-report-modal code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
 }
 
 

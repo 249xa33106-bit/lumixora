@@ -45,3 +45,5 @@ playstore-release/
 __pycache__/
 *.py[cod]
 *$py.class
+
+speakverse/

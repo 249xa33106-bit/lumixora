@@ -901,7 +901,7 @@ export default function FounderPortal({ user, setActiveTab }) {
       try {
         unsubTenants = onSnapshot(collection(db, 'college_tenants'), (snap) => {
           const fetched = [];
-          const junkIds = ['mcet', 'mec', 'pec', 'vmtw', 'rgukt', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
+          const junkIds = ['mcet', 'mec', 'pec', 'vmtw', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
           
           snap.forEach(d => {
             if (d.id === 'init') return;
@@ -1185,7 +1185,7 @@ export default function FounderPortal({ user, setActiveTab }) {
   // Extract filter sets - STRICTLY KEEP ONLY ACTIVE ONBOARDED COLLEGES!
   const collegeOptions = useMemo(() => {
     const list = (onboardedTenants && onboardedTenants.length > 0) ? onboardedTenants : DEFAULT_COLLEGES;
-    const junkIds = ['mcet', 'pec', 'vmtw', 'rgukt', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
+    const junkIds = ['mcet', 'pec', 'vmtw', 'dsu', 'graphic', 'ufug', 'iit', 'gp', 'mvj college of engineering', 'g pullareddy engineering college'];
     
     const validColleges = list.filter(c => {
       if (!c) return false;

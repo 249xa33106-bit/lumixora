@@ -2,6 +2,7 @@ import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { decodeGprecRollNumber } from '../data/collegesData';
+import emailjs from '@emailjs/browser';
 
 const NOTIF_STORAGE_KEY = 'lumixora_founder_notifications';
 const TEST_RESULTS_STORAGE_KEY = 'lumixora_test_submissions';
@@ -652,8 +653,68 @@ export const clearNotificationsStorage = async (currentNotifications = []) => {
   }
 };
 
+/**
+ * Dispatches instant mobile push notifications and email alerts directly to the Founder's phone.
+ * Uses ntfy.sh instant mobile push (vibration + sound) and EmailJS.
+ */
+export const sendFounderMobileAlert = async ({
+  title = '🔔 Lumixora Payment Alert',
+  message = '',
+  priority = 'urgent',
+  clickUrl = 'https://lumixora-93cca.web.app/#founder'
+}) => {
+  // 1. Instant Mobile Push Notification via ntfy.sh (pings phone & vibrates in < 1s)
+  try {
+    fetch('https://ntfy.sh/lumixora-founder-sowban-9346476055', {
+      method: 'POST',
+      headers: {
+        'Title': title,
+        'Priority': priority,
+        'Tags': 'moneybag,bell,zap',
+        'Click': clickUrl,
+        'Actions': `view, Open Founder Portal, ${clickUrl}, clear=true`
+      },
+      body: message
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 2. Email alert to Founder's Gmail inbox (pings Gmail on mobile)
+  try {
+    if (emailjs && typeof emailjs.send === 'function') {
+      emailjs.send(
+        'service_ya5r1pk',
+        'template_h3jbqrj',
+        {
+          to_name: 'Founder Shaik Sowban',
+          to_email: '249XA33106@gprec.ac.in',
+          message: `${title}\n\n${message}\n\nOpen Founder Portal to Approve: ${clickUrl}`
+        },
+        '9-0dhY139CBiyCxBJ'
+      ).catch(() => {});
+    }
+  } catch (e) {}
+
+  // 3. Web Push / Native System Notification if permission granted
+  try {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: message,
+        icon: '/favicon.ico'
+      });
+    }
+  } catch (e) {}
+};
+
 export const notifyFounderPayment = (paymentData) => {
   if (!paymentData) return;
+  
+  // Instant mobile alert to founder's phone
+  sendFounderMobileAlert({
+    title: `💰 ₹10 Payment Verified: ${paymentData.name || 'Scholar'}`,
+    message: `Scholar ${paymentData.name || 'Scholar'} (${paymentData.college || 'Institution'}) paid ₹10 via ${paymentData.txId || 'Verified'}. Access activated.`,
+    priority: 'high'
+  });
+
   return recordFounderNotification({
     type: 'payment',
     name: paymentData.name || 'Scholar',
@@ -785,6 +846,13 @@ export const submitPendingFeePayment = async ({
       if (!error && data && data.length > 0) {
         insertedId = data[0].id;
       }
+
+      // 3. Dispatch instant mobile alert to Founder's phone (Push + Email)
+      sendFounderMobileAlert({
+        title: `🔔 ₹10 Fee Submitted: ${name}`,
+        message: `Scholar ${name} (${college}) submitted UTR [UTR-${cleanUtr}]. Tap to verify and approve.`,
+        priority: 'urgent'
+      });
     }
 
     return {

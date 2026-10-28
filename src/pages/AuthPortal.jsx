@@ -377,6 +377,16 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           referralCode: finalReferralCode
         };
 
+        userProfile = defaultProfile;
+
+        // ZERO-TRUST GATE: Never write unpaid accounts to database until ₹10 payment is verified!
+        if (!isExemptFromPayment(userProfile) && !hasPaidCollegeFee(userProfile)) {
+          setFeeModalUser(userProfile);
+          setFeeModalMode('registration');
+          setLoading(false);
+          return;
+        }
+
         const sbPayload = {
           name: `${cleanName} ${JSON.stringify(defaultProfile)}`,
           email: oauthEmail,
@@ -418,7 +428,6 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           });
         }
 
-        userProfile = defaultProfile;
         sendFounderNotification('register', userProfile).catch(() => {});
       }
 
@@ -499,6 +508,13 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               emailVerified: true,
               created_at: new Date().toISOString()
             };
+            // ZERO-TRUST GATE: Do NOT write unpaid accounts to Supabase!
+            if (!isExemptFromPayment(defaultProfile) && !hasPaidCollegeFee(defaultProfile)) {
+              setFeeModalUser(defaultProfile);
+              setFeeModalMode('registration');
+              return;
+            }
+
             await supabase.from('users').upsert([defaultProfile], { onConflict: 'email' });
             userProfile = defaultProfile;
           }
@@ -623,35 +639,57 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
       const sbPromise = supabase.from('users').upsert([sbPayload], { onConflict: 'email' });
 
-      // 2. Firebase Auth Account Creation
-      const fbPromise = createUserWithEmailAndPassword(auth, cleanEmail, regData.password)
-        .then(async (userCredential) => {
-          const fbUser = userCredential.user;
-          await updateProfile(fbUser, { displayName: cleanName }).catch(() => {});
-          const fsDoc = {
-            id: fbUser.uid,
-            uid: fbUser.uid,
-            name: cleanName,
-            email: cleanEmail,
-            role: determinedRole,
-            ...profileMetadata,
-            created_at: new Date().toISOString(),
-            isApproved: determinedRole !== 'faculty',
-            is_approved: determinedRole !== 'faculty'
-          };
-          await Promise.allSettled([
-            setDoc(doc(db, 'users', fbUser.uid), fsDoc, { merge: true }),
-            setDoc(doc(db, 'Users', fbUser.uid), fsDoc, { merge: true }),
-            sendEmailVerification(fbUser).catch(() => {})
-          ]);
-          return fbUser;
-        })
-        .catch(fbErr => {
-          console.warn("Firebase registration notice:", fbErr);
-          return null;
-        });
+      // 2. Firebase Auth & Firestore Account Finalization
+      const isGoogleAuth = regData.password === 'google_oauth_managed' || (auth.currentUser && auth.currentUser.email?.toLowerCase() === cleanEmail);
+      let fbResUser = null;
 
-      await Promise.allSettled([sbPromise, fbPromise]);
+      if (isGoogleAuth && auth.currentUser) {
+        fbResUser = auth.currentUser;
+        const fsDoc = {
+          id: fbResUser.uid,
+          uid: fbResUser.uid,
+          name: cleanName,
+          email: cleanEmail,
+          role: determinedRole,
+          ...profileMetadata,
+          created_at: new Date().toISOString(),
+          isApproved: determinedRole !== 'faculty',
+          is_approved: determinedRole !== 'faculty'
+        };
+        await Promise.allSettled([
+          setDoc(doc(db, 'users', fbResUser.uid), fsDoc, { merge: true }),
+          setDoc(doc(db, 'Users', fbResUser.uid), fsDoc, { merge: true })
+        ]);
+      } else {
+        fbResUser = await createUserWithEmailAndPassword(auth, cleanEmail, regData.password)
+          .then(async (userCredential) => {
+            const fbUser = userCredential.user;
+            await updateProfile(fbUser, { displayName: cleanName }).catch(() => {});
+            const fsDoc = {
+              id: fbUser.uid,
+              uid: fbUser.uid,
+              name: cleanName,
+              email: cleanEmail,
+              role: determinedRole,
+              ...profileMetadata,
+              created_at: new Date().toISOString(),
+              isApproved: determinedRole !== 'faculty',
+              is_approved: determinedRole !== 'faculty'
+            };
+            await Promise.allSettled([
+              setDoc(doc(db, 'users', fbUser.uid), fsDoc, { merge: true }),
+              setDoc(doc(db, 'Users', fbUser.uid), fsDoc, { merge: true }),
+              sendEmailVerification(fbUser).catch(() => {})
+            ]);
+            return fbUser;
+          })
+          .catch(fbErr => {
+            console.warn("Firebase registration notice:", fbErr);
+            return null;
+          });
+      }
+
+      await sbPromise;
 
       if (cleanEmail && paymentInfo.oneTimeFeePaid) {
         try {
@@ -713,6 +751,20 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
         setSuccessMsg('Registration submitted! Faculty accounts are locked and require Founder verification in the Security Queue before activation. You cannot sign in until approved.');
         setIsLogin(true);
+        setLoading(false);
+        return;
+      } else if (isGoogleAuth) {
+        // Google auth already verified email; payment complete, log in directly
+        const finalizedUser = {
+          id: fbResUser?.uid || regData.id || regData.uid,
+          uid: fbResUser?.uid || regData.id || regData.uid,
+          name: cleanName,
+          email: cleanEmail,
+          role: determinedRole,
+          ...profileMetadata,
+          emailVerified: true
+        };
+        handleSuccessfulLogin(finalizedUser);
         setLoading(false);
         return;
       } else {

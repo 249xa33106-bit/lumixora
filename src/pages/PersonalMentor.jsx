@@ -20,6 +20,35 @@ export default function PersonalMentor({ user }) {
   const userId = user?.uid || user?.email || 'default';
   const chatEndRef = useRef(null);
 
+  // ─── Harvest Student Intelligence Metrics ──────────────────────────────────
+  const liveMentorData = getLiveMentorData(userId, tasks, notes, doubts, user);
+  const profile = liveMentorData.profile;
+  const metrics = liveMentorData.metrics;
+
+  const synergyScore = metrics.compositeReadiness;
+  const consistencyScore = Math.min(100, (metrics.streak * 12) + (liveMentorData.analytics.totalSessions * 5)) || 60;
+  const focusScore = liveMentorData.analytics.avgFocusScore || 75;
+  const productivityScore = Math.round(
+    Math.min(100, ((liveMentorData.analytics.totalMinutes || 0) / ((Number(profile.dailyHours) || 4) * 60)) * 100)
+  ) || 0;
+
+  const twinData = {
+    profile,
+    studyAnalytics: liveMentorData.analytics,
+    tasksStats: {
+      total: (tasks || []).length,
+      completed: (tasks || []).filter(t => t && (t.status === 'Completed' || t.status === 'Done')).length,
+      completionRate: metrics.taskProgressPct
+    },
+    metrics: {
+      synergyScore,
+      productivityScore,
+      consistencyScore,
+      focusScore
+    }
+  };
+
+
   // ─── Active Sub-Tab State ──────────────────────────────────────────────────
   const [activeSubTab, setActiveSubTab] = useState('dashboard'); // dashboard, profile, chat, analytics, planner, career
   const [expandedSubject, setExpandedSubject] = useState(null);
@@ -130,34 +159,6 @@ export default function PersonalMentor({ user }) {
       setActiveSubTab(subtab);
     }
   }, []);
-
-  // ─── Harvest Student Intelligence Metrics ──────────────────────────────────
-  const liveMentorData = getLiveMentorData(userId, tasks, notes, doubts, user);
-  const profile = liveMentorData.profile;
-  const metrics = liveMentorData.metrics;
-
-  const synergyScore = metrics.compositeReadiness;
-  const consistencyScore = Math.min(100, (metrics.streak * 12) + (liveMentorData.analytics.totalSessions * 5)) || 60;
-  const focusScore = liveMentorData.analytics.avgFocusScore || 75;
-  const productivityScore = Math.round(
-    Math.min(100, ((liveMentorData.analytics.totalMinutes || 0) / ((Number(profile.dailyHours) || 4) * 60)) * 100)
-  ) || 0;
-
-  const twinData = {
-    profile,
-    studyAnalytics: liveMentorData.analytics,
-    tasksStats: {
-      total: (tasks || []).length,
-      completed: (tasks || []).filter(t => t && (t.status === 'Completed' || t.status === 'Done')).length,
-      completionRate: metrics.taskProgressPct
-    },
-    metrics: {
-      synergyScore,
-      productivityScore,
-      consistencyScore,
-      focusScore
-    }
-  };
 
   // ─── Exam Countdown & War Mode Check ───────────────────────────────────────
   const [examCountdown, setExamCountdown] = useState(null);

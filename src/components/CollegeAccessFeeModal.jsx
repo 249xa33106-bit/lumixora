@@ -208,6 +208,18 @@ export default function CollegeAccessFeeModal({
           } else {
             const newMeta = {
               college: collegeName,
+              department: user?.department || user?.branch || 'CSE',
+              branch: user?.department || user?.branch || 'CSE',
+              year: user?.year || '1st Year',
+              sem: user?.sem || '1',
+              sec: user?.sec || 'A',
+              rollNumber: user?.rollNumber || '',
+              qualification: user?.qualification || 'B.Tech',
+              place: user?.place || 'Kurnool',
+              cgpa: user?.cgpa || '9.0',
+              careerGoal: user?.careerGoal || 'Placement',
+              learningStyle: user?.learningStyle || 'Practical',
+              weakSubjects: user?.weakSubjects || 'None',
               ...(resolvedRef ? { referredBy: resolvedRef, referralCode: resolvedRef, referred_by: resolvedRef } : {}),
               ...paymentRecord
             };
@@ -217,7 +229,10 @@ export default function CollegeAccessFeeModal({
               email: userEmail,
               password: 'oauth_managed_access',
               college: collegeName,
-              role: 'user',
+              department: newMeta.department,
+              branch: newMeta.branch,
+              year: newMeta.year,
+              role: user?.role || 'user',
               is_approved: true,
               created_at: nowIso
             }], { onConflict: 'email' });

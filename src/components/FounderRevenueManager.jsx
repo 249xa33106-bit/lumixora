@@ -25,10 +25,15 @@ import {
   CheckCheck,
   Zap,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bell,
+  Smartphone,
+  Key,
+  Settings
 } from 'lucide-react';
 import { supabase } from '../config/supabase';
-import { approveFeePayment, rejectFeePayment } from '../services/founderNotificationService';
+import { approveFeePayment, rejectFeePayment, sendFounderMobileAlert } from '../services/founderNotificationService';
+import { getRazorpayKeyId, setRazorpayKeyId, saveRazorpayKeyGlobally, fetchRemoteRazorpayKey } from '../services/razorpayService';
 
 export default function FounderRevenueManager({ usersList = [], onRefresh }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +52,11 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
   const [statementText, setStatementText] = useState('');
   const [statementParseResults, setStatementParseResults] = useState(null);
   const [isAutoVerifyingAll, setIsAutoVerifyingAll] = useState(false);
+
+  // Razorpay Gateway & Mobile Notification Config State
+  const [showGatewayConfig, setShowGatewayConfig] = useState(false);
+  const [razorpayKeyInput, setRazorpayKeyInput] = useState(() => getRazorpayKeyId());
+  const [testingMobileAlert, setTestingMobileAlert] = useState(false);
 
   // 1. Fetch pending payment verifications from Supabase
   const loadPendingPayments = useCallback(async () => {
@@ -97,6 +107,12 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
       if (channel && typeof channel.unsubscribe === 'function') channel.unsubscribe();
     };
   }, [loadPendingPayments]);
+
+  useEffect(() => {
+    fetchRemoteRazorpayKey().then(k => {
+      if (k) setRazorpayKeyInput(k);
+    }).catch(() => {});
+  }, []);
 
   // Handle 1-click Approve
   const handleApprove = async (item) => {
@@ -219,6 +235,31 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
       }
     };
     reader.readAsText(file);
+  };
+
+  // Save Razorpay Key Globally
+  const handleSaveRazorpayKey = async () => {
+    await saveRazorpayKeyGlobally(razorpayKeyInput);
+    setToastMessage('✅ Razorpay Gateway Key updated globally! All students now get direct 1-click checkout.');
+    setTimeout(() => setToastMessage(''), 4000);
+  };
+
+  // Send Test Mobile Phone Notification
+  const handleTestMobileNotification = async () => {
+    setTestingMobileAlert(true);
+    try {
+      await sendFounderMobileAlert({
+        title: '🔔 Lumixora Mobile Alert Test',
+        message: 'Phone notification is working! You will be alerted the second any student submits ₹10.',
+        priority: 'urgent'
+      });
+      setToastMessage('📱 Test alert sent to your mobile phone via Push & Email!');
+    } catch (e) {
+      setToastMessage(`⚠️ Alert error: ${e.message}`);
+    } finally {
+      setTestingMobileAlert(false);
+      setTimeout(() => setToastMessage(''), 5000);
+    }
   };
 
   // Extract paid users strictly (those who paid the ₹10 or ₹5 fee with valid Tx/UTR)
@@ -429,6 +470,104 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
             Sequential UTRs & duplicates blocked
           </p>
         </div>
+      </div>
+
+      {/* =========================================================================
+          RAZORPAY AUTOMATED GATEWAY & MOBILE ALERTS CONTROL BAR
+         ========================================================================= */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-cyan-950/30 to-[#0e1628] border border-cyan-500/30 shadow-xl space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300">
+                <Smartphone className="w-4 h-4" />
+              </span>
+              <h3 className="font-extrabold text-white text-sm">
+                Mobile Alerts & Razorpay Automated Gateway
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider">
+                Instant Push Notifications
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-300 mt-1">
+              Receive a vibration and sound notification on your phone the second any student pays ₹10, or link Razorpay for 100% automated instant unlock.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Open Phone Alert Channel */}
+            <a
+              href="https://ntfy.sh/lumixora-founder-sowban-9346476055"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 cursor-pointer transition-all"
+              title="Click to subscribe to instant push notifications on your phone"
+            >
+              <Bell className="w-3.5 h-3.5 text-black" />
+              <span>Subscribe on Phone (1-Tap)</span>
+              <ExternalLink className="w-3 h-3 ml-0.5" />
+            </a>
+
+            {/* Test Phone Notification Button */}
+            <button
+              onClick={handleTestMobileNotification}
+              disabled={testingMobileAlert}
+              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+              title="Send a live test notification to your phone right now"
+            >
+              <Zap className={`w-3.5 h-3.5 text-amber-400 ${testingMobileAlert ? 'animate-spin' : ''}`} />
+              <span>{testingMobileAlert ? 'Dispatching...' : 'Test Phone Alert'}</span>
+            </button>
+
+            {/* Toggle Razorpay Settings */}
+            <button
+              onClick={() => setShowGatewayConfig(!showGatewayConfig)}
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs border border-white/10 flex items-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Settings className="w-3.5 h-3.5 text-gray-400" />
+              <span>Razorpay Key</span>
+              {showGatewayConfig ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Razorpay Key Configuration Drawer */}
+        {showGatewayConfig && (
+          <div className="p-4 rounded-xl bg-black/50 border border-white/10 space-y-3 animate-fade-in text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <strong className="text-white block font-bold">Razorpay Key ID (Live / Test)</strong>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  Get your free key from <a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="text-cyan-400 underline font-semibold">dashboard.razorpay.com</a> (Settings &gt; API Keys). When entered, students get 1-click Google Pay/PhonePe with automatic unlock.
+                </p>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider self-start sm:self-auto shrink-0 ${razorpayKeyInput.trim() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>
+                {razorpayKeyInput.trim() ? 'Gateway Active' : 'Key Not Set'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Key className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={razorpayKeyInput}
+                  onChange={(e) => setRazorpayKeyInput(e.target.value)}
+                  placeholder="e.g. rzp_live_xxxxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxxxx"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white font-mono placeholder:text-gray-500 focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveRazorpayKey}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-colors cursor-pointer shrink-0"
+              >
+                Save Key
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================

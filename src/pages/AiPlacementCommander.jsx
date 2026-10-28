@@ -13,6 +13,7 @@ import { useGamification } from '../context/GamificationContext';
 import { db } from '../config/firebase';
 import { doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
+import AiMockInterviewRoom from './AiMockInterviewRoom';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -2071,154 +2072,16 @@ Analyze this code and return ONLY a valid JSON object:
 
       {/* MODULE 7: AI MOCK INTERVIEW */}
       {activeModule === 'mock_interview' && (
-        <div className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 bg-black/40 space-y-6 animate-fade-in">
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-black uppercase mb-2">
-                <Mic className="w-3.5 h-3.5" />
-                <span>AI VOICE MOCK INTERVIEW ARENA</span>
-              </div>
-              <h2 className="text-2xl font-black text-white">AI Technical Architecture & HR Viva</h2>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {['Technical Interview', 'System Design Viva', 'Behavioral Leadership'].map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => {
-                    setInterviewMode(mode);
-                    setInterviewStep(0);
-                    setInterviewAnswers({});
-                    setInterviewFinished(false);
-                    setInterviewReport(null);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${
-                    interviewMode === mode
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                      : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
-                  }`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between pb-2">
+            <button
+              onClick={() => setActiveModule('overview')}
+              className="px-4 py-2 bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer"
+            >
+              ← Back to Placement OS Dashboard
+            </button>
           </div>
-
-          {!interviewFinished ? (
-            <div className="p-6 rounded-2xl bg-black/50 border border-white/10 space-y-5">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-xs text-blue-400 font-bold">
-                  Question {interviewStep + 1} of {interviewQuestionsList.length} • {interviewMode}
-                </span>
-                <button
-                  onClick={() => speakText(interviewQuestionsList[interviewStep].q)}
-                  className="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-blue-500/30 cursor-pointer"
-                >
-                  {isSpeaking ? <VolumeX className="w-3.5 h-3.5 text-blue-400" /> : <Volume2 className="w-3.5 h-3.5 text-blue-400" />}
-                  <span>{isSpeaking ? 'Speaking...' : 'Listen Question'}</span>
-                </button>
-              </div>
-
-              <h3 className="text-lg font-bold text-white leading-relaxed">
-                {interviewQuestionsList[interviewStep].q}
-              </h3>
-
-              {interviewQuestionsList[interviewStep].hint && (
-                <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-xs text-gray-400">
-                  <span className="text-gray-300 font-bold">💡 Key Focus Hint:</span> {interviewQuestionsList[interviewStep].hint}
-                </div>
-              )}
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-300 block">Your Answer Response:</label>
-                <textarea
-                  rows={4}
-                  value={interviewAnswers[interviewStep] || ''}
-                  onChange={(e) => setInterviewAnswers({ ...interviewAnswers, [interviewStep]: e.target.value })}
-                  placeholder="Type or click 'Voice Dictate' to speak your technical reasoning..."
-                  className="w-full bg-black/80 border border-white/15 rounded-xl p-4 text-xs text-white outline-none focus:border-blue-500/50"
-                />
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <button
-                  onClick={startMicRecording}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all border ${
-                    isListening
-                      ? 'bg-red-500/20 text-red-300 border-red-500 animate-pulse'
-                      : 'bg-white/10 hover:bg-white/20 text-white border-white/10'
-                  }`}
-                >
-                  <Mic className={`w-4 h-4 ${isListening ? 'text-red-400 animate-bounce' : 'text-red-400'}`} />
-                  <span>{isListening ? 'Listening (Speak Now)...' : 'Voice Dictate'}</span>
-                </button>
-
-                <button
-                  onClick={handleInterviewAnswerSubmit}
-                  disabled={isEvaluatingInterview}
-                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs cursor-pointer shadow-lg flex items-center gap-2"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isEvaluatingInterview ? 'AI Evaluating...' : (interviewStep < interviewQuestionsList.length - 1 ? 'Next Question ➔' : 'Complete & AI Grade')}</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 rounded-2xl bg-black/60 border border-blue-500/30 space-y-5 animate-fade-in shadow-2xl">
-              <div className="flex flex-wrap items-center justify-between border-b border-white/10 pb-4 gap-3">
-                <div>
-                  <span className="text-[10px] font-black uppercase text-blue-400 tracking-wider">Evaluation Completed</span>
-                  <h3 className="text-2xl font-black text-white">Overall Mock Viva Score: <span className="text-emerald-400">{interviewReport?.score || 82}%</span></h3>
-                </div>
-                <button
-                  onClick={() => {
-                    setInterviewStep(0);
-                    setInterviewAnswers({});
-                    setInterviewFinished(false);
-                    setInterviewReport(null);
-                  }}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl border border-white/10 cursor-pointer flex items-center gap-1.5"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Retake Interview</span>
-                </button>
-              </div>
-
-              {/* Rubric Breakdown Matrix */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3.5 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase block">Technical Depth</span>
-                  <span className="text-lg font-black text-cyan-400">{interviewReport?.techAccuracy || 84}%</span>
-                </div>
-                <div className="p-3.5 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase block">Communication Clarity</span>
-                  <span className="text-lg font-black text-purple-400">{interviewReport?.clarity || 86}%</span>
-                </div>
-                <div className="p-3.5 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase block">Architectural Structure</span>
-                  <span className="text-lg font-black text-emerald-400">{interviewReport?.depth || 78}%</span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl space-y-2">
-                <span className="text-xs font-black text-blue-300 uppercase block">📋 AI Bar Raiser Feedback & Action Plan:</span>
-                <p className="text-xs text-gray-200 leading-relaxed">{interviewReport?.feedback}</p>
-              </div>
-
-              {interviewReport?.strongAnswers && interviewReport.strongAnswers.length > 0 && (
-                <div className="space-y-1">
-                  <span className="text-[10px] text-emerald-400 font-bold uppercase block">✅ Highlighted Strengths:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {interviewReport.strongAnswers.map((s, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-semibold">
-                        • {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          <AiMockInterviewRoom user={user} setActiveTab={setActiveTab} />
         </div>
       )}
 
