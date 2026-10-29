@@ -125,24 +125,32 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
 
   const [currentFrameUrl, setCurrentFrameUrl] = useState(() => buildSsoUrl('/speakverse/home'));
 
-  // Update SSO URL if user identity loads/changes
+  const hasLoadedRef = useRef(false);
+
+  // Set initial URL once - NEVER re-trigger on user object reference changes
   useEffect(() => {
-    if (user?.email) {
-      const activeMod = SPEAKVERSE_MODULES.find(m => m.id === activeModule);
-      const targetPath = activeMod ? activeMod.path : '/speakverse/home';
-      setCurrentFrameUrl(buildSsoUrl(targetPath));
+    if (user?.email && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      setCurrentFrameUrl(buildSsoUrl('/speakverse/home'));
     }
-  }, [user?.email, user?.name]);
+  }, [user?.email]);
 
   const handleSelectModule = (module) => {
     setActiveModule(module.id);
-    setCurrentFrameUrl(buildSsoUrl(module.path));
-    setFrameKey(k => k + 1);
+    const targetUrl = buildSsoUrl(module.path);
+    setCurrentFrameUrl(targetUrl);
+    if (iframeRef.current) {
+      iframeRef.current.src = targetUrl;
+    }
   };
 
   const handleRefresh = () => {
-    setFrameKey(k => k + 1);
+    if (iframeRef.current) {
+      const activeMod = SPEAKVERSE_MODULES.find(m => m.id === activeModule);
+      iframeRef.current.src = buildSsoUrl(activeMod ? activeMod.path : '/speakverse/home');
+    }
   };
+
 
   return (
     <div className={`w-full min-h-screen text-slate-100 flex flex-col transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[999999] bg-[#070710]' : 'space-y-6 pb-12'}`}>
