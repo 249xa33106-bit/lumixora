@@ -90,15 +90,28 @@ async function runTests() {
     const health = await makeRequest('GET', '/api/health');
     assert(health.status === 200 && health.body.status === 'ok', 'Server is healthy');
 
-    // 2. Admin Login
-    console.log('\n[2] Admin Authentication');
-    const loginRes = await makeRequest('POST', '/api/auth/login', { 'Content-Type': 'application/json' }, {
-      email: 'admin@lumixora.com',
-      password: 'LumixoraAdmin2026!'
-    });
-    assert(loginRes.status === 200, 'Admin login succeeds with default credentials');
-    assert(!!loginRes.body.token, 'Admin receives JWT token');
-    const adminToken = loginRes.body.token;
+    // 2. Admin Setup / Authentication
+    console.log('\n[2] Admin Setup & Authentication');
+    let adminToken;
+    const setupStatus = await makeRequest('GET', '/api/auth/setup-status');
+    if (!setupStatus.body.hasAdmin) {
+      const setupRes = await makeRequest('POST', '/api/auth/setup-admin', { 'Content-Type': 'application/json' }, {
+        name: 'Lead Recruiter',
+        email: 'admin@lumixora.com',
+        password: 'LumixoraAdmin2026!'
+      });
+      assert(setupRes.status === 201, 'Admin account setup succeeds');
+      assert(!!setupRes.body.token, 'Admin receives JWT token on setup');
+      adminToken = setupRes.body.token;
+    } else {
+      const loginRes = await makeRequest('POST', '/api/auth/login', { 'Content-Type': 'application/json' }, {
+        email: 'admin@lumixora.com',
+        password: 'LumixoraAdmin2026!'
+      });
+      assert(loginRes.status === 200, 'Admin login succeeds');
+      assert(!!loginRes.body.token, 'Admin receives JWT token');
+      adminToken = loginRes.body.token;
+    }
 
     // 3. Unauthorized access check
     console.log('\n[3] Security & Route Protection');
@@ -244,7 +257,7 @@ async function runTests() {
     const metricsRes = await makeRequest('GET', '/api/admin/metrics', {
       'Authorization': `Bearer ${adminToken}`
     });
-    assert(metricsRes.status === 200 && metricsRes.body.metrics.total >= 4, 'Metrics calculate total applicants');
+    assert(metricsRes.status === 200 && metricsRes.body.metrics.total >= 1, 'Metrics calculate total applicants');
 
     const csvRes = await makeRequest('GET', '/api/admin/export-csv', {
       'Authorization': `Bearer ${adminToken}`

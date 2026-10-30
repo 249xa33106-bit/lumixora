@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticateAdmin } = require('../middleware/auth');
 
+router.get('/setup-status', authController.getSetupStatus);
+router.post('/setup-admin', authController.setupInitialAdmin);
 router.post('/login', authController.login);
 router.get('/me', authenticateAdmin, authController.getMe);
 
