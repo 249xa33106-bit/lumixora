@@ -1,0 +1,20 @@
+[
+  {
+    "id": "email_1793341405928",
+    "applicationId": "LMX-2026-86519",
+    "to": "candidate.1793341405901@example.com",
+    "subject": "Application Received: Full-Stack Web Development [LMX-2026-86519] - Lumixora",
+    "timestamp": "2026-10-30T06:23:25.928Z",
+    "status": "SENT",
+    "messageId": "<06299958-b7fc-213d-a027-db07446338e8@lumixora.com>"
+  },
+  {
+    "id": "email_1793340890148",
+    "applicationId": "LMX-2026-32468",
+    "to": "candidate.1793340890122@example.com",
+    "subject": "Application Received: Full-Stack Web Development [LMX-2026-32468] - Lumixora",
+    "timestamp": "2026-10-30T06:14:50.148Z",
+    "status": "SENT",
+    "messageId": "<43333a2a-d0ec-7dd0-e7d9-d3e1ae955b27@lumixora.com>"
+  }
+]
