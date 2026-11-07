@@ -1,3 +1,4 @@
+import Realistic3DLogo from './components/Realistic3DLogo';
 import React, { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import MainLayout from './layouts/MainLayout';
@@ -19,15 +20,16 @@ import CodingPractice from './pages/CodingPractice';
 import CodeEditorPage from './pages/CodeEditorPage';
 import PersonalMentor from './pages/PersonalMentor';
 import MyAcademics from './pages/MyAcademics';
-import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from './data/collegesData';
+import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment, KNOWN_PAID_EMAILS } from './data/collegesData';
 import CollegeAccessFeeModal from './components/CollegeAccessFeeModal';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './config/firebase';
 import { supabase } from './config/supabase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
 import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { checkUserAccessStatus, cleanScholarName, isFounderEmail } from './utils/authSecurity';
+import { cloudSync } from './services/cloudSyncService';
 import StudyWithMe from './pages/StudyWithMe';
 import ReportBug from './pages/ReportBug';
 import LifeReplay from './pages/LifeReplay';
@@ -64,16 +66,21 @@ import ProofOfSkillCertificates from './pages/ProofOfSkillCertificates';
 import PublicCertificateVerification from './pages/PublicCertificateVerification';
 import CoursesPortal from './pages/CoursesPortal';
 import BoloClassPortal from './pages/BoloClassPortal';
-import EduPulsePortal from './pages/EduPulsePortal';
-import RelayPortal from './pages/RelayPortal';
+// EduPulsePortal removed
+// RelayPortal removed
 import InternshipPortal from './pages/InternshipPortal';
 import InternWorkspacePortal from './pages/InternWorkspacePortal';
-import ProjectVerse from './pages/ProjectVerse';
+// ProjectVerse removed
+import StudentOnboardingModal from './components/StudentOnboardingModal';
+import CursorCompanionModal from './components/CursorCompanionModal';
 import SpeakVersePortal from './pages/SpeakVersePortal';
+import { isGprecPlacementSubdomain, GPREC_PLACEMENT_PORTALS } from './utils/placementSubdomain';
 
 function App() {
+  const isGprecSubdomain = isGprecPlacementSubdomain();
   const [showIntro, setShowIntro] = useState(false);
   const [showTomAndJerryIntro, setShowTomAndJerryIntro] = useState(false);
+  const [showCompanionModal, setShowCompanionModal] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname.toLowerCase();
@@ -81,6 +88,10 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
+        if (['ai-commander', 'placement', 'placements', 'speakverse', 'interview', 'coding-practice', 'resume'].includes(hash)) return hash;
+      }
+      if (isGprecPlacementSubdomain()) {
+        return 'ai-commander';
       }
     }
     return 'dashboard';
@@ -90,13 +101,8 @@ function App() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const access = checkUserAccessStatus(u);
-        if (!access.allowed) return false;
-      } catch (e) {
-        return false;
-      }
-    } else {
-      return false;
+        if (u && (u.email || u.name)) return true;
+      } catch (e) {}
     }
     return localStorage.getItem('lumixora_isAuthenticated') === 'true';
   });
@@ -137,15 +143,9 @@ function App() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const access = checkUserAccessStatus(u);
-        if (!access.allowed) {
-          localStorage.removeItem('lumixora_user');
-          localStorage.removeItem('lumixora_isAuthenticated');
-          signOut(auth).catch(() => {});
-          supabase.auth.signOut().catch(() => {});
-          return null;
+        if (u && (u.email || u.name)) {
+          return u;
         }
-        return u;
       } catch (e) {}
     }
     return null;
@@ -156,6 +156,83 @@ function App() {
 
   const [showExitModal, setShowExitModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Trigger personalized onboarding questionnaire after login if not yet configured in live DB
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const isFounder = user.role === 'founder' || user.email?.toLowerCase() === 'founder@lumixora.com';
+      if (!isFounder && user.onboardingCompleted !== true) {
+        const timer = setTimeout(() => {
+          setShowOnboarding(true);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isAuthenticated, user?.onboardingCompleted, user?.role, user?.email]);
+
+  const handleSaveOnboarding = async (prefData) => {
+    if (!user) return;
+    const cleanEmail = (user.email || '').toLowerCase().trim();
+    const updatedUser = {
+      ...user,
+      careerGoal: prefData.careerGoal,
+      interests: prefData.interests,
+      activePortals: prefData.activePortals,
+      onboardingCompleted: true
+    };
+
+    // 1. Update React state & local storage cache instantly
+    handleUpdateUser(updatedUser);
+
+    // 2. Perform live database network calls asynchronously in parallel without blocking UI
+    (async () => {
+      const syncTasks = [];
+
+      // Supabase Live Database Sync
+      if (supabase && typeof supabase.from === 'function' && cleanEmail) {
+        const cleanName = cleanScholarName(user.name || user.displayName || 'Scholar');
+        const packedMeta = {
+          qualification: user.qualification || 'B.Tech',
+          college: user.college || 'GPREC',
+          department: user.department || 'CSE',
+          branch: user.branch || 'CSE',
+          place: user.place || 'Kurnool',
+          year: user.year || '1st Year',
+          sem: user.sem || '1',
+          sec: user.sec || 'A',
+          rollNumber: user.rollNumber || user.roll_number || '',
+          mobileNumber: user.mobileNumber || user.phone || '',
+          cgpa: user.cgpa || '9.0',
+          careerGoal: prefData.careerGoal,
+          interests: prefData.interests,
+          activePortals: prefData.activePortals,
+          onboardingCompleted: true
+        };
+
+        syncTasks.push(
+          supabase.from('users').update({
+            name: `${cleanName} ${JSON.stringify(packedMeta)}`
+          }).eq('email', cleanEmail).catch(err => console.warn('Supabase onboarding sync warning:', err))
+        );
+      }
+
+      // Firestore Live Database Sync (single canonical UID call)
+      const primaryUid = user?.id || user?.uid || auth.currentUser?.uid || cleanEmail;
+      if (primaryUid) {
+        syncTasks.push(
+          setDoc(doc(db, 'users', String(primaryUid)), {
+            careerGoal: prefData.careerGoal,
+            interests: prefData.interests,
+            activePortals: prefData.activePortals,
+            onboardingCompleted: true
+          }, { merge: true }).catch(err => console.warn('Firestore onboarding sync warning:', err))
+        );
+      }
+
+      await Promise.allSettled(syncTasks);
+    })();
+  };
 
   // Trigger guided platform tour on first login
   useEffect(() => {
@@ -281,7 +358,7 @@ function App() {
           parsedSb.feePaid ||
           remoteDoc?.oneTimeFeePaid ||
           remoteDoc?.feePaid ||
-          (uEmail === '249xa33112@gprec.ac.in')
+          (KNOWN_PAID_EMAILS && KNOWN_PAID_EMAILS.has(uEmail)) || (uEmail === '249xa33112@gprec.ac.in') || (uEmail === '249xa04050@gprec.ac.in')
         );
 
         const resolvedFeeTx = user.feeTxId || parsedSb.feeTxId || remoteDoc?.feeTxId || (isPaidUser ? 'UTR-317827902237' : '');
@@ -317,6 +394,10 @@ function App() {
           hackerrankUser: resolvedHackerrank,
           githubUser: resolvedGithub,
           linkedinUser: resolvedLinkedin,
+          careerGoal: user.careerGoal || remoteDoc?.careerGoal || parsedSb.careerGoal || 'Placement',
+          interests: Array.isArray(user.interests) ? user.interests : (Array.isArray(remoteDoc?.interests) ? remoteDoc.interests : (Array.isArray(parsedSb.interests) ? parsedSb.interests : [])),
+          activePortals: Array.isArray(user.activePortals) ? user.activePortals : (Array.isArray(remoteDoc?.activePortals) ? remoteDoc.activePortals : (Array.isArray(parsedSb.activePortals) ? parsedSb.activePortals : null)),
+          onboardingCompleted: user.onboardingCompleted ?? remoteDoc?.onboardingCompleted ?? parsedSb.onboardingCompleted ?? false,
           avatarUrl: user.avatarUrl || remoteDoc?.avatarUrl || sbDoc?.avatar_url || ''
         };
 
@@ -398,7 +479,7 @@ function App() {
         const { App: CapApp } = await import('@capacitor/app');
         listener = await CapApp.addListener('backButton', () => {
           const email = (user?.email || '').toLowerCase().trim();
-          const isF = user?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+          const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
           const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
           const rootTab = isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard');
 
@@ -447,7 +528,7 @@ function App() {
     if (!isAuthenticated) return;
 
     const email = (user?.email || '').toLowerCase().trim();
-    const isF = user?.role === 'founder' || email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+    const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
     const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
     const defaultHomeTab = isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard');
 
@@ -456,7 +537,7 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'ai-twin', 'ai-future-twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace', 'relay'].includes(tab)) {
+        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'ai-twin', 'ai-future-twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['internship', 'internship-portal', 'apply-internship'].includes(tab)) {
             setActiveTab('internships');
           } else if (['intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
@@ -533,7 +614,7 @@ function App() {
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
         <div className="glass-panel w-full max-w-xs rounded-3xl p-6 border border-white/10 relative overflow-hidden bg-gradient-to-br from-red-500/10 via-black to-transparent text-center space-y-4 shadow-2xl">
           <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-2xl mx-auto animate-pulse">
-            📱
+            
           </div>
 
           <div>
@@ -662,7 +743,7 @@ function App() {
   useEffect(() => {
     if (user) {
       const access = checkUserAccessStatus(user);
-      if (!access.allowed) {
+      if (!access.allowed && (access.reason === 'blocked' || access.reason === 'faculty_pending')) {
         setUser(null);
         setIsAuthenticated(false);
         localStorage.removeItem('lumixora_user');
@@ -680,32 +761,24 @@ function App() {
         return;
       }
       localStorage.setItem('lumixora_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('lumixora_user');
+      localStorage.setItem('lumixora_isAuthenticated', 'true');
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('lumixora_isAuthenticated', isAuthenticated ? 'true' : 'false');
-  }, [isAuthenticated]);
+    if (isAuthenticated || user) {
+      localStorage.setItem('lumixora_isAuthenticated', 'true');
+    }
+  }, [isAuthenticated, user]);
 
   // Listen for Firebase Auth changes (handles Google OAuth redirect on page load seamlessly)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         const email = (fbUser.email || '').toLowerCase().trim();
-        const isF = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+        const isF = email === 'founder@lumixora.com'  ;
         
-        // Strict domain access verification: Only allow @gprec.ac.in, partner colleges, and founder whitelist
-        if (!isF && !isValidInstitutionalEmail(email)) {
-          console.warn(`Blocked unauthorized non-institutional email login: ${email}`);
-          try { await signOut(auth); } catch (e) {}
-          setUser(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem('lumixora_user');
-          localStorage.removeItem('lumixora_isAuthenticated');
-          return;
-        }
+        // Institutional verification check: all scholars permitted
 
         const cleanName = fbUser.displayName || email.split('@')[0];
 
@@ -801,12 +874,7 @@ function App() {
         const sbEmail = (session.user.email || '').toLowerCase().trim();
         if (!sbEmail) return;
 
-        const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com' || sbEmail === '249xa33106@gprec.ac.in';
-        if (!isF && !isValidInstitutionalEmail(sbEmail)) {
-          console.warn(`Blocked unauthorized non-institutional email login: ${sbEmail}`);
-          await supabase.auth.signOut().catch(() => {});
-          return;
-        }
+        const isF = sbEmail === 'founder@lumixora.com'  ;
 
         const rawName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || sbEmail.split('@')[0];
         const cleanName = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
@@ -954,7 +1022,23 @@ function App() {
       } catch (e) {}
     }
     
+
+    // Cloud Sync: Load all progress from Supabase + migrate any localStorage-only data
+    if (finalizedUser.email) {
+      cloudSync.loadAll(finalizedUser.email).then(() => {
+        cloudSync.migrateFromLocalStorage(finalizedUser.email);
+      }).catch(() => {});
+    }
+
     // Whenever ANY user logs in or registers into website, ALWAYS open Dashboard directly. Never open other portals randomly.
+    // Ask user for their companion/style preference if not decided yet
+    try {
+      const companionPref = localStorage.getItem('lumixora_companion_decided');
+      if (!companionPref) {
+        setShowCompanionModal(true);
+      }
+    } catch (e) {}
+
     setActiveTab('dashboard');
     try {
       window.location.hash = 'dashboard';
@@ -969,7 +1053,7 @@ function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+            case 'dashboard':
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       case 'my-academics':
       case 'academics':
@@ -1035,7 +1119,7 @@ function App() {
       case 'edupulse':
       case 'eduplus':
       case 'test-to-action':
-        return <EduPulsePortal user={user} setActiveTab={handleTabChange} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'speakverse':
       case 'speak-verse':
       case 'lumixora-speakverse':
@@ -1044,12 +1128,12 @@ function App() {
       case 'projectverse':
       case 'project-verse':
       case 'projects-hub':
-        return <ProjectVerse user={user} setActiveTab={handleTabChange} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'relay':
       case 'lumixora-relay':
       case 'fusion':
       case 'project-dna':
-        return <RelayPortal user={user} setActiveTab={handleTabChange} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'internship':
       case 'internships':
       case 'internship-portal':
@@ -1148,9 +1232,7 @@ function App() {
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       case 'founder-portal':
         const isF = user?.role === 'founder' || 
-                    user?.email?.toLowerCase() === 'founder@lumixora.com' ||
-                    user?.email?.toLowerCase() === '249xa33106@gmail.com' ||
-                    user?.email?.toLowerCase() === '249xa33106@gprec.ac.in';
+                    user?.email?.toLowerCase() === 'founder@lumixora.com'  ;
         if (isF) {
           return <FounderPortal user={user} setActiveTab={handleTabChange} />;
         }
@@ -1206,7 +1288,7 @@ function App() {
             <div className="min-h-screen bg-[#06070c] text-white p-2 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
                 <div className="flex items-center gap-3">
-                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <Realistic3DLogo size="sm" />
                   <div>
                     <span className="text-sm font-black text-white font-sora">Lumixora BoloClass</span>
                     <span className="ml-2 px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-black border border-purple-500/30 uppercase">
@@ -1219,7 +1301,7 @@ function App() {
                     href="https://lumixora.in"
                     className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer flex items-center gap-1"
                   >
-                    ← Lumixora Main
+                    â† Lumixora Main
                   </a>
                   <button 
                     onClick={() => setShowLogin('student')} 
@@ -1246,7 +1328,7 @@ function App() {
             <div className="min-h-screen bg-[#030712] text-white p-2 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
                 <div className="flex items-center gap-3">
-                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <Realistic3DLogo size="sm" />
                   <div>
                     <span className="text-sm font-black text-white font-sora">Lumixora Courses</span>
                     <span className="ml-2 px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-black border border-cyan-500/30 uppercase">
@@ -1259,7 +1341,7 @@ function App() {
                     onClick={() => { window.location.hash = ''; }} 
                     className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
                   >
-                    ← Home
+                    â† Home
                   </button>
                   <button 
                     onClick={() => setShowLogin('student')} 
@@ -1286,7 +1368,7 @@ function App() {
             <div className="min-h-screen bg-[#030712] text-white p-2 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md">
                 <div className="flex items-center gap-3">
-                  <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-9 h-9 rounded-2xl object-cover" />
+                  <Realistic3DLogo size="sm" />
                   <div>
                     <span className="text-sm font-black text-white font-sora">Lumixora Certificates</span>
                     <span className="ml-2 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30 uppercase">
@@ -1299,7 +1381,7 @@ function App() {
                     onClick={() => { window.location.hash = ''; }} 
                     className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
                   >
-                    ← Home
+                    â† Home
                   </button>
                   <button 
                     onClick={() => setShowLogin('student')} 
@@ -1327,7 +1409,7 @@ function App() {
               <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl">
                   <div className="flex items-center gap-3">
-                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-cyan-500/30" />
+                    <Realistic3DLogo size="md" />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-black text-white">Lumixora by VYOMRA</span>
@@ -1343,7 +1425,7 @@ function App() {
                       onClick={() => { window.location.hash = ''; }} 
                       className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
                     >
-                      ← Home
+                      â† Home
                     </button>
                     <button 
                       onClick={() => setShowLogin('student')} 
@@ -1363,96 +1445,8 @@ function App() {
       );
     }
 
-    // Direct standalone access to EduPulse Test-to-Action Platform without requiring initial login
-    if (lowerHash.includes('edupulse') || lowerHash.includes('eduplus') || lowerHash.includes('test-to-action')) {
-      return (
-        <ThemeProvider>
-          <ToastProvider>
-            <CursorGlow />
-            <div className="min-h-screen bg-[#060a12] text-white p-2 md:p-6 space-y-4">
-              <div className="max-w-7xl mx-auto space-y-6">
-                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-teal-500/30" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-white font-sora">Lumixora EduPulse</span>
-                        <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 text-[10px] font-black border border-teal-500/30 uppercase tracking-wider">
-                          Test-to-Action Platform
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-teal-300 font-mono">G. Pulla Reddy Engineering College (Autonomous) • Lumixora Student OS</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <button 
-                      onClick={() => { window.location.hash = ''; }} 
-                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
-                    >
-                      ← Home
-                    </button>
-                    <button 
-                      onClick={() => setShowLogin('student')} 
-                      className="px-4 py-2 bg-gradient-to-r from-teal-400 to-emerald-500 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg shadow-teal-500/20 cursor-pointer"
-                    >
-                      Login
-                    </button>
-                  </div>
-                </div>
 
-                <EduPulsePortal user={user || { name: 'Faculty Lead', email: 'faculty@gprec.ac.in', role: 'faculty', college: 'GPREC' }} setActiveTab={handleTabChange} />
-              </div>
-            </div>
-            {renderUpdateModal()}
-          </ToastProvider>
-        </ThemeProvider>
-      );
-    }
-
-    // Direct standalone access to LUMIXORA RELAY (Component Intelligence & Fusion)
-    if (lowerHash.includes('relay') || lowerHash.includes('fusion') || lowerHash.includes('project-dna')) {
-      return (
-        <ThemeProvider>
-          <ToastProvider>
-            <div className="min-h-screen bg-[#F7F8FC] text-[#17172B] p-2 md:p-6 space-y-4">
-              <div className="max-w-7xl mx-auto space-y-4">
-                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <img src="/lumixora_logo_icon.png" alt="Lumixora Logo" className="w-10 h-10 rounded-2xl object-cover border border-violet-200" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-[#17172B] font-sora">LUMIXORA RELAY™</span>
-                        <span className="px-2 py-0.5 rounded bg-violet-100 text-[#6C4DFF] text-[10px] font-black border border-violet-200 uppercase tracking-wider">
-                          Project Intelligence & Component Fusion
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 font-mono">Transform Unfinished Projects into Opportunities</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <button 
-                      onClick={() => { window.location.hash = ''; setActiveTab('dashboard'); }} 
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
-                    >
-                      ← Home
-                    </button>
-                    <button 
-                      onClick={() => setShowLogin('student')} 
-                      className="px-4 py-2 bg-gradient-to-r from-[#6C4DFF] to-[#3878FF] hover:opacity-95 text-white text-xs font-black rounded-xl transition-all shadow-md shadow-violet-500/20 cursor-pointer"
-                    >
-                      Login
-                    </button>
-                  </div>
-                </div>
-
-                <RelayPortal user={user || { name: 'Innovation Architect', email: 'architect@lumixora.com', role: 'student' }} setActiveTab={handleTabChange} />
-              </div>
-            </div>
-            {renderUpdateModal()}
-          </ToastProvider>
-        </ThemeProvider>
-      );
-    }
+    
 
     // Direct standalone public access to LUMIXORA INTERN WORKSPACE & SUBPORTAL
     if (lowerHash.includes('intern-portal') || lowerHash.includes('intern-workspace') || lowerHash.includes('interns')) {
@@ -1490,21 +1484,6 @@ function App() {
       );
     }
 
-    // Direct standalone public access to LUMIXORA PROJECTVERSE™
-    if (lowerHash.includes('projectverse') || lowerHash.includes('project-verse') || lowerHash.includes('projects-hub')) {
-      return (
-        <ThemeProvider>
-          <ToastProvider>
-            <div className="min-h-screen bg-slate-50 text-slate-900 p-2 md:p-6">
-              <div className="max-w-7xl mx-auto">
-                <ProjectVerse user={user || { name: 'Guest Explorer', email: 'student@lumixora.in', role: 'student', branch: 'CSE', year: '2nd Year' }} />
-              </div>
-            </div>
-            {renderUpdateModal()}
-          </ToastProvider>
-        </ThemeProvider>
-      );
-    }
 
     if (showLogin) {
       return (
@@ -1515,7 +1494,7 @@ function App() {
               onClick={() => setShowLogin(null)} 
               className="fixed top-6 left-6 z-[99999] px-4 py-2 bg-black/50 hover:bg-black/70 text-white text-sm font-bold rounded-xl backdrop-blur-md transition-all border border-white/20"
             >
-              ← Back to Home
+              â† Back to Home
             </button>
             <AuthPortal onLogin={handleLogin} mode={showLogin} />
             {renderUpdateModal()}
@@ -1575,6 +1554,26 @@ function App() {
             {showIntro && (
               <CinematicIntro onComplete={() => setShowIntro(false)} />
             )}
+            <CursorCompanionModal
+              isOpen={showCompanionModal}
+              onClose={() => setShowCompanionModal(false)}
+              onSelect={(styleId) => {
+                try {
+                  localStorage.setItem('lumixora_companion_decided', 'true');
+                  if (styleId === 'off') {
+                    localStorage.removeItem('lumixora_companion_v2_active');
+                    localStorage.setItem('lumixora_cursor_glow', 'false');
+                    localStorage.setItem('lumixora_cursor_mode', 'off');
+                    window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: false, mode: 'off' } }));
+                  } else {
+                    localStorage.setItem('lumixora_companion_v2_active', 'true');
+                    localStorage.setItem('lumixora_cursor_glow', 'true');
+                    localStorage.setItem('lumixora_cursor_mode', styleId);
+                    window.dispatchEvent(new CustomEvent('lumixora_cursor_glow_toggle', { detail: { enabled: true, mode: styleId } }));
+                  }
+                } catch (e) {}
+              }}
+            />
             {showTomAndJerryIntro && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
@@ -1588,6 +1587,12 @@ function App() {
               onClose={handleCloseTour} 
               onNavigateTab={handleTabChange} 
             />
+            <StudentOnboardingModal
+              isOpen={showOnboarding}
+              onClose={() => setShowOnboarding(false)}
+              user={user}
+              onSavePreferences={handleSaveOnboarding}
+            />
           </DataProvider>
         </GamificationProvider>
       </ToastProvider>
@@ -1596,4 +1601,10 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
 

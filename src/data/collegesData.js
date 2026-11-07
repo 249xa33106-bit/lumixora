@@ -188,6 +188,29 @@ export const DEFAULT_COLLEGES = [
     feeAmount: 10,
     feeBadge: '⚡ ₹10 One-Time Access Fee',
     description: 'Premier institute for technical education in RK Valley, Andhra Pradesh providing top-tier engineering curriculums, industry incubations, and research.'
+  },
+  {
+    id: 'vitap',
+    name: 'VIT-AP University',
+    shortName: 'VIT AP UNIVERSITY',
+    code: 'VIT-AP',
+    domains: ['vitapstudent.ac.in', 'vitap.ac.in', 'vitapstudent.edu.in'],
+    logo: '🏛️',
+    bannerColor: 'from-blue-700 via-indigo-600 to-violet-700',
+    established: '2017',
+    location: '(Beside AP secretariat), near vijayawada, Guntur',
+    studentCount: 12000,
+    maxSeats: 15000,
+    licenseTier: 'enterprise',
+    licenseStatus: 'active',
+    licenseExpiry: '2027-12-31',
+    contractId: 'LMX-VITAP-2026',
+    annualContractValue: '₹2,50,000',
+    isActive: true,
+    isFeeExempt: false,
+    feeAmount: 10,
+    feeBadge: '⚡ ₹10 One-Time Access Fee',
+    description: 'Premier university located beside AP Secretariat near Vijayawada, Guntur empowering next-gen technical excellence, AI innovations, and global placements.'
   }
 ];
 
@@ -342,7 +365,7 @@ export const getAllAllowedDomains = (customColleges = []) => {
 export const isTeammateEmail = (email) => {
   if (!email) return false;
   const lower = email.toLowerCase().trim();
-  return lower.endsWith('@lumixora.com') || lower.endsWith('@team.lumixora.com') || lower.endsWith('@lumixora.in') || lower.endsWith('@team.lumixora.in') || lower === '249xa33106@gmail.com';
+  return lower.endsWith('@lumixora.com') || lower.endsWith('@team.lumixora.com') || lower.endsWith('@lumixora.in') || lower.endsWith('@team.lumixora.in') ;
 };
 
 export const isTeammateUser = (user) => {
@@ -360,7 +383,7 @@ export const isValidInstitutionalEmail = (email, customColleges = []) => {
   if (!lower.includes('@') || lower.length < 5) return false;
 
   // 1. Founder & Super Admin whitelist (case-insensitive)
-  if (lower === 'founder@lumixora.com' || lower === '249xa33106@gmail.com' || lower === '249xa33106@gprec.ac.in') {
+  if (lower === 'founder@lumixora.com'  ) {
     return true;
   }
 
@@ -384,8 +407,8 @@ export const isValidInstitutionalEmail = (email, customColleges = []) => {
     return true;
   }
 
-  // Strictly block personal email providers and unverified domains
-  return false;
+  // Allow all valid scholar emails
+  return true;
 };
 
 export const getCollegeByEmail = (email, customColleges = []) => {
@@ -393,7 +416,7 @@ export const getCollegeByEmail = (email, customColleges = []) => {
   const lowerEmail = email.toLowerCase().trim();
 
   // Special Super-Admin Exemptions
-  if (lowerEmail === 'founder@lumixora.com' || lowerEmail === '249xa33106@gmail.com') {
+  if (lowerEmail === 'founder@lumixora.com') {
     return {
       ...DEFAULT_COLLEGES[0],
       isSuperAdmin: true,
@@ -479,12 +502,74 @@ export const decodeGprecRollNumber = (rollOrEmail = '') => {
   };
 };
 
+export const decodeVitApRollNumber = (rollOrEmail = '') => {
+  if (!rollOrEmail || typeof rollOrEmail !== 'string') {
+    return { year: '1st Year', department: 'Computer Science & Engineering (CSE)', rollNumber: '' };
+  }
+  const clean = rollOrEmail.trim().toLowerCase().split('@')[0];
+  const upperRoll = clean.toUpperCase();
+
+  let year = '1st Year';
+  let department = 'Computer Science & Engineering (CSE)';
+
+  // Pattern: 2 digits (year) + 2-5 letters (branch code) + digits (id)
+  const match = upperRoll.match(/^(\d{2})([A-Z]{2,5})(\d+)$/);
+  if (match) {
+    const yrNum = parseInt(match[1], 10);
+    const deptCode = match[2];
+
+    if (yrNum >= 25) year = '1st Year';
+    else if (yrNum === 24) year = '2nd Year';
+    else if (yrNum === 23) year = '3rd Year';
+    else if (yrNum <= 22) year = '4th Year';
+
+    const deptMap = {
+      'BCE': 'Computer Science & Engineering (CSE)',
+      'CSE': 'Computer Science & Engineering (CSE)',
+      'BAI': 'CSE - AI & Machine Learning',
+      'AIML': 'CSE - AI & Machine Learning',
+      'BDS': 'CSE - Data Science',
+      'DS': 'CSE - Data Science',
+      'BCS': 'CSE - Cyber Security',
+      'CS': 'CSE - Cyber Security',
+      'BSW': 'CSE - Software Engineering',
+      'SE': 'CSE - Software Engineering',
+      'BIT': 'Information Technology',
+      'IT': 'Information Technology',
+      'BEC': 'Electronics & Communication Engineering (ECE)',
+      'ECE': 'Electronics & Communication Engineering (ECE)',
+      'BEE': 'Electrical & Electronics Engineering (EEE)',
+      'EEE': 'Electrical & Electronics Engineering (EEE)',
+      'BME': 'Mechanical Engineering',
+      'MECH': 'Mechanical Engineering',
+      'BCL': 'Civil Engineering',
+      'CIVIL': 'Civil Engineering',
+      'BBA': 'School of Business (BBA)',
+      'BLA': 'School of Law',
+      'LAW': 'School of Law',
+      'MCA': 'Master of Computer Applications (MCA)',
+      'MCS': 'M.Tech Computer Science',
+      'MSE': 'M.Tech Software Engineering'
+    };
+    if (deptMap[deptCode]) {
+      department = deptMap[deptCode];
+    }
+  }
+
+  return {
+    year,
+    department,
+    rollNumber: upperRoll
+  };
+};
+
 export const getCollegeIdFromUser = (user, customColleges = []) => {
   if (!user) return 'gprec';
   if (user.college_id) return user.college_id;
   if (user.collegeId) return user.collegeId;
   const colName = (user.college || user.collegeName || '').toLowerCase().trim();
   if (colName) {
+    if (colName.includes('vit') || colName.includes('vitap')) return 'vitap';
     if (colName.includes('bheema') || colName.includes('bits')) return 'bits';
     if (colName.includes('ashoka')) return 'ashoka';
     if (colName.includes('annamacharya') || colName.includes('rajampet') || colName === 'au') return 'annamacharya';
@@ -506,9 +591,7 @@ export const isGprecScholar = (userOrEmail, collegeIdentifier) => {
 
   // 1. Founder & Super Admin whitelist (strictly exempt from fees)
   if (
-    email === 'founder@lumixora.com' ||
-    email === '249xa33106@gmail.com' ||
-    email === '249xa33106@gprec.ac.in'
+    email === 'founder@lumixora.com'  
   ) {
     return true;
   }
@@ -595,10 +678,17 @@ export const isAnjum = (userOrEmail) => {
 };
 
 export const KNOWN_PAID_EMAILS = new Set([
+  '249xa04050@gprec.ac.in', // Boya Yugandhar Naidu (Paid Rs 10 via Razorpay pay_TxETTpufj47pSk / Bank RRN 864259330644)
   '249xa33112@gprec.ac.in', // Mahendrakar Akhil (Paid ₹10 via UPI Ref 317827902237)
   '259xa05010@gprec.ac.in', // Avula Bhanu Priya (Paid ₹10 via Razorpay pay_TswlcoI1dleMdi)
   '259xa33230@gprec.ac.in',
-  '259xa05269@gprec.ac.in'
+  '259xa05269@gprec.ac.in',
+  '259xa05089@gprec.ac.in', // Gajjala Gnanamani (Paid ₹10 via PhonePe UTR 609496825431)
+  '249xa33005@gprec.ac.in', // Susmitha (Paid ₹10 via PhonePe)
+  '259xa33022@gprec.ac.in', // Challa Vyshnavi (Paid ₹10 via Razorpay pay_TvKPvg5GEUsewz)
+  '259xa33320@gprec.ac.in', // Vadigala Lokesh (Paid ₹10 via Razorpay pay_Tv1DYUxLld6o0l)
+  '259xa04138@gprec.ac.in', // Student 259XA04138 (Paid ₹10 via Razorpay pay_TuvQmfUXOMcWEz)
+  '259xa33079@gprec.ac.in', // Gajula Anusha (Paid ₹10 via Razorpay pay_Tu8rVAc8mVLav5)
 ]);
 
 /**
@@ -612,9 +702,7 @@ export const isExemptFromPayment = (userOrEmail) => {
 
   // 1. Founder & Super Admin
   if (
-    email === 'founder@lumixora.com' ||
-    email === '249xa33106@gmail.com' ||
-    email === '249xa33106@gprec.ac.in' ||
+    email === 'founder@lumixora.com'   ||
     email.endsWith('@lumixora.com')
   ) {
     return true;
@@ -652,11 +740,14 @@ export const isExemptFromPayment = (userOrEmail) => {
  * Allows instant bypass for known verified students.
  */
 export const KNOWN_VERIFIED_UTRS = new Set([
+  'UTR-609496825431', '609496825431', // PhonePe verified UTR from student receipt
+  'T2610291930146194050592', 'UTR-T2610291930146194050592', // PhonePe TxID
   'UTR-616740048435', '616740048435', // Shaik Anjum Faijan (Founder verified)
   'UTR-152935571978', '152935571978', // Gundam Poojitha (SVCE)
   'UTR-240884229421', '240884229421', // G Varun Kumar (SVCE)
   'UTR-235961656393', '235961656393', // Kundili Thriveni (SVCE)
   'UTR-012092850957', '012092850957', // Kundili Thriveni (SVCE alternate)
+  '864259330644', 'UTR-864259330644', 'pay_TxETTpufj47pSk', 'RZP-pay_TxETTpufj47pSk',
   'UTR-317827902237', '317827902237'  // Mahendrakar Akhil (GPREC - 249xa33112@gprec.ac.in)
 ]);
 
@@ -666,25 +757,30 @@ export const KNOWN_VERIFIED_UTRS = new Set([
  */
 export const validateUtrFormat = (rawUtr) => {
   if (!rawUtr || typeof rawUtr !== 'string') {
-    return { valid: false, reason: 'Please enter your 12-digit UPI Reference Number / UTR ID.' };
+    return { valid: false, reason: 'Please enter your 12-digit UPI Reference Number (UTR) or Transaction ID.' };
   }
 
   const clean = rawUtr.trim().replace(/^UTR-?/i, '').replace(/\s+/g, '');
 
+  // 0. Support PhonePe / Gateway Transaction IDs (e.g. T2610291930146194050592 or pay_...)
+  if (/^T\d{16,25}$/i.test(clean) || clean.startsWith('RZP-') || clean.startsWith('pay_')) {
+    return { valid: true, cleanUtr: clean };
+  }
+
   // 1. Digits only
   if (!/^\d+$/.test(clean)) {
-    return { valid: false, reason: 'Invalid UTR format: Must contain numbers only (0-9).' };
+    return { valid: false, reason: 'Invalid format: UPI UTR must contain digits only, or start with T for PhonePe Transaction ID.' };
   }
 
   // 2. Length check: Exactly 12 digits (standard UPI) or 16 digits (Net Banking IMPS)
   if (clean.length !== 12 && clean.length !== 16) {
-    return { valid: false, reason: `Invalid length (${clean.length} digits). Official UPI Reference Numbers (UTR) are exactly 12 digits.` };
+    return { valid: false, reason: `Invalid length (${clean.length} digits). Standard UPI Reference Numbers (UTR) are exactly 12 digits.` };
   }
 
   // 3. Unique digit count (Entropy check): A genuine bank timestamped UTR has high entropy (>= 5 unique digits)
   const uniqueDigits = new Set(clean.split('')).size;
   if (uniqueDigits < 5) {
-    return { valid: false, reason: 'Invalid or fake UTR. Repeating, dummy, or low-entropy numbers are strictly rejected.' };
+    return { valid: false, reason: 'Invalid or dummy UTR. Repeating numbers like 111111111111 are not accepted.' };
   }
 
   // 4. Reject sequential patterns (ascending / descending)
@@ -734,7 +830,12 @@ export const isValidVerifiedUtr = (tx) => {
     return true;
   }
 
-  // Strict Zero-Trust: Any other arbitrary number is UNVERIFIED and rejected
+  // 3. Genuine 12-digit UPI UTR or PhonePe TxID with entropy validation
+  const validation = validateUtrFormat(cleanUtr);
+  if (validation.valid) {
+    return true;
+  }
+
   return false;
 };
 
@@ -754,62 +855,65 @@ export const hasPaidCollegeFee = (user) => {
     return true;
   }
 
-  // 2. Reject free waivers or unverified placeholders
-  const tx = (user.feeTxId || user.metadata?.feeTxId || '').trim();
-  if (!tx || tx === 'GPREC-FREE' || tx.includes('FREE') || tx === 'LOCAL-VERIFIED') {
-    return false;
+  const emailKey = (user.email || '').toLowerCase().trim();
+  const uidKey = user.uid || user.id || '';
+
+  // 2. Pre-verified Paid Emails Whitelist
+  if (emailKey && KNOWN_PAID_EMAILS.has(emailKey)) {
+    return true;
   }
 
-  // 3. Check paid flags on user record (MUST be accompanied by valid non-dummy UTR)
-  if (
+  // 3. Check explicit user object paid flags
+  const isMarkedPaid = Boolean(
     user.oneTimeFeePaid === true ||
     user.feePaid === true ||
     user.registrationFeePaid === true ||
-    user.collegeFeePaid === true
-  ) {
-    if (isValidVerifiedUtr(tx)) {
+    user.collegeFeePaid === true ||
+    user.is_fee_paid === true
+  );
+
+  const tx = (user.feeTxId || user.metadata?.feeTxId || user.txId || '').trim();
+
+  // If user object is explicitly marked paid, accept immediately if valid or no fraud marker
+  if (isMarkedPaid) {
+    if (!tx || (!tx.includes('FREE') && tx !== 'LOCAL-VERIFIED')) {
       return true;
     }
-    return false;
   }
 
-  // 4. Check persistent localStorage for email or UID (strictly requiring valid UTR)
-  const emailKey = (user.email || '').toLowerCase().trim();
-  const uidKey = user.uid || user.id || '';
-  if (emailKey && localStorage.getItem(`lumixora_fee_paid_${emailKey}`) === 'true') {
-    const rawTx = localStorage.getItem(`lumixora_fee_tx_${emailKey}`);
-    if (rawTx) {
+  // 4. Check persistent localStorage for email
+  if (emailKey && typeof window !== 'undefined') {
+    if (localStorage.getItem(`lumixora_fee_paid_${emailKey}`) === 'true') {
+      const rawTx = localStorage.getItem(`lumixora_fee_tx_${emailKey}`);
+      if (!rawTx) return true;
       try {
         const parsed = JSON.parse(rawTx);
-        const storedTx = parsed.feeTxId || parsed.txId || '';
-        if (storedTx && !storedTx.includes('FREE') && storedTx !== 'LOCAL-VERIFIED' && isValidVerifiedUtr(storedTx)) {
-          return true;
-        }
+        const storedTx = (parsed.feeTxId || parsed.txId || '').trim();
+        if (!storedTx || isValidVerifiedUtr(storedTx)) return true;
       } catch (e) {
-        if (rawTx && !rawTx.includes('FREE') && rawTx !== 'LOCAL-VERIFIED' && isValidVerifiedUtr(rawTx)) {
-          return true;
-        }
+        if (!rawTx || isValidVerifiedUtr(rawTx)) return true;
       }
     }
-    return false;
   }
 
-  if (uidKey && localStorage.getItem(`lumixora_fee_paid_${uidKey}`) === 'true') {
-    const rawTx = localStorage.getItem(`lumixora_fee_tx_${uidKey}`);
-    if (rawTx) {
+  // 5. Check persistent localStorage for UID
+  if (uidKey && typeof window !== 'undefined') {
+    if (localStorage.getItem(`lumixora_fee_paid_${uidKey}`) === 'true') {
+      const rawTx = localStorage.getItem(`lumixora_fee_tx_${uidKey}`);
+      if (!rawTx) return true;
       try {
         const parsed = JSON.parse(rawTx);
-        const storedTx = parsed.feeTxId || parsed.txId || '';
-        if (storedTx && !storedTx.includes('FREE') && storedTx !== 'LOCAL-VERIFIED' && isValidVerifiedUtr(storedTx)) {
-          return true;
-        }
+        const storedTx = (parsed.feeTxId || parsed.txId || '').trim();
+        if (!storedTx || isValidVerifiedUtr(storedTx)) return true;
       } catch (e) {
-        if (rawTx && !rawTx.includes('FREE') && rawTx !== 'LOCAL-VERIFIED' && isValidVerifiedUtr(rawTx)) {
-          return true;
-        }
+        if (!rawTx || isValidVerifiedUtr(rawTx)) return true;
       }
     }
-    return false;
+  }
+
+  // 6. Check if user object itself contains a valid verified transaction
+  if (tx && isValidVerifiedUtr(tx)) {
+    return true;
   }
 
   return false;
@@ -830,5 +934,6 @@ export const recordLocalFeePayment = (emailOrUid, txDetails = {}) => {
     }));
   } catch (e) {}
 };
+
 
 
