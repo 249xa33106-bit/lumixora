@@ -340,3 +340,80 @@ export async function saveBoloClassDataToSupabase(user, boloClassData) {
   }
 }
 
+
+/**
+ * 7. Save SpeakVerse 2.0 Real Student Progress & Telemetry to Supabase
+ */
+export async function saveSpeakVerseProgressToSupabase(user, speakVerseData) {
+  if (!user || (!user.id && !user.email)) return null;
+
+  try {
+    const uEmail = (user.email || '').toLowerCase().trim();
+    const uId = user.id || user.uid;
+
+    let query = supabase.from('users').select('*');
+    if (uId) query = query.eq('id', uId);
+    else query = query.eq('email', uEmail);
+
+    const { data: dbUser } = await query.maybeSingle();
+    let meta = {};
+    let baseName = user.name || 'Scholar';
+
+    if (dbUser) {
+      baseName = dbUser.name ? dbUser.name.split('{')[0].trim() : (user.name || 'Scholar');
+      meta = parseUserPackedMeta(dbUser.name);
+    }
+
+    const prevSpeakVerse = meta.speakverse || {};
+    meta.speakverse = {
+      level: speakVerseData.level || prevSpeakVerse.level || 1,
+      xp: (prevSpeakVerse.xp || 0) + (speakVerseData.xpGained || 0),
+      streak: speakVerseData.streak || prevSpeakVerse.streak || 1,
+      speakingMinutes: (prevSpeakVerse.speakingMinutes || 0) + (speakVerseData.durationMinutes || 0),
+      wordsMastered: (prevSpeakVerse.wordsMastered || 0) + (speakVerseData.wordsLearned || 0),
+      fluencyScore: speakVerseData.fluencyScore || prevSpeakVerse.fluencyScore || 65,
+      grammarScore: speakVerseData.grammarScore || prevSpeakVerse.grammarScore || 70,
+      pronunciationScore: speakVerseData.pronunciationScore || prevSpeakVerse.pronunciationScore || 65,
+      cefrBenchmark: speakVerseData.cefrBenchmark || prevSpeakVerse.cefrBenchmark || 'B1',
+      lastActive: new Date().toISOString()
+    };
+
+    const newPackedName = packUserMeta(baseName, meta);
+
+    if (uId) {
+      await supabase.from('users').update({ name: newPackedName }).eq('id', uId);
+    } else {
+      await supabase.from('users').update({ name: newPackedName }).eq('email', uEmail);
+    }
+
+    return { success: true, speakverse: meta.speakverse };
+  } catch (err) {
+    console.warn('Supabase SpeakVerse sync error:', err);
+    return null;
+  }
+}
+
+/**
+ * 8. Fetch Real SpeakVerse Progress from Supabase
+ */
+export async function fetchSpeakVerseProgressFromSupabase(user) {
+  if (!user || (!user.id && !user.email)) return null;
+
+  try {
+    const uEmail = (user.email || '').toLowerCase().trim();
+    const uId = user.id || user.uid;
+
+    let query = supabase.from('users').select('*');
+    if (uId) query = query.eq('id', uId);
+    else query = query.eq('email', uEmail);
+
+    const { data: dbUser } = await query.maybeSingle();
+    if (!dbUser) return null;
+
+    const meta = parseUserPackedMeta(dbUser.name);
+    return meta.speakverse || null;
+  } catch (err) {
+    console.warn('Fetch SpeakVerse progress notice:', err);
+    return null;
+  }
+}

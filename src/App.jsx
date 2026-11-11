@@ -74,6 +74,11 @@ import InternWorkspacePortal from './pages/InternWorkspacePortal';
 import StudentOnboardingModal from './components/StudentOnboardingModal';
 import CursorCompanionModal from './components/CursorCompanionModal';
 import SpeakVersePortal from './pages/SpeakVersePortal';
+import TechPulsePortal from './pages/TechPulsePortal';
+import GprecPlacementLanding from './components/GprecPlacementLanding';
+import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
+import GprecTpoPortal from './pages/GprecTpoPortal';
+import StudentPlacementDatabase from './pages/StudentPlacementDatabase';
 import { isGprecPlacementSubdomain, GPREC_PLACEMENT_PORTALS } from './utils/placementSubdomain';
 
 function App() {
@@ -88,7 +93,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['ai-commander', 'placement', 'placements', 'speakverse', 'interview', 'coding-practice', 'resume'].includes(hash)) return hash;
+        if (['ai-commander', 'placement', 'placements', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume'].includes(hash)) return hash;
       }
       if (isGprecPlacementSubdomain()) {
         return 'ai-commander';
@@ -153,37 +158,76 @@ function App() {
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(null); // null, 'student', or 'faculty'
+  const [showGprecLogin, setShowGprecLogin] = useState(false);
 
   const [showExitModal, setShowExitModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Trigger personalized onboarding questionnaire after login if not yet configured in live DB
+  // Trigger personalized onboarding questionnaire ONLY ONCE when newly logged in or registered
   useEffect(() => {
     if (isAuthenticated && user) {
-      const isFounder = user.role === 'founder' || user.email?.toLowerCase() === 'founder@lumixora.com';
-      if (!isFounder && user.onboardingCompleted !== true) {
+      const cleanEmail = (user.email || '').toLowerCase().trim();
+      const userId = user.id || user.uid || cleanEmail;
+      if (!userId) return;
+
+      const isFounder = user.role === 'founder' || cleanEmail === 'founder@lumixora.com';
+      const isOfficer = user.isOfficer || user.isDean || cleanEmail === 'dean.placements@gprec.ac.in';
+      const isFaculty = user.role === 'faculty' || user.role === 'mentor';
+      const isPlacementSub = isGprecPlacementSubdomain();
+
+      // Never prompt founders, faculty, placement officers, or on isolated GPREC placement subdomain
+      if (isFounder || isOfficer || isFaculty || isPlacementSub) return;
+
+      // Check localStorage & user record to ensure it is asked strictly ONCE
+      const completedKey = `lumixora_onboarding_completed_${userId}`;
+      const emailCompletedKey = cleanEmail ? `lumixora_onboarding_completed_${cleanEmail}` : null;
+      const isSessionShown = sessionStorage.getItem(`lumixora_onboarding_session_${userId}`) === 'true';
+
+      const hasCompleted = 
+        user.onboardingCompleted === true ||
+        localStorage.getItem(completedKey) === 'true' ||
+        (emailCompletedKey && localStorage.getItem(emailCompletedKey) === 'true') ||
+        isSessionShown;
+
+      if (!hasCompleted) {
+        sessionStorage.setItem(`lumixora_onboarding_session_${userId}`, 'true');
         const timer = setTimeout(() => {
           setShowOnboarding(true);
         }, 800);
         return () => clearTimeout(timer);
       }
     }
-  }, [isAuthenticated, user?.onboardingCompleted, user?.role, user?.email]);
+  }, [isAuthenticated, user?.onboardingCompleted, user?.role, user?.email, user?.id, user?.uid]);
 
-  const handleSaveOnboarding = async (prefData) => {
-    if (!user) return;
+  const handleDismissOnboarding = (prefData = null) => {
+    if (!user) {
+      setShowOnboarding(false);
+      return;
+    }
     const cleanEmail = (user.email || '').toLowerCase().trim();
+    const userId = user.id || user.uid || cleanEmail;
+
+    // Permanently record completion in localStorage so it is never shown again
+    try {
+      if (userId) localStorage.setItem(`lumixora_onboarding_completed_${userId}`, 'true');
+      if (cleanEmail) localStorage.setItem(`lumixora_onboarding_completed_${cleanEmail}`, 'true');
+      sessionStorage.setItem(`lumixora_onboarding_session_${userId}`, 'true');
+    } catch (e) {}
+
     const updatedUser = {
       ...user,
-      careerGoal: prefData.careerGoal,
-      interests: prefData.interests,
-      activePortals: prefData.activePortals,
-      onboardingCompleted: true
+      onboardingCompleted: true,
+      ...(prefData ? {
+        careerGoal: prefData.careerGoal,
+        interests: prefData.interests,
+        activePortals: prefData.activePortals,
+      } : {})
     };
 
     // 1. Update React state & local storage cache instantly
     handleUpdateUser(updatedUser);
+    setShowOnboarding(false);
 
     // 2. Perform live database network calls asynchronously in parallel without blocking UI
     (async () => {
@@ -204,9 +248,9 @@ function App() {
           rollNumber: user.rollNumber || user.roll_number || '',
           mobileNumber: user.mobileNumber || user.phone || '',
           cgpa: user.cgpa || '9.0',
-          careerGoal: prefData.careerGoal,
-          interests: prefData.interests,
-          activePortals: prefData.activePortals,
+          careerGoal: prefData?.careerGoal || user.careerGoal || 'Placement',
+          interests: prefData?.interests || user.interests || [],
+          activePortals: prefData?.activePortals || user.activePortals || null,
           onboardingCompleted: true
         };
 
@@ -222,9 +266,11 @@ function App() {
       if (primaryUid) {
         syncTasks.push(
           setDoc(doc(db, 'users', String(primaryUid)), {
-            careerGoal: prefData.careerGoal,
-            interests: prefData.interests,
-            activePortals: prefData.activePortals,
+            ...(prefData ? {
+              careerGoal: prefData.careerGoal,
+              interests: prefData.interests,
+              activePortals: prefData.activePortals,
+            } : {}),
             onboardingCompleted: true
           }, { merge: true }).catch(err => console.warn('Firestore onboarding sync warning:', err))
         );
@@ -530,20 +576,26 @@ function App() {
     const email = (user?.email || '').toLowerCase().trim();
     const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
     const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
-    const defaultHomeTab = isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard');
+    const isGprecSub = isGprecPlacementSubdomain();
+    const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+    const defaultHomeTab = isOfficer 
+      ? 'tpo-dashboard' 
+      : (isGprecSub ? 'ai-commander' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
 
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1); // remove '#'
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
-        if (['dashboard', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'ai-twin', 'ai-future-twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
-          if (['internship', 'internship-portal', 'apply-internship'].includes(tab)) {
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+          if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
+            setActiveTab('tech-pulse');
+          } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
+            setActiveTab('test-portal');
+          } else if (['internship', 'internship-portal', 'apply-internship'].includes(tab)) {
             setActiveTab('internships');
           } else if (['intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
             setActiveTab('intern-portal');
-          } else if (['twin', 'ai-twin', 'ai-future-twin', 'careerverse'].includes(tab)) {
-            setActiveTab('future-twin');
           } else {
             setActiveTab(tab);
           }
@@ -556,8 +608,9 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     
     // Initial check on load
-    if (!window.location.hash) {
+    if (!window.location.hash || window.location.hash === '#dashboard') {
       window.location.hash = defaultHomeTab;
+      setActiveTab(defaultHomeTab);
     } else {
       handleHashChange();
     }
@@ -1021,28 +1074,25 @@ function App() {
         localStorage.setItem(`lumixora_fee_paid_${finalizedUser.email.toLowerCase().trim()}`, 'true');
       } catch (e) {}
     }
-    
 
-    // Cloud Sync: Load all progress from Supabase + migrate any localStorage-only data
     if (finalizedUser.email) {
       cloudSync.loadAll(finalizedUser.email).then(() => {
         cloudSync.migrateFromLocalStorage(finalizedUser.email);
       }).catch(() => {});
     }
 
-    // Whenever ANY user logs in or registers into website, ALWAYS open Dashboard directly. Never open other portals randomly.
-    // Ask user for their companion/style preference if not decided yet
-    try {
-      const companionPref = localStorage.getItem('lumixora_companion_decided');
-      if (!companionPref) {
-        setShowCompanionModal(true);
-      }
-    } catch (e) {}
-
-    setActiveTab('dashboard');
-    try {
-      window.location.hash = 'dashboard';
-    } catch (e) {}
+    if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in') {
+      setActiveTab('tpo-dashboard');
+      window.location.hash = 'tpo-dashboard';
+    } else if (isGprecPlacementSubdomain()) {
+      setActiveTab('ai-commander');
+      window.location.hash = 'ai-commander';
+    } else {
+      setActiveTab('dashboard');
+      try {
+        window.location.hash = 'dashboard';
+      } catch (e) {}
+    }
   };
 
   const handleLogout = () => {
@@ -1054,6 +1104,11 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
             case 'dashboard':
+        const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+        if (isOff) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+        if (isGprecPlacementSubdomain()) {
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        }
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       case 'my-academics':
       case 'academics':
@@ -1125,6 +1180,11 @@ function App() {
       case 'lumixora-speakverse':
       case 'speaking-coach':
         return <SpeakVersePortal user={user} setActiveTab={handleTabChange} />;
+      case 'tech-pulse':
+      case 'tech-news':
+      case 'jobs-radar':
+      case 'tech-radar':
+        return <TechPulsePortal user={user} setActiveTab={handleTabChange} />;
       case 'projectverse':
       case 'project-verse':
       case 'projects-hub':
@@ -1180,6 +1240,9 @@ function App() {
       case 'life-replay':
         return <LifeReplay user={user} />;
       case 'test-portal':
+      case 'tests':
+      case 'assignments':
+      case 'tests-assignments':
         return <TestPortal user={user} setActiveTab={handleTabChange} />;
       case 'assigned-tasks':
         return <AssignedTasksPortal user={user} setActiveTab={handleTabChange} />;
@@ -1224,8 +1287,16 @@ function App() {
       case 'team-portal':
       case 'teammate-portal':
         return <TeamPortal user={user} setActiveTab={handleTabChange} />;
+      case 'tpo-dashboard':
+      case 'tpo-analytics':
+      case 'placement-officer':
+        return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+      case 'student-database':
+      case 'student-placement-db':
+      case 'placement-database':
+        return <StudentPlacementDatabase user={user} setActiveTab={handleTabChange} />;
       case 'faculty-portal':
-        const isFacultyUser = user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
+        const isFacultyUser = user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
         if (isFacultyUser) {
           return <FacultyPortal user={user} setActiveTab={handleTabChange} />;
         }
@@ -1238,6 +1309,9 @@ function App() {
         }
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       default:
+        const isOffDefault = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+        if (isOffDefault) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+        if (isGprecPlacementSubdomain()) return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         return <Dashboard setActiveTab={handleTabChange} user={user} />;
     }
   };
@@ -1502,6 +1576,32 @@ function App() {
         </ThemeProvider>
       );
     }
+    // GPREC Placement Suite Landing Page (when visiting gprec.lumixora.in without being logged in)
+    if (isGprecPlacementSubdomain()) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <GprecPlacementLanding 
+              onEnterPlacement={(portalId) => {
+                setActiveTab(portalId || 'ai-commander');
+                setShowGprecLogin(true);
+              }}
+              onLoginClick={() => setShowGprecLogin(true)}
+            />
+            <GprecPlacementLoginModal
+              isOpen={showGprecLogin}
+              onClose={() => setShowGprecLogin(false)}
+              onLoginSuccess={(verifiedUser) => {
+                handleLogin(verifiedUser);
+              }}
+            />
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     return (
       <ThemeProvider>
         <ToastProvider>
@@ -1589,9 +1689,9 @@ function App() {
             />
             <StudentOnboardingModal
               isOpen={showOnboarding}
-              onClose={() => setShowOnboarding(false)}
+              onClose={() => handleDismissOnboarding()}
               user={user}
-              onSavePreferences={handleSaveOnboarding}
+              onSavePreferences={(prefs) => handleDismissOnboarding(prefs)}
             />
           </DataProvider>
         </GamificationProvider>

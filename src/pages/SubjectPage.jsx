@@ -3,6 +3,7 @@ import { ArrowLeft, PlayCircle, Star, Clock, Heart, Share2, FileText, Download, 
 import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
 import AINotesGeneratorModal from '../components/AINotesGeneratorModal';
+import AdvancedDocumentViewerModal from '../components/AdvancedDocumentViewerModal';
 
 export default function SubjectPage({ subject, onBack, user }) {
   const { hubMaterials, updateHubMaterials, uploadFile } = useData();
@@ -34,6 +35,7 @@ export default function SubjectPage({ subject, onBack, user }) {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewingUrl, setViewingUrl] = useState('');
   const [viewingType, setViewingType] = useState('pdf'); // 'pdf' or 'image'
+  const [viewingTitle, setViewingTitle] = useState('Academic Document');
   const [isWindowFocused, setIsWindowFocused] = useState(true);
   const [aiNotesModalOpen, setAiNotesModalOpen] = useState(false);
 
@@ -471,6 +473,7 @@ export default function SubjectPage({ subject, onBack, user }) {
                     embedUrl.toLowerCase().includes('.pdf') ||
                     embedUrl.includes('drive.google.com/file/d/') && embedUrl.includes('/preview');
                   
+                  setViewingTitle(res.label || subject?.name || 'Academic Document');
                   if (isImage) {
                     setViewingUrl(embedUrl);
                     setViewingType('image');
@@ -661,94 +664,19 @@ export default function SubjectPage({ subject, onBack, user }) {
         </div>
       )}
 
-      {/* Secure PDF Viewer Modal */}
-      {viewerOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 select-none animate-fade-in"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <div className="relative w-full h-full max-w-5xl bg-[#0a0a0f] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
-            
-            {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/60">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-brand-pink animate-pulse" />
-                <span className="text-xs font-bold text-white tracking-wide">Secure Document Viewer</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {viewingUrl && (
-                  <button 
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = viewingUrl;
-                      link.target = '_blank';
-                      // Force download if possible
-                      link.download = '';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                    className="text-gray-300 hover:text-brand-blue bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-bold mr-1 border border-white/5 hover:border-white/10"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download File
-                  </button>
-                )}
-                <button 
-                  onClick={() => {
-                    setViewerOpen(false);
-                    setViewingUrl('');
-                  }} 
-                  className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Viewer body */}
-            <div className="flex-1 relative bg-[#020205] overflow-hidden flex items-center justify-center">
-
-              {/* Watermark Overlay (Grid of diagonal text) */}
-              <div className="absolute inset-0 z-20 pointer-events-none grid grid-cols-3 grid-rows-5 opacity-[0.22] overflow-hidden select-none">
-                {Array.from({ length: 15 }).map((_, i) => (
-                  <div 
-                    key={i} 
-                    className="flex items-center justify-center text-xs sm:text-sm font-bold text-slate-400 tracking-widest uppercase rotate-[-25deg] select-none whitespace-nowrap"
-                    style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.2)' }}
-                  >
-                    {user?.email || 'Student'} • Vyomra ID: {user?.id?.substring(0,6) || 'LM1024'}
-                  </div>
-                ))}
-              </div>
-
-              {/* PDF Viewer frame */}
-              {/* Document/Image Render */}
-              {viewingType === 'image' ? (
-                <img 
-                  src={viewingUrl} 
-                  alt="Academic Resource" 
-                  className="max-w-full max-h-[75vh] object-contain z-10 rounded-lg shadow-lg" 
-                  onContextMenu={(e) => e.preventDefault()}
-                  draggable="false"
-                />
-              ) : (
-                <iframe 
-                  src={viewingUrl}
-                  className="w-full h-full border-none z-10"
-                  title="Document Viewer"
-                />
-              )}
-            </div>
-            
-            {/* Footer */}
-            <div className="p-3 border-t border-white/10 bg-black/60 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-500 font-semibold px-6 gap-2">
-              <span>Authorized Access for: <strong className="text-brand-blue">{user?.email || 'Student'}</strong></span>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* Advanced Academic Document Viewer Modal */}
+      <AdvancedDocumentViewerModal
+        isOpen={viewerOpen}
+        onClose={() => {
+          setViewerOpen(false);
+          setViewingUrl('');
+        }}
+        viewingUrl={viewingUrl}
+        viewingType={viewingType}
+        title={viewingTitle}
+        subject={subject}
+        user={user}
+      />
 
       {/* AI Notes Generator Modal */}
       <AINotesGeneratorModal 

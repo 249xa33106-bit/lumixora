@@ -15,12 +15,18 @@ import Dashboard3DBackground from '../components/Dashboard3DBackground';
 import StudentDnaCard from '../components/omiverse/StudentDnaCard';
 import OmiverseWorldNavigator from '../components/omiverse/OmiverseWorldNavigator';
 import VyomraProveModal from '../components/omiverse/VyomraProveModal';
+import { cloudSync } from '../services/cloudSyncService';
+import { useGamification } from '../context/GamificationContext';
+import { ALL_ACHIEVEMENTS, getPlacementTier } from '../services/gamificationService';
+import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
 
 export default function Dashboard({ setActiveTab, user }) {
+  const handleOpenOnboarding = () => window.dispatchEvent(new CustomEvent('lumixora_open_onboarding'));
   const { tasks, doubts, notes } = useData();
   const { addToast } = useToast();
   const userId = user?.uid || user?.email || 'default';
   const chatEndRef = useRef(null);
+  const { profile: gamifyProfile, challenges } = useGamification ? useGamification() : { profile: null, challenges: { daily: [], weekly: [] } };
   const [isProveModalOpen, setIsProveModalOpen] = useState(false);
 
   // ─── Clean Student Name ────────────────────────────────────────────────────
@@ -396,6 +402,7 @@ Do NOT use markdown backticks. Return raw JSON.`
       <Dashboard3DBackground />
 
       {/* 🌟🌟🌟 Premium Founder Banner & Story 🌟🌟🌟 */}
+      {!isGprecPlacementSubdomain() && !user?.email?.toLowerCase().endsWith('@gprec.ac.in') && !user?.isOfficer && !user?.isDean && user?.email !== 'dean.placements@gprec.ac.in' && (
       <div className="w-full space-y-6 relative z-10">
         {/* Banner Image */}
         <div className="w-full rounded-3xl overflow-hidden border border-white/5 shadow-2xl aspect-[1024/480] md:aspect-[21/9]">
@@ -443,8 +450,7 @@ Do NOT use markdown backticks. Return raw JSON.`
           </div>
         </div>
       </div>
-
-
+      )}
 
       {/* ─── 🌌 VYOMRA OMIVERSE: AI CAREER BRAIN & TALENT GRAPH ─── */}
       <div className="animate-fade-in my-2">
@@ -819,7 +825,67 @@ Do NOT use markdown backticks. Return raw JSON.`
 
 
 
-          {/* Badges Widget Removed */}
+          
+          {/* 🎯 Daily Learning Missions & Placement Tier Widget */}
+          <div className="glass-panel glass-panel-hover p-5 rounded-2xl border border-white/10 space-y-4 animate-fade-in-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-white uppercase tracking-wider">
+                    Daily Learning Missions
+                  </h3>
+                  <span className="text-[10px] text-gray-400 font-semibold block">Learn → Practice → Build → Prove</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-brand-teal bg-brand-teal/10 px-2 py-0.5 rounded border border-brand-teal/20">
+                Live Quests
+              </span>
+            </div>
+
+            {/* Daily Quests List */}
+            <div className="space-y-2">
+              {((challenges && challenges.daily) || []).slice(0, 3).map((q, idx) => (
+                <div key={idx} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-sm shrink-0">{q.icon || '🎯'}</span>
+                    <p className="text-[11px] text-gray-300 font-medium truncate leading-tight">
+                      {q.text}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] font-mono font-bold text-amber-400 block">+{q.rewardXp} AP</span>
+                    <span className="text-[9px] font-bold text-gray-400">{q.current || 0}/{q.target}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Current Placement Tier Showcase */}
+            {(() => {
+              const placementPct = twinData?.metrics?.synergyScore || 75;
+              const tier = getPlacementTier(placementPct);
+              return (
+                <div className={`p-3.5 rounded-xl border ${tier.borderColor} ${tier.bgSoft} flex items-center justify-between gap-3`}>
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400 block">Placement Benchmark</span>
+                    <span className={`text-xs font-black bg-gradient-to-r ${tier.color} bg-clip-text text-transparent`}>
+                      {tier.badge} · {tier.tier.split(':')[1]?.trim() || tier.tier}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('certificates')}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-bold text-white transition-all cursor-pointer shrink-0"
+                  >
+                    View Badges
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+
 
         </div>
 

@@ -37,6 +37,11 @@ const CA_STORAGE_KEY = 'lumixora_ca_application';
 
 const COLLEGE_OPTIONS = [
   { id: 'gprec', name: 'G. Pulla Reddy Engineering College (Autonomous), Kurnool', short: 'GPREC Kurnool' },
+  { id: 'vitap', name: 'VIT AP UNIVERSITY, (Beside AP secretariat), near vijayawada, Guntur', short: 'VIT AP UNIVERSITY' },
+  { id: 'mits', name: 'MITS DEEMED TO BE UNIVERSITY, Madanapalle', short: 'MITS Madanapalle' },
+  { id: 'svce', name: 'Sri Venkateshwara College Of Engineering, Tirupathi', short: 'SVCE Tirupathi' },
+  { id: 'nec', name: 'Narayana Engineering College, Gudur', short: 'NEC Gudur' },
+  { id: 'rgukt', name: 'Rajiv Gandhi University of Knowledge and Technology RK Valley', short: 'RGUKT RK Valley' },
   { id: 'annamacharya', name: 'Annamacharya University, Rajampet', short: 'AU Rajampet' },
   { id: 'ashoka', name: "Ashoka Women's Engineering College, Kurnool", short: 'Ashoka Kurnool' },
   { id: 'bits', name: 'Bheema Institute Of Technology & Science, Adoni', short: 'BITS Adoni' },
@@ -553,7 +558,7 @@ export default function CampusAmbassadorModal({ isOpen, onClose }) {
                   </div>
                   <h4 className="font-extrabold text-white text-base">Inter-Collegiate Leadership Network</h4>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    Lead initiatives across partner institutions including GPREC Kurnool, Annamacharya University, Ashoka, and expanding universities. Forge lifelong peer and professional connections.
+                    Lead initiatives across partner institutions including GPREC Kurnool, VIT-AP University, Annamacharya University, Ashoka, and expanding universities. Forge lifelong peer and professional connections.
                   </p>
                 </div>
 

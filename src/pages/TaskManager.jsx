@@ -6,6 +6,7 @@ import {
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
+import { cloudSync } from '../services/cloudSyncService';
 
 // Web Audio Alarm Synthesizer Engine
 const playAlarmSynth = (toneType = 'siren') => {
@@ -83,7 +84,7 @@ const triggerDesktopNotification = (title, message) => {
   }
 };
 
-export default function TaskManager() {
+export default function TaskManager({ user }) {
   const { tasks, addTask, updateTask, deleteTask, loading } = useData();
   const { addToast } = useToast();
   const { awardXP } = useGamification();
@@ -152,10 +153,12 @@ export default function TaskManager() {
   // Save to LocalStorage automatically
   useEffect(() => {
     localStorage.setItem('lumixora_timetable', JSON.stringify(timetable));
+    if (user?.email) cloudSync.set(user.email, 'timetable', timetable);
   }, [timetable]);
 
   useEffect(() => {
     localStorage.setItem('lumixora_student_alarms', JSON.stringify(alarms));
+    if (user?.email) cloudSync.set(user.email, 'student_alarms', alarms);
   }, [alarms]);
 
   useEffect(() => {
@@ -214,6 +217,7 @@ export default function TaskManager() {
 
         if (hasChanges) {
           localStorage.setItem('lumixora_student_alarms', JSON.stringify(nextAlarms));
+          if (user?.email) cloudSync.set(user.email, 'student_alarms', nextAlarms);
         }
         return nextAlarms;
       });

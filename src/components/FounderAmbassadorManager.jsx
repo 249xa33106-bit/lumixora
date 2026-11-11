@@ -42,6 +42,11 @@ import { useToast } from '../context/ToastContext';
 
 const COLLEGE_OPTIONS = [
   { id: 'gprec', name: 'G. Pulla Reddy Engineering College (Autonomous), Kurnool', short: 'GPREC Kurnool' },
+  { id: 'vitap', name: 'VIT AP UNIVERSITY, (Beside AP secretariat), near vijayawada, Guntur', short: 'VIT AP UNIVERSITY' },
+  { id: 'mits', name: 'MITS DEEMED TO BE UNIVERSITY, Madanapalle', short: 'MITS Madanapalle' },
+  { id: 'svce', name: 'Sri Venkateshwara College Of Engineering, Tirupathi', short: 'SVCE Tirupathi' },
+  { id: 'nec', name: 'Narayana Engineering College, Gudur', short: 'NEC Gudur' },
+  { id: 'rgukt', name: 'Rajiv Gandhi University of Knowledge and Technology RK Valley', short: 'RGUKT RK Valley' },
   { id: 'annamacharya', name: 'Annamacharya University, Rajampet', short: 'AU Rajampet' },
   { id: 'ashoka', name: "Ashoka Women's Engineering College, Kurnool", short: 'Ashoka Kurnool' },
   { id: 'bits', name: 'Bheema Institute Of Technology & Science, Adoni', short: 'BITS Adoni' },

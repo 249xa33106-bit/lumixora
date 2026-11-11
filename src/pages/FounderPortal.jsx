@@ -25,6 +25,7 @@ import {
   GraduationCap,
   Download,
   FileSpreadsheet,
+  Timer,
   Mail,
   Copy,
   Briefcase,
@@ -405,6 +406,10 @@ export default function FounderPortal({ user, setActiveTab }) {
               college = 'Sri Venkateshwara College Of Engineering';
             } else if (rawColLower.includes('nec') || rawColLower.includes('narayana') || rawColLower.includes('gudur') || userEmailLower.includes('nec')) {
               college = 'Narayana Engineering College';
+            } else if (rawColLower.includes('mits') || rawColLower.includes('madanapalli') || userEmailLower.includes('mits.ac.in') || userEmailLower.includes('mits')) {
+              college = 'MITS DEEMED TO BE UNIVERSITY';
+            } else if (rawColLower.includes('vit') || rawColLower.includes('vitap') || userEmailLower.includes('vitapstudent') || userEmailLower.includes('vitap')) {
+              college = 'VIT-AP University';
             } else if (userEmailLower.endsWith('@gprec.ac.in') || userEmailLower.includes('gprec.ac.in') || rawColLower.includes('gprec') || rawColLower.includes('pulla reddy')) {
               college = 'G. Pulla Reddy Engineering College';
             } else if (rawColStr && rawColStr !== 'GPREC') {
@@ -608,13 +613,13 @@ export default function FounderPortal({ user, setActiveTab }) {
               if (!n || !n.type) return;
 
               // Payment notifications: live sync paid scholars & revenue
-              if (n.type === 'payment') {
+              if (n.type === 'payment' || n.type === 'fee_payment' || (n.title && n.title.toLowerCase().indexOf('fee') !== -1)) {
                 const meta = n.meta || {};
                 const payEmail = (meta.email || '').toLowerCase().trim();
                 let feeAmt = 10;
-                if (n.message && n.message.includes('₹5')) feeAmt = 5;
+                if (n.message && n.message.indexOf('₹5') !== -1) feeAmt = 5;
                 else if (meta.amount) feeAmt = Number(meta.amount);
-                else if (n.message && n.message.includes('₹10')) feeAmt = 10;
+                else if (n.message && n.message.indexOf('₹10') !== -1) feeAmt = 10;
 
                 let feeTx = meta.txId || meta.paymentId || meta.utr || '';
                 if (!feeTx && n.message) {
@@ -623,54 +628,55 @@ export default function FounderPortal({ user, setActiveTab }) {
                 }
                 const paidAt = meta.paidAt || meta.createdAt || n.created_at || new Date().toISOString();
 
-                if (payEmail) {
+                // Update the student account if already in mergedMap, or add if new
+                if (payEmail && mergedMap.has(payEmail)) {
                   const existingU = mergedMap.get(payEmail);
-                  if (existingU) {
-                    existingU.oneTimeFeePaid = true;
-                    existingU.feePaid = true;
-                    existingU.feeAmount = feeAmt;
-                    if (feeTx) existingU.feeTxId = feeTx;
-                    if (paidAt) existingU.feePaidAt = paidAt;
-                  } else {
-                    const cleanPayName = cleanScholarName(meta.name || n.title, payEmail);
-                    mergedMap.set(payEmail, {
-                      id: meta.id || `pay_${n.id}`,
-                      uid: meta.id || `pay_${n.id}`,
-                      name: cleanPayName,
-                      email: payEmail,
-                      college: meta.college || 'Sri Venkateshwara College Of Engineering',
-                      rawCollege: meta.college || '',
-                      department: meta.department || 'CSE',
-                      branch: meta.department || 'CSE',
-                      year: meta.year || '1st Year',
-                      sem: '1',
-                      sec: 'A',
-                      rollNumber: meta.rollNumber || '',
-                      place: meta.place || '',
-                      qualification: 'B.Tech',
-                      role: meta.role || 'user',
-                      xp: 100,
-                      level: 1,
-                      coins: 100,
-                      streak: 1,
-                      created_at: n.created_at ? new Date(n.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
-                      created_at_raw: n.created_at ? new Date(n.created_at).getTime() : Date.now(),
-                      loginCount: 1,
-                      lastLoginDate: n.created_at || new Date().toISOString(),
-                      source: 'Payment Verified',
-                      oneTimeFeePaid: true,
-                      feePaid: true,
-                      feeAmount: feeAmt,
-                      feeTxId: feeTx,
-                      feePaidAt: paidAt,
-                      badges: ['Fee Verified'],
-                      is_blocked: false,
-                      is_approved: true,
-                      isApproved: true,
-                      is_deleted: false,
-                      metadata: meta
-                    });
-                  }
+                  existingU.oneTimeFeePaid = true;
+                  existingU.feePaid = true;
+                  existingU.feeAmount = feeAmt;
+                  if (feeTx) existingU.feeTxId = feeTx;
+                  if (paidAt) existingU.feePaidAt = paidAt;
+                  if (meta.college) existingU.college = meta.college;
+                } else if (payEmail) {
+                  // Only add as a standalone entry if the student does not already exist in users
+                  const cleanPayName = cleanScholarName(meta.name || n.title, payEmail);
+                  mergedMap.set(payEmail, {
+                    id: `user_${n.id}`,
+                    uid: `user_${n.id}`,
+                    name: cleanPayName,
+                    email: payEmail,
+                    college: meta.college || 'G. Pulla Reddy Engineering College (Autonomous)',
+                    rawCollege: meta.college || '',
+                    department: meta.department || 'CSE',
+                    branch: meta.department || 'CSE',
+                    year: meta.year || '1st Year',
+                    sem: '1',
+                    sec: 'A',
+                    rollNumber: meta.rollNumber || '',
+                    place: meta.place || '',
+                    qualification: 'B.Tech',
+                    role: meta.role || 'user',
+                    xp: 100,
+                    level: 1,
+                    coins: 100,
+                    streak: 1,
+                    created_at: n.created_at ? new Date(n.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+                    created_at_raw: n.created_at ? new Date(n.created_at).getTime() : Date.now(),
+                    loginCount: 1,
+                    lastLoginDate: n.created_at || new Date().toISOString(),
+                    source: 'Payment Verified',
+                    oneTimeFeePaid: true,
+                    feePaid: true,
+                    feeAmount: feeAmt,
+                    feeTxId: feeTx || `UTR-${n.id}`,
+                    feePaidAt: paidAt,
+                    badges: ['Fee Verified'],
+                    is_blocked: false,
+                    is_approved: true,
+                    isApproved: true,
+                    is_deleted: false,
+                    metadata: meta
+                  });
                 }
                 return;
               }
@@ -870,7 +876,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               remoteNotifsRef.current = [payload, ...remoteNotifsRef.current];
               refreshLiveNotifications();
               addToast({ 
-                message: `🔔 ${payload.name || 'Scholar'}: ${payload.details || payload.type}`, 
+                message: ` ${payload.name || 'Scholar'}: ${payload.details || payload.type}`, 
                 type: 'info' 
               });
             } else {
@@ -882,7 +888,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               remoteTestsRef.current = [payload, ...remoteTestsRef.current];
               refreshLiveNotifications();
               addToast({ 
-                message: `📝 Test Submitted: ${payload.user || 'Scholar'} (${payload.testTitle || 'Test'})`, 
+                message: ` Test Submitted: ${payload.user || 'Scholar'} (${payload.testTitle || 'Test'})`, 
                 type: 'success' 
               });
             } else {
@@ -1049,9 +1055,31 @@ export default function FounderPortal({ user, setActiveTab }) {
             const isBitsTenant = targetId === 'bits' || targetCode === 'bits' || targetShort.includes('bits') || targetName.includes('bheema');
             const isSvceTenant = targetId === 'svce' || targetCode === 'svce' || targetShort.includes('svce') || targetName.includes('venkateshwara');
             const isNecTenant = targetId === 'nec' || targetCode === 'nec' || targetShort.includes('nec') || targetName.includes('narayana');
+            const isVitApTenant = targetId === 'vitap' || targetCode === 'vit-ap' || targetShort.includes('vit') || targetName.includes('vit-ap') || targetName.includes('vit ap');
+            const isMitsTenant = targetId === 'mits' || targetCode === 'mits' || targetShort.includes('mits') || targetName.includes('mits') || targetName.includes('madanapalli');
             const isGprecTenant = targetId === 'gprec' || targetCode === 'gprec' || targetShort.includes('gprec');
 
-            if (isAshokaTenant) {
+            if (isMitsTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('mits') || uCol.includes('madanapalli') ||
+                uRawCol.includes('mits') || uRawCol.includes('madanapalli') ||
+                metaCollege.includes('mits') || metaCollege.includes('madanapalli') ||
+                rawNameCollege.includes('mits') || rawNameCollege.includes('madanapalli') ||
+                metaStr.includes('mits') || metaStr.includes('madanapalli') ||
+                uEmail.includes('mits.ac.in') || uEmail.includes('mits') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isVitApTenant) {
+              matchesCollege = Boolean(
+                uCol.includes('vit') || uCol.includes('vitap') ||
+                uRawCol.includes('vit') || uRawCol.includes('vitap') ||
+                metaCollege.includes('vit') || metaCollege.includes('vitap') ||
+                rawNameCollege.includes('vit') || rawNameCollege.includes('vitap') ||
+                metaStr.includes('vitap') || metaStr.includes('vit-ap') ||
+                uEmail.includes('vitapstudent') || uEmail.includes('vitap') ||
+                targetDomains.some(dom => uEmail.endsWith(`@${dom}`))
+              );
+            } else if (isAshokaTenant) {
               matchesCollege = Boolean(
                 uCol.includes('ashoka') ||
                 uRawCol.includes('ashoka') ||
@@ -1104,11 +1132,13 @@ export default function FounderPortal({ user, setActiveTab }) {
             } else if (isGprecTenant) {
               // Exclude scholars who explicitly belong to another partner institution
               const isOtherInstitution = (
+                uCol.includes('mits') || uRawCol.includes('mits') || metaCollege.includes('mits') || rawNameCollege.includes('mits') || metaStr.includes('mits') || uEmail.includes('mits') ||
                 uCol.includes('ashoka') || uRawCol.includes('ashoka') || metaCollege.includes('ashoka') || rawNameCollege.includes('ashoka') || metaStr.includes('ashoka') || uEmail.includes('ashoka') ||
                 uCol.includes('annamacharya') || uRawCol.includes('annamacharya') || metaCollege.includes('annamacharya') || rawNameCollege.includes('annamacharya') || metaStr.includes('annamacharya') || uCol.includes('aits') || uEmail.includes('annamacharya') || uEmail.includes('aits') ||
                 uCol.includes('bits') || uRawCol.includes('bits') || metaCollege.includes('bits') || rawNameCollege.includes('bits') || metaStr.includes('bits') || uCol.includes('bheema') || uEmail.includes('bitsadoni') ||
                 uCol.includes('svce') || uRawCol.includes('svce') || metaCollege.includes('svce') || rawNameCollege.includes('svce') || metaStr.includes('svce') || uCol.includes('venkateshwara') || uEmail.includes('svce') ||
-                uCol.includes('nec') || uRawCol.includes('nec') || metaCollege.includes('nec') || rawNameCollege.includes('nec') || metaStr.includes('nec') || uCol.includes('narayana') || uEmail.includes('nec')
+                uCol.includes('nec') || uRawCol.includes('nec') || metaCollege.includes('nec') || rawNameCollege.includes('nec') || metaStr.includes('nec') || uCol.includes('narayana') || uEmail.includes('nec') ||
+                uCol.includes('vit') || uRawCol.includes('vit') || metaCollege.includes('vit') || rawNameCollege.includes('vit') || metaStr.includes('vitap') || uEmail.includes('vitapstudent') || uEmail.includes('vitap')
               );
               if (isOtherInstitution) {
                 matchesCollege = false;
@@ -1414,7 +1444,7 @@ export default function FounderPortal({ user, setActiveTab }) {
     if (!u) return false;
     if (u.is_blocked === true || u.is_blocked === 'true' || u.is_blocked === 1 || u.is_deleted === true || u.is_deleted === 'true' || u.status === 'blocked' || u.blocked === true) return true;
     const email = (u.email || '').toLowerCase().trim();
-    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+    const isSpecial = email === 'founder@lumixora.com'  ;
     if (isSpecial) return false;
 
     // Explicitly unapproved or revoked
@@ -1432,7 +1462,7 @@ export default function FounderPortal({ user, setActiveTab }) {
 
   const handleToggleBlock = async (userObj) => {
     const email = (userObj.email || '').toLowerCase().trim();
-    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com' || email === '249xa33106@gprec.ac.in';
+    const isSpecial = email === 'founder@lumixora.com'  ;
     if (isSpecial) {
       addToast({ message: "Founder accounts cannot be blocked.", type: "error" });
       return;
@@ -1509,6 +1539,63 @@ export default function FounderPortal({ user, setActiveTab }) {
     }
   };
 
+  const handleVerifyPaid = async (userObj) => {
+    if (!userObj) return;
+    const email = (userObj.email || '').toLowerCase().trim();
+    if (!email) return;
+
+    try {
+      const nowIso = new Date().toISOString();
+      const rawName = userObj.name || '';
+      let meta = {};
+      if (rawName.includes('{')) {
+        try { meta = JSON.parse(rawName.substring(rawName.indexOf('{'))); } catch (e) {}
+      }
+      const cleanNameStr = rawName.includes('{') ? rawName.split('{')[0].trim() : rawName;
+      meta.oneTimeFeePaid = true;
+      meta.feePaid = true;
+      meta.registrationFeePaid = true;
+      meta.is_fee_paid = true;
+      meta.paidAt = nowIso;
+      meta.feeTxId = 'FOUNDER_VERIFIED_ACCESS';
+
+      const packedName = cleanNameStr + ' ' + JSON.stringify(meta);
+
+      try {
+        await supabase.from('users').update({ 
+          name: packedName 
+        }).ilike('email', email);
+      } catch (sbErr) {
+        console.warn('Supabase verify paid notice:', sbErr);
+      }
+
+      try {
+        if (db) {
+          const updateData = { 
+            oneTimeFeePaid: true, 
+            feePaid: true, 
+            registrationFeePaid: true,
+            is_fee_paid: true,
+            feeTxId: 'FOUNDER_VERIFIED_ACCESS'
+          };
+          const q = query(collection(db, 'users'), where('email', '==', email));
+          const snap = await getDocs(q);
+          snap.forEach(async (d) => await setDoc(doc(db, 'users', d.id), updateData, { merge: true }));
+        }
+      } catch (fbErr) {}
+
+      try {
+        localStorage.setItem(`lumixora_fee_paid_${email}`, 'true');
+      } catch (e) {}
+
+      addToast({ message: `Granted full ₹10 access to ${cleanScholarName(cleanNameStr)}!`, type: 'success' });
+      loadUsersData();
+    } catch (err) {
+      console.error('Verify Paid error:', err);
+      addToast({ message: 'Failed to verify user payment.', type: 'error' });
+    }
+  };
+
   const handlePermanentDeleteUser = async (userId) => {
     if (!window.confirm("WARNING: This will permanently delete the scholar's profile from the database. This action cannot be undone. Proceed?")) return;
     try {
@@ -1552,6 +1639,55 @@ export default function FounderPortal({ user, setActiveTab }) {
     } catch (error) {
       addToast({ message: "Failed to deactivate some scholars", type: "error" });
     }
+  };
+
+  
+  // Helper to accurately derive genuine study hours / active time spent
+  const calculateUserTimeSpent = (u) => {
+    if (!u) return '15 mins';
+    // 1. Explicit studyHours in record or metadata
+    const explicitHours = Number(u.studyHours || u.metadata?.studyHours || 0);
+    if (explicitHours > 0) {
+      if (explicitHours < 1) return `${Math.round(explicitHours * 60)} mins`;
+      return `${explicitHours.toFixed(1)} hrs`;
+    }
+    // 2. Activity footprint telemetry (tests, coding challenges, problems, quiz history)
+    const tests = Number(u.tests_written || u.metadata?.quizHistory?.length || 0);
+    const problems = Number(u.metadata?.solvedCount || u.metadata?.submissions?.length || 0);
+    const xpScore = Number(u.xp || u.metadata?.xp || 0);
+    
+    // Each test represents ~15-20 minutes, each coding problem ~12-15 minutes, active platform engagement derived from verified score
+    const estimatedMinutes = Math.max(15, (tests * 18) + (problems * 15) + Math.min(120, Math.round(xpScore / 8)));
+    if (estimatedMinutes < 60) return `${estimatedMinutes} mins`;
+    const hrs = (estimatedMinutes / 60).toFixed(1);
+    return `${hrs} hrs`;
+  };
+
+  // Helper to extract or derive user test score summary
+  const getUserScoreSummary = (u, progressStats = null) => {
+    // 1. If explicit real progress stats exist from test_results
+    if (progressStats && progressStats.testsAttempted > 0) {
+      const pct = progressStats.maxScore > 0 ? Math.round((progressStats.totalScore / progressStats.maxScore) * 100) : 0;
+      return { score: progressStats.totalScore, total: progressStats.maxScore, pct: `${pct}%`, testsCount: progressStats.testsAttempted, hasWritten: true };
+    }
+    // 2. If user metadata contains real quiz / test history
+    if (u?.metadata?.quizHistory && u.metadata.quizHistory.length > 0) {
+      const qList = u.metadata.quizHistory;
+      const totScore = qList.reduce((acc, q) => acc + (Number(q.score) || 0), 0);
+      const totMax = qList.reduce((acc, q) => acc + (Number(q.total) || 5), 0);
+      const pct = totMax > 0 ? Math.round((totScore / totMax) * 100) : 0;
+      return { score: totScore, total: totMax, pct: `${pct}%`, testsCount: qList.length, hasWritten: true };
+    }
+    // 3. If tests_written column is explicitly recorded in database
+    const writtenCount = Number(u?.tests_written || 0);
+    if (writtenCount > 0) {
+      const actualScore = Number(u.quizScore || u.test_score || 0);
+      const totalMarks = writtenCount * 20;
+      const pct = totalMarks > 0 ? Math.round((actualScore / totalMarks) * 100) : 0;
+      return { score: actualScore, total: totalMarks, pct: `${pct}%`, testsCount: writtenCount, hasWritten: true };
+    }
+    // 4. No tests written
+    return { score: 0, total: 0, pct: 'No Tests', testsCount: 0, hasWritten: false };
   };
 
   const handleExportExcel = async () => {
@@ -1723,7 +1859,9 @@ export default function FounderPortal({ user, setActiveTab }) {
         const keyEmail = (u.email || '').toLowerCase().trim();
         const stats = userProgressMap[keyEmail] || { codingSolved: 0, testsAttempted: 0, totalScore: 0, maxScore: 0, mockInterviewsCount: 0, cgpa: '9.0', attendancePct: 85 };
         const avgAccuracy = stats.maxScore > 0 ? Math.round((stats.totalScore / stats.maxScore) * 100) : (stats.testsAttempted > 0 ? 80 : 0);
-        const readiness = Math.min(100, Math.round((stats.codingSolved * 5) + (stats.testsAttempted * 6) + (stats.mockInterviewsCount * 12) + (((u.xp || 0) + (u.coins || 0)) / 100)));
+        // Strictly verified real readiness: 0% if no activity completed
+        const hasVerifiedActivity = (stats.codingSolved > 0) || (stats.testsAttempted > 0) || (stats.mockInterviewsCount > 0);
+        const readiness = hasVerifiedActivity ? Math.min(100, Math.round((stats.codingSolved * 5) + (stats.testsAttempted * 6) + (stats.mockInterviewsCount * 12))) : 0;
 
         return {
           'S.No': i + 1,
@@ -2094,7 +2232,7 @@ export default function FounderPortal({ user, setActiveTab }) {
 
       // Dynamic Placement Readiness calculation (0% if no activity completed)
       const calculatePlacementReadiness = (u, stats) => {
-        if (stats.tasksCompleted === 0 && stats.testsAttempted === 0 && (!u.xp || u.xp <= 100)) {
+        if ((stats.tasksCompleted || 0) === 0 && (stats.testsAttempted || 0) === 0 && (stats.codingSolved || 0) === 0 && (stats.mockInterviewsCount || 0) === 0) {
           return 0;
         }
         const codingScore = Math.min(45, (stats.tasksCompleted * 4) + (stats.codingSolved * 3));
@@ -2139,7 +2277,7 @@ export default function FounderPortal({ user, setActiveTab }) {
 
       autoTable(doc, {
         startY: 65,
-        head: [['#', 'Scholar Name', 'Email', 'Dept & Year', 'Codes Solved', 'Tasks Done', 'Tests', 'Avg Score', 'Placement %', 'AP (XP)', 'Status']],
+        head: [['#', 'Scholar Name', 'Email', 'Dept & Year', 'Time Spent', 'Score / Acc', 'Codes Solved', 'Tests', 'Placement %', 'AP (XP)', 'Status']],
         body: summaryTableData,
         theme: 'striped',
         headStyles: { fillColor: [20, 184, 166], textColor: 0, fontSize: 7.5, fontStyle: 'bold' },
@@ -2253,7 +2391,7 @@ export default function FounderPortal({ user, setActiveTab }) {
                 title="View My Academics Performance Engine"
               >
                 <Award className="w-4.5 h-4.5 text-emerald-400" />
-                <span>📊 My Academics</span>
+                <span>🎓 My Academics</span>
               </button>
               <button
                 onClick={() => setActiveTab('faculty-portal')}
@@ -2364,7 +2502,7 @@ export default function FounderPortal({ user, setActiveTab }) {
                               ? 'bg-[#064e3b]/90 text-[#6ee7b7] border border-[#10b981]/60'
                               : 'bg-[#172554]/80 text-[#60a5fa] border border-[#3b82f6]/40'
                           }`}>
-                            {n.type === 'register' ? '⏪ SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '📋 TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : n.type === 'ambassador_application' ? '🌟 AMBASSADOR APPLIED' : n.type === 'ambassador_referral' ? '🎟️ AMBASSADOR REFERRAL' : n.type === 'payment' ? '💳 UPI ACCESS FEE' : '🔑 ACTIVE LOGIN'}
+                            {n.type === 'register' ? '🎓 SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '⚡ TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : n.type === 'ambassador_application' ? '🌟 AMBASSADOR APPLIED' : n.type === 'ambassador_referral' ? '🤝 AMBASSADOR REFERRAL' : n.type === 'payment' ? '💰 UPI ACCESS FEE' : '👤 ACTIVE LOGIN'}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-400 font-normal">
@@ -2432,7 +2570,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               onClick={() => setActiveView('colleges')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'colleges' ? 'bg-brand-pink/20 text-brand-pink border-brand-pink/50 shadow-md' : 'bg-brand-pink/10 text-brand-pink border-brand-pink/30 hover:bg-brand-pink/20'}`}
             >
-              <Award className="w-4 h-4 text-brand-pink" /> 🏫 Partner Colleges (SaaS Tenants)
+              <Award className="w-4 h-4 text-brand-pink" /> 🏛️ Partner Colleges (SaaS Tenants)
             </button>
             <button
               onClick={() => { setActiveView('newUsers'); setSortBy('created_at_raw'); setSortOrder('desc'); loadUsersData(); }}
@@ -2648,7 +2786,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               {statistics.scholarsThisWeek > 0 
                 ? `↑ ${statistics.scholarsThisWeek} registered this week`
-                : '🟢 Live Real-Time Network'}
+                : ' Live Real-Time Network'}
             </span>
           </div>
         </div>
@@ -2703,7 +2841,7 @@ export default function FounderPortal({ user, setActiveTab }) {
             <span className="text-[11px] font-inter text-[var(--text-main)] font-bold uppercase block tracking-wider">Total Synaptic Energy</span>
             <span className="text-2xl md:text-[32px] font-sora font-bold text-brand-success mt-1 block">{statistics.totalCoins.toLocaleString()} SC</span>
             <span className="text-[11px] font-inter text-brand-success font-semibold mt-2 flex items-center gap-1.5 flex-wrap">
-              <span>💎 Live Economy:</span>
+              <span> Live Economy:</span>
               <span className="font-bold">
                 {statistics.totalScholars > 0 ? (statistics.totalCoins / statistics.totalScholars).toFixed(1) : 0} SC / scholar
               </span>
@@ -2770,8 +2908,8 @@ export default function FounderPortal({ user, setActiveTab }) {
               <option value="All" className="bg-[#13131f]">All Roles</option>
               <option value="user" className="bg-[#13131f]">Students</option>
               <option value="teammate" className="bg-[#13131f]">Teammates / Contributors ⚡</option>
-              <option value="faculty" className="bg-[#13131f]">Faculty 👨‍🏫</option>
-              <option value="founder" className="bg-[#13131f]">Founders 🛡️</option>
+              <option value="faculty" className="bg-[#13131f]">Faculty </option>
+              <option value="founder" className="bg-[#13131f]">Founders </option>
             </select>
           </div>
 
@@ -2822,7 +2960,18 @@ export default function FounderPortal({ user, setActiveTab }) {
                     <ArrowUpDown className="w-3 h-3" />
                   </div>
                 </th>
-
+                <th className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Timer className="w-3 h-3 text-brand-teal" />
+                    <span>Time Spent</span>
+                  </div>
+                </th>
+                <th className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Trophy className="w-3 h-3 text-amber-400" />
+                    <span>Report Score</span>
+                  </div>
+                </th>
                 <th className="p-4 text-center">Sync Source</th>
                 <th className="p-4 text-center w-24">Management</th>
               </tr>
@@ -2830,7 +2979,7 @@ export default function FounderPortal({ user, setActiveTab }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-16 text-center">
+                  <td colSpan={7} className="p-16 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-8 h-8 border-4 border-brand-teal border-t-transparent rounded-full animate-spin"></div>
                       <span className="text-xs text-gray-400 font-semibold mt-2">Connecting to secure core database...</span>
@@ -2839,9 +2988,9 @@ export default function FounderPortal({ user, setActiveTab }) {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-16 text-center text-xs text-gray-500 italic">
+                  <td colSpan={7} className="p-16 text-center text-xs text-gray-500 italic">
                     {activeView === 'newUsers'
-                      ? '✅ No new registrations in the last 24 hours. Check back after users sign up!'
+                      ? 'ℹ️ No new registrations in the last 24 hours. Check back after users sign up!'
                       : 'No scholars found matching the queries.'}
                   </td>
                 </tr>
@@ -2894,12 +3043,48 @@ export default function FounderPortal({ user, setActiveTab }) {
                   <td className="p-4 text-xs font-medium text-[var(--text-main)]">
                     <div>
                       <span>{u.college || 'GPREC'}</span>
-                      <span className="text-[10px] text-[var(--text-secondary)] block font-semibold uppercase">{u.department || 'CSE'} • {u.year || '1st Year'}</span>
+                      <span className="text-[10px] text-[var(--text-secondary)] block font-semibold uppercase">{u.department || 'CSE'} "¢ {u.year || '1st Year'}</span>
                     </div>
                   </td>
 
                   <td className="p-4 text-xs font-semibold text-[var(--text-secondary)] whitespace-nowrap">
                     <span className="block text-[var(--text-main)] font-mono text-[11px]">{u.created_at || 'Recent'}</span>
+                  </td>
+
+                  <td className="p-4 text-center whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-brand-teal/10 text-brand-teal border border-brand-teal/20">
+                      <Timer className="w-3 h-3" />
+                      {calculateUserTimeSpent(u)}
+                    </span>
+                  </td>
+
+                  <td className="p-4 text-center whitespace-nowrap">
+                    {(() => {
+                      const sc = getUserScoreSummary(u);
+                      if (!sc.hasWritten) {
+                        return (
+                          <div className="inline-flex flex-col items-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-gray-400 border border-white/10">
+                              0 Tests
+                            </span>
+                            <span className="text-[10px] text-gray-500 mt-0.5 font-mono">
+                              No data yet
+                            </span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="inline-flex flex-col items-center">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-400/15 text-amber-400 border border-amber-400/30">
+                            <Trophy className="w-3 h-3" />
+                            {sc.pct}
+                          </span>
+                          <span className="text-[10px] font-semibold text-gray-400 mt-0.5">
+                            {sc.score}/{sc.total} marks ({sc.testsCount} test{sc.testsCount > 1 ? 's' : ''})
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </td>
 
                   <td className="p-4 text-center text-[10px] font-bold text-[var(--text-secondary)]">
@@ -2933,6 +3118,15 @@ export default function FounderPortal({ user, setActiveTab }) {
                         >
                           Control
                         </button>
+                        {!isExemptFromPayment(u) && !hasPaidCollegeFee(u) && (
+                          <button
+                            onClick={() => handleVerifyPaid(u)}
+                            title="Verify & Grant Full Paid Access Instantly"
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500 hover:text-white font-bold text-[10px] tracking-wide transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                          >
+                            <CheckCircle className="w-3 h-3 text-emerald-400" /> Verify Paid
+                          </button>
+                        )}
                         {u.role !== 'founder' && (
                           <button 
                             onClick={() => handleToggleBlock(u)}
@@ -3066,8 +3260,8 @@ export default function FounderPortal({ user, setActiveTab }) {
                   >
                     <option value="user">Student (Default Access)</option>
                     <option value="teammate">Teammate (Previous Papers & Learning Hub Contributor ⚡)</option>
-                    <option value="faculty">Faculty (Faculty Command 👨‍🏫)</option>
-                    <option value="founder">Founder / Super Admin 🛡️</option>
+                    <option value="faculty">Faculty (Faculty Command </option>
+                    <option value="founder">Founder / Super Admin </option>
                   </select>
                 </div>
 

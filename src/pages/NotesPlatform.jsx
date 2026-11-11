@@ -1,3 +1,4 @@
+import AdvancedDocumentViewerModal from '../components/AdvancedDocumentViewerModal';
 import React, { useState, useEffect } from 'react';
 import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw, Building2 } from 'lucide-react';
 import { useData } from '../context/DataContext';
@@ -28,6 +29,7 @@ export default function NotesPlatform({ user, setActiveTab }) {
   const [linkInput, setLinkInput] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewNoteTitle, setPreviewNoteTitle] = useState('Academic Note');
   const [isEditingNote, setIsEditingNote] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', branch: 'CSE', semester: 'Sem 1', fileUrl: '' });
   const [noteOpenTime, setNoteOpenTime] = useState(null);
@@ -948,53 +950,16 @@ export default function NotesPlatform({ user, setActiveTab }) {
       </>
       )}
 
-      {/* Document Preview Modal */}
-      {previewUrl && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8">
-          <div className="relative w-full max-w-6xl h-full max-h-[90vh] glass-panel rounded-2xl flex flex-col border border-white/10">
-            <div className="flex justify-between items-center p-4 border-b border-white/10 bg-black/40">
-              <h3 className="text-brand-teal font-bold tracking-wider">Document Preview</h3>
-              <div className="flex items-center gap-2">
-                {previewUrl && (
-                  <button 
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = previewUrl;
-                      link.target = '_blank';
-                      link.download = '';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                    className="px-4 py-1.5 bg-brand-blue/20 text-brand-blue rounded-lg hover:bg-brand-blue hover:text-black transition-all text-sm font-bold flex items-center gap-1.5"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Note
-                  </button>
-                )}
-                <button 
-                  onClick={handleCloseModal}
-                  className="px-4 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm font-bold"
-                >
-                  Close Preview
-                </button>
-              </div>
-            </div>
-            <div 
-              className="flex-1 w-full bg-[#f8f9fa] rounded-b-2xl overflow-hidden relative"
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              <iframe 
-                src={previewUrl} 
-                className="w-full h-full border-0"
-                allow="autoplay"
-                title="Document Preview"
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      )}
-
-    </div>
+      {/* Advanced Academic Document Viewer Modal */}
+      <AdvancedDocumentViewerModal
+        isOpen={Boolean(previewUrl)}
+        onClose={handleCloseModal}
+        viewingUrl={previewUrl}
+        viewingType="pdf"
+        title={previewNoteTitle}
+        subject={{ name: previewNoteTitle }}
+        user={user}
+      />
+</div>
   );
 }

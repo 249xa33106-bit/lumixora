@@ -25,28 +25,45 @@ export const XP_REWARDS = {
   SCORE_ABOVE_90: { xp: 75, label: "High Cognitive Synergy" },
   UPLOAD_NOTES: { xp: 40, label: "Resource Constellation Contribution" },
   HELP_STUDENT: { xp: 25, label: "Peer Mind Synchronization" },
-  MAINTAIN_STREAK: { xp: 15, label: "Focus Rhythm Maintenance" },
+  MAINTAIN_STREAK: { xp: 20, label: "Focus Rhythm Maintenance" },
   COMPLETE_WEEKLY_GOAL: { xp: 150, label: "Weekly Mastery Alignment" },
   SYNC_AI_TWIN: { xp: 15, label: "Twin Neural Synchronization" },
   COMPLETE_STUDY_SESSION: { xp: 30, label: "Twin Simulated Study Session" },
-  READ_NOTE: { xp: 10, label: "Lecture Note Consultation" }
+  READ_NOTE: { xp: 10, label: "Lecture Note Consultation" },
+  // Skill & Outcome Achievements (Practice -> Build -> Prove)
+  SOLVE_CODE_CHALLENGE: { xp: 60, label: "Algorithm Challenge Solved" },
+  PASS_GRAND_TEST: { xp: 120, label: "Diagnostic Grand Assessment Cleared" },
+  COMPLETE_MOCK_INTERVIEW: { xp: 100, label: "AI Mock Interview Studio Cleared" },
+  PROJECT_MILESTONE_BUILT: { xp: 75, label: "ProjectVerse Milestone Built" },
+  PROJECT_VERIFIED_PROOF: { xp: 200, label: "Full Project Proof-of-Work Verified" },
+  EARN_SKILL_CERTIFICATE: { xp: 250, label: "Verified Proof-of-Skill Certificate Earned" },
+  SPEAKVERSE_DAILY_GOAL: { xp: 45, label: "SpeakVerse Fluency Milestone Cleared" }
 };
 
 // Available Badges & Achievements Definitions
 export const ALL_ACHIEVEMENTS = [
-  { id: 'first_login', name: 'First Steps', desc: 'Activate your study constellation', icon: '🚀', xpReward: 50 },
-  { id: 'streak_3', name: 'Consistent Learner', desc: 'Reach a 3-day focus flow streak', icon: '🔥', xpReward: 50 },
-  { id: 'streak_7', name: 'Weekly Warrior', desc: 'Reach a 7-day focus flow streak', icon: '⚡', xpReward: 100 },
-  { id: 'streak_30', name: 'Dedicated Scholar', desc: 'Reach a 30-day focus flow streak', icon: '🏆', xpReward: 250 },
-  { id: 'streak_100', name: 'Centurion', desc: 'Reach a 100-day focus flow streak', icon: '👑', xpReward: 500 },
-  { id: 'quiz_master', name: 'Quiz Master', desc: 'Complete 10 focus sprint assessments with score > 90%', icon: '🎓', xpReward: 150 },
-  { id: 'ai_explorer', name: 'AI Explorer', desc: 'Resolve 5 AI-generated target milestones', icon: '🤖', xpReward: 100 },
-  { id: 'early_bird', name: 'Early Bird', desc: 'Activate a focus sprint before 7 AM', icon: '🌅', xpReward: 50 },
-  { id: 'night_owl', name: 'Night Owl', desc: 'Maintain study flow for 20+ minutes after midnight', icon: '🦉', xpReward: 50 },
-  { id: 'top_contributor', name: 'Top Contributor', desc: 'Contribute 5 resource constellations', icon: '✍️', xpReward: 150 },
-  { id: 'top_10_leaderboard', name: 'Elite Ranker', desc: 'Reach the Top 10 in Global Resonance', icon: '🌠', xpReward: 200 },
-  { id: 'study_champion', name: 'Study Champion', desc: 'Accumulate 10 total hours of focus flow', icon: '⏳', xpReward: 200 },
-  { id: 'fast_learner', name: 'Fast Learner', desc: 'Resolve 3 focus tasks in a single day', icon: '🏎️', xpReward: 100 }
+  { id: 'first_login', name: 'First Steps', desc: 'Activate your Lumixora study constellation', icon: '🚀', category: 'onboarding', xpReward: 50 },
+  { id: 'streak_3', name: 'Consistent Learner', desc: 'Maintain a 3-day active focus streak', icon: '🔥', category: 'streak', xpReward: 50 },
+  { id: 'streak_7', name: 'Weekly Warrior', desc: 'Maintain a 7-day active focus streak', icon: '⚡', category: 'streak', xpReward: 100 },
+  { id: 'streak_30', name: 'Dedicated Scholar', desc: 'Maintain a 30-day disciplined study rhythm', icon: '🏆', category: 'streak', xpReward: 250 },
+  { id: 'streak_100', name: 'Centurion', desc: 'Reach a 100-day legendary streak', icon: '👑', category: 'streak', xpReward: 500 },
+  // Skill & Code Arena Badges
+  { id: 'algo_initiate', name: 'Code Arena Initiate', desc: 'Solve your first algorithmic challenge with passing tests', icon: '💻', category: 'coding', xpReward: 75 },
+  { id: 'polyglot_coder', name: 'Polyglot Developer', desc: 'Solve problems in 2+ different programming languages', icon: '🌐', category: 'coding', xpReward: 120 },
+  { id: 'dsa_champion', name: 'DSA Grandmaster', desc: 'Solve 10+ data structures and algorithms challenges', icon: '⚔️', category: 'coding', xpReward: 200 },
+  // Assessment & Test Badges
+  { id: 'quiz_master', name: 'Assessment Ace', desc: 'Score 85%+ on a Core Engineering diagnostic assessment', icon: '🎓', category: 'assessment', xpReward: 150 },
+  { id: 'proctor_clean', name: 'Integrity Distinction', desc: 'Complete a timed proctored exam with 100% trust score', icon: '🛡️', category: 'assessment', xpReward: 100 },
+  // Project & Build Badges
+  { id: 'builder_initiate', name: 'Project Builder', desc: 'Complete all milestone tasks of a ProjectVerse capstone', icon: '🛠️', category: 'project', xpReward: 150 },
+  { id: 'verified_ship', name: 'Production Shipper', desc: 'Submit verified GitHub repo and live deployment URL', icon: '🚀', category: 'project', xpReward: 250 },
+  // Placement & Career Badges
+  { id: 'interview_ready', name: 'Mock Studio Cleared', desc: 'Score 80%+ on an AI Technical Mock Interview', icon: '🎙️', category: 'placement', xpReward: 175 },
+  { id: 'placement_elite', name: 'Campus Placement Elite', desc: 'Attain an 80%+ Placement Readiness Score', icon: '🎯', category: 'placement', xpReward: 300 },
+  { id: 'certified_scholar', name: 'Verified Credential Holder', desc: 'Earn your first verifiable Proof-of-Skill Certificate', icon: '📜', category: 'placement', xpReward: 250 },
+  // Community & SpeakVerse
+  { id: 'speakverse_fluent', name: 'Fluency Spark', desc: 'Complete 3 daily speech & communication sessions on SpeakVerse', icon: '🗣️', category: 'fluency', xpReward: 100 },
+  { id: 'top_contributor', name: 'Knowledge Architect', desc: 'Contribute notes or help resolve peer doubts', icon: '✍️', category: 'community', xpReward: 120 }
 ];
 
 // Custom Themes Available for Purchase
@@ -66,6 +83,54 @@ export const FRAMES = [
 ];
 
 // Generate Level details from total XP
+
+// Academic & Placement Career Tiers (Based on actual demonstrated skills)
+export function getPlacementTier(readinessScore = 0) {
+  const score = Number(readinessScore) || 0;
+  if (score >= 85) {
+    return {
+      tier: 'Tier 1: Elite Placement Scholar',
+      badge: '👑 ELITE',
+      color: 'from-amber-400 via-orange-500 to-amber-600',
+      textColor: 'text-amber-400',
+      borderColor: 'border-amber-500/40',
+      bgSoft: 'bg-amber-500/10',
+      desc: 'Top 5% Placement Ready. Eligible for direct alumni fast-tracks and priority company shortlists.'
+    };
+  }
+  if (score >= 65) {
+    return {
+      tier: 'Tier 2: Drive Ready Competitor',
+      badge: '⚡ DRIVE READY',
+      color: 'from-emerald-400 to-teal-500',
+      textColor: 'text-emerald-400',
+      borderColor: 'border-emerald-500/40',
+      bgSoft: 'bg-emerald-500/10',
+      desc: 'Proven coding foundation & test accuracy. Ready for technical rounds & campus interviews.'
+    };
+  }
+  if (score >= 40) {
+    return {
+      tier: 'Tier 3: Advancing Apprentice',
+      badge: '📈 ADVANCING',
+      color: 'from-blue-400 to-indigo-500',
+      textColor: 'text-blue-400',
+      borderColor: 'border-blue-500/40',
+      bgSoft: 'bg-blue-500/10',
+      desc: 'Building core competency. Complete daily missions and code exercises to level up.'
+    };
+  }
+  return {
+    tier: 'Tier 4: Foundation Scholar',
+    badge: '🌱 FOUNDATION',
+    color: 'from-purple-400 to-pink-500',
+    textColor: 'text-purple-400',
+    borderColor: 'border-purple-500/40',
+    bgSoft: 'bg-purple-500/10',
+    desc: 'Beginning the learning arc. Complete your profile and attempt initial diagnostic assessments.'
+  };
+}
+
 export function getLevelFromXP(xp) {
   let level = 1;
   let nextLevelXP = 200;
@@ -867,18 +932,20 @@ export function getDailyAndWeeklyChallenges(uid) {
   const todayStr = new Date().toDateString();
 
   if (!challenges || challenges.date !== todayStr) {
-    // Generate AI-aligned randomized challenges
+    // Structured Learning Missions: Learn -> Practice -> Build -> Prove
     challenges = {
       date: todayStr,
       daily: [
-        { id: 'd1', text: 'Solve 10 practice questions', target: 10, current: 0, rewardXp: 50, rewardCoins: 10, key: 'quiz_questions', type: 'quiz' },
-        { id: 'd2', text: 'Study core concept for 20 minutes', target: 20, current: 0, rewardXp: 40, rewardCoins: 8, key: 'study_minutes', type: 'study' },
-        { id: 'd3', text: 'Resolve one AI-generated study task', target: 1, current: 0, rewardXp: 30, rewardCoins: 5, key: 'ai_task', type: 'ai' }
+        { id: 'd1', text: 'Code Arena: Solve 1 Coding Challenge with Passing Tests', target: 1, current: 0, rewardXp: 60, rewardCoins: 15, key: 'coding_challenge', type: 'code', icon: '💻' },
+        { id: 'd2', text: 'Deep Study Flow: Complete 20 active minutes in Core Tracks', target: 20, current: 0, rewardXp: 40, rewardCoins: 10, key: 'study_minutes', type: 'study', icon: '⏳' },
+        { id: 'd3', text: 'Core Assessment: Complete 1 diagnostic quiz or topic test', target: 1, current: 0, rewardXp: 50, rewardCoins: 12, key: 'quiz_questions', type: 'quiz', icon: '🎯' },
+        { id: 'd4', text: 'Communication Sprint: 1 SpeakVerse or AI Twin viva session', target: 1, current: 0, rewardXp: 45, rewardCoins: 10, key: 'speakverse_session', type: 'speech', icon: '🎙️' }
       ],
       weekly: [
-        { id: 'w1', text: 'Study for 100 minutes total', target: 100, current: 0, rewardXp: 150, rewardCoins: 30, key: 'study_minutes', type: 'study' },
-        { id: 'w2', text: 'Score > 90% in two quizzes', target: 2, current: 0, rewardXp: 200, rewardCoins: 50, key: 'score_90_count', type: 'quiz' },
-        { id: 'w3', text: 'Upload 3 high-quality revision notes', target: 3, current: 0, rewardXp: 120, rewardCoins: 25, key: 'notes_upload_count', type: 'notes' }
+        { id: 'w1', text: 'Mastery Discipline: 500+ Active Study Minutes across curriculum', target: 100, current: 0, rewardXp: 200, rewardCoins: 50, key: 'study_minutes', type: 'study', icon: '⚡' },
+        { id: 'w2', text: 'Algorithm Sprint: Solve 5 DSA or Web Architecture challenges', target: 5, current: 0, rewardXp: 250, rewardCoins: 60, key: 'coding_challenge', type: 'code', icon: '⚔️' },
+        { id: 'w3', text: 'Project Milestone: Complete 1 ProjectVerse phase or upload proof', target: 1, current: 0, rewardXp: 200, rewardCoins: 45, key: 'project_build', type: 'project', icon: '🚀' },
+        { id: 'w4', text: 'Placement Interview: Clear 1 AI Mock Technical Interview with 75%+', target: 1, current: 0, rewardXp: 250, rewardCoins: 50, key: 'mock_interview', type: 'interview', icon: '👑' }
       ]
     };
     LOCAL_DB.set(`challenges_${uid}`, challenges);

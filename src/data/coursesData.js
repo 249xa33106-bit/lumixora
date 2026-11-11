@@ -1,3 +1,4 @@
+import { ADDITIONAL_COURSES } from './additionalCoursesData.js';
 // Official Lumixora Comprehensive Digital Engineering Textbook & Autonomous Certification Suite
 // Exhaustive In-App Textbook with Architectural Case Studies, ASCII Diagrams, Interview Pearls, and 30-Question Level-Wise Tests
 
@@ -2747,5 +2748,6 @@ export const ALL_COURSES = [
         }
       ]
     }
-  }
+  },
+  ...ADDITIONAL_COURSES
 ];

@@ -13,7 +13,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import { callAICompletion } from '../services/aiService';
 import { 
-  generateDeterministicFacultyCode, syncFacultyToDirectory, cleanFacultyName, fetchRealRegisteredFaculty 
+  generateDeterministicFacultyCode, syncFacultyToDirectory, fetchRealRegisteredFaculty 
 } from '../services/facultyCodeService';
 
 // Standard Engineering Departments

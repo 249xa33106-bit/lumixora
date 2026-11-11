@@ -278,16 +278,65 @@ export function GamificationProvider({ children, user, activeTab }) {
     await handleAwardXP('COMPLETE_AI_TASK', badgeInfo.xpReward);
   };
 
-  // Automated checks for Achievements
+  // Automated checks for Achievements across the 7 gamified pillars
   const checkAchievements = async (currentLevel, currentXp) => {
     if (!profile) return;
     
-    // Level Based
+    // 1. Onboarding & Level milestones
+    await unlockBadge('first_login');
     if (currentLevel >= 5) await unlockBadge('study_champion');
     if (currentLevel >= 10) await unlockBadge('top_10_leaderboard');
-    
-    // First time login
-    await unlockBadge('first_login');
+
+    // 2. Streaks
+    if (profile.streak >= 3) await unlockBadge('streak_3');
+    if (profile.streak >= 7) await unlockBadge('streak_7');
+    if (profile.streak >= 30) await unlockBadge('streak_30');
+    if (profile.streak >= 100) await unlockBadge('streak_100');
+
+    // 3. Coding Problems Solved
+    const userId = getUserId(user);
+    try {
+      const subsKey = `lumixora_submissions_${userId}`;
+      const subs = JSON.parse(localStorage.getItem(subsKey) || '[]');
+      const accepted = Array.isArray(subs) ? subs.filter(s => s.status === 'Accepted') : [];
+      if (accepted.length >= 1) await unlockBadge('algo_initiate');
+      const uniqueLangs = new Set(accepted.map(s => s.language).filter(Boolean));
+      if (uniqueLangs.size >= 2) await unlockBadge('polyglot_coder');
+      if (accepted.length >= 10) await unlockBadge('dsa_champion');
+    } catch (e) {}
+
+    // 4. Test Assessments
+    try {
+      const testsKey = `lumixora_test_submissions_${userId}`;
+      const tests = JSON.parse(localStorage.getItem(testsKey) || '[]');
+      if (Array.isArray(tests) && tests.length > 0) {
+        const topScore = tests.some(t => ((t.score || 0) / (t.total || 1)) >= 0.85);
+        if (topScore) await unlockBadge('quiz_master');
+        const cleanProctor = tests.some(t => t.proctorTrustScore >= 95 || t.warnings === 0);
+        if (cleanProctor) await unlockBadge('proctor_clean');
+      }
+    } catch (e) {}
+
+    // 5. Project Milestones & Production Proofs
+    try {
+      const projTasks = JSON.parse(localStorage.getItem('lumixora_projectverse_tasks') || '{}');
+      const hasCompletedMilestones = Object.values(projTasks).some(tasksObj => 
+        tasksObj && Object.values(tasksObj).filter(Boolean).length >= 4
+      );
+      if (hasCompletedMilestones) await unlockBadge('builder_initiate');
+
+      const projEvidence = JSON.parse(localStorage.getItem('lumixora_projectverse_evidence') || '{}');
+      const hasVerifiedShip = Object.values(projEvidence).some(ev => ev && ev.githubUrl && ev.liveDemoUrl);
+      if (hasVerifiedShip) await unlockBadge('verified_ship');
+    } catch (e) {}
+
+    // 6. Mock Interviews & Placement Readiness
+    try {
+      const interviewHistory = JSON.parse(localStorage.getItem(`lumixora_interview_results_${userId}`) || '[]');
+      if (Array.isArray(interviewHistory) && interviewHistory.some(m => (m.overallScore || m.score || 0) >= 80)) {
+        await unlockBadge('interview_ready');
+      }
+    } catch (e) {}
   };
 
   // Refresh Leaderboard

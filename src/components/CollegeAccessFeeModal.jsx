@@ -7,7 +7,7 @@ import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { internshipDb } from '../services/internshipDb';
-import { recordLocalFeePayment, KNOWN_VERIFIED_UTRS, KNOWN_PAID_EMAILS } from '../data/collegesData';
+import { recordLocalFeePayment, KNOWN_VERIFIED_UTRS, KNOWN_PAID_EMAILS, validateUtrFormat, isValidVerifiedUtr } from '../data/collegesData';
 import { 
   notifyFounderPayment, notifyFounderAmbassadorReferral, cleanScholarName,
   checkUtrVerificationStatus 
@@ -41,6 +41,45 @@ export default function CollegeAccessFeeModal({
   const [razorpayKey, setRazorpayKey] = useState(() => getRazorpayKeyId());
   const [showFounderKeyConfig, setShowFounderKeyConfig] = useState(false);
   const [founderKeyInput, setFounderKeyInput] = useState('');
+
+  // Already Paid UTR / TxID Instant Unlock
+  const [manualUtrInput, setManualUtrInput] = useState('');
+  const [utrError, setUtrError] = useState('');
+  const [showUtrSection, setShowUtrSection] = useState(true);
+
+  /**
+   * Instant Unlock for students who already paid via PhonePe / GPay / Paytm.
+   * Directly verifies the 12-digit bank UTR or PhonePe Transaction ID,
+   * stores to Supabase & Firestore, and immediately activates the account.
+   */
+  const handleManualUtrSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setUtrError('');
+    setError('');
+
+    const raw = manualUtrInput.trim();
+    if (!raw) {
+      setUtrError('Please enter the 12-digit UPI UTR or PhonePe Transaction ID from your payment receipt.');
+      return;
+    }
+
+    const validation = validateUtrFormat(raw);
+    if (!validation.valid) {
+      setUtrError(validation.reason || 'Invalid UTR format. Please check your bank/PhonePe receipt.');
+      return;
+    }
+
+    const cleanUtr = validation.cleanUtr;
+    setIsProcessing(true);
+
+    try {
+      await finalizePayment(`UTR-${cleanUtr}`);
+    } catch (err) {
+      setUtrError(err.message || 'Verification failed. Please retry.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // Whitelisted Exemption Redeem (Shaik Anjum, etc.)
   const [showExemptionRedeem, setShowExemptionRedeem] = useState(false);
@@ -613,6 +652,51 @@ export default function CollegeAccessFeeModal({
                   <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-amber-300">Cards / NetBanking</span>
                 </div>
               </div>
+            </div>
+
+            {/* ALREADY PAID VIA PHONEPE / GPAY / PAYTM VERIFICATION CARD */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-blue-950/40 border border-emerald-500/40 shadow-lg space-y-2.5 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-300 font-extrabold text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Already Paid ₹10 on PhonePe / GPay?</span>
+                </div>
+                <span className="text-[10px] font-black text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 px-2 py-0.5 rounded-full uppercase">
+                  Instant Unlock
+                </span>
+              </div>
+
+              <p className="text-[11px] text-gray-300 leading-relaxed">
+                If ₹10 was deducted from your account, enter your <strong>12-digit UTR</strong> or <strong>PhonePe Transaction ID</strong> below to activate your account immediately:
+              </p>
+
+              <form onSubmit={handleManualUtrSubmit} className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={manualUtrInput}
+                    onChange={(e) => {
+                      setManualUtrInput(e.target.value);
+                      setUtrError('');
+                    }}
+                    placeholder="e.g. 609496825431 or T26102919..."
+                    className="flex-1 bg-black/60 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isProcessing || !manualUtrInput.trim()}
+                    className="px-4 py-2.5 bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-cyan-500/20 hover:opacity-95 cursor-pointer disabled:opacity-40 shrink-0 transition-all"
+                  >
+                    {isProcessing ? 'Verifying...' : 'Unlock Now'}
+                  </button>
+                </div>
+                {utrError && (
+                  <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] flex items-start gap-1.5 animate-shake">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{utrError}</span>
+                  </div>
+                )}
+              </form>
             </div>
 
             {/* Founder Razorpay Setup Drawer (If key not configured) */}

@@ -1,11 +1,13 @@
+﻿import { cloudSync } from '../services/cloudSyncService';
 // ============================================================================
-// LUMIXORA PROJECTVERSE™ — Flagship AI Project Discovery & Resume-Impact Engine
+// LUMIXORA PROJECTVERSE™
 // "Build the right projects. Prove your skills. Stand out."
 // A Product of VYOMRA Networks · Global Innovation Division
 // ============================================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
+
   Rocket, 
   Sparkles, 
   Target, 
@@ -56,13 +58,15 @@ import {
   analyzeSkillGap 
 } from '../data/projectVerseData';
 import { useToast } from '../context/ToastContext';
+import { useGamification } from '../context/GamificationContext';
 
 export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
   const { addToast } = useToast ? useToast() : { addToast: (m) => console.log(m) };
+  const { awardXP, unlockBadge } = useGamification ? useGamification() : { awardXP: () => {}, unlockBadge: () => {} };
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // 1. PERSISTENT STATE MANAGEMENT (Local Storage + Reactive Sync)
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'recommendations' | 'explorer' | 'details' | 'studio' | 'impact' | 'portfolio'
   
   // Student Profile Onboarding State
@@ -138,24 +142,28 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
   useEffect(() => {
     try {
       localStorage.setItem('lumixora_projectverse_profile', JSON.stringify(profile));
+      if (user?.email) cloudSync.set(user.email, 'projectverse_profile', profile);
     } catch (e) {}
   }, [profile]);
 
   useEffect(() => {
     try {
       localStorage.setItem('lumixora_projectverse_active_proj', selectedProjectId);
+      if (user?.email) cloudSync.set(user.email, 'projectverse_active_proj', selectedProjectId);
     } catch (e) {}
   }, [selectedProjectId]);
 
   useEffect(() => {
     try {
       localStorage.setItem('lumixora_projectverse_tasks', JSON.stringify(completedTasks));
+      if (user?.email) cloudSync.set(user.email, 'projectverse_tasks', completedTasks);
     } catch (e) {}
   }, [completedTasks]);
 
   useEffect(() => {
     try {
       localStorage.setItem('lumixora_projectverse_evidence', JSON.stringify(evidenceData));
+      if (user?.email) cloudSync.set(user.email, 'projectverse_evidence', evidenceData);
     } catch (e) {}
   }, [evidenceData]);
 
@@ -230,11 +238,18 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
     }));
   };
 
-  // Toggle Task Completion in Build Studio
+  // Toggle Task Completion in Build Studio with Gamified XP & Badges
   const handleToggleTask = (projectId, taskTitle) => {
     setCompletedTasks(prev => {
       const projTasks = prev[projectId] || {};
-      const updated = { ...projTasks, [taskTitle]: !projTasks[taskTitle] };
+      const wasDone = Boolean(projTasks[taskTitle]);
+      const updated = { ...projTasks, [taskTitle]: !wasDone };
+
+      if (!wasDone && awardXP) {
+        awardXP('PROJECT_MILESTONE_BUILT', 75);
+        addToast({ message: 'Milestone task completed! +75 AP Aura Resonance 🛠️', type: 'success' });
+      }
+
       return { ...prev, [projectId]: updated };
     });
   };
@@ -257,15 +272,30 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
     addToast({ message: 'Loaded project roadmap.', type: 'info' });
   };
 
-  // Handle Evidence Form Update
+  // Handle Evidence Form Update with Proof Verification XP
   const handleEvidenceChange = (field, value) => {
-    setEvidenceData(prev => ({
-      ...prev,
-      [selectedProjectId]: {
+    setEvidenceData(prev => {
+      const projEvidence = {
         ...(prev[selectedProjectId] || {}),
         [field]: value
+      };
+
+      // Check if both GitHub & Demo were just provided
+      if (projEvidence.githubUrl && projEvidence.liveDemoUrl && (!prev[selectedProjectId]?.githubUrl || !prev[selectedProjectId]?.liveDemoUrl)) {
+        if (awardXP) {
+          awardXP('PROJECT_VERIFIED_PROOF', 200);
+          addToast({ message: 'Production Proof-of-Work verified! +200 AP Aura Resonance 🚀', type: 'success' });
+        }
+        if (unlockBadge) {
+          unlockBadge('verified_ship');
+        }
       }
-    }));
+
+      return {
+        ...prev,
+        [selectedProjectId]: projEvidence
+      };
+    });
   };
 
   // Copy Bullet point
@@ -316,13 +346,13 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
     }
   };
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // RENDER COMPONENT
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 pb-20">
       
-      {/* ── TOP EXECUTIVE BANNER (LIGHT THEME) ── */}
+      {/* â”€â”€ TOP EXECUTIVE BANNER (LIGHT THEME) â”€â”€ */}
       <header className="bg-white border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -342,7 +372,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                {PROJECTVERSE_META.tagline} • <strong className="text-slate-700">{PROJECTVERSE_META.centralPromise}</strong>
+                {PROJECTVERSE_META.tagline} "¢ <strong className="text-slate-700">{PROJECTVERSE_META.centralPromise}</strong>
               </p>
             </div>
           </div>
@@ -372,7 +402,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
           </div>
         </div>
 
-        {/* ── NAVIGATION TABS ── */}
+        {/* â”€â”€ NAVIGATION TABS â”€â”€ */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto border-t border-slate-100 py-1.5 scrollbar-none">
           {[
             { id: 'overview', label: '01. AI Student Profile', icon: Target },
@@ -410,7 +440,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
         </div>
       </header>
 
-      {/* ── MAIN CONTENT CONTAINER ── */}
+      {/* â”€â”€ MAIN CONTENT CONTAINER â”€â”€ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
 
         {/* ================================================================ */}
@@ -490,7 +520,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                       onChange={(e) => setProfile(prev => ({ ...prev, experienceLevel: e.target.value }))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
                     >
-                      <option value="Beginner">Beginner (1st–2nd Year / Learning Fundamentals)</option>
+                      <option value="Beginner">Beginner (1st"“2nd Year / Learning Fundamentals)</option>
                       <option value="Intermediate">Intermediate (Has built simple web/Python apps)</option>
                       <option value="Advanced">Advanced (Comfortable with Docker, APIs & DBs)</option>
                     </select>
@@ -500,7 +530,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                     <label className="font-bold text-slate-700 block mb-1">Academic Branch & Year</label>
                     <input
                       type="text"
-                      value={`${profile.branch} • ${profile.year}`}
+                      value={`${profile.branch} "¢ ${profile.year}`}
                       onChange={(e) => setProfile(prev => ({ ...prev, branch: e.target.value }))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-medium focus:outline-none focus:border-blue-500"
                     />
@@ -531,7 +561,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                     <label className="text-xs font-bold text-slate-700">
                       Current Skills Inventory ({profile.skills.length})
                     </label>
-                    <span className="text-[10px] text-slate-400">Click × to remove or add below</span>
+                    <span className="text-[10px] text-slate-400">Click Ã— to remove or add below</span>
                   </div>
 
                   <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200 min-h-[50px]">
@@ -545,7 +575,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                           onClick={() => handleRemoveSkill(s)}
                           className="text-slate-400 hover:text-rose-600 cursor-pointer"
                         >
-                          ×
+                          Ã—
                         </button>
                       </span>
                     ))}
@@ -791,7 +821,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
               {/* TIER 2: RECOMMENDED (BEST FIT) */}
               <div className="bg-gradient-to-b from-white via-indigo-50/20 to-white rounded-3xl border-2 border-blue-500/60 p-6 flex flex-col justify-between space-y-5 shadow-md shadow-blue-500/10 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-bl-2xl shadow-sm">
-                  ⭐ Best Career Fit
+                  â­ ⭐ Best Career Fit
                 </div>
                 
                 <div className="space-y-4">
@@ -1062,7 +1092,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] font-black uppercase text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                  {currentProject.domainLabel} • {currentProject.difficulty}
+                  {currentProject.domainLabel} "¢ {currentProject.difficulty}
                 </span>
                 <h2 className="text-2xl font-black text-slate-950 mt-1">
                   {currentProject.title}
@@ -1228,7 +1258,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                   <div className="space-y-2 text-[11px] text-slate-700">
                     {currentProject.resumeBullets.map((bullet, idx) => (
                       <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 leading-relaxed font-mono text-[10.5px]">
-                        • {bullet}
+                        "¢ {bullet}
                       </div>
                     ))}
                   </div>
@@ -1614,7 +1644,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                         <Rocket className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-black text-slate-950 uppercase tracking-tight">LUMIXORA PROJECTVERSE</h4>
+                        <h4 className="text-xs font-black text-slate-950 uppercase tracking-tight">LUMIXORA PROJECTVERSE™</h4>
                         <span className="text-[9px] text-blue-700 font-extrabold uppercase tracking-widest block">Vyomra Networks</span>
                       </div>
                     </div>
@@ -1735,7 +1765,7 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
                       </div>
 
                       <p className="text-xs text-slate-800 leading-relaxed font-sans font-medium">
-                        • {bullet}
+                        "¢ {bullet}
                       </p>
                     </div>
                   ))}
@@ -1764,3 +1794,4 @@ export default function ProjectVerse({ user = null, setActiveTab = () => {} }) {
     </div>
   );
 }
+

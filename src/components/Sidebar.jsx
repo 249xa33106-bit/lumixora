@@ -1,18 +1,21 @@
 import React, { useState, useMemo } from 'react';
+import Realistic3DLogo from './Realistic3DLogo';
+import { isGprecPlacementSubdomain, GPREC_PLACEMENT_PORTALS } from '../utils/placementSubdomain';
 import { 
   LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, 
   GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, 
   Mail, Trophy, Code, Clock, AlertTriangle, Users, Film, Shield, 
   Target, ClipboardList, ShoppingCart, MessageCircle, Map, 
   Activity, Power, Cpu, ShieldCheck, Rocket, Video, Search, Briefcase,
-  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom
+  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom,
+  Eye, EyeOff, Sliders, Radio
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp }) {
+  const isGprecSubdomain = isGprecPlacementSubdomain();
   const userEmail = (user?.email || '').toLowerCase().trim();
   const isFounder = user?.role === 'founder' || 
-                    userEmail === 'founder@lumixora.com' ||
-                    userEmail === '249xa33106@gmail.com';
+                    userEmail === 'founder@lumixora.com' ;
   const isTeammate = user?.role === 'teammate' || 
                      user?.role === 'team' || 
                      user?.role === 'team_member' || 
@@ -23,12 +26,63 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState({});
+  const [showAllPortals, setShowAllPortals] = useState(false);
+
+  // Active portals configured in live user preferences (if empty/unspecified or founder, all are allowed)
+  const userActivePortals = useMemo(() => {
+    if (isFounder || isTeammate || isFaculty) return null; // Admins see all
+    if (Array.isArray(user?.activePortals) && user.activePortals.length > 0) {
+      return new Set(user.activePortals);
+    }
+    return null;
+  }, [user?.activePortals, isFounder, isTeammate, isFaculty]);
 
   const toggleSection = (sectionKey) => {
     setCollapsedSections(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
   };
 
-  const menuSections = [
+  // GPREC Placement Suite dedicated menu items
+  const isOfficerOrFaculty = isFaculty || isFounder || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+
+  const gprecSections = [
+    ...(isOfficerOrFaculty ? [{
+      key: 'tpo_admin',
+      title: '🏛️ T&P Officer Command',
+      items: [
+        { id: 'tpo-dashboard', label: 'T&P Officer Dashboard', icon: Shield, badge: 'OFFICER 🛡️' },
+        { id: 'student-database', label: 'Student Placement Database', icon: Users, badge: 'DATABASE 🗄️' },
+        { id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap, badge: 'FACULTY 🎓' },
+      ]
+    }] : []),
+    {
+      key: 'gprec_flagship',
+      title: '🎯 GPREC Placement Suite',
+      items: [
+        { id: 'ai-commander', label: 'Placement Commander™', icon: Cpu, badge: 'COMMAND ⚡' },
+        { id: 'tech-pulse', label: 'Tech Pulse & Job Radar', icon: Radio, badge: 'LIVE 📡' },
+        { id: 'speakverse', label: 'SpeakVerse™ AI Communication', icon: Mic, badge: 'COMMUNICATION 👑' },
+        { id: 'interview', label: 'AI Mock Interview Room', icon: Mic, badge: 'HR & Tech 🎙️' },
+        { id: 'coding-practice', label: 'Code Arena & 30D Java', icon: Code, badge: 'DSA Track' },
+        { id: 'test-portal', label: 'Tests & Assignments', icon: FileText, badge: 'TESTS 📄' },
+        { id: 'company-papers', label: 'Placement Papers (TCS/Amazon)', icon: Target, badge: 'Papers 📄' },
+        { id: 'aptitude-arena', label: 'Aptitude & Reasoning Arena', icon: Brain, badge: 'Quant' },
+        { id: 'resume', label: 'AI Resume Builder & ATS', icon: FileText, badge: 'ATS 90+' },
+        { id: 'certificates', label: 'Proof-of-Skill Badges', icon: Award, badge: 'LinkedIn 📜' },
+        { id: 'alumni-referrals', label: 'Alumni Referral Bridge', icon: Briefcase, badge: 'Drives 🚀' },
+        { id: 'career-roadmap', label: 'Career Roadmap & Roles', icon: Map, badge: 'Guidance' },
+      ]
+    },
+    {
+      key: 'support',
+      title: '🏛️ GPREC Placement Cell',
+      items: [
+        { id: 'contact', label: 'Placement Support / Help', icon: Mail },
+        { id: 'report-bug', label: 'Report Issue', icon: AlertTriangle },
+      ]
+    }
+  ];
+
+  const menuSections = isGprecSubdomain ? gprecSections : [
     ...(isIntern ? [{
       key: 'intern',
       title: '💼 Intern Workspace Hub',
@@ -44,8 +98,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield, badge: 'Secure' }] : []),
         ...(isFounder || isTeammate ? [{ id: 'intern-portal', label: 'Interns & Tasks Hub', icon: Users, badge: 'Review 💼' }] : []),
         ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles, badge: 'Team ⚡' }] : []),
-        ...(isFaculty ? [{ id: 'faculty-portal', label: 'Faculty Command', icon: GraduationCap, badge: 'Faculty' }] : []),
-        { id: 'edupulse', label: 'EduPulse Action Centre', icon: Activity, badge: 'AI Action ⚡' },
+        ...(isFaculty ? [{ id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap, badge: 'FACULTY 🎓' }] : []),
       ]
     }] : []),
     {
@@ -54,7 +107,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       items: [
         { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
         { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Interactive ⚛️' },
-        { id: 'edupulse', label: 'EduPulse Test-to-Action', icon: Activity, badge: 'AI Action 📊' },
         { id: 'courses', label: 'All Courses & Diplomas', icon: BookOpen, badge: 'Diplomas 🎓' },
         { id: 'boloclass', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
         { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', icon: GraduationCap, badge: 'NEW 📊' },
@@ -65,13 +117,18 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       ]
     },
     {
+      key: 'speakverse_hub',
+      title: '🎙️ SpeakVerse™ Flagship Portal',
+      items: [
+        { id: 'speakverse', label: 'SpeakVerse™ AI', icon: Mic, badge: 'PORTAL 👑' },
+      ]
+    },
+    {
       key: 'career',
       title: '🚀 Placement & Career Hub',
       items: [
-        { id: 'speakverse', label: 'SpeakVerse™ AI', icon: Mic, badge: 'PREMIUM 👑' },
-        { id: 'projectverse', label: 'PROJECTVERSE™', icon: Rocket, badge: 'Flagship 🚀' },
-        { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW' },
-        { id: 'relay', label: 'LUMIXORA RELAY™', icon: GitFork, badge: 'Fusion AI' },
+        { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW 📊' },
+        { id: 'tech-pulse', label: 'Tech Pulse & Jobs Radar', icon: Radio, badge: 'LIVE 🔥' },
         { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Visualizer ⚛️' },
         { id: 'interview', label: 'AI Mock Interview Room', icon: Mic, badge: 'Live AI 🎙️' },
         { id: 'coding-practice', label: 'Code Arena & 30D Java', icon: Code, badge: 'DSA' },
@@ -79,7 +136,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         { id: 'intern-portal', label: 'Intern Workspace & Pass', icon: Briefcase, badge: 'Portal 💼' },
         { id: 'internships', label: 'Lumixora Internships', icon: Briefcase, badge: 'Batch 01' },
         { id: 'alumni-referrals', label: 'Alumni & Off-Campus Jobs', icon: Briefcase, badge: 'Referrals' },
-        { id: 'future-twin', label: 'AI Future Twin™', icon: Sparkles, badge: 'PRO' },
         { id: 'career-roadmap', label: 'Career Roadmap', icon: Map },
       ]
     },
@@ -104,11 +160,27 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     }
   ];
 
-  // Search filter across sections
+  // Search & Personalization filter across sections
   const filteredSections = useMemo(() => {
-    if (!menuSearchQuery.trim()) return menuSections;
+    let sections = menuSections;
+
+    // Apply personalization filter if user has chosen portals and "showAllPortals" is toggled off
+    if (userActivePortals && !showAllPortals) {
+      sections = sections.map(sec => ({
+        ...sec,
+        items: sec.items.filter(item => {
+          // Always keep dashboard, community, and support
+          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'support' || sec.key === 'admin' || sec.key === 'intern') {
+            return true;
+          }
+          return userActivePortals.has(item.id);
+        })
+      })).filter(sec => sec.items.length > 0);
+    }
+
+    if (!menuSearchQuery.trim()) return sections;
     const q = menuSearchQuery.toLowerCase().trim();
-    return menuSections.map(sec => ({
+    return sections.map(sec => ({
       ...sec,
       items: sec.items.filter(item => 
         item.label.toLowerCase().includes(q) ||
@@ -116,7 +188,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         item.id.toLowerCase().includes(q)
       )
     })).filter(sec => sec.items.length > 0);
-  }, [menuSections, menuSearchQuery]);
+  }, [menuSections, menuSearchQuery, userActivePortals, showAllPortals]);
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
@@ -150,19 +222,21 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         {/* Brand Header */}
         <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden shadow-lg shadow-cyan-500/20 border border-white/10">
+            {isGprecSubdomain ? (
               <img 
-                src="/lumixora_logo_icon.png" 
-                alt="Lumixora" 
-                className="w-full h-full object-cover" 
+                src="/gprec-logo.png" 
+                alt="GPREC Logo" 
+                className="w-10 h-10 object-contain rounded-xl p-0.5 bg-white shadow-xs" 
               />
-            </div>
+            ) : (
+              <Realistic3DLogo size="md" />
+            )}
             <div>
               <h1 className="text-base font-black text-white tracking-wider flex items-center gap-1.5 font-sora">
-                LUMIXORA
+                {isGprecSubdomain ? 'GPREC PLACEMENT' : 'LUMIXORA'}
               </h1>
               <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
-                Student OS • Vyomra
+                {isGprecSubdomain ? 'Placement Suite • Vyomra' : 'Student OS • Vyomra'}
               </p>
             </div>
           </div>
@@ -175,8 +249,8 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
           </button>
         </div>
 
-        {/* Quick Menu Search */}
-        <div className="p-3 border-b border-white/5 bg-black/20">
+        {/* Quick Menu Search & Personalized Toggle */}
+        <div className="p-3 border-b border-white/5 bg-black/20 space-y-2">
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -190,11 +264,30 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
               <button
                 onClick={() => setMenuSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs"
-              >
-                ✕
-              </button>
+              >✕</button>
             )}
           </div>
+
+          {/* Show All Portals Toggle (when personalized filter is active) */}
+          {userActivePortals && (
+            <div className="flex items-center justify-between px-1 pt-0.5">
+              <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+                {showAllPortals ? <Eye className="w-3 h-3 text-cyan-400" /> : <EyeOff className="w-3 h-3 text-brand-teal" />}
+                {showAllPortals ? 'All Portals' : 'Tailored Portals'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllPortals(prev => !prev)}
+                className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                  showAllPortals 
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
+                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {showAllPortals ? 'Hide Extra' : 'Show All'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Categories & Items */}
@@ -279,3 +372,5 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     </>
   );
 }
+
+

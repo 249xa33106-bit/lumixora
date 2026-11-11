@@ -210,7 +210,7 @@ export const generateAttendanceReport = async (studentData, rollNumber) => {
     body: profileBody,
   });
 
-  yPos = doc.lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable?.finalY || yPos + 35) + 15;
 
   // --- SECTION 2: ATTENDANCE SUMMARY ---
   doc.setFontSize(14);
@@ -231,7 +231,7 @@ export const generateAttendanceReport = async (studentData, rollNumber) => {
     ],
   });
 
-  yPos = doc.lastAutoTable.finalY + 10;
+  yPos = (doc.lastAutoTable?.finalY || yPos + 35) + 10;
   
   // Status Box
   doc.setFont("helvetica", "bold");
@@ -270,7 +270,7 @@ export const generateAttendanceReport = async (studentData, rollNumber) => {
     body: monthlyBody.length > 0 ? monthlyBody : [['No data', '-', '-', '-']],
   });
 
-  yPos = doc.lastAutoTable.finalY + 20;
+  yPos = (doc.lastAutoTable?.finalY || yPos + 35) + 20;
 
   // --- SECTION 4: TREND ---
   if (yPos > 200) { doc.addPage(); yPos = 20; }
@@ -339,7 +339,10 @@ export const generateAttendanceReport = async (studentData, rollNumber) => {
       const encodedConfig = encodeURIComponent(JSON.stringify(chartConfig));
       const chartUrl = `https://quickchart.io/chart?c=${encodedConfig}&w=500&h=250&format=png&bkg=white`;
       
-      const response = await fetch(chartUrl);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const response = await fetch(chartUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
       const blob = await response.blob();
       
       const base64data = await new Promise((resolve) => {
@@ -427,7 +430,7 @@ export const generateFilteredListReport = (students, condition, threshold) => {
     s.id,
     s.name,
     s.branch,
-    `${s.percent}%`
+    `${s.percent ?? s.percentage ?? 0}%`
   ]);
 
   autoTable(doc, {

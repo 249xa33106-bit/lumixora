@@ -4,9 +4,7 @@
 export const isFounderEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
   const lower = email.toLowerCase().trim();
-  return lower === 'founder@lumixora.com' || 
-         lower === '249xa33106@gmail.com' || 
-         lower === '249xa33106@gprec.ac.in';
+  return lower === 'founder@lumixora.com'  ;
 };
 
 export const cleanScholarName = (str, fallback = 'Scholar') => {
@@ -82,19 +80,7 @@ export const checkUserAccessStatus = (u) => {
     };
   }
 
-  // 4. Institutional Domain Enforcement & Intern Role Check
-  // Personal email domains (@gmail.com, @yahoo.com, etc.) are strictly disallowed unless explicitly approved by Founder or registered as Intern
-  const isTeammate = u.role === 'teammate' || u.role === 'team' || email.endsWith('@lumixora.com') || email.endsWith('@lumixora.in');
-  const isInstitutional = email.endsWith('@gprec.ac.in') || email.includes('.ac.in') || email.includes('.edu');
-  const isIntern = u.role === 'intern' || email.includes('.intern@') || email.includes('intern@');
-
-  if (!isTeammate && !isInstitutional && !isIntern && !isApproved) {
-    return {
-      allowed: false,
-      reason: 'unauthorized_domain',
-      message: 'Access Restricted: Non-institutional personal accounts require explicit Founder approval.'
-    };
-  }
-
+  // 4. All registered scholars and students are granted access
   return { allowed: true };
 };
+

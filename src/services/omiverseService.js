@@ -1,4 +1,5 @@
-// Vyomra Omiverse Service: AI Career Brain, Student DNA, Next Best Action & Vyomra Prove Trust Layer
+﻿// Vyomra Omiverse Service: AI Career Brain, Student DNA, Next Best Action & Vyomra Prove Trust Layer
+import { cloudSync } from './cloudSyncService';
 
 export const OMIVERSE_WORLDS = [
   {
@@ -43,7 +44,7 @@ export const OMIVERSE_WORLDS = [
     name: 'BUILDVERSE',
     tagline: 'Demonstrable Work & Creation',
     subtitle: 'Real Projects, AI Team Finder, GitHub Sync & Hackathons',
-    icon: '🛠️',
+    icon: ' ï¸',
     accentColor: '#F59E0B', // Amber
     gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
     border: 'border-amber-500/30',
@@ -60,7 +61,7 @@ export const OMIVERSE_WORLDS = [
     name: 'CONNECTVERSE',
     tagline: 'Collaborate & Network',
     subtitle: 'Campus Communities, Clubs, Mentors & Peer Teaming',
-    icon: '🌐',
+    icon: '🤝',
     accentColor: '#A855F7', // Purple
     gradient: 'from-purple-500/20 via-indigo-500/10 to-transparent',
     border: 'border-purple-500/30',
@@ -602,8 +603,11 @@ export const saveProveSkill = (skill) => {
       updated.push(skill);
     }
     localStorage.setItem('lumixora_prove_skills', JSON.stringify(updated));
+    try { const u = JSON.parse(localStorage.getItem('lumixora_user') || '{}'); if (u.email) cloudSync.set(u.email, 'prove_skills', updated); } catch(e) {}
     return updated;
   } catch (e) {
     return DEFAULT_PROVE_SKILLS;
   }
 };
+
+

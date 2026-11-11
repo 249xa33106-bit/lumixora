@@ -263,9 +263,12 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
   };
 
   // Extract paid users strictly (those who paid the ₹10 or ₹5 fee with valid Tx/UTR)
+  // Deduplicates entries by scholar email so each payment transaction displays exactly once
   const paidUsers = useMemo(() => {
-    const list = usersList.filter(u => {
-      if (u.is_deleted) return false;
+    const emailMap = new Map();
+
+    usersList.forEach(u => {
+      if (u.is_deleted) return;
       const isPaid = Boolean(
         u.oneTimeFeePaid === true ||
         u.feePaid === true ||
@@ -274,8 +277,27 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
         (u.metadata?.feePaid === true) ||
         (u.metadata?.feeTxId && !u.metadata.feeTxId.includes('FREE'))
       );
-      return isPaid;
+      if (!isPaid) return;
+
+      const emailKey = (u.email || u.id || '').toLowerCase().trim();
+      if (!emailKey) return;
+
+      const existing = emailMap.get(emailKey);
+      if (!existing) {
+        emailMap.set(emailKey, u);
+      } else {
+        // Keep the record with full roll number / better metadata
+        const existingHasRoll = Boolean(existing.rollNumber || (existing.name && existing.name.match(/^[0-9]/)));
+        const newHasRoll = Boolean(u.rollNumber || (u.name && u.name.match(/^[0-9]/)));
+        if (!existingHasRoll && newHasRoll) {
+          emailMap.set(emailKey, { ...existing, ...u });
+        } else {
+          emailMap.set(emailKey, { ...u, ...existing });
+        }
+      }
     });
+
+    const list = Array.from(emailMap.values());
 
     // Sort by payment date descending (most recent first)
     list.sort((a, b) => {

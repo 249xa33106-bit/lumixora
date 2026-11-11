@@ -15,7 +15,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad (Hybrid)',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C++', 'Java', 'Python', 'Data Structures', 'Algorithms', 'Distributed Systems'],
-    deadline: '2026-09-30',
+    deadline: '2026-11-20',
     status: 'Actively Hiring',
     applyUrl: 'https://careers.google.com/jobs/results/?q=Intern&location=India',
     description: "Join Google engineering teams to build high-performance distributed systems, machine learning pipelines, and cloud services impacting billions of users worldwide."
@@ -34,7 +34,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad',
     batches: ['2027 Batch', '2028 Batch', 'Women in Tech Preferred'],
     skills: ['C++', 'Java', 'Python', 'Problem Solving', 'Data Structures'],
-    deadline: '2026-09-25',
+    deadline: '2026-11-15',
     status: 'Actively Hiring',
     applyUrl: 'https://buildyourfuture.withgoogle.com/programs/step',
     description: "Development program for 1st and 2nd-year undergraduate students with a passion for computer science, combining technical training and real project delivery."
@@ -53,7 +53,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hyderabad / Bengaluru / Noida',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C#', 'C++', 'Python', 'Azure Cloud', 'System Design', 'Algorithms'],
-    deadline: '2026-10-15',
+    deadline: '2026-11-28',
     status: 'Actively Hiring',
     applyUrl: 'https://careers.microsoft.com/students/us/en/indiasummerinternship',
     description: "Work on Azure cloud services, Windows core, Microsoft 365, or developer platform tools with direct Pre-Placement Offer (PPO) evaluation for full-time SDE roles."
@@ -72,7 +72,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['PyTorch', 'LLMs', 'Theoretical CS', 'Applied Cryptography', 'Computer Vision'],
-    deadline: '2026-10-25',
+    deadline: '2026-12-15',
     status: 'Actively Hiring',
     applyUrl: 'https://www.microsoft.com/en-us/research/academic-program/research-fellows-program-at-microsoft-research-india/',
     description: "Work alongside world-leading scientists at MSR Bengaluru on foundational AI, systems research, and theoretical algorithms with top publication opportunities."
@@ -91,7 +91,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad / Chennai / Pune',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'C++', 'AWS', 'Object Oriented Design', 'DSA'],
-    deadline: '2026-09-28',
+    deadline: '2026-11-18',
     status: 'Actively Hiring',
     applyUrl: 'https://www.amazon.jobs/en/job_categories/student-programs',
     description: "Build cutting-edge supply chain, e-commerce, AWS serverless, or Alexa AI services with top Amazon engineering teams and fast-track PPO opportunities."
@@ -110,7 +110,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Pune / Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C/C++', 'CUDA', 'GPU Architecture', 'PyTorch', 'TensorRT', 'Linux Kernel'],
-    deadline: '2026-10-18',
+    deadline: '2026-12-05',
     status: 'Actively Hiring',
     applyUrl: 'https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite',
     description: "Architect parallel computing compilers, GPU virtualization, accelerated generative AI inference (TensorRT), and Omniverse simulations at NVIDIA."
@@ -129,7 +129,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hyderabad / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Swift', 'C++', 'Python', 'CoreML', 'iOS/macOS Architecture'],
-    deadline: '2026-10-10',
+    deadline: '2026-11-25',
     status: 'Actively Hiring',
     applyUrl: 'https://jobs.apple.com/en-in/search?team=internships-STDNT-INTRN',
     description: "Design innovative software, Apple Intelligence pipelines, and operating system sub-components powering iOS, macOS, and Apple Silicon hardware."
@@ -148,7 +148,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hybrid / International Hubs',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C++', 'Python', 'Hack/PHP', 'PyTorch', 'Distributed Systems'],
-    deadline: '2026-10-15',
+    deadline: '2027-01-10',
     status: 'Upcoming',
     applyUrl: 'https://www.metacareers.com/students-and-grads/',
     description: "Build global-scale social infrastructure, Llama generative models, VR/AR frameworks, and WhatsApp/Instagram messaging backends."
@@ -169,7 +169,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Gurugram (In-Office)',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Ultra Low Latency C++', 'Template Metaprogramming', 'Linux Kernel Bypass', 'DSA'],
-    deadline: '2026-09-22',
+    deadline: '2026-10-18',
     status: 'Actively Hiring',
     applyUrl: 'https://www.tower-research.com/open-positions',
     description: "Write sub-microsecond algorithmic trading code, network packet processing engines, and high-frequency exchange connectivity protocols."
@@ -188,7 +188,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C++', 'Python', 'Advanced Algorithms', 'Systems Programming', 'Distributed Databases'],
-    deadline: '2026-09-20',
+    deadline: '2026-10-22',
     status: 'Actively Hiring',
     applyUrl: 'https://www.deshawindia.com/careers',
     description: "Work on cutting-edge computational finance infrastructure, quantitative machine learning models, and high-frequency real-time execution platforms."
@@ -207,7 +207,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Gurugram',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Modern C++ (20/23)', 'Concurrency', 'Lock-Free Data Structures', 'Assembly'],
-    deadline: '2026-09-25',
+    deadline: '2026-11-04',
     status: 'Actively Hiring',
     applyUrl: 'https://gravitonresearch.com/careers/',
     description: "Join India's premier quantitative trading firm to design zero-copy trading pipelines, custom network drivers, and quantitative algorithmic strategies."
@@ -226,7 +226,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'C++', 'Python', 'Data Structures', 'High Scale Systems', 'Financial Tech'],
-    deadline: '2026-09-18',
+    deadline: '2026-11-12',
     status: 'Closing Soon',
     applyUrl: 'https://www.goldmansachs.com/careers/students/programs',
     description: "Develop ultra-low latency trading systems, risk analytics engines, and quantitative asset platforms within Goldman Sachs Global Banking & Markets."
@@ -245,7 +245,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Mumbai / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'C++', 'Python', 'SQL', 'Unix/Linux', 'Data Structures'],
-    deadline: '2026-09-22',
+    deadline: '2026-11-16',
     status: 'Closing Soon',
     applyUrl: 'https://www.morganstanley.com/people-opportunities/students-graduates',
     description: "Design mission-critical distributed systems, cybersecurity frameworks, and big data trade engines powering global capital markets."
@@ -264,7 +264,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Gurugram',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'React', 'Kafka', 'Spring Boot', 'Fraud Detection AI'],
-    deadline: '2026-10-08',
+    deadline: '2026-11-30',
     status: 'Actively Hiring',
     applyUrl: 'https://campus.americanexpress.com/',
     description: "Build global payment processing engines, real-time transaction fraud detection models, and high-security fintech microservices."
@@ -285,7 +285,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Go (Golang)', 'Java', 'Python', 'Microservices', 'Distributed Systems'],
-    deadline: '2026-10-05',
+    deadline: '2026-11-22',
     status: 'Actively Hiring',
     applyUrl: 'https://www.uber.com/in/en/careers/university/',
     description: "Architect global mobility solutions, dynamic dispatching graph algorithms, and fintech payment rails running at massive world scale."
@@ -304,7 +304,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Remote / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'Golang', 'Kafka', 'Redis', 'Microservices Architecture'],
-    deadline: '2026-10-12',
+    deadline: '2026-11-03',
     status: 'Actively Hiring',
     applyUrl: 'https://careers.swiggy.com/',
     description: "Work on hyper-local delivery routing algorithms, high-concurrency cart microservices, and AI meal recommendations for 50M+ users."
@@ -323,7 +323,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Gurugram (Hybrid)',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Node.js', 'Go', 'React', 'MongoDB', 'Real-time WebSockets'],
-    deadline: '2026-10-02',
+    deadline: '2026-10-20',
     status: 'Actively Hiring',
     applyUrl: 'https://www.zomato.com/careers',
     description: "Build 10-minute quick commerce warehouse automation systems, live rider tracking dispatchers, and consumer web applications."
@@ -342,7 +342,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Golang', 'PHP', 'React', 'PostgreSQL', 'Banking API Integrations'],
-    deadline: '2026-10-20',
+    deadline: '2026-11-26',
     status: 'Actively Hiring',
     applyUrl: 'https://razorpay.com/jobs/',
     description: "Develop India's financial backbone: UPI payment switches, automated payout gateways, and multi-tenant merchant APIs handling billions of dollars."
@@ -361,7 +361,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru (In-Office)',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'Spring Boot', 'Distributed Caching', 'Zero Trust Security'],
-    deadline: '2026-10-15',
+    deadline: '2026-11-14',
     status: 'Actively Hiring',
     applyUrl: 'https://careers.cred.club/',
     description: "Craft ultra-secure backend systems, encrypted credit card bill payment rails, and gamified reward microservices with world-class design fidelity."
@@ -380,7 +380,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru (Hybrid)',
     batches: ['2026 Batch', '2027 Batch', 'Women in Tech Program'],
     skills: ['Java', 'Python', 'Spring Boot', 'Data Structures', 'Database Design'],
-    deadline: '2026-09-30',
+    deadline: '2026-11-24',
     status: 'Actively Hiring',
     applyUrl: 'https://unstop.com/internships/flipkart-runway',
     description: "Designed to provide women engineers and campus undergraduates hands-on experience building India's largest e-commerce supply chains and AI cataloging systems."
@@ -399,7 +399,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: '100% Remote / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['React', 'TypeScript', 'Java', 'Kotlin', 'AWS Cloud', 'REST APIs'],
-    deadline: '2026-10-12',
+    deadline: '2026-11-19',
     status: 'Actively Hiring',
     applyUrl: 'https://www.atlassian.com/company/careers/students',
     description: "Build collaborative tools trusted by millions of developers worldwide (Jira, Bitbucket, Confluence) with flexible remote-first work culture."
@@ -418,7 +418,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hyderabad / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'Python', 'React', 'Cloud Architecture', 'Einstein AI'],
-    deadline: '2026-10-20',
+    deadline: '2026-12-08',
     status: 'Upcoming',
     applyUrl: 'https://www.salesforce.com/company/careers/university-recruiting/',
     description: "Work on Salesforce Agentforce, multi-tenant enterprise cloud platforms, and generative CRM systems with competitive global compensation."
@@ -437,7 +437,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Noida / Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C++', 'Python', 'Computer Vision', 'Generative AI', 'Deep Learning'],
-    deadline: '2026-09-24',
+    deadline: '2026-11-05',
     status: 'Actively Hiring',
     applyUrl: 'https://www.adobe.com/careers/university.html',
     description: "Research and implement innovative algorithms for Adobe Firefly, Photoshop, Premiere Pro, and Document Cloud alongside top research scientists."
@@ -458,7 +458,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Java', 'C++', 'Linux Kernel', 'Virtualization', 'Kubernetes', 'Cloud Security'],
-    deadline: '2026-10-18',
+    deadline: '2026-12-01',
     status: 'Actively Hiring',
     applyUrl: 'https://www.oracle.com/careers/students-grads/',
     description: "Build hyperscale cloud compute instances, Software Defined Networking (SDN), and multi-tenant database clusters for Oracle Cloud Infrastructure."
@@ -477,7 +477,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Noida',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C/C++', 'Java', 'On-Device AI', 'Android OS Internals', 'Computer Vision'],
-    deadline: '2026-10-15',
+    deadline: '2026-11-25',
     status: 'Actively Hiring',
     applyUrl: 'https://research.samsung.com/sri-b',
     description: "Pioneer Galaxy AI features, on-device neural processing units (NPUs), 5G protocol stacks, and multimedia camera computational photography."
@@ -496,7 +496,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Hyderabad / Bengaluru / Chennai',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['C/C++', 'RTOS', 'Snapdragon Architecture', 'Device Drivers', 'Linux'],
-    deadline: '2026-10-10',
+    deadline: '2026-11-15',
     status: 'Actively Hiring',
     applyUrl: 'https://www.qualcomm.com/company/careers/students-and-grads',
     description: "Develop Snapdragon 5G baseband firmware, IoT embedded software, and GPU graphics drivers for billions of connected smart devices."
@@ -515,7 +515,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru / Hyderabad',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Verilog/VHDL', 'C/C++', 'ROCm AI', 'Computer Architecture', 'Python'],
-    deadline: '2026-10-22',
+    deadline: '2026-12-10',
     status: 'Actively Hiring',
     applyUrl: 'https://www.amd.com/en/corporate/careers/university-relations.html',
     description: "Design Ryzen and EPYC microprocessor sub-blocks, ROCm open-source GPU compute stacks, and hardware emulation firmware."
@@ -534,7 +534,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'ISRO Satellite Center Bengaluru / SAC Ahmedabad / VSSC Thiruvananthapuram',
     batches: ['2026 Batch', '2027 Batch', '2028 Batch'],
     skills: ['C/C++', 'Python', 'Image Processing', 'Embedded Systems', 'Signal Processing'],
-    deadline: '2026-10-31',
+    deadline: '2026-12-20',
     status: 'Open',
     applyUrl: 'https://www.isro.gov.in/StudentActivities.html',
     description: "Work on satellite telemetry, autonomous onboard payload computing, deep space communication protocols, and remote sensing imagery."
@@ -553,7 +553,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Bengaluru',
     batches: ['2026 Batch', '2027 Batch'],
     skills: ['Python', 'C/C++', 'Computer Networks', 'Cloud Networking', 'Linux'],
-    deadline: '2026-10-15',
+    deadline: '2026-11-30',
     status: 'Actively Hiring',
     applyUrl: 'https://www.cisco.com/c/en/us/about/careers/we-are-cisco/students-and-new-graduates.html',
     description: "Cisco's nationwide Ideathon hiring drive providing direct internship and PPO opportunities in secure routing, enterprise AI networking, and Webex systems."
@@ -572,7 +572,7 @@ export const DEFAULT_INTERNSHIPS = [
     location: 'Powai, Mumbai',
     batches: ['2026 Batch', '2027 Batch', '2028 Batch'],
     skills: ['Python', 'Mathematics', 'Machine Learning', 'Data Analysis', 'Research Writing'],
-    deadline: '2026-10-30',
+    deadline: '2027-01-25',
     status: 'Upcoming',
     applyUrl: 'https://www.ircc.iitb.ac.in/',
     description: "Conduct cutting-edge scientific and engineering research alongside distinguished IIT Bombay professors across AI, robotics, quantum computing, and nano-tech."

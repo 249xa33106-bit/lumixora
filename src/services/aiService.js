@@ -1,3 +1,16 @@
+
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 7000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+};
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const getOpenRouterApiKey = () => {
@@ -54,7 +67,7 @@ export const callAICompletion = async (params) => {
         };
         if (responseFormat) body.response_format = responseFormat;
 
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const res = await fetchWithTimeout("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${groqKey}`,
@@ -83,7 +96,7 @@ export const callAICompletion = async (params) => {
   if (geminiKey && geminiKey.length > 15) {
     try {
       const promptText = sanitizedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-      const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`, {
+      const gRes = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -127,7 +140,7 @@ export const callAICompletion = async (params) => {
         };
         if (responseFormat) body.response_format = responseFormat;
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const res = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${openRouterKey}`,
@@ -391,7 +404,7 @@ Format:
 }
 Note: The answer MUST be a single word, exact, lowercase noun. Keep the riddles very simple, common, and easy.`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -449,7 +462,7 @@ or
   "isCorrect": false
 }`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -671,7 +684,7 @@ REAL-TIME BEHAVIOURAL COACHING DIRECTIVES:
 7. Be encouraging, keep them accountable, and check if they understood the explanation by asking a short, engaging follow-up question.
 8. Output your response directly in clean Markdown format with bold text, bullet points, and tables where appropriate. Keep it structured, highly readable, and professional.`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -720,7 +733,7 @@ Format:
 }
 Note: Generate exactly 3 highly relevant and interesting questions. The "correct" value must be the 0-indexed number corresponding to the correct answer in the options array.`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -800,7 +813,7 @@ Format:
 }
 Note: Generate exactly 4 useful flashcards.`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -882,7 +895,7 @@ Format:
 }
 Note: Generate exactly 4 sequential phases.`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,

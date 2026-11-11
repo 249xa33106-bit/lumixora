@@ -14,7 +14,7 @@ export default function FounderFrequentUsers({ usersList, onToggleBlock }) {
     if (!u) return false;
     if (u.is_blocked === true || u.is_deleted === true) return true;
     const email = (u.email || '').toLowerCase().trim();
-    const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+    const isSpecial = email === 'founder@lumixora.com' ;
     if (isSpecial) return false;
     if (email.endsWith('@gprec.ac.in')) return false;
     return !(u.is_blocked === false && (u.is_approved === true || u.isApproved === true));
@@ -276,7 +276,7 @@ export default function FounderFrequentUsers({ usersList, onToggleBlock }) {
                   const todayStr = new Date().toDateString();
                   const hasLoggedToday = u.lastLoginDate && new Date(u.lastLoginDate).toDateString() === todayStr;
                   const email = (u.email || '').toLowerCase().trim();
-                  const isSpecial = email === 'founder@lumixora.com' || email === '249xa33106@gmail.com';
+                  const isSpecial = email === 'founder@lumixora.com' ;
                   const blocked = isUserBlocked(u);
 
                   return (

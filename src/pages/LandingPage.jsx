@@ -1,421 +1,21 @@
+import { supabase } from '../config/supabase';
+import { callAICompletion } from '../services/aiService';
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, PlayCircle, Download, CheckCircle, Code, GraduationCap, ArrowRight, MonitorPlay, Zap, Shield, Sparkles, Mail, HelpCircle, Flame, Brain, Cpu, Trophy, Target, Activity, Star, CheckCircle2, X, Users, Heart, BookOpen, Award, Sun, Send, Bell, ExternalLink, Globe, Briefcase, Building2 } from 'lucide-react';
-import OurTeamPortal from './OurTeamPortal';
+import { 
+  ArrowRight, Sparkles, CheckCircle2, ChevronRight, Brain, Code, Rocket, 
+  Trophy, Users, Target, Activity, Zap, Shield, Flame, Briefcase, Building2, 
+  GraduationCap, Globe, ExternalLink, Play, ChevronDown, Check, Star, 
+  Compass, Laptop, Award, BarChart3, TrendingUp, Layers, Terminal, Sparkle,
+  Search, BookOpen, Clock, Heart, Send, HelpCircle, X, Lock, CheckCircle, Mail
+} from 'lucide-react';
 import CampusAmbassadorModal from '../components/CampusAmbassadorModal';
-
-
-const teamMembersDetails = {
-  vamsika: {
-    name: "PERAM VAMSIKA",
-    role: "Feature Research & Student Insights",
-    department: "Feature Strategy & Product Innovation",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_vamsika.png",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Key driver in Vyomra's Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research to make learning seamless.",
-    highlights: [
-      "Conducts in-depth qualitative & quantitative campus surveys to uncover real student pain points.",
-      "Researches and benchmarks top-tier EdTech solutions to ideate intuitive platform features.",
-      "Collaborates directly with UI/UX and engineering teams to transform student feedback into actionable roadmaps.",
-      "Validates feature prototypes against real academic workflows before general release."
-    ],
-    skills: ["Student Insights", "Feature Viability Research", "Workflow Optimization", "UX Discovery", "Survey Analytics"]
-  },
-  yaswitha: {
-    name: "RAAVI YASWITHA",
-    role: "Problem Identification & User Testing",
-    department: "Feature Strategy & Quality Engineering",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_yaswitha.jpg",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Specializes in identifying high-friction obstacles in the student learning experience, performing rigorous end-to-end user beta tests, and verifying problem-solution fit across Vyomra.",
-    highlights: [
-      "Pinpoints critical friction points and edge cases across student navigation and study flows.",
-      "Organizes and facilitates interactive student beta testing sessions for new Vyomra releases.",
-      "Gathers bug reports, performance bottlenecks, and UX feedback to drive iterative refinements.",
-      "Ensures every Vyomra feature delivers immediate, tangible value for daily student life."
-    ],
-    skills: ["Problem Identification", "User Beta Testing", "Usability Heuristics", "Feedback Synthesis", "Quality Validation"]
-  },
-  manasa: {
-    name: "C. MANASA",
-    role: "Product Innovation Lead — Head of Feature Strategy & Student Insights",
-    department: "Product Leadership",
-    lead: "Team Lead — Feature Strategy Division",
-    image: "/team_manasa.jpg",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
-    highlights: [
-      "Directs the Feature Strategy team (including Peram Vamsika & Raavi Yaswitha) in discovering student pain points.",
-      "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
-      "Aligns product initiatives with student academic success metrics and user retention goals.",
-      "Bridges student communities and tech architects to accelerate feature delivery."
-    ],
-    skills: ["Product Innovation", "Feature Roadmapping", "Student Analytics", "Team Leadership", "Design Thinking"]
-  },
-  sowban: {
-    name: "SHAIK SOWBAN",
-    role: "Founder, CEO & Tech Lead",
-    department: "Executive Leadership & Engineering",
-    lead: "Platform Founder & Chief Architect",
-    image: "/founder_sowban.png",
-    color: "teal",
-    gradient: "from-brand-teal to-brand-blue",
-    borderBadge: "border-brand-teal/30 text-brand-teal bg-brand-teal/10",
-    bio: "Visionary founder and chief software architect behind Vyomra. Leading system architecture, AI model integrations, scalable cloud infrastructure, and the core platform vision.",
-    highlights: [
-      "Architected the entire Vyomra Student OS full-stack ecosystem from concept to production.",
-      "Engineered the AI Future Twin, automated code execution engines, and smart academic portfolios.",
-      "Directs cross-functional engineering, infrastructure scaling, and real-time security protocols.",
-      "Drives the mission to democratize state-of-the-art AI tooling for every university student."
-    ],
-    skills: ["System Architecture", "Full-Stack Development", "AI/ML Integration", "Cloud Infrastructure", "Product Vision"]
-  },
-  ushasree: {
-    name: "Y. USHA SREE",
-    role: "AI & Innovation Lead — Head of Intelligent Systems",
-    department: "AI & Research Division",
-    lead: "Lead — Intelligent Systems",
-    image: "/team_ushasree.jpg",
-    color: "violet",
-    gradient: "from-violet-400 via-purple-500 to-indigo-500",
-    borderBadge: "border-violet-400/30 text-violet-400 bg-violet-400/10",
-    bio: "Pioneers cutting-edge artificial intelligence architectures, personalized learning models, automated academic evaluation pipelines, and next-gen smart tools.",
-    highlights: [
-      "Designs and fine-tunes specialized prompt engineering pipelines for Vyomra AI.",
-      "Develops adaptive learning algorithms that tailor content difficulty to individual student progress.",
-      "Researches emerging neural architectures and multimodal AI agents for academic coaching.",
-      "Ensures high-accuracy, hallucination-free AI assistance across STEM subjects."
-    ],
-    skills: ["AI Architecture", "Prompt Engineering", "Adaptive Learning", "Evaluation Models", "AI Innovation"]
-  },
-  akhil: {
-    name: "M. AKHIL",
-    role: "Head of Growth & Outreach — Marketing Head",
-    department: "Growth & Community",
-    lead: "Lead — Growth & Campus Partnerships",
-    image: "/team_akhil.jpg",
-    color: "purple",
-    gradient: "from-brand-purple to-brand-pink",
-    borderBadge: "border-brand-purple/30 text-brand-purple bg-brand-purple/10",
-    bio: "Drives institutional expansion, student ambassador programs, brand awareness campaigns, and community engagement initiatives across universities.",
-    highlights: [
-      "Scales campus outreach programs to onboard student communities and collegiate clubs.",
-      "Orchestrates omnichannel digital marketing campaigns and campus hackathon sponsorships.",
-      "Builds strategic relationships with academic departments and student leaders.",
-      "Analyzes user acquisition funnels to maximize organic platform adoption."
-    ],
-    skills: ["Growth Strategy", "Campus Outreach", "Brand Marketing", "Community Building", "Digital Campaigns"]
-  },
-  pooja: {
-    name: "A. POOJA REDDY",
-    role: "Mentorship & Support Lead — Head of Doubt Solver Network",
-    department: "Academic Mentorship & Student Support",
-    lead: "Lead — Mentorship Operations",
-    image: "/team_pooja.jpg",
-    color: "cyan",
-    gradient: "from-cyan-400 to-blue-600",
-    borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
-    bio: "Manages Vyomra's extensive human mentor network and 24/7 student doubt resolution infrastructure to ensure zero learning roadblocks.",
-    highlights: [
-      "Oversees peer mentor recruitment, onboarding, and quality assurance processes.",
-      "Maintains rapid doubt resolution SLAs across engineering and science disciplines.",
-      "Fosters empathetic student support systems and personalized peer tutoring sessions.",
-      "Monitors academic discussion threads to uphold high accuracy and clarity standards."
-    ],
-    skills: ["Mentorship Management", "Doubt Resolution", "Student Support", "Academic QA", "Community Care"]
-  },
-  chandrika: {
-    name: "C. CHANDRIKA",
-    role: "Campus Ops Lead — Head of Operations & Support",
-    department: "Academic Operations",
-    lead: "Lead — Operations & Academic Verification",
-    image: "/team_chandrika.jpg",
-    color: "emerald",
-    gradient: "from-emerald-400 to-teal-600",
-    borderBadge: "border-emerald-400/30 text-emerald-400 bg-emerald-400/10",
-    bio: "Oversees daily platform operations, curriculum alignment, verified study material repositories, and academic content curation.",
-    highlights: [
-      "Audits and verifies university syllabus notes, lecture summaries, and reference materials.",
-      "Streamlines operational pipelines for content uploads and faculty contributions.",
-      "Coordinates cross-department operations to maintain high uptime and resource availability.",
-      "Drives student success initiatives through structured academic resource management."
-    ],
-    skills: ["Operations Management", "Curriculum Curation", "Academic Verification", "Process Optimization", "Student Success"]
-  },
-  tousif: {
-    name: "SHAIK TOUSIF BASHA",
-    role: "AI Solutions & Prototyping Lead",
-    department: "Rapid Prototyping & AI Labs",
-    lead: "Lead — Prototyping & POCs",
-    image: "/team_tousif.jpg",
-    color: "blue",
-    gradient: "from-blue-400 via-indigo-500 to-cyan-400",
-    borderBadge: "border-blue-400/30 text-blue-400 bg-blue-400/10",
-    bio: "Specializes in rapid prototyping, AI tool exploration, and transforming experimental feature concepts into functional proof-of-concept demos.",
-    highlights: [
-      "Leverages state-of-the-art AI development tools to build working prototypes in record time.",
-      "Conducts feasibility tests on experimental UI designs and AI workflow integrations.",
-      "Builds interactive sandboxes for testing bleeding-edge edtech features before full implementation.",
-      "Accelerates developer velocity through automated code generation and workflow scripts."
-    ],
-    skills: ["Rapid Prototyping", "AI Experimentation", "POC Engineering", "Demo Development", "Developer Tooling"]
-  },
-  riyaz: {
-    name: "SYED RIYAZ",
-    role: "AI Solutions & Prototyping Member",
-    department: "AI Solutions & Prototyping Team",
-    lead: "AI Solutions & Prototyping Team (under Shaik Tousif Basha)",
-    image: "/team_riyaz.png",
-    color: "cyan",
-    gradient: "from-cyan-400 via-blue-500 to-indigo-500",
-    borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
-    bio: "Core AI solutions developer and rapid prototyping member. Specializes in building proof-of-concept AI modules, intelligent automation pipelines, and model evaluation.",
-    highlights: [
-      "Develops rapid AI prototypes and experimental feature proof-of-concepts under the AI Solutions division.",
-      "Collaborates on LLM integration, prompt design, and automated workflow pipelines.",
-      "Tests and optimizes AI-powered student tools for performance, accuracy, and latency.",
-      "Works alongside team leads to translate cutting-edge AI research into working platform prototypes."
-    ],
-    skills: ["AI Prototyping", "Prompt Engineering", "Python", "Proof of Concepts", "Model Evaluation"]
-  },
-  ushaeswari: {
-    name: "USHA ESWARI",
-    role: "Product Testing & Quality Assurance Lead",
-    department: "Product Testing & Quality Assurance",
-    lead: "Lead — Product Testing & Quality Assurance",
-    image: "/team_ushaeswari.jpg",
-    color: "rose",
-    gradient: "from-rose-400 via-pink-500 to-indigo-500",
-    borderBadge: "border-rose-400/30 text-rose-400 bg-rose-400/10",
-    bio: "Directs comprehensive product testing workflows, quality benchmarks, automated test suites, and defect tracking across the Vyomra ecosystem.",
-    highlights: [
-      "Leads end-to-end product testing pipelines and quality assurance standards across all student features.",
-      "Designs and executes robust functional, regression, and user acceptance test suites.",
-      "Collaborates with product and engineering teams to identify defects, edge cases, and performance bottlenecks.",
-      "Ensures seamless, bug-free releases and optimal stability for thousands of active university users."
-    ],
-    skills: ["Product Testing", "Quality Assurance", "Test Automation", "Bug Tracking & QA", "User Acceptance Testing"]
-  }
-};
-
-const freedomFighters = [
-  { name: "Mahatma Gandhi", src: "/images/fighters/gandhi_portrait_1786790642751.jpg" },
-  { name: "Bhagat Singh", src: "/images/fighters/bhagat_singh_portrait_1786790921290.jpg" },
-  { name: "Subhas Chandra Bose", src: "/images/fighters/bose_portrait_1786790949740.jpg" },
-  { name: "Sardar Vallabhbhai Patel", src: "/images/fighters/patel_portrait_1786791149012.jpg" },
-  { name: "B. R. Ambedkar", src: "/images/fighters/ambedkar_portrait_1786791272300.jpg" },
-  { name: "Rani Lakshmibai", src: "/images/fighters/lakshmibai_portrait_1786791406245.jpg" },
-];
-
-const sessionalExamImages = [
-  {
-    title: "Deep Focus & Sessional Mastery",
-    subtitle: "Turn focused study hours into top engineering CGPA & distinction.",
-    src: "/images/exams/library_focus.jpg",
-    tip: "Review previous year papers, master unit formulas, and practice code hands-on.",
-    tag: "Exam Mode Active 🎯",
-    gradient: "from-amber-400 to-orange-500",
-    quote: "Success in exams isn't about last-minute panic, it's about calm focus, clear fundamentals, and believing in your hard work."
-  },
-  {
-    title: "All The Best For Your Sessionals!",
-    subtitle: "Confidence, calm mind, and clear answers guarantee victory.",
-    src: "/images/exams/exam_success.jpg",
-    tip: "Stay energized, write answers neatly with neat diagrams, and manage your time smartly.",
-    tag: "High Score Mindset ⚡",
-    gradient: "from-emerald-400 to-teal-500",
-    quote: "You have prepared and worked hard. Walk into the exam hall with your head high and conquer every question!"
-  },
-  {
-    title: "Smart AI Revision & Doubt Solving",
-    subtitle: "Instant concept summaries and formulas right when you need them.",
-    src: "/images/exams/desk_revision.jpg",
-    tip: "Use Vyomra AI to clarify doubts, review code logic, and test yourself with flash quizzes.",
-    tag: "Late Night Revision 🚀",
-    gradient: "from-cyan-400 to-blue-500",
-    quote: "Small consistent revisions turn tough syllabus units into effortless high scores."
-  }
-];
-
-export const checkIsSessionalExams = () => {
-  return false;
-};
-
-function SessionalExamsBackgroundAnimation() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % sessionalExamImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const floatingSymbols = [
-    { symbol: "🎯", left: "6%", delay: "0s", dur: "14s", size: "text-2xl" },
-    { symbol: "📚", left: "20%", delay: "3s", dur: "16s", size: "text-xl" },
-    { symbol: "⚡", left: "35%", delay: "1.5s", dur: "12s", size: "text-lg" },
-    { symbol: "💡", left: "50%", delay: "4s", dur: "18s", size: "text-xl" },
-    { symbol: "✨", left: "65%", delay: "2s", dur: "15s", size: "text-2xl" },
-    { symbol: "🔥", left: "80%", delay: "5s", dur: "13s", size: "text-lg" },
-    { symbol: "🏆", left: "92%", delay: "0.5s", dur: "17s", size: "text-xl" },
-  ];
-
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black">
-      <style>{`
-        @keyframes floatExamSymbols {
-          0% {
-            transform: translateY(110vh) rotate(0deg) scale(0.8);
-            opacity: 0;
-          }
-          15% {
-            opacity: 0.65;
-          }
-          85% {
-            opacity: 0.65;
-          }
-          100% {
-            transform: translateY(-20vh) rotate(360deg) scale(1.1);
-            opacity: 0;
-          }
-        }
-      `}</style>
-
-      {/* Background Images Slideshow */}
-      {sessionalExamImages.map((item, idx) => (
-        <div 
-          key={item.title}
-          className={`absolute inset-0 transition-opacity duration-2000 ${idx === currentIndex ? 'opacity-40' : 'opacity-0'}`}
-        >
-          <img 
-            src={item.src} 
-            alt={item.title}
-            className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000"
-          />
-        </div>
-      ))}
-
-      {/* Subtle Dark Gradient Overlay for Readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/85 via-[#0a0a0f]/60 to-[#0a0a0f]/95 pointer-events-none"></div>
-
-      {/* Radiant Floating Symbols */}
-      {floatingSymbols.map((item, idx) => (
-        <div
-          key={idx}
-          className={`absolute bottom-0 select-none ${item.size} opacity-40`}
-          style={{
-            left: item.left,
-            animation: `floatExamSymbols ${item.dur} infinite linear`,
-            animationDelay: item.delay
-          }}
-        >
-          {item.symbol}
-        </div>
-      ))}
-
-      {/* Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[350px] bg-gradient-to-br from-amber-500/15 via-emerald-500/10 to-transparent rounded-full blur-[140px]"></div>
-      <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-gradient-to-bl from-teal-500/15 via-blue-500/10 to-transparent rounded-full blur-[130px]"></div>
-
-      {/* Bottom Motivation Nametag */}
-      <div className="absolute bottom-6 left-6 md:left-10 z-10 bg-black/80 backdrop-blur-md px-5 py-3 rounded-2xl border border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.25)] max-w-sm sm:max-w-md pointer-events-auto">
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400 rounded-b-2xl"></div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm">🎯</span>
-          <span className="text-[11px] font-black tracking-widest text-amber-400 uppercase">Sessional Exams 2026</span>
-        </div>
-        <p className="text-xs md:text-sm font-bold text-white tracking-wide">
-          {sessionalExamImages[currentIndex].title}
-        </p>
-        <p className="text-[11px] text-amber-200/80 mt-0.5 line-clamp-1">
-          {sessionalExamImages[currentIndex].tip}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function IndependenceDayAnimation() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % freedomFighters.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black">
-      {/* Background Images */}
-      {freedomFighters.map((fighter, idx) => (
-        <div 
-          key={fighter.name}
-          className={`absolute inset-0 transition-opacity duration-2000 ${idx === currentIndex ? 'opacity-60' : 'opacity-0'}`}
-        >
-          <img 
-            src={fighter.src} 
-            alt={fighter.name}
-            className="w-full h-full object-cover object-[center_15%]"
-          />
-        </div>
-      ))}
-      {/* Subtle Dark Gradient Overlay for Readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/70 via-[#0a0a0f]/40 to-[#0a0a0f]/90 pointer-events-none"></div>
-      
-      {/* Nametag */}
-      <div className="absolute bottom-10 left-10 z-10 bg-black/60 backdrop-blur-md px-6 py-2 rounded-xl border border-white/20 shadow-2xl">
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-white to-green-500"></div>
-        <p className="text-[10px] md:text-sm font-bold text-gray-300 tracking-widest uppercase">
-          Remembering <span className="text-white text-base ml-1">{freedomFighters[currentIndex].name}</span>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function TeamAvatar({ src, name, gradient = "from-teal-400 to-emerald-500", size = "w-24 h-24", textSize = "text-2xl" }) {
-  const [imgError, setImgError] = useState(false);
-  
-  const getInitials = (n) => {
-    if (!n) return 'T';
-    const clean = n.replace(/[^a-zA-Z\s]/g, '').trim();
-    const parts = clean.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
-
-  return (
-    <div className={`relative ${size} mx-auto mb-5 shrink-0`}>
-      <div className={`absolute inset-0 bg-gradient-to-tr ${gradient} rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity`}></div>
-      {src && !imgError ? (
-        <img 
-          src={src} 
-          alt="" 
-          onError={() => setImgError(true)}
-          className={`${size} rounded-full object-cover relative z-10 border-2 border-white/20 group-hover:scale-105 transition-transform duration-500 shadow-xl`} 
-        />
-      ) : (
-        <div className={`${size} rounded-full bg-gradient-to-tr ${gradient} flex items-center justify-center font-black ${textSize} text-white border-2 border-white/20 relative z-10 shadow-xl select-none group-hover:scale-105 transition-transform duration-500`}>
-          {getInitials(name)}
-        </div>
-      )}
-    </div>
-  );
-}
+import OurTeamPortal from './OurTeamPortal';
+import Realistic3DLogo from '../components/Realistic3DLogo';
+import CyberHoloGlobe3D from '../components/CyberHoloGlobe3D';
 
 export default function LandingPage({ onLoginClick }) {
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [openFaq, setOpenFaq] = useState(null);
-  const [evalState, setEvalState] = useState('idle');
+  // Navigation & modals
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showTeamPortal, setShowTeamPortal] = useState(false);
   const [showAmbassadorModal, setShowAmbassadorModal] = useState(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
@@ -424,15 +24,61 @@ export default function LandingPage({ onLoginClick }) {
     }
     return false;
   });
-  const [isSessionalExams, setIsSessionalExams] = useState(checkIsSessionalExams);
-  const [examCheerCount, setExamCheerCount] = useState(() => {
-    try { return parseInt(localStorage.getItem('lumixora_exam_cheers') || '342'); } catch(e) { return 342; }
-  });
-  const [hasCheered, setHasCheered] = useState(false);
-  const [showCheerToast, setShowCheerToast] = useState(false);
-  const [activeQuoteIdx, setActiveQuoteIdx] = useState(0);
 
-  // Sync hash routing for campus ambassador modal
+  // Audience selector tabs: 'students', 'colleges', 'employers'
+  const [selectedAudience, setSelectedAudience] = useState('students');
+
+  // Interactive Career Twin Demo State
+  const [activeCompetency, setActiveCompetency] = useState('Problem Solving');
+  const [careerPath, setCareerPath] = useState('Software Developer');
+
+  // Interactive AI Mentor Chat Demo State
+  const [mentorInput, setMentorInput] = useState('');
+  const [mentorHistory, setMentorHistory] = useState([
+    {
+      sender: 'mentor',
+      text: "Hello! I am your Lumixora AI Career Mentor. I've analyzed your Career Twin (78% readiness for Software Developer). Would you like to debug your Dynamic Programming code, prepare for your technical interview, or review project milestones?"
+    }
+  ]);
+  const [isMentorTyping, setIsMentorTyping] = useState(false);
+
+  // FAQ Accordion State
+  const [openFaq, setOpenFaq] = useState(null);
+
+  // Live Supabase platform statistics
+  const [liveStats, setLiveStats] = useState({
+    usersCount: 450,
+    notesCount: 1195,
+    collegesCount: 7,
+    campusesLabel: 'GPREC, RGUKT & Partner Campuses'
+  });
+
+  useEffect(() => {
+    async function fetchLiveStats() {
+      try {
+        const [usersRes, notesRes] = await Promise.all([
+          supabase.from('users').select('college'),
+          supabase.from('notes').select('*', { count: 'exact', head: true })
+        ]);
+
+        if (usersRes.data) {
+          const rawColleges = usersRes.data.map(u => (u.college || '').trim()).filter(c => c && c.length > 2);
+          const uniqueColleges = new Set(rawColleges);
+          setLiveStats({
+            usersCount: usersRes.data.length,
+            notesCount: notesRes.count || 1195,
+            collegesCount: Math.max(uniqueColleges.size, 5),
+            campusesLabel: 'GPREC, RGUKT, AU & Partner Colleges'
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching live stats:', err);
+      }
+    }
+    fetchLiveStats();
+  }, []);
+
+  // Sync hash routing for campus ambassador
   useEffect(() => {
     const handleHashCheck = () => {
       if (typeof window !== 'undefined' && window.location.hash) {
@@ -446,7 +92,7 @@ export default function LandingPage({ onLoginClick }) {
     return () => window.removeEventListener('hashchange', handleHashCheck);
   }, []);
 
-  // Detect Ambassador referral link (?ref=... or #register?ref=...)
+  // Referral detection
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -454,67 +100,94 @@ export default function LandingPage({ onLoginClick }) {
         const refCode = urlParams.get('ref') || urlParams.get('referral') || urlParams.get('ca');
         if (refCode) {
           localStorage.setItem('lumixora_referral_code', refCode.trim().toUpperCase());
-          if (typeof onLoginClick === 'function') {
-            onLoginClick('student');
-          }
-        } else if (window.location.hash && window.location.hash.includes('ref=')) {
-          const hashPart = window.location.hash.split('ref=')[1];
-          if (hashPart) {
-            const code = hashPart.split('&')[0].trim().toUpperCase();
-            if (code) {
-              localStorage.setItem('lumixora_referral_code', code);
-              if (typeof onLoginClick === 'function') {
-                onLoginClick('student');
-              }
-            }
-          }
+          if (typeof onLoginClick === 'function') onLoginClick('student');
         }
       } catch (e) {}
     }
   }, [onLoginClick]);
 
-  const today = new Date();
-  const isIndependenceDay = today.getMonth() === 7 && today.getDate() === 15;
+  const handleMentorSend = async (e) => {
+    e?.preventDefault();
+    if (!mentorInput.trim()) return;
+    const userMsg = mentorInput.trim();
+    setMentorInput('');
+    setMentorHistory(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setIsMentorTyping(true);
 
-  const handleSendCheer = () => {
-    if (hasCheered) return;
-    const newCount = examCheerCount + 1;
-    setExamCheerCount(newCount);
-    setHasCheered(true);
-    setShowCheerToast(true);
+    const q = userMsg.toLowerCase().trim();
+
+    // 1. Instant smart intent detector for zero latency on common prompts
+    const isIdentity = q.includes('who are you') || q.includes('who r u') || q === 'who r u' || q === 'who are u' || q.includes('what are you') || q.includes('your name');
+    const isGreeting = ['hi', 'hlo', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'yo', 'namaste'].some(g => q === g || q.startsWith(g + ' ') || q.startsWith(g + '!'));
+
+    if (isIdentity) {
+      setTimeout(() => {
+        setIsMentorTyping(false);
+        const reply = "I am your **Lumixora AI Career Mentor** (Autonomous Career Twin Agent v2.5)! 🧠\n\nI continuously analyze your student skill vector, assess your job readiness for roles like **" + careerPath + "**, provide instant DSA feedback, run mock technical interviews, and guide your path toward high-tier placements.";
+        setMentorHistory(prev => [...prev, { sender: 'mentor', text: reply }]);
+      }, 350);
+      return;
+    }
+
+    if (isGreeting) {
+      setTimeout(() => {
+        setIsMentorTyping(false);
+        const reply = "Hello! 👋 Great to connect with you. I am actively monitoring your Career Twin metrics (" + careerPath + " — 78% readiness).\n\nWhat would you like to work on right now? We can test your DSA algorithms in Code Arena, review your resume benchmarks, or simulate a live technical interview!";
+        setMentorHistory(prev => [...prev, { sender: 'mentor', text: reply }]);
+      }, 350);
+      return;
+    }
+
+    // 2. Dynamic AI LLM completion with prompt grounding
     try {
-      localStorage.setItem('lumixora_exam_cheers', newCount.toString());
-    } catch(e) {}
-    setTimeout(() => setShowCheerToast(false), 4000);
+      const systemPrompt = `You are Lumixora AI Career Mentor, an intelligent career copilot for university engineering students. The user is currently training for the role of '${careerPath}' (Career Twin readiness is 78%). Answer concisely, professionally, with actionable engineering advice, code tips, or encouragement. Keep response under 3-4 sentences.`;
+      const aiReply = await callAICompletion({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMsg }
+        ],
+        temperature: 0.6,
+        maxTokens: 200
+      });
+
+      setIsMentorTyping(false);
+      const finalReply = aiReply || `Great question! For ${careerPath}, prioritize mastering core Data Structures & Algorithms, building full-stack projects on GitHub, and tracking your weekly progress in Lumixora's Build Studio.`;
+      setMentorHistory(prev => [...prev, { sender: 'mentor', text: finalReply }]);
+    } catch (err) {
+      setIsMentorTyping(false);
+      let fallbackReply = `Great question! For ${careerPath}, prioritize practicing coding challenges in Code Arena and completing your milestones in the Build Studio.`;
+      if (q.includes('interview')) {
+        fallbackReply = "Let's run a rapid technical screening! 🎯 Question: Can you explain how database indexing works under the hood and why B-Trees are preferred over Hash Indexes for range queries?";
+      } else if (q.includes('project')) {
+        fallbackReply = "Your engineering portfolio is key! 🚀 Connecting your verified GitHub repositories to Build Studio unlocks the 'Verified Ship' badge and boosts your placement score.";
+      }
+      setMentorHistory(prev => [...prev, { sender: 'mentor', text: fallbackReply }]);
+    }
   };
 
-  const handleRunCode = () => {
-    if (evalState === 'running') return;
-    setEvalState('running');
-    setTimeout(() => {
-      setEvalState('success');
-    }, 2000);
+  const handleAuth = (type = 'student') => {
+    if (typeof onLoginClick === 'function') {
+      onLoginClick(type);
+    }
   };
 
   if (showTeamPortal) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-brand-teal/30 selection:text-brand-teal relative p-4 sm:p-8 force-dark">
+      <div className="min-h-screen bg-[#0A0F1D] text-white p-4 sm:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowTeamPortal(false)}
-              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs flex items-center gap-2 border border-white/10 transition-all cursor-pointer shadow-lg"
+              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-2 border border-white/10 transition-all cursor-pointer"
             >
-              &larr; Back to Home
+              &larr; Back to Landing Page
             </button>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => { setShowTeamPortal(false); onLoginClick('student'); }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs shadow-md cursor-pointer"
-              >
-                Student Login
-              </button>
-            </div>
+            <button 
+              onClick={() => { setShowTeamPortal(false); handleAuth('student'); }}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] text-white font-black text-xs shadow-md cursor-pointer"
+            >
+              Get Started
+            </button>
           </div>
           <OurTeamPortal user={null} setActiveTab={() => {}} />
         </div>
@@ -523,364 +196,946 @@ export default function LandingPage({ onLoginClick }) {
   }
 
   const faqs = [
-    { q: "What is Vyomra?", a: "Vyomra is an advanced AI-powered educational ecosystem that combines an AI Future Twin, personal mentoring, interactive coding practice, and peer collaboration to supercharge your academic journey." },
-    { q: "How does the AI Future Twin work?", a: "Your Future Twin analyzes your current skills, goals, and academic performance to simulate your career trajectory, providing step-by-step guidance to achieve your dream placements." },
-    { q: "Can I use Vyomra for coding practice?", a: "Yes! Vyomra features a built-in code editor, personalized problem sets, and an AI mentor to help you debug and learn multiple programming languages hands-on." },
-    { q: "Is Vyomra available for faculty members?", a: "Absolutely. Faculty members can use the Admin portal to track student attendance, monitor academic progress, evaluate assignments using AI, and manage classroom activities." },
-    { q: "Does Vyomra support collaborative learning?", a: "We strongly encourage it! With features like 'Study With Me', Doubt Solving forums, and a centralized Learning Hub, you can collaborate with peers seamlessly." },
-    { q: "Are my notes and study materials secure?", a: "Yes, all your contributed notes, tasks, and private data are securely stored using enterprise-grade encryption. You have full control over what you share with the community." },
-    { q: "How do I get started?", a: "Simply click on 'Student Login' or 'Faculty Login' above using your institutional email address to access your personalized dashboard." },
-    { q: "Is your college not mentioned in Student Login? Want your campus to be added?", a: "If your institution is not listed yet in the Student Login portal, please email us directly at lumixora.team@gmail.com with your college name and official domain. We onboard new engineering colleges and universities with dedicated tenant workspaces, department syllabi, and AI future twin engines!" }
+    { q: "What is Lumixora?", a: "Lumixora is an intelligent career development ecosystem that bridges the gap between learning and getting hired. It combines the Career Twin, AI mentorship, verified project build studio, and placement intelligence into one connected platform." },
+    { q: "What is the Career Twin?", a: "Your Career Twin is an evolving AI representation of your professional competencies. It analyzes your real code runs, test scores, milestone completions, and mock interview communication to compute an evidence-backed readiness score." },
+    { q: "How do Colleges and TPOs benefit from Lumixora?", a: "Institutions gain real-time visibility into student skill progression across departments, automated proctored diagnostic exams, syllabus alignment, and actionable gap analytics before company hiring drives." },
+    { q: "How is Lumixora different from traditional EdTech video courses?", a: "Lumixora focuses on 'Learn → Build → Prove → Prepare → Connect'. Instead of issuing passive certificates of completion, it requires verified GitHub commits, code compiler proof, and clean proctor audits that employers trust." },
+    { q: "Can I apply to be a Campus Ambassador?", a: "Yes! Click the 'Campus Ambassador' button in the header or section below. You can represent Lumixora at your college, receive direct 1-on-1 mentorship from founder Shaik Sowban, and earn official leadership credentials." },
+    { q: "How do I request my college or university to be onboarded?", a: "If your institution is not yet in our university tenant list, simply email us at lumixora.team@gmail.com with your institution name and official domain. We onboard new engineering campuses within 24-48 hours!" }
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-brand-teal/30 selection:text-brand-teal relative overflow-hidden force-dark">
+    <div className="min-h-screen bg-[#FAFBFF] text-[#101A35] font-sans selection:bg-[#7553E8]/20 selection:text-[#7553E8] relative overflow-x-hidden">
       
-      {/* Sessional Exams High-Energy Background Slideshow with Real Study Focus Photos */}
-      {isSessionalExams ? (
-        <SessionalExamsBackgroundAnimation />
-      ) : isIndependenceDay ? (
-        <IndependenceDayAnimation />
-      ) : null}
+      {/* ─────────────────────────────────────────────────────────────────
+          HEADER & NAVIGATION (Sticky with Campus Ambassador Pill & Logins)
+      ───────────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-[#101A35]/10 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          
+          {/* 3D Realistic Attractive Logo */}
+          <div className="flex items-center gap-3 cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Realistic3DLogo size="md" />
+            <div>
+              <span className="text-xl font-black tracking-tight text-[#101A35] font-sora block">LUMIXORA</span>
+              <span className="text-[9px] font-bold tracking-widest text-[#7553E8] uppercase block -mt-1">Placement Intelligence</span>
+            </div>
+          </div>
 
-      {/* Sessional Exams High-Energy Top Ribbon Banner */}
-      {isSessionalExams && (
-        <div className="relative z-50 bg-gradient-to-r from-amber-600/95 via-orange-600/95 to-emerald-700/95 text-white text-xs font-black py-2.5 px-4 text-center shadow-2xl border-b border-amber-400/40 flex items-center justify-center gap-2 sm:gap-4 flex-wrap backdrop-blur-md">
-          <span className="flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-full text-[11px] uppercase tracking-wider font-black border border-white/20 shadow-inner">
-            <span className="text-sm">🎯</span> Sessional Exams 2026
-          </span>
-          <span className="font-bold text-white tracking-wide text-xs sm:text-sm">
-            All the best to all college students! Stay calm, write with confidence & score top grades! ⚡
-          </span>
-          <a 
-            href="#sessional-wishes"
-            className="px-3.5 py-1 rounded-full bg-white text-gray-900 text-[11px] font-black hover:bg-amber-100 transition-all shadow-md cursor-pointer uppercase tracking-wider inline-flex items-center gap-1"
-          >
-            Exam Motivation & Tips 🚀
-          </a>
-        </div>
-      )}
+          {/* Desktop Nav Items */}
+          <nav className="hidden lg:flex items-center gap-7 text-xs xl:text-sm font-semibold text-[#101A35]/80">
+            <a href="#flow" className="hover:text-[#7553E8] transition-colors">Lumixora Flow</a>
+            <a href="#career-twin" className="hover:text-[#7553E8] transition-colors flex items-center gap-1.5">
+              <span>Career Twin</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#7553E8]/10 text-[#7553E8]">Signature</span>
+            </a>
+            <a href="#placement-intelligence" className="hover:text-[#7553E8] transition-colors">Placement Intelligence</a>
+            <a href="#ecosystems" className="hover:text-[#7553E8] transition-colors">Solutions</a>
+            
+            <button 
+              onClick={() => setShowTeamPortal(true)} 
+              className="hover:text-[#7553E8] transition-colors cursor-pointer bg-transparent border-none text-[#101A35]/80 font-semibold"
+            >
+              Team
+            </button>
+            <a href="#founder" className="hover:text-[#7553E8] transition-colors">About Us</a>
+          </nav>
 
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] ${isSessionalExams ? 'bg-amber-500/15' : isIndependenceDay ? 'bg-orange-500/20' : 'bg-brand-teal/10'} rounded-full blur-[120px]`}></div>
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] ${isSessionalExams ? 'bg-emerald-500/15' : isIndependenceDay ? 'bg-green-500/20' : 'bg-brand-purple/10'} rounded-full blur-[120px]`}></div>
-        <div className={`absolute top-[40%] left-[50%] translate-x-[-50%] w-[60%] h-[20%] ${isSessionalExams ? 'bg-cyan-500/10' : isIndependenceDay ? 'bg-white/10' : 'bg-brand-pink/5'} rounded-full blur-[150px]`}></div>
-        {/* Subtle Grid */}
-        <div className="absolute inset-0 opacity-50" style={{ backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djIwaC0ydi0yMGgtMjB2LTJoMjB2LTIwaDJ2MjBoMjB2MnoiLz48L2c+PC9nPjwvc3ZnPg==')` }}></div>
-      </div>
+          {/* Header Action Buttons (Campus Ambassador + Logins + CTA) */}
+          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+            {/* Campus Ambassador Button */}
+            <button
+              onClick={() => setShowAmbassadorModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border border-amber-500/40 text-amber-700 hover:text-black hover:border-amber-500 font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-xs hover:scale-[1.02] cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>Campus Ambassador</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider">
+                Apply
+              </span>
+            </button>
 
-      {/* Navigation */}
-      <nav className="relative z-50 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/lumixora_logo.jpg" alt="VYOMRA Logo" className="w-14 h-14 rounded-full object-cover shadow-lg shadow-brand-teal/20 border border-cyan-500/30" />
-          <div className="flex flex-col">
-            <span className="text-2xl font-black text-white tracking-tight leading-none">Lumixora</span>
-            <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest mt-0.5">by VYOMRA</span>
+            {/* Intern Portal Quick Login */}
+            <button
+              onClick={() => handleAuth('intern')}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-indigo-700 hover:bg-indigo-50 border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
+              title="Interns Workspace Access"
+            >
+              <Briefcase className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Intern</span>
+            </button>
+
+            <button
+              onClick={() => handleAuth('student')}
+              className="px-3 py-2 text-xs font-bold text-[#101A35] hover:text-[#7553E8] transition-colors cursor-pointer"
+            >
+              Log In
+            </button>
+
+            <button
+              onClick={() => handleAuth('student')}
+              className="px-4 py-2 rounded-xl bg-[#101A35] hover:bg-[#1E2E5D] text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#08BFD0]" />
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <button
+              onClick={() => setShowAmbassadorModal(true)}
+              className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-700 font-black text-[11px] flex items-center gap-1 cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              <span>Ambassador</span>
+            </button>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              className="p-2 text-[#101A35]"
+              aria-label="Toggle navigation"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+            </button>
           </div>
         </div>
-        <div className="hidden md:flex items-center gap-5 text-sm font-bold text-gray-300">
-          <button 
-            type="button"
-            onClick={() => setShowAmbassadorModal(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-500/50 text-amber-300 hover:text-white hover:border-amber-400 font-extrabold text-xs flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:scale-105 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Campus Ambassador</span>
-            <span className="px-2 py-0.5 rounded-lg bg-black text-amber-300 border border-amber-400/40 text-[10px] font-black uppercase tracking-wider shadow-sm">
-              Apply Now
-            </span>
-          </button>
-          <button 
-            onClick={() => setShowTeamPortal(true)} 
-            className="hover:text-brand-teal transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none text-gray-300 font-bold"
-          >
-            <Users className="w-4 h-4 text-brand-teal" />
-            <span>Team Portal</span>
-          </button>
-          <button onClick={() => onLoginClick('student')} className="hover:text-brand-teal transition-colors cursor-pointer">Student Login</button>
-          <button onClick={() => onLoginClick('faculty')} className="hover:text-brand-purple transition-colors cursor-pointer">Faculty Login</button>
-          <button onClick={() => onLoginClick('intern')} className="hover:text-indigo-400 font-bold transition-colors cursor-pointer flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300">
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Intern Login</span>
-          </button>
-          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-        </div>
-        <div className="md:hidden flex items-center gap-2">
-          <button 
-            type="button"
-            onClick={() => setShowAmbassadorModal(true)} 
-            className="px-2.5 py-1.5 bg-gradient-to-r from-amber-500/25 to-orange-500/25 border border-amber-500/50 rounded-lg text-xs font-black text-amber-300 flex items-center gap-1 shadow-sm active:scale-95 cursor-pointer"
-          >
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>Ambassador Apply</span>
-          </button>
-          <button 
-            onClick={() => onLoginClick('intern')} 
-            className="px-2.5 py-1.5 bg-indigo-500/20 border border-indigo-500/40 rounded-lg text-xs font-bold text-indigo-300 flex items-center gap-1"
-          >
-            <Briefcase className="w-3 h-3" /> Intern
-          </button>
-          <button 
-            onClick={() => setShowTeamPortal(true)} 
-            className="px-3 py-1.5 bg-brand-teal/10 border border-brand-teal/30 rounded-lg text-xs font-bold text-brand-teal hover:bg-brand-teal/20 transition-colors"
-          >
-            Team
-          </button>
-          <button onClick={() => onLoginClick('student')} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/10 transition-colors">
-            Login
-          </button>
-        </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 pt-16 md:pt-24 pb-16 text-center">
-        {isSessionalExams ? (
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-emerald-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-8 uppercase tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.25)] animate-pulse">
-            <span className="text-base">🎯</span> Sessional Exams Active • All The Best to All Students! <span className="text-base">⚡</span>
-          </div>
-        ) : isIndependenceDay ? (
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 via-white/20 to-green-500/20 border border-white/20 text-white text-xs font-bold mb-8 uppercase tracking-widest">
-            <span className="text-base">🇮🇳</span> Happy Independence Day <span className="text-base">🇮🇳</span>
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-teal text-xs font-bold mb-8 uppercase tracking-widest">
-            <Sparkles className="w-4 h-4" /> Your AI Learning Companion
+        {/* Mobile Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-[#101A35]/10 px-6 py-6 space-y-4 shadow-xl">
+            <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Lumixora Flow</a>
+            <a href="#career-twin" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#7553E8]">Career Twin (Signature)</a>
+            <a href="#placement-intelligence" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Placement Intelligence</a>
+            <a href="#campus-ambassador" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-amber-700">Campus Ambassador Program 🌟</a>
+            <a href="#ecosystems" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Solutions (Students, Colleges, Employers)</a>
+            <a href="#ecosystem-modules" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Product Ecosystem</a>
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setShowTeamPortal(true); }}
+              className="block text-left text-sm font-semibold text-[#101A35]"
+            >
+              Engineering & Product Team
+            </button>
+            <a href="#founder" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Founder & Mission</a>
+            
+            <div className="pt-4 border-t border-gray-100 flex flex-col gap-2.5">
+              <button 
+                onClick={() => { setMobileMenuOpen(false); handleAuth('student'); }}
+                className="w-full py-3 rounded-xl bg-[#101A35] text-white font-bold text-xs"
+              >
+                Student Sign In
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); handleAuth('intern'); }}
+                className="w-full py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs"
+              >
+                Intern Portal Sign In
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); handleAuth('faculty'); }}
+                className="w-full py-2.5 rounded-xl bg-[#FAFBFF] border border-gray-200 text-[#101A35] font-bold text-xs"
+              >
+                Colleges & Faculty Portal
+              </button>
+            </div>
           </div>
         )}
-        
-        <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.1] mb-8 drop-shadow-2xl">
-          Supercharge Your <br/>
-          <span className={`text-transparent bg-clip-text ${
-            isSessionalExams
-              ? 'bg-gradient-to-r from-amber-400 via-emerald-300 to-teal-300'
-              : isIndependenceDay 
-                ? 'bg-gradient-to-r from-orange-400 via-white to-green-500' 
-                : 'bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple'
-          }`}>
-            Academic Journey
-          </span>
-        </h1>
-        
-        <p className="text-lg md:text-xl font-medium text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-          {isSessionalExams 
-            ? "Conquer your college sessional exams with laser focus, quick AI doubt solving, syllabus mastery, and calm confidence. We believe in your success!"
-            : "The ultimate student ecosystem to master coding, collaborate with peers, and track your progress with an advanced AI mentor—designed to help you achieve your dream placements."
-          }
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
-          <button 
-            type="button"
-            onClick={() => setShowAmbassadorModal(true)} 
-            className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black rounded-2xl transition-all flex items-center justify-center gap-3 cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 group"
-          >
-            <Sparkles className="w-5 h-5 text-black shrink-0" />
-            <span className="text-sm font-black text-slate-950 tracking-tight">Campus Ambassador 2026</span>
-            <span className="px-3 py-1 rounded-xl bg-slate-950 text-amber-300 border border-amber-400/50 text-xs font-black uppercase tracking-wider shadow-md group-hover:bg-black group-hover:text-amber-200 transition-colors flex items-center gap-1.5">
-              <span>Apply Now</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </span>
-          </button>
-          <button onClick={() => onLoginClick('demo')} className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(105,56,239,0.4)] font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105">
-            Start Exploring <ArrowRight className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => onLoginClick('student')} 
-            className="w-full sm:w-auto px-7 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <BookOpen className="w-5 h-5 text-amber-400" /> Student Login
-          </button>
-          <button 
-            onClick={() => onLoginClick('intern')} 
-            className="w-full sm:w-auto px-7 py-4 bg-gradient-to-r from-violet-600/30 to-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20"
-          >
-            <Briefcase className="w-5 h-5 text-indigo-400" /> Intern Login
-          </button>
-        </div>
+      </header>
 
-        {/* College Not Mentioned in Student Login Banner */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#16182e]/90 to-cyan-500/15 border-2 border-amber-500/35 text-xs text-gray-200 backdrop-blur-xl shadow-[0_10px_35px_rgba(245,158,11,0.2)] max-w-3xl mx-auto">
-          <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 text-xl shadow-inner">
-              <Building2 className="w-5 h-5 text-amber-400" />
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 01: HERO — FIRST IMPRESSION (Light-mode canvas + Tech visualization)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
+        {/* Subtle decorative grid and ambient glowing orbs */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#101A3508_1px,transparent_1px),linear-gradient(to_bottom,#101A3508_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-r from-[#7553E8]/15 via-[#08BFD0]/10 to-[#00B987]/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-6">
+            
+            {/* Pill Header */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#7553E8]/20 shadow-sm text-xs font-black uppercase tracking-wider text-[#7553E8]">
+              <Sparkles className="w-3.5 h-3.5 text-[#7553E8]" />
+              <span>YOUR FUTURE STARTS HERE</span>
             </div>
-            <div>
-              <p className="font-black text-white text-sm sm:text-base tracking-tight">
-                Your college not mentioned in Student Login?
-              </p>
-              <p className="text-[11px] sm:text-xs text-gray-300 mt-0.5">
-                Want your college to be added? Contact us at <strong className="text-amber-300 font-mono">lumixora.team@gmail.com</strong>
-              </p>
+
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl font-black text-[#101A35] tracking-tight leading-[1.12]">
+              Don't Just Learn Skills. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7553E8] via-[#08BFD0] to-[#00B987]">
+                Become the Talent Companies Are Looking For.
+              </span>
+            </h1>
+
+            {/* Sub-headline */}
+            <p className="text-base sm:text-lg text-[#101A35]/70 max-w-2xl mx-auto leading-relaxed font-normal">
+              Lumixora is an intelligent career development ecosystem that helps students build real-world skills, prove their capabilities, prepare for placements and connect with opportunities.
+            </p>
+
+            {/* 3 Core Pillars */}
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-[#101A35]/80 pt-2">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Brain className="w-3.5 h-3.5 text-[#7553E8]" /> AI-Powered
+              </span>
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Target className="w-3.5 h-3.5 text-[#08BFD0]" /> Placement-Focused
+              </span>
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Flame className="w-3.5 h-3.5 text-[#00B987]" /> Gamified Learning
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+              <button
+                onClick={() => handleAuth('student')}
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-[#101A35]/15 hover:scale-[1.02] transition-all cursor-pointer group"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4 text-[#08BFD0] group-hover:translate-x-1 transition-transform" />
+              </button>
+              <a
+                href="#ecosystem-modules"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-gray-50 border border-[#101A35]/15 text-[#101A35] font-extrabold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <span>Explore the Ecosystem</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </a>
+            </div>
+
+            {/* Trust statement below CTA */}
+            <div className="pt-2 flex items-center justify-center gap-6 text-xs text-gray-500 font-semibold">
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00B987]" /> Built for students</span>
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#08BFD0]" /> Empowering institutions</span>
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#7553E8]" /> Connecting employers</span>
             </div>
           </div>
 
-          <a 
-            href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20to%20Lumixora%20Student%20Login&body=Hi%20Lumixora%20Team%2C%0A%0AWe%20would%20like%20to%20add%20our%20college%20to%20the%20Lumixora%20Student%20Login%20portal.%0A%0ACollege%20Name%3A%20%0ALocation%20(City%2C%20State)%3A%20%0AOfficial%20Website%20%2F%20Domain%3A%20%0AContact%20Person%20%2F%20Phone%3A%20%0A%0AThank%20you!" 
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <Mail className="w-4 h-4 text-black" />
-            <span>Contact Us</span>
-          </a>
-        </div>
+          {/* ── HERO VISUAL CONCEPT: Career Twin + 3 Floating Intelligence Panels ── */}
+          <div className="mt-14 max-w-5xl mx-auto relative">
+            <div className="rounded-3xl p-4 sm:p-8 bg-[#101A35] border border-white/10 shadow-2xl relative overflow-hidden text-white">
+              
+              {/* Background ambient mesh */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-[#7553E8]/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#08BFD0]/15 rounded-full blur-3xl pointer-events-none" />
+              
+              {/* Window Bar */}
+              <div className="flex items-center justify-between pb-6 border-b border-white/10 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                  <span className="ml-2 font-mono text-gray-400 text-[11px]">lumixora.in/career-twin/live-preview</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00B987] animate-pulse" />
+                  <span className="text-[11px] font-bold text-[#00B987] uppercase tracking-wider">Active Intelligence Stream</span>
+                </div>
+              </div>
 
-        {/* Workable Help & Support Badge */}
-        <div className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300 backdrop-blur-md shadow-md">
-          <HelpCircle className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>Need help or have login queries? Email us at</span>
-          <a 
-            href="mailto:lumixora.team@gmail.com?subject=Lumixora%20Login%20/%20Register%20Support%20Query" 
-            className="font-bold text-cyan-300 hover:underline flex items-center gap-1.5 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors font-mono"
-          >
-            <Mail className="w-3.5 h-3.5" />
-            lumixora.team@gmail.com
-          </a>
+              {/* 3 Columns / Floating Panels */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+                
+                {/* Panel 1: Career Readiness Score */}
+                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-4 hover:border-[#08BFD0]/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Career Readiness</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#00B987]/20 text-[#00B987]">Calculated</span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-white font-mono">78%</span>
+                    <span className="text-xs text-gray-400 font-semibold">Tier 2: Drive Ready</span>
+                  </div>
+                  <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-[#7553E8] to-[#08BFD0] h-full w-[78%] rounded-full" />
+                  </div>
+                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] text-gray-300 space-y-1">
+                    <span className="font-bold text-white block">Target Career Path:</span>
+                    <span className="text-[#08BFD0] font-semibold">Software Developer / Cloud SDE</span>
+                  </div>
+                </div>
+
+                {/* Panel 2: Skill Intelligence Breakdown */}
+                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-3.5 hover:border-[#7553E8]/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Skill Intelligence</span>
+                    <span className="text-[10px] text-gray-400 font-mono">4 Assessed Vectors</span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs">
+                    <div>
+                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
+                        <span>Problem Solving (DSA)</span>
+                        <span className="text-[#08BFD0] font-mono">85%</span>
+                      </div>
+                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-[#08BFD0] h-full w-[85%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
+                        <span>Programming Execution</span>
+                        <span className="text-[#7553E8] font-mono">76%</span>
+                      </div>
+                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-[#7553E8] h-full w-[76%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
+                        <span>Practical Projects</span>
+                        <span className="text-[#00B987] font-mono">72%</span>
+                      </div>
+                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-[#00B987] h-full w-[72%]" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
+                        <span>Interview Communication</span>
+                        <span className="text-amber-400 font-mono">62%</span>
+                      </div>
+                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-amber-400 h-full w-[62%]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Panel 3: Placement Journey & Next Actions */}
+                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-3.5 hover:border-[#00B987]/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Placement Journey</span>
+                    <span className="text-[10px] text-[#00B987] font-bold">12 Milestones Built</span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Core Java & SQL Grand Test Passed</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Project Milestone: Auth & API Verified</span>
+                    </div>
+                  </div>
+
+                  {/* AI Recommendation Alert */}
+                  <div className="p-3 rounded-xl bg-[#7553E8]/20 border border-[#7553E8]/30 space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#08BFD0] flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> AI Recommendation
+                    </span>
+                    <p className="text-[11px] text-gray-200 leading-snug">
+                      Improve communication and complete two practical projects before your next interview simulation.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3D CYBER HOLO-GLOBE & LIVE CAMPUS NETWORK ── */}
+          <div className="mt-12 max-w-5xl mx-auto">
+            <CyberHoloGlobe3D />
+          </div>
+
         </div>
       </section>
 
-      {/* Sessional Exams Wishes & Motivation Showcase Card */}
-      {isSessionalExams && (
-        <section id="sessional-wishes" className="relative z-10 max-w-6xl mx-auto px-6 py-10">
-          <div className="bg-gradient-to-br from-[#12121e]/90 via-[#0e1626]/90 to-[#101b15]/90 rounded-3xl p-6 sm:p-10 border-2 border-amber-500/30 shadow-[0_20px_60px_rgba(245,158,11,0.15)] relative overflow-hidden backdrop-blur-xl">
-            {/* Corner Decorative Aura */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      
 
-            <div className="relative z-10 space-y-8">
-              {/* Header */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider mb-2">
-                    <Trophy className="w-3.5 h-3.5" /> Sessional Exams 2026 Motivation
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 02: THE PROBLEM — THE GAP BETWEEN LEARNING AND GETTING HIRED
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-[#F4F6FB] border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#7553E8]">Industry Disconnect</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#101A35]">
+              The Gap Between Learning and Getting Hired.
+            </h2>
+            <p className="text-sm sm:text-base text-[#101A35]/70">
+              Students learn, complete courses and build projects. But the transition from academic learning to industry readiness is still disconnected.
+            </p>
+          </div>
+
+          {/* 4 Problems Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:border-[#7553E8]/40 hover:shadow-md transition-all space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#7553E8]/10 text-[#7553E8] flex items-center justify-center font-black">
+                01
+              </div>
+              <h3 className="text-lg font-black text-[#101A35]">Learning without direction</h3>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">What students experience:</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Students drown in random tutorial videos and quizzes, but don't know what to learn next to become competitive.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:border-[#08BFD0]/40 hover:shadow-md transition-all space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#08BFD0]/10 text-[#08BFD0] flex items-center justify-center font-black">
+                02
+              </div>
+              <h3 className="text-lg font-black text-[#101A35]">Skills without proof</h3>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">What students experience:</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Having completion certificates is no longer enough. Students cannot demonstrate actual capabilities or verified proof of code.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:border-amber-400/40 hover:shadow-md transition-all space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-400/10 text-amber-500 flex items-center justify-center font-black">
+                03
+              </div>
+              <h3 className="text-lg font-black text-[#101A35]">Preparation without strategy</h3>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">What students experience:</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Blindly taking aptitude tests without knowing their core technical weaknesses or role-specific aptitude expectations.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:border-[#00B987]/40 hover:shadow-md transition-all space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#00B987]/10 text-[#00B987] flex items-center justify-center font-black">
+                04
+              </div>
+              <h3 className="text-lg font-black text-[#101A35]">Talent without visibility</h3>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">What students experience:</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Hardworking scholars across Tier-2/3 institutions struggle to reach employers because traditional resumes get filtered out.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white border border-[#7553E8]/20 max-w-2xl mx-auto text-center shadow-xs">
+            <span className="text-sm sm:text-base font-black text-[#101A35]">
+              ✨ Lumixora connects every stage of the journey.
+            </span>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 03: INTRODUCE LUMIXORA FLOW (One Journey. Five Powerful Stages)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="flow" className="py-20 md:py-28 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#08BFD0]">System Architecture</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-[#101A35]">
+              One Journey. Five Powerful Stages.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              The continuous pipeline connecting student preparation to confirmed placement outcomes.
+            </p>
+          </div>
+
+          {/* 5 Connected Step Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+            
+            {/* Step 1: Learn */}
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#7553E8] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between group">
+              <div>
+                <span className="text-xs font-mono font-bold text-[#7553E8]">01. STAGE</span>
+                <h3 className="text-2xl font-black text-[#101A35] mt-1 group-hover:text-[#7553E8] transition-colors">LEARN</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mt-2">
+                  Personalized learning, AI mentorship, academic curriculum resources, and structured foundational tracks.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-[#7553E8]">
+                <span>Learnverse Engine</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Step 2: Build */}
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#08BFD0] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between group">
+              <div>
+                <span className="text-xs font-mono font-bold text-[#08BFD0]">02. STAGE</span>
+                <h3 className="text-2xl font-black text-[#101A35] mt-1 group-hover:text-[#08BFD0] transition-colors">BUILD</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mt-2">
+                  Full-stack projects, Monaco coding practice, milestone tasks, and collaborative multi-campus workspaces.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-[#08BFD0]">
+                <span>Build Studio</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Step 3: Prove */}
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#00B987] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between group">
+              <div>
+                <span className="text-xs font-mono font-bold text-[#00B987]">03. STAGE</span>
+                <h3 className="text-2xl font-black text-[#101A35] mt-1 group-hover:text-[#00B987] transition-colors">PROVE</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mt-2">
+                  Grand diagnostic tests, verifiable GitHub repository reviews, tamper-proof certificates, and clean proctor audits.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-[#00B987]">
+                <span>Proof of Skill</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Step 4: Prepare */}
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-amber-500 hover:shadow-lg transition-all space-y-3 flex flex-col justify-between group">
+              <div>
+                <span className="text-xs font-mono font-bold text-amber-500">04. STAGE</span>
+                <h3 className="text-2xl font-black text-[#101A35] mt-1 group-hover:text-amber-500 transition-colors">PREPARE</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mt-2">
+                  Aptitude drills, company-specific mock tests, AI speech fluency, and realistic technical interview simulations.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-amber-500">
+                <span>Placement Radar</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Step 5: Connect */}
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#7553E8] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between group">
+              <div>
+                <span className="text-xs font-mono font-bold text-[#7553E8]">05. STAGE</span>
+                <h3 className="text-2xl font-black text-[#101A35] mt-1 group-hover:text-[#7553E8] transition-colors">CONNECT</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mt-2">
+                  Connect demonstrated candidate talent with institutional TPO drives, national hackathons, and corporate recruiters.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-1.5 text-[11px] font-bold text-[#7553E8]">
+                <span>Connectverse</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 04: CAREER TWIN — SIGNATURE PRODUCT INNOVATION
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="career-twin" className="py-20 md:py-32 bg-[#101A35] text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">
+          
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 border-b border-white/10 pb-10">
+            <div className="space-y-3 max-w-2xl">
+              <span className="text-xs font-black uppercase tracking-widest text-[#08BFD0]">Signature Product Experience</span>
+              <h2 className="text-3xl sm:text-5xl font-black text-white">
+                Meet Your Career Twin.
+              </h2>
+              <p className="text-base text-gray-300">
+                An evolving AI-powered representation of your professional capabilities. It continuously computes your readiness from genuine assessments, coding submissions, and project evidence.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {['Software Developer', 'Full Stack Engineer', 'AI / ML Engineer'].map((role) => (
+                <button
+                  key={role}
+                  onClick={() => setCareerPath(role)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    careerPath === role ? 'bg-[#7553E8] text-white shadow-md' : 'bg-white/5 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Column: Capabilities List */}
+            <div className="lg:col-span-5 space-y-4">
+              {[
+                { title: "Dynamic Skill Profile", desc: "Live multi-dimensional competency vector that updates whenever you code or test." },
+                { title: "Career Readiness Analytics", desc: "Real-time computed readiness score (0-100%) against verified corporate benchmarks." },
+                { title: "Skill Gap Identification", desc: "Instantly flags algorithmic, architectural, or communication deficiencies." },
+                { title: "Personalized Action Guidance", desc: "Pinpoints exactly which projects or test modules will boost your hiring tier." },
+                { title: "Job-Role Compatibility", desc: "Direct matching to FAANG, high-growth unicorn, and enterprise hiring rubrics." },
+                { title: "Evidence-Backed Portfolio", desc: "Replaces unverified resume buzzwords with verified GitHub and test proof." }
+              ].map((item, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-[#08BFD0]/40 transition-colors">
+                  <h4 className="text-sm font-black text-white flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#08BFD0]" />
+                    <span>{item.title}</span>
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-1 pl-3.5">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column: Interactive Career Twin UI Simulation */}
+            <div className="lg:col-span-7">
+              <div className="rounded-3xl bg-black/60 border border-white/15 p-6 sm:p-8 space-y-6 shadow-2xl relative">
+                
+                {/* Header Row */}
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#7553E8] to-[#08BFD0] flex items-center justify-center font-black text-white text-base">
+                      CT
+                    </div>
+                    <div>
+                      <h4 className="text-base font-black text-white">Career Twin Preview</h4>
+                      <span className="text-[11px] text-gray-400 font-mono">Target: {careerPath}</span>
+                    </div>
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-                    All The Best To Every Engineering & College Student! 🎯
-                  </h2>
-                  <p className="text-gray-300 text-sm sm:text-base mt-1">
-                    Your preparation, hard work, and calm focus will turn this sessional into an outstanding score!
+                  <div className="text-right">
+                    <span className="text-3xl font-black text-[#00B987] font-mono">78%</span>
+                    <span className="block text-[10px] text-gray-400 font-bold uppercase">Readiness</span>
+                  </div>
+                </div>
+
+                {/* Interactive Competency Bars */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span className="font-bold uppercase tracking-wider">Assessed Competencies</span>
+                    <span className="font-mono text-[11px]">Click to analyze</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { name: 'Problem Solving', pct: 85, color: '#08BFD0' },
+                      { name: 'Programming', pct: 76, color: '#7553E8' },
+                      { name: 'Communication', pct: 62, color: '#F59E0B' },
+                      { name: 'Projects', pct: 72, color: '#00B987' }
+                    ].map(comp => (
+                      <div
+                        key={comp.name}
+                        onClick={() => setActiveCompetency(comp.name)}
+                        className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                          activeCompetency === comp.name 
+                            ? 'bg-white/10 border-white/30 scale-[1.02]' 
+                            : 'bg-white/[0.02] border-white/5 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex justify-between text-xs font-bold mb-1.5">
+                          <span className="text-gray-200">{comp.name}</span>
+                          <span style={{ color: comp.color }} className="font-mono">{comp.pct}%</span>
+                        </div>
+                        <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                          <div style={{ width: `${comp.pct}%`, backgroundColor: comp.color }} className="h-full rounded-full" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dynamic Recommendation Card based on selected competency */}
+                <div className="p-4 rounded-2xl bg-[#7553E8]/15 border border-[#7553E8]/30 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-black text-[#08BFD0] uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>AI Career Action ({activeCompetency})</span>
+                  </div>
+                  <p className="text-xs text-gray-200 leading-relaxed">
+                    {activeCompetency === 'Communication' && "Weakness detected in verbal pitch brevity. Practice 1 SpeakVerse daily session and complete your AI Mock Interview."}
+                    {activeCompetency === 'Problem Solving' && "Strong logic foundation. Advance from Medium LeetCode tasks into Tree & Graph dynamic programming algorithms."}
+                    {activeCompetency === 'Programming' && "Clean syntax structure. Integrate Docker and automated CI/CD pipeline milestones into your Build Studio repository."}
+                    {activeCompetency === 'Projects' && "Good progress. Submit your deployed live URL and verified GitHub commit trail for the 'Verified Ship' badge."}
                   </p>
                 </div>
 
-                {/* Interactive Cheer / Wish Button */}
-                <div className="flex items-center gap-3 shrink-0">
-                  <button
-                    onClick={handleSendCheer}
-                    className={`px-5 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-2.5 shadow-xl transition-all cursor-pointer ${
-                      hasCheered 
-                        ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300' 
-                        : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-105'
-                    }`}
-                  >
-                    <Heart className={`w-4 h-4 ${hasCheered ? 'fill-emerald-400 text-emerald-400' : 'fill-black text-black'}`} />
-                    <span>{hasCheered ? '✨ Best Wishes Sent!' : 'Send Good Luck Cheer'}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-black/20 text-[11px] font-extrabold">
-                      {examCheerCount}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Toast Notification */}
-              {showCheerToast && (
-                <div className="bg-emerald-500/20 border border-emerald-500/40 p-3 rounded-xl text-emerald-300 text-xs font-bold flex items-center gap-2 animate-bounce">
-                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Your warm wishes have been sent to all students preparing for sessionals! All the very best! 🏆</span>
-                </div>
-              )}
-
-              {/* 3 Interactive Motivational Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {sessionalExamImages.map((exam, idx) => (
-                  <div 
-                    key={exam.title}
-                    onClick={() => setActiveQuoteIdx(idx)}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group ${
-                      activeQuoteIdx === idx 
-                        ? 'bg-white/10 border-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.2)] scale-[1.02]' 
-                        : 'bg-black/40 border-white/10 hover:border-white/20 hover:bg-white/5'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-black text-amber-400 tracking-wider">
-                        {exam.tag}
-                      </span>
-                      <span className="text-[10px] text-gray-400 font-mono">0{idx + 1}/03</span>
-                    </div>
-
-                    <h3 className="text-base font-bold text-white mb-2 group-hover:text-amber-300 transition-colors">
-                      {exam.title}
-                    </h3>
-                    <p className="text-xs text-gray-300 leading-relaxed mb-4">
-                      "{exam.quote}"
-                    </p>
-
-                    <div className="pt-3 border-t border-white/10 flex items-center gap-2 text-[11px] text-amber-200/90 font-medium">
-                      <Target className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>{exam.tip}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* High Yield Sessional Exam Golden Rules */}
-              <div className="bg-black/50 p-5 rounded-2xl border border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400 font-black text-xs">
-                    1
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Time Strategy</h4>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Scan paper for 2 mins, start with questions you know best to build rock-solid confidence.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400 font-black text-xs">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Diagrams & Equations</h4>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Draw neat labeled block diagrams and box final numerical answers with units.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0 text-cyan-400 font-black text-xs">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Calm & Sharp Mind</h4>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Take a deep breath before tough questions. Your continuous hard work will yield great results!</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom CTAs */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>Vyomra AI & Peer Notes Ready for Fast 1-Click Revision</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => onLoginClick('student')}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-black text-xs hover:from-emerald-400 hover:to-teal-400 transition-all cursor-pointer shadow-lg"
-                  >
-                    Open Student Portal &rarr;
-                  </button>
-                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
 
-      {/* Campus Ambassador Program Showcase Section */}
-      <section id="campus-ambassador" className="relative z-10 max-w-6xl mx-auto px-6 py-10">
-        <div className="bg-gradient-to-br from-[#181524]/90 via-[#10101b]/95 to-[#1c1410]/90 rounded-3xl p-6 sm:p-10 border-2 border-amber-500/40 shadow-[0_20px_70px_rgba(245,158,11,0.2)] relative overflow-hidden backdrop-blur-xl">
-          {/* Ambient Lighting */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 05: AI-POWERED MENTORSHIP (Interactive demo)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-[#FAFBFF] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#7553E8]">Always-On Intelligence</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-[#101A35]">
+              An Intelligent Mentor. Available Throughout Your Journey.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Not just another chatbot. An AI mentor that helps students understand, practice, improve, and progress.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Features Showcase */}
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              {[
+                { title: "Instant Doubt Resolution", desc: "Break down complex STEM and core engineering topics step-by-step." },
+                { title: "Code Debugging & Explanations", desc: "Highlight runtime complexity bugs and syntax errors directly in Monaco editor." },
+                { title: "Personalized Learning Paths", desc: "Adapts to your current pace and recommends targeted sessional study notes." },
+                { title: "AI-Generated Practice Questions", desc: "Company-aligned MCQs and coding challenges refreshed daily." },
+                { title: "Academic Assistance", desc: "Syllabus tracking across engineering departments (CSE, ECE, Mech, Civil)." },
+                { title: "Interview Preparation", desc: "Real-time speech evaluation and behavioral interview feedback." }
+              ].map((f, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:border-[#7553E8]/40 transition-colors">
+                  <h4 className="text-sm font-black text-[#101A35] flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#7553E8] shrink-0" />
+                    <span>{f.title}</span>
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1 pl-6">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Interactive Live Chat Simulation */}
+            <div className="lg:col-span-7">
+              <div className="rounded-3xl bg-white border border-gray-200 shadow-xl overflow-hidden flex flex-col h-[480px]">
+                
+                {/* Chat Header */}
+                <div className="p-4 bg-[#0A0F1D] text-white flex items-center justify-between border-b border-white/10 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Realistic3DLogo size="sm" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#00B987] border-2 border-[#0A0F1D] animate-pulse z-20" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold tracking-normal font-sans flex items-center gap-2">
+                        <span>Lumixora AI Career Mentor</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#7553E8]/20 text-[#08BFD0] font-mono font-medium border border-[#7553E8]/30">v2.5</span>
+                      </h4>
+                      <span className="text-[11px] text-[#00B987] flex items-center gap-1 font-medium font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00B987]" /> Autonomous Career Twin Agent
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-sans font-medium px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                      Live Simulation
+                    </span>
+                  </div>
+                </div>
+
+                {/* Chat Log */}
+                <div className="p-5 flex-1 overflow-y-auto space-y-4 bg-[#F8FAFD] font-sans">
+                  {mentorHistory.map((m, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-end gap-2.5 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {m.sender !== 'user' && (
+                        <Realistic3DLogo size="xs" interactive={false} showGlow={false} />
+                      )}
+                      <div
+                        className={`max-w-[85%] p-4 rounded-2xl text-[13px] sm:text-sm font-normal font-sans leading-relaxed tracking-normal break-words ${
+                          m.sender === 'user'
+                            ? 'bg-[#101A35] text-white rounded-br-none shadow-sm font-medium'
+                            : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-xs'
+                        }`}
+                        style={{ letterSpacing: 'normal', fontFeatureSettings: '"kern" 1' }}
+                      >
+                        {m.text}
+                      </div>
+                    </div>
+                  ))}
+                  {isMentorTyping && (
+                    <div className="flex justify-start">
+                      <div className="p-3 bg-white border border-gray-200 rounded-2xl rounded-bl-none text-xs text-gray-500 flex items-center gap-1.5 shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-[#7553E8] animate-bounce" />
+                        <span className="w-2 h-2 rounded-full bg-[#08BFD0] animate-bounce [animation-delay:0.2s]" />
+                        <span className="w-2 h-2 rounded-full bg-[#00B987] animate-bounce [animation-delay:0.4s]" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Bar */}
+                <form onSubmit={handleMentorSend} className="p-3 bg-white border-t border-gray-200 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={mentorInput}
+                    onChange={(e) => setMentorInput(e.target.value)}
+                    placeholder="Ask about your Career Twin, algorithms, or interview tips..."
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs sm:text-sm focus:outline-none focus:border-[#7553E8]"
+                  />
+                  <button
+                    type="submit"
+                    className="p-2.5 rounded-xl bg-[#7553E8] hover:bg-[#5f3fd6] text-white cursor-pointer transition-colors shadow-sm"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 06: GAMIFIED LEARNING ECOSYSTEM (Make Progress Feel Like Progress)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#00B987]">Gamified Engagement</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-[#101A35]">
+              Make Progress Feel Like Progress.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Encourage consistent improvement, not meaningless points collection. Rewards in Lumixora are tied directly to genuine skill mastery and placement readiness.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 space-y-3 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-500 flex items-center justify-center">
+                <Target className="w-5 h-5" />
+              </div>
+              <h4 className="text-base font-black text-[#101A35]">Daily & Weekly Missions</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Structured quests like "Solve 2 Code Arena problems" or "Review 1 Sessional paper" that build daily habits.
+              </p>
+              <span className="inline-block text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                +45 to +120 AP
+              </span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 space-y-3 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-2xl bg-[#7553E8]/10 text-[#7553E8] flex items-center justify-center">
+                <Flame className="w-5 h-5" />
+              </div>
+              <h4 className="text-base font-black text-[#101A35]">XP, Levels & Streaks</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Earn Aura Points (AP) and Synaptic Coins (SC) that unlock placement masterclasses and premium AI interview simulations.
+              </p>
+              <span className="inline-block text-[10px] font-mono font-bold text-[#7553E8] bg-[#7553E8]/10 px-2 py-0.5 rounded-md">
+                Tier Progression
+              </span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 space-y-3 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-2xl bg-[#08BFD0]/10 text-[#08BFD0] flex items-center justify-center">
+                <Award className="w-5 h-5" />
+              </div>
+              <h4 className="text-base font-black text-[#101A35]">17 Verifiable Badges</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Milestones like "Verified Ship", "Clean Proctor", and "Algorithm Master" that can be verified by employers.
+              </p>
+              <span className="inline-block text-[10px] font-mono font-bold text-[#08BFD0] bg-[#08BFD0]/10 px-2 py-0.5 rounded-md">
+                Cryptographic Proof
+              </span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 space-y-3 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-2xl bg-[#00B987]/10 text-[#00B987] flex items-center justify-center">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <h4 className="text-base font-black text-[#101A35]">Campus Leaderboards</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Healthy peer benchmarking across colleges (GPREC, Ashoka) filtered by department, year, and test speed.
+              </p>
+              <span className="inline-block text-[10px] font-mono font-bold text-[#00B987] bg-[#00B987]/10 px-2 py-0.5 rounded-md">
+                Institutional Rank
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 07: PLACEMENT INTELLIGENCE (Preparation that knows where you're headed)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="placement-intelligence" className="py-20 md:py-32 bg-[#101A35] text-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#08BFD0]">Corporate Readiness</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white">
+              Preparation That Knows Where You're Headed.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-300">
+              Lumixora brings every important component of placement preparation into one connected environment.
+            </p>
+          </div>
+
+          {/* 7 Components Table / Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { component: "Aptitude Drills", experience: "Quantitative, logical, and verbal practice tests with detailed time analysis." },
+              { component: "Coding Practice", experience: "DSA, programming languages, and live execution in the Monaco compiler." },
+              { component: "Core Technical", experience: "OS, DBMS, Computer Networks, and System Design subject preparation." },
+              { component: "Communication", experience: "English fluency, pronunciation, and pitch clarity via SpeakVerse audio engine." },
+              { component: "AI Mock Interviews", experience: "Realistic video & voice simulations with automated transcript scoring." },
+              { component: "Resume Intelligence", experience: "ATS resume scoring, bullet point optimization, and job-match benchmarking." },
+              { component: "Company Tracks", experience: "TCS, Infosys, Amazon, and Google specific past interview papers and patterns." }
+            ].map((c, idx) => (
+              <div key={idx} className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-[#08BFD0]/50 transition-all space-y-2">
+                <span className="text-xs font-mono font-bold text-[#08BFD0]">0{idx + 1}. COMPONENT</span>
+                <h4 className="text-lg font-black text-white">{c.component}</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">{c.experience}</p>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 08: BUILD-TO-PROVE STUDIO (Don't Just Complete Courses. Build Something That Matters)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#7553E8]">Practical Mastery</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#101A35]">
+              Don't Just Complete Courses. Build Something That Matters.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Students convert theoretical knowledge into demonstrable evidence that employers can actually evaluate.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 text-center">
+            {[
+              { icon: Compass, title: "Project Roadmaps" },
+              { icon: Target, title: "Milestone Tracking" },
+              { icon: Terminal, title: "Coding Workspaces" },
+              { icon: Code, title: "GitHub Integration" },
+              { icon: Users, title: "Peer Collaboration" },
+              { icon: Activity, title: "Project Reviews" },
+              { icon: Globe, title: "Portfolio Generation" }
+            ].map((p, idx) => {
+              const Icon = p.icon;
+              return (
+                <div key={idx} className="p-5 rounded-2xl bg-[#FAFBFF] border border-gray-200/80 space-y-2 hover:border-[#7553E8] transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center mx-auto text-[#7553E8] shadow-xs">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-xs font-extrabold text-[#101A35]">{p.title}</h4>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION: CAMPUS AMBASSADOR SHOWCASE (Key Previous Feature Preserved)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="campus-ambassador" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="bg-gradient-to-br from-[#181524] via-[#10101b] to-[#1c1410] rounded-3xl p-6 sm:p-10 border-2 border-amber-500/40 shadow-2xl relative overflow-hidden text-white">
+          
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#08BFD0]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6">
@@ -889,20 +1144,20 @@ export default function LandingPage({ onLoginClick }) {
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>Cohort 1 Recruitment Active · No Login Needed</span>
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
                   Lead Lumixora at Your Campus 🌟
                 </h2>
-                <p className="text-gray-300 text-sm sm:text-base max-w-2xl leading-relaxed">
+                <p className="text-gray-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
                   Join the official Lumixora Campus Ambassador Program 2026. Represent your college, drive AI innovation, gain direct 1-on-1 founder mentorship, and earn verified leadership credentials from Vyomra.
                 </p>
               </div>
 
-              <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3">
+              <div className="shrink-0">
                 <button
                   onClick={() => setShowAmbassadorModal(true)}
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:scale-105 transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <Award className="w-5 h-5 text-black" />
+                  <Award className="w-4 h-4 text-black" />
                   <span>Apply Now (Free · 2 Mins)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -911,789 +1166,465 @@ export default function LandingPage({ onLoginClick }) {
 
             {/* 4 Pillars Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-amber-500/20 hover:border-amber-400/50 transition-all space-y-2 group">
-                <span className="text-3xl">📜</span>
-                <h4 className="font-extrabold text-white text-sm group-hover:text-amber-300 transition-colors">Official Experience Letter</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">Verified certificate & leadership credentials from Lumixora (by Vyomra).</p>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-amber-500/20 hover:border-amber-400/50 transition-all space-y-1.5">
+                <span className="text-2xl">📜</span>
+                <h4 className="font-extrabold text-white text-xs sm:text-sm">Official Experience Letter</h4>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Verified certificate & leadership credentials from Lumixora (by Vyomra).</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-cyan-500/20 hover:border-cyan-400/50 transition-all space-y-2 group">
-                <span className="text-3xl">🌟</span>
-                <h4 className="font-extrabold text-white text-sm group-hover:text-cyan-300 transition-colors">Founder Mentorship</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">Direct weekly sessions with Founder Shaik Sowban on AI & engineering.</p>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-[#08BFD0]/20 hover:border-[#08BFD0]/50 transition-all space-y-1.5">
+                <span className="text-2xl">🌟</span>
+                <h4 className="font-extrabold text-white text-xs sm:text-sm">Founder Mentorship</h4>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Direct weekly sessions with Founder Shaik Sowban on AI & engineering.</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-purple-500/20 hover:border-purple-400/50 transition-all space-y-2 group">
-                <span className="text-3xl">🤝</span>
-                <h4 className="font-extrabold text-white text-sm group-hover:text-purple-300 transition-colors">Inter-College Network</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">Network across GPREC, Annamacharya University, Ashoka & expanding campuses.</p>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 hover:border-purple-400/50 transition-all space-y-1.5">
+                <span className="text-2xl">🤝</span>
+                <h4 className="font-extrabold text-white text-xs sm:text-sm">Inter-College Network</h4>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Connect across GPREC, VIT-AP, Ashoka & expanding national campuses.</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-emerald-500/20 hover:border-emerald-400/50 transition-all space-y-2 group">
-                <span className="text-3xl">💎</span>
-                <h4 className="font-extrabold text-white text-sm group-hover:text-emerald-300 transition-colors">LOR & Free AI Pro</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">Letter of Recommendation for top 10% + 10,000 Synapte Coins & AI Suite.</p>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-[#00B987]/20 hover:border-[#00B987]/50 transition-all space-y-1.5">
+                <span className="text-2xl">💎</span>
+                <h4 className="font-extrabold text-white text-xs sm:text-sm">LOR & Free AI Pro</h4>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Letter of Recommendation for top 10% + 10,000 Synaptic Coins.</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Quick Action Bar inside Banner */}
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/5">
-              <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Open to all B.Tech / BE / MCA students · No prior experience mandatory</span>
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 09: THREE CONNECTED ECOSYSTEMS (One Ecosystem. Three Powerful Perspectives)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="ecosystems" className="py-20 md:py-32 bg-[#F4F6FB] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#08BFD0]">Unified Platform</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-[#101A35]">
+              One Ecosystem. Three Powerful Perspectives.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Transforming potential into proof for students, colleges, and hiring partners.
+            </p>
+          </div>
+
+          {/* 3 Audience Perspective Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* For Students */}
+            <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:border-[#7553E8] transition-all space-y-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#7553E8]/10 text-[#7553E8] flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-black text-[#101A35]">For Students</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Build demonstrable skills, develop verified projects, track readiness with your Career Twin, prepare for placements, and showcase capabilities directly to companies.
+                </p>
               </div>
               <button
-                onClick={() => setShowAmbassadorModal(true)}
-                className="text-amber-400 hover:text-amber-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:underline"
+                onClick={() => handleAuth('student')}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
               >
-                <span>View Program Perks & Details</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Start Your Journey</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#08BFD0]" />
               </button>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Interactive Demo Section */}
-      <section id="demo" className="relative z-10 max-w-6xl mx-auto px-6 py-12">
-        <div className="glass-panel rounded-3xl p-2 border border-white/10 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-teal/5 rounded-full blur-3xl pointer-events-none group-hover:bg-brand-teal/10 transition-colors"></div>
-          <div className="w-full relative overflow-hidden rounded-2xl shadow-2xl bg-black">
-              <img src="/infographic.jpg" alt="Vyomra Student OS Features" className="w-full h-auto object-contain rounded-2xl" />
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="relative z-10 py-24 border-y border-white/5 bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.2] mb-6">
-              The Ultimate <br/>
-              <span className="text-brand-purple">Student OS.</span>
-            </h2>
-            <p className="text-lg text-gray-400 mb-10 font-medium leading-relaxed">
-              Vyomra transforms your educational journey by combining an intelligent AI mentor with a gamified learning ecosystem designed exclusively for students.
-            </p>
-            
-            <div className="space-y-6 mb-10">
-              <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-brand-teal/10 border border-brand-teal/20 flex items-center justify-center shrink-0">
-                  <CheckCircle className="w-6 h-6 text-brand-teal" />
+            {/* For Colleges */}
+            <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:border-[#08BFD0] transition-all space-y-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#08BFD0]/10 text-[#08BFD0] flex items-center justify-center">
+                  <Building2 className="w-6 h-6" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">AI-Powered Mentorship</h3>
-                  <p className="text-sm text-gray-400 mt-1">Instant code debugging, doubt resolution, and personalized study paths.</p>
-                </div>
+                <h3 className="text-2xl font-black text-[#101A35]">For Colleges</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Monitor student skill progression, identify departmental bottlenecks, conduct automated proctored assessments, and boost institution placement metrics with granular analytics.
+                </p>
               </div>
-
-              <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shrink-0">
-                  <Zap className="w-6 h-6 text-brand-blue" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Career & Placement Prep</h3>
-                  <p className="text-sm text-gray-400 mt-1">Master technical interviews, build standout portfolios, and track progress toward your dream job.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">My Academics & Marks Engine</h3>
-                  <p className="text-sm text-gray-400 mt-1">Track Mid-1, Mid-2, End-Sem marks, SGPA progression, and subject-wise attendance with zero clutter.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-5 glass-panel p-4 rounded-2xl border border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-6 h-6 text-brand-pink" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Integrated Workspaces</h3>
-                  <p className="text-sm text-gray-400 mt-1">Code, collaborate, and track your academic progress all in one unified platform.</p>
-                </div>
-              </div>
-            </div>
-            
-            <button onClick={() => onLoginClick('demo')} className="px-8 py-4 bg-[#6938EF] hover:bg-[#5425D6] text-white shadow-[0_0_30px_rgba(105,56,239,0.3)] font-bold rounded-xl transition-all flex items-center gap-2">
-              Start Exploring <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="relative min-h-[520px] w-full max-w-lg mx-auto lg:max-w-none flex items-center justify-center">
-             
-             {/* Neon Glow Aura Backgrounds */}
-             <div className="absolute -top-10 -right-10 w-72 h-72 bg-gradient-to-br from-purple-600/30 via-pink-600/20 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-             <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-gradient-to-tr from-teal-500/30 via-blue-600/20 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-
-             {/* Main Holographic Neural IDE Card */}
-             <div className="relative w-full max-w-[420px] bg-[#0c0c16]/90 backdrop-blur-2xl rounded-3xl p-6 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-10 space-y-4">
-                
-                {/* Window Header */}
-                <div className="flex items-center justify-between border-b border-white/10 pb-3.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/90 shadow-[0_0_8px_#ef4444]"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-500/90 shadow-[0_0_8px_#f59e0b]"></div>
-                    <div className="w-3 h-3 rounded-full bg-emerald-500/90 shadow-[0_0_8px_#10b981]"></div>
-                    <span className="text-[11px] font-mono font-bold text-gray-400 ml-2">⚡ SDE_Placement_Twin.py</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-bold text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>AI LIVE</span>
-                  </div>
-                </div>
-
-                {/* Code Window */}
-                <div className="bg-black/60 p-4 rounded-2xl border border-white/5 font-mono text-[11px] leading-relaxed text-gray-300 space-y-1">
-                  <p><span className="text-pink-400 font-bold">import</span> <span className="text-cyan-300">lumixora.twin</span> <span className="text-pink-400 font-bold">as</span> <span className="text-yellow-300">AI</span></p>
-                  <p className="text-gray-500 pt-1"># 1. Initialize Student Future Twin</p>
-                  <p><span className="text-blue-400">scholar</span> = <span className="text-yellow-300">AI</span>.<span className="text-purple-300">PlacementTwin</span>(<span className="text-emerald-300">"SDE-1"</span>, target=<span className="text-emerald-300">"₹45 LPA"</span>)</p>
-                  <p className="text-gray-500 pt-1"># 2. Run Autonomous Code & Mock Viva</p>
-                  <p><span className="text-blue-400">benchmark</span> = <span className="text-blue-400">scholar</span>.<span className="text-purple-300">evaluate_mastery</span>()</p>
-                  <p className="text-cyan-300 font-bold pt-1">print(<span className="text-emerald-300">f"✨ Readiness: {'{'}<span className="text-yellow-300">benchmark.score</span>{'}'}% (Google Ready)"</span>)</p>
-                </div>
-
-                {/* Live Action Bar */}
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gray-400">Streak:</span>
-                    <span className="px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-black flex items-center gap-1">
-                      <Flame className="w-3 h-3 text-orange-400 fill-current" /> 42 Days
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={handleRunCode}
-                    disabled={evalState === 'running'}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-black text-xs cursor-pointer shadow-[0_0_20px_rgba(147,51,234,0.4)] flex items-center gap-1.5 hover:scale-105 transition-transform"
-                  >
-                    <PlayCircle className={`w-3.5 h-3.5 text-white ${evalState === 'running' ? 'animate-spin' : 'fill-current'}`} />
-                    <span>{evalState === 'running' ? 'Simulating...' : 'Run AI Benchmark'}</span>
-                  </button>
-                </div>
-             </div>
-
-             {/* Floating Holographic AI Score Badge */}
-             <div className="absolute -top-6 -right-2 md:-right-6 w-[220px] bg-black/80 backdrop-blur-2xl rounded-3xl border border-emerald-500/40 p-4 z-20 shadow-[0_10px_30px_rgba(16,185,129,0.3)] animate-float space-y-3">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-emerald-400" /> SDE Placement Twin
-                  </span>
-                  <span className="text-[9px] font-black text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/20">VERIFIED</span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full border-[3px] border-white/10 flex items-center justify-center relative shrink-0">
-                    <svg className={`absolute inset-0 w-full h-full transform -rotate-90 ${evalState === 'running' ? 'animate-spin' : ''}`}>
-                      <circle cx="28" cy="28" r="23" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="144" strokeDashoffset={evalState === 'success' ? "6" : "144"} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                    </svg>
-                    <span className="text-sm font-black text-white">
-                      {evalState === 'success' ? '98%' : evalState === 'running' ? '...' : '94%'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-xs font-black text-white block">Top 1% Candidate</span>
-                    <span className="text-[10px] text-emerald-400 font-bold block">Offer Ready ⭐</span>
-                  </div>
-                </div>
-
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5 text-[9px] text-gray-300 font-medium">
-                  🏢 Google • Amazon SDE-1
-                </div>
-             </div>
-
-             {/* Floating Offer Unlocked Notification Pill */}
-             <div className={`absolute -bottom-6 -left-2 md:-left-6 bg-gradient-to-r from-purple-900/90 to-black/90 backdrop-blur-2xl rounded-2xl border border-purple-500/40 p-3.5 z-20 shadow-[0_10px_30px_rgba(168,85,247,0.3)] transition-all duration-500 flex items-center gap-3 ${
-               evalState === 'success' ? 'scale-105 border-purple-400' : ''
-             }`}>
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 shrink-0">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-black text-white">Package Unlocked</span>
-                    <span className="text-[9px] font-black bg-purple-500/30 text-purple-300 px-1.5 py-0.2 rounded">Tier-1</span>
-                  </div>
-                  <span className="text-[11px] font-extrabold text-emerald-400 block">₹32 - ₹45 LPA (SDE)</span>
-                </div>
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Meet Our Team Section */}
-      <section id="team" className="relative z-10 py-24 border-b border-white/5 bg-[#08080d]/80">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/10 border border-brand-purple/20 text-brand-purple text-xs font-bold uppercase tracking-widest">
-              <Sparkles className="w-4 h-4" /> Driving Educational Innovation
-            </div>
-            <h2 className="text-3xl md:text-5xl font-black text-white">
-              Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple">Team</span>
-            </h2>
-            <p className="text-gray-400 font-medium text-base">
-              The passionate leaders, marketing strategists, and tech innovators building the future of student academic operating systems.
-            </p>
-            <div className="pt-2">
               <button
-                onClick={() => setShowTeamPortal(true)}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-teal via-[#0d9488] to-brand-blue text-black font-extrabold text-xs shadow-xl hover:opacity-95 transition-all inline-flex items-center gap-2 cursor-pointer active:scale-95"
+                onClick={() => handleAuth('faculty')}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#FAFBFF] border border-gray-300 hover:border-[#08BFD0] text-[#101A35] font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>Open Dedicated Team Portal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Explore Institutional Solutions</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#08BFD0]" />
               </button>
             </div>
+
+            {/* For Employers */}
+            <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:border-[#00B987] transition-all space-y-6 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#00B987]/10 text-[#00B987] flex items-center justify-center">
+                  <Briefcase className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-black text-[#101A35]">For Employers</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Discover pre-vetted campus talent through actual code submissions, test marks, and verified project evidence rather than filtering fabricated resumes.
+                </p>
+              </div>
+              <button
+                onClick={() => handleAuth('student')}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#00B987] hover:bg-[#009e73] text-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
+              >
+                <span>Discover Talent</span>
+                <ArrowRight className="w-3.5 h-3.5 text-black" />
+              </button>
+            </div>
+
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Team Member 1: Founder & CEO & Tech Lead */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.sowban)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-brand-teal/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-teal/10 rounded-full blur-2xl group-hover:bg-brand-teal/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/founder_sowban.png" 
-                  name="SHAIK SOWBAN" 
-                  gradient="from-brand-teal to-brand-blue" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-brand-teal bg-brand-teal/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-teal/20 inline-block mb-2">
-                    Founder, CEO & Tech Lead
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-brand-teal transition-colors">SHAIK SOWBAN</h3>
-                  <p className="text-xs font-bold text-gray-400">Chief Architect & Tech Lead</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Founder & Lead Tech Architect driving AI models, software development, cloud infrastructure & ecosystem scaling.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-brand-teal group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 2: C. MANASA (Team Lead • Feature Strategy) */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.manasa)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_manasa.jpg" 
-                  name="C. MANASA" 
-                  gradient="from-amber-400 to-orange-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
-                    Team Lead • Feature Strategy
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">C. MANASA</h3>
-                  <p className="text-xs font-bold text-gray-400">Product Innovation Lead</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Discovers real campus problems, researches student pain points, and conceptualizes breakthrough features.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 3: PERAM VAMSIKA */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.vamsika)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_vamsika.png" 
-                  name="PERAM VAMSIKA" 
-                  gradient="from-amber-400 to-orange-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
-                    Feature Strategy
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">PERAM VAMSIKA</h3>
-                  <p className="text-xs font-bold text-gray-400">Feature Research & Student Insights</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Conducts campus surveys and student workflow analysis to design practical, high-impact platform tools.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 4: RAAVI YASWITHA */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.yaswitha)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_yaswitha.jpg" 
-                  name="RAAVI YASWITHA" 
-                  gradient="from-amber-400 to-orange-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
-                    Feature Strategy
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">RAAVI YASWITHA</h3>
-                  <p className="text-xs font-bold text-gray-400">Problem Identification & User Testing</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Identifies core student friction points and performs end-to-end user beta tests for seamless UX quality.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 5: Y. USHA SREE - AI & Innovation Lead */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.ushasree)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-violet-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-400/10 rounded-full blur-2xl group-hover:bg-violet-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_ushasree.jpg" 
-                  name="Y. USHA SREE" 
-                  gradient="from-violet-400 via-purple-500 to-indigo-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-violet-400 bg-violet-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-violet-400/20 inline-block mb-2">
-                    AI & Innovation Lead
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-violet-300 transition-colors">Y. USHA SREE</h3>
-                  <p className="text-xs font-bold text-gray-400">Head of Intelligent Systems</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Pioneering intelligent AI architectures, smart student learning models, and next-generation educational innovation.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-violet-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 6: M. AKHIL - Marketing Head */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.akhil)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-brand-purple/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-purple/10 rounded-full blur-2xl group-hover:bg-brand-purple/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_akhil.jpg" 
-                  name="M. AKHIL" 
-                  gradient="from-brand-purple to-brand-pink" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-brand-purple bg-brand-purple/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-purple/20 inline-block mb-2">
-                    Marketing Head
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-brand-purple transition-colors">M. AKHIL</h3>
-                  <p className="text-xs font-bold text-gray-400">Head of Growth & Outreach</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Leading brand strategy, campus expansion, digital marketing campaigns, and student community partnerships.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-brand-purple group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 7: A. POOJA REDDY - Mentorship & Support Lead */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.pooja)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl group-hover:bg-cyan-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_pooja.jpg" 
-                  name="A. POOJA REDDY" 
-                  gradient="from-cyan-400 to-blue-600" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-cyan-400/20 inline-block mb-2">
-                    Mentorship Head
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">A. POOJA REDDY</h3>
-                  <p className="text-xs font-bold text-gray-400">Head of Doubt Solver Network</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Manages human mentor network, speeds up doubt resolution responses, and assists students 24/7.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-cyan-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 8: C. CHANDRIKA - Operations Head */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.chandrika)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_chandrika.jpg" 
-                  name="C. CHANDRIKA" 
-                  gradient="from-emerald-400 to-teal-600" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-500/20 inline-block mb-2">
-                    Operations Head
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-emerald-300 transition-colors">C. CHANDRIKA</h3>
-                  <p className="text-xs font-bold text-gray-400">Head of Operations & Support</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Overseeing academic content verification, student support, mentorship programs, and daily campus operations.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-emerald-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 9: SHAIK TOUSIF BASHA - AI Solutions & Prototyping Lead */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.tousif)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-blue-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_tousif.jpg" 
-                  name="SHAIK TOUSIF BASHA" 
-                  gradient="from-blue-400 via-indigo-500 to-cyan-400" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-500/20 inline-block mb-2">
-                    AI Solutions Lead
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-blue-300 transition-colors">SHAIK TOUSIF BASHA</h3>
-                  <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Lead</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Uses AI tools to rapidly build demos, prototypes, and proof-of-concepts for new VYOMRA features.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-blue-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member: SYED RIYAZ - AI Solutions & Prototyping Member */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.riyaz)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_riyaz.png" 
-                  name="SYED RIYAZ" 
-                  gradient="from-cyan-400 via-blue-500 to-indigo-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-cyan-500/20 inline-block mb-2">
-                    AI Solutions Member
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">SYED RIYAZ</h3>
-                  <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Member</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Builds rapid AI-driven prototypes, proofs-of-concept, and intelligent automation workflows.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-cyan-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member: USHA ESWARI - Product Testing & QA Lead */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.ushaeswari)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-rose-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-400/10 rounded-full blur-2xl group-hover:bg-rose-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_ushaeswari.jpg" 
-                  name="USHA ESWARI" 
-                  gradient="from-rose-400 via-pink-500 to-indigo-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-rose-400 bg-rose-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-rose-400/20 inline-block mb-2">
-                    Product Testing & QA Lead
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-rose-300 transition-colors">USHA ESWARI</h3>
-                  <p className="text-xs font-bold text-gray-400">Quality Assurance Lead</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Directs product testing workflows, automated test suites, quality benchmarks, and defect tracking across Vyomra.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-rose-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* FAQs Section */}
-      <section className="relative z-10 py-24 text-center">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-300 text-xs font-bold mb-6 uppercase tracking-widest">
-            <Shield className="w-4 h-4" /> Got Questions?
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 10: PRODUCT ECOSYSTEM SHOWCASE (Learnverse, Codeverse, etc.)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="ecosystem-modules" className="py-20 md:py-32 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#7553E8]">Interconnected Modules</span>
+            <h2 className="text-3xl sm:text-5xl font-black text-[#101A35]">
+              The Lumixora Ecosystem.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              Seamlessly connecting each stage of preparation into one cohesive experience.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">Frequently Asked Questions</h2>
-          <p className="text-gray-400 font-medium mb-12">
-            Your college not mentioned in Student Login or facing any issues?<br/>
-            Contact us directly to add your institution:{' '}
-            <a 
-              href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20/%20Student%20Login%20Query" 
-              className="text-amber-300 font-bold hover:underline inline-flex items-center gap-1 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/30 hover:bg-amber-500/20 transition-colors ml-1 font-mono"
-            >
-              <Mail className="w-4 h-4" /> lumixora.team@gmail.com
-            </a>
-          </p>
 
-          <div className="space-y-4 text-left">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="glass-panel border border-white/5 rounded-2xl overflow-hidden transition-all duration-300">
-                <button 
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-white font-bold text-sm md:text-base hover:bg-white/5 transition-colors"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#7553E8] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#7553E8] block">Module 01</span>
+                <h4 className="text-lg font-black text-[#101A35]">LEARNVERSE</h4>
+                <p className="text-xs text-gray-600 leading-relaxed mt-1">
+                  Learning resources, AI mentorship, academic support, and personalized study journeys.
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-[#7553E8]">Academic Intelligence</span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#08BFD0] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#08BFD0] block">Module 02</span>
+                <h4 className="text-lg font-black text-[#101A35]">CODEVERSE</h4>
+                <p className="text-xs text-gray-600 leading-relaxed mt-1">
+                  Interactive coding practice, programming challenges, and live Monaco execution.
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-[#08BFD0]">Code Arena Engine</span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#00B987] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#00B987] block">Module 03</span>
+                <h4 className="text-lg font-black text-[#101A35]">BUILDVERSE</h4>
+                <p className="text-xs text-gray-600 leading-relaxed mt-1">
+                  Real projects, practical implementation, milestone tasks, and portfolio development.
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-[#00B987]">Build Studio</span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-amber-500 hover:shadow-lg transition-all space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-500 block">Module 04</span>
+                <h4 className="text-lg font-black text-[#101A35]">CAREERVERSE</h4>
+                <p className="text-xs text-gray-600 leading-relaxed mt-1">
+                  Target career paths, AI interview preparation, and placement intelligence dashboards.
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-amber-500">Career Twin Engine</span>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-[#FAFBFF] border border-gray-200 hover:border-[#7553E8] hover:shadow-lg transition-all space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#7553E8] block">Module 05</span>
+                <h4 className="text-lg font-black text-[#101A35]">CONNECTVERSE</h4>
+                <p className="text-xs text-gray-600 leading-relaxed mt-1">
+                  Verified internships, multi-campus hackathons, squad recruitment, and employer connections.
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-[#7553E8]">Talent Network</span>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 11: TRUST AND CREDIBILITY (Built Around Real Progress)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-[#F4F6FB] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-black uppercase tracking-widest text-[#00B987]">Authentic Evidence</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#101A35]">
+              Built Around Real Progress. Designed for Real Opportunities.
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              No invented placement statistics or fabricated testimonials. Every metric reflects authentic student achievements and institutional milestones.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-shadow">
+              <span className="text-4xl font-black text-[#101A35] font-mono block tracking-tight">
+                {liveStats.usersCount ? `${liveStats.usersCount}+` : '450+'}
+              </span>
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 block">
+                Live Registered Scholars
+              </span>
+            </div>
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-shadow">
+              <span className="text-4xl font-black text-[#7553E8] font-mono block tracking-tight">
+                {liveStats.notesCount ? `${liveStats.notesCount.toLocaleString()}+` : '1,195+'}
+              </span>
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 block">
+                Verified Notes & Units
+              </span>
+            </div>
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-shadow">
+              <span className="text-4xl font-black text-[#08BFD0] font-mono block tracking-tight">
+                24/7
+              </span>
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 block">
+                AI Career Copilot & Compiler
+              </span>
+            </div>
+            <div className="p-6 rounded-3xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col items-center justify-center">
+              <span className="text-4xl font-black text-[#00B987] font-mono block tracking-tight">
+                {liveStats.collegesCount ? `${liveStats.collegesCount}+` : '7+'}
+              </span>
+              <span className="text-xs font-black text-[#00B987] uppercase tracking-wider mt-0.5 block">
+                Campuses
+              </span>
+              <span className="text-[11px] text-gray-500 font-bold uppercase tracking-wider mt-1.5 block">
+                {liveStats.campusesLabel}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 12: FOUNDER AND MISSION (A short, authentic founder story)
+      ───────────────────────────────────────────────────────────────── */}
+      <section id="founder" className="py-20 md:py-28 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="p-8 sm:p-12 rounded-3xl bg-[#101A35] text-white border border-white/10 shadow-xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+            
+            <div className="w-52 h-52 sm:w-64 sm:h-64 shrink-0 relative group flex items-center justify-center">
+              {/* Soft ambient glowing aura perfectly matching the neon ring */}
+              <div className="absolute inset-4 bg-gradient-to-tr from-[#7553E8]/50 via-[#08BFD0]/40 to-[#00B987]/40 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 pointer-events-none" />
+              <img
+                src="/founder.png"
+                alt="Shaik Sowban - Founder"
+                className="w-full h-full object-contain relative z-10 select-none transform transition-transform duration-500 group-hover:scale-105 drop-shadow-[0_20px_40px_rgba(8,191,208,0.4)]"
+                onError={(e) => { e.target.src = '/favicon.png'; }}
+              />
+            </div>
+
+            <div className="space-y-4 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-wider text-[#08BFD0]">
+                <span>Founder & Mission</span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-white">
+                A Vision to Transform How Students Become Industry-Ready.
+              </h3>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                Lumixora is built on a simple belief: every student deserves the opportunity to develop their capabilities, demonstrate their potential, and access meaningful career opportunities without being held back by credential bias.
+              </p>
+              <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-gray-400 font-mono">
+                <span className="font-bold text-white">Shaik Sowban</span>
+                <span>•</span>
+                <span>Founder & Chief Architect</span>
+                <span>•</span>
+                <span className="text-[#08BFD0]">A Product of VYOMRA</span>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowTeamPortal(true)}
+                  className="text-xs font-extrabold text-[#7553E8] hover:text-[#08BFD0] transition-colors underline cursor-pointer"
                 >
-                  {faq.q}
-                  <ChevronDown className={`w-5 h-5 text-brand-teal transition-transform duration-300 ${openFaq === idx ? 'rotate-180' : ''}`} />
+                  Meet our Full Engineering & Research Team &rarr;
                 </button>
-                <div className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openFaq === idx ? 'max-h-40 pb-5 opacity-100' : 'max-h-0 pb-0 opacity-0'}`}>
-                  <p className="text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION: FREQUENTLY ASKED QUESTIONS (Preserved from previous version)
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-[#F4F6FB] border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-black uppercase tracking-widest text-[#7553E8]">Got Questions?</span>
+            <h2 className="text-2xl sm:text-4xl font-black text-[#101A35]">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => (
+              <div 
+                key={idx} 
+                className="rounded-2xl bg-white border border-gray-200/80 overflow-hidden shadow-xs"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full p-5 text-left font-black text-sm text-[#101A35] flex items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/50"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${openFaq === idx ? 'rotate-180 text-[#7553E8]' : ''}`} />
+                </button>
+                {openFaq === idx && (
+                  <div className="p-5 pt-0 text-xs sm:text-sm text-gray-600 leading-relaxed border-t border-gray-100 bg-[#FAFBFF]">
                     {faq.a}
-                  </p>
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
+
+          {/* Institutional Contact Bar */}
+          <div className="p-4 rounded-2xl bg-white border border-gray-200 text-center text-xs text-gray-600">
+            <span>Want your college or engineering campus onboarded? Email our founders directly at </span>
+            <a href="mailto:lumixora.team@gmail.com" className="font-bold text-[#7553E8] hover:underline font-mono">
+              lumixora.team@gmail.com
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" className="bg-[#050508] py-12 text-center border-t border-white/5 relative z-10">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <img src="/lumixora_logo.jpg" alt="VYOMRA Logo" className="w-10 h-10 rounded-full object-cover shadow-md border border-cyan-500/30" />
-          <div className="flex flex-col text-left">
-            <span className="text-xl font-black text-white tracking-tight leading-none">Lumixora</span>
-            <span className="text-[10px] text-cyan-400 font-extrabold uppercase tracking-widest mt-0.5">A Project of VYOMRA</span>
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 13: FINAL CONVERSION & CALL TO ACTION
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="py-20 md:py-32 bg-[#FAFBFF] relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
+          
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#7553E8]/20 shadow-xs text-xs font-black uppercase tracking-wider text-[#7553E8]">
+            <Sparkle className="w-3.5 h-3.5" />
+            <span>Your Future Starts Here</span>
           </div>
-        </div>
-        <p className="text-cyan-400/90 text-xs font-black tracking-widest uppercase mb-2">IDEAS TODAY • IMPACT TOMORROW</p>
-        <p className="text-gray-500 text-xs font-medium mb-1">Autonomous Multi-Campus Student OS & Placement Twin Ecosystem.</p>
-        <p className="text-gray-400 text-xs font-bold mb-4 tracking-wide">Founded & Led by SHAIK SOWBAN</p>
-        
-        {/* Workable Contact Email in Footer */}
-        <div className="my-6">
-          <a 
-            href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20/%20Student%20Login%20Query"
-            className="inline-flex flex-wrap items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all shadow-md"
-          >
-            <Building2 className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Your college not mentioned in Student Login? Want your campus added? Contact us:</span>
-            <strong className="text-amber-300 hover:underline font-mono">lumixora.team@gmail.com</strong>
-          </a>
-        </div>
 
-        <p className="text-gray-600 text-xs font-bold tracking-widest">&copy; 2026 VYOMRA. ALL RIGHTS RESERVED.</p>
+          <h2 className="text-3xl sm:text-6xl font-black text-[#101A35] tracking-tight">
+            Your Future Won't Build Itself.
+          </h2>
+
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Start building the skills, evidence and confidence that move your career forward. Your journey starts with Lumixora.
+          </p>
+
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => handleAuth('student')}
+              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-xl hover:scale-[1.02] transition-all cursor-pointer"
+            >
+              <span>Get Started Now</span>
+              <ArrowRight className="w-4 h-4 text-[#08BFD0]" />
+            </button>
+            <button
+              onClick={() => handleAuth('faculty')}
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-gray-50 border border-gray-300 text-[#101A35] font-extrabold text-sm transition-colors cursor-pointer"
+            >
+              For Institutions & Colleges
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 font-semibold pt-2">
+            Learn. Build. Prove. Prepare. Connect.
+          </p>
+
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          FOOTER DESIGN
+      ───────────────────────────────────────────────────────────────── */}
+      <footer className="bg-[#101A35] text-white pt-16 pb-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+            
+            {/* Col 1 & 2: Brand & Mission */}
+            <div className="md:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <Realistic3DLogo size="md" />
+                <div>
+                  <span className="text-xl font-black text-white font-sora block">LUMIXORA</span>
+                  <span className="text-[9px] font-bold tracking-widest text-[#08BFD0] uppercase block -mt-0.5">A Product of VYOMRA</span>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-sm">
+                An intelligent career development ecosystem transforming learning into capabilities and capabilities into opportunities.
+              </p>
+              <span className="text-xs text-[#08BFD0] font-mono block">Connecting the future.</span>
+            </div>
+
+            {/* Col 3: Platform Modules */}
+            <div className="space-y-3">
+              <h5 className="text-xs font-black uppercase tracking-wider text-gray-400">Platform</h5>
+              <ul className="space-y-2 text-xs text-gray-300 font-medium">
+                <li><a href="#ecosystem-modules" className="hover:text-white transition-colors">Learnverse</a></li>
+                <li><a href="#ecosystem-modules" className="hover:text-white transition-colors">Codeverse</a></li>
+                <li><a href="#ecosystem-modules" className="hover:text-white transition-colors">Buildverse</a></li>
+                <li><a href="#career-twin" className="hover:text-white transition-colors">Careerverse</a></li>
+                <li><a href="#ecosystems" className="hover:text-white transition-colors">Connectverse</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Explore */}
+            <div className="space-y-3">
+              <h5 className="text-xs font-black uppercase tracking-wider text-gray-400">Explore</h5>
+              <ul className="space-y-2 text-xs text-gray-300 font-medium">
+                <li><button onClick={() => handleAuth('student')} className="hover:text-white transition-colors cursor-pointer">For Students</button></li>
+                <li><button onClick={() => handleAuth('faculty')} className="hover:text-white transition-colors cursor-pointer">For Colleges</button></li>
+                <li><button onClick={() => handleAuth('student')} className="hover:text-white transition-colors cursor-pointer">For Employers</button></li>
+                <li><button onClick={() => setShowAmbassadorModal(true)} className="hover:text-amber-400 transition-colors cursor-pointer text-amber-300">Campus Ambassador</button></li>
+                <li><button onClick={() => setShowTeamPortal(true)} className="hover:text-white transition-colors cursor-pointer">Our Team</button></li>
+                <li><a href="mailto:lumixora.team@gmail.com" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Col 5: Legal & College Access */}
+            <div className="space-y-3">
+              <h5 className="text-xs font-black uppercase tracking-wider text-gray-400">Institutional Access</h5>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                Add your engineering college or university workspace to Lumixora.
+              </p>
+              <a
+                href="mailto:lumixora.team@gmail.com?subject=College%20Partnership%20Inquiry%20-%20Lumixora"
+                className="inline-block text-xs font-bold text-[#08BFD0] hover:underline"
+              >
+                lumixora.team@gmail.com &rarr;
+              </a>
+            </div>
+
+          </div>
+
+          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-medium">
+            <p>LUMIXORA — A product of VYOMRA</p>
+            <p>© 2026 Lumixora. All rights reserved.</p>
+          </div>
+
+        </div>
       </footer>
 
-      {/* Fixed Founder Cinematic Badge */}
-      <div 
-        onClick={() => setSelectedMember(teamMembersDetails.sowban)}
-        className="fixed bottom-6 right-6 z-40 flex flex-col items-center animate-fade-in-up hidden md:flex cursor-pointer"
-      >
-        <div className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-tr from-brand-teal via-brand-purple to-brand-blue rounded-full blur-md opacity-40 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-slow"></div>
-          <div className="relative w-24 h-24 rounded-full p-[2px] bg-gradient-to-tr from-brand-teal via-brand-purple to-brand-blue shadow-2xl">
-             <img src="/founder_sowban.png" alt="Founder Shaik Sowban" className="w-full h-full object-cover rounded-full border-2 border-[#0a0a0f] transform transition-transform duration-700 group-hover:scale-110" />
-          </div>
-          {/* Cinematic ring */}
-          <div className="absolute -inset-1 border border-white/20 rounded-full animate-[spin_8s_linear_infinite] opacity-50 group-hover:opacity-100 transition-opacity"></div>
-        </div>
-        <div className="mt-3 glass-panel px-4 py-2 rounded-xl border border-white/10 text-center shadow-xl backdrop-blur-md bg-black/60 group-hover:-translate-y-1 transition-transform">
-          <span className="block text-[10px] font-black text-brand-teal tracking-widest uppercase mb-0.5">Founder</span>
-          <span className="block text-sm font-bold text-white tracking-wide">SHAIK SOWBAN</span>
-        </div>
-      </div>
-
-      {/* Team Member Full Detail Modal */}
-      {selectedMember && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-          onClick={() => setSelectedMember(null)}
-        >
-          <div 
-            className="relative w-full max-w-2xl bg-[#0e1017] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col justify-between"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Background Ambient Glow */}
-            <div className={`absolute -top-24 -right-24 w-64 h-64 bg-gradient-to-br ${selectedMember.gradient} rounded-full blur-3xl opacity-20 pointer-events-none`}></div>
-            <div className={`absolute -bottom-24 -left-24 w-64 h-64 bg-gradient-to-tr ${selectedMember.gradient} rounded-full blur-3xl opacity-15 pointer-events-none`}></div>
-
-            {/* Close Button */}
-            <button 
-              onClick={() => setSelectedMember(null)}
-              className="absolute top-5 right-5 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white transition-all shadow-lg"
-              title="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Scrollable Content */}
-            <div className="overflow-y-auto pr-1 space-y-6">
-              {/* Header Info */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-white/10 text-center sm:text-left">
-                <TeamAvatar 
-                  src={selectedMember.image} 
-                  name={selectedMember.name} 
-                  gradient={selectedMember.gradient} 
-                  size="w-28 h-28" 
-                  textSize="text-3xl" 
-                />
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${selectedMember.borderBadge}`}>
-                      {selectedMember.department}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-black text-white tracking-wide">{selectedMember.name}</h3>
-                  <p className="text-sm font-bold text-gray-300">{selectedMember.role}</p>
-                  {selectedMember.lead && (
-                    <p className="text-xs text-gray-500 font-medium">{selectedMember.lead}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Bio & Mission */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-brand-teal" /> Overview & Mission
-                </h4>
-                <p className="text-sm text-gray-300 leading-relaxed bg-white/[0.03] border border-white/5 rounded-2xl p-4">
-                  {selectedMember.bio}
-                </p>
-              </div>
-
-              {/* Key Contributions & Responsibilities */}
-              {selectedMember.highlights && selectedMember.highlights.length > 0 && (
-                <div className="space-y-2.5">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-teal" /> Key Responsibilities & Contributions
-                  </h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {selectedMember.highlights.map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-3 bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-teal mt-2 shrink-0"></span>
-                        <span className="text-xs text-gray-300 font-medium leading-normal">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Skills & Domains */}
-              {selectedMember.skills && selectedMember.skills.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-gray-400">Core Specializations</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMember.skills.map((skill, idx) => (
-                      <span 
-                        key={idx} 
-                        className="text-xs font-semibold px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-gray-300"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Bottom Actions */}
-            <div className="pt-4 border-t border-white/10 mt-4 flex items-center justify-between">
-              <span className="text-[11px] font-bold text-gray-500">VYOMRA Student OS Leadership</span>
-              <button 
-                onClick={() => setSelectedMember(null)}
-                className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Campus Ambassador Modal if URL hash trigger or button click */}
+      {showAmbassadorModal && (
+        <CampusAmbassadorModal onClose={() => setShowAmbassadorModal(false)} />
       )}
 
-      {/* Campus Ambassador Apply Portal Modal (Zero Login Required) */}
-      <CampusAmbassadorModal 
-        isOpen={showAmbassadorModal} 
-        onClose={() => setShowAmbassadorModal(false)} 
-      />
     </div>
   );
 }
-

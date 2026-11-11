@@ -274,7 +274,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
     "duration": "6h 15m",
     "views": "2.1M"
   },
-  "playlistUrl": "https://www.youtube.com/playlist?list=PLxCzCOWd7aiFAN6I8C9AzFiPrgPM6wDLy",
+  "playlistUrl": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
   "units": [
     {
       "unitNumber": 1,
@@ -294,7 +294,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "ER Diagram: Entity, Attributes, Relationship Types & Cardinality with Solved Examples",
           "channel": "Gate Smashers",
           "duration": "24:40",
-          "url": "https://www.youtube.com/watch?v=gbV_G7u_g_Y",
+          "url": "https://www.youtube.com/watch?v=QpdhBUYk7Kk",
           "summary": "Strong/weak entity sets, composite/multivalued attributes, primary/foreign keys, ER to relational schema mapping."
         }
       ]
@@ -309,7 +309,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Relational Algebra: Selection, Projection, Cross Product, Natural Join & Division",
           "channel": "Gate Smashers",
           "duration": "28:10",
-          "url": "https://www.youtube.com/watch?v=yL_7_kC6w3s",
+          "url": "https://www.youtube.com/watch?v=4YilEjkNPrQ",
           "summary": "Procedural query language operations, theta join, outer join, and university schema queries."
         },
         {
@@ -332,7 +332,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Functional Dependencies, Candidate Key Finding & Closure of Attribute Sets",
           "channel": "Gate Smashers",
           "duration": "22:30",
-          "url": "https://www.youtube.com/watch?v=5fs1PRflmD8",
+          "url": "https://www.youtube.com/watch?v=UrYLYV7WSHM",
           "summary": "Armstrong axioms, attribute closure algorithm, finding candidate keys of relational schema."
         },
         {
@@ -355,7 +355,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "ACID Properties of Transactions & Transaction State Diagram",
           "channel": "Gate Smashers",
           "duration": "16:40",
-          "url": "https://www.youtube.com/watch?v=a3fI_j8B_rM",
+          "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
           "summary": "Atomicity, Consistency, Isolation, Durability with real-world banking transaction flow."
         },
         {
@@ -363,7 +363,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Conflict Serializability & Precedence Graph (Testing Serializability)",
           "channel": "Gate Smashers",
           "duration": "21:50",
-          "url": "https://www.youtube.com/watch?v=7hR9qQ0H6nI",
+          "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
           "summary": "Read-write conflicts, cycle detection in precedence graph, and strict schedules."
         },
         {
@@ -371,7 +371,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Concurrency Control Protocols: Two Phase Locking (Strict 2PL, Rigorous 2PL) & Timestamp Ordering",
           "channel": "Gate Smashers",
           "duration": "26:20",
-          "url": "https://www.youtube.com/watch?v=gT_u4m9L0vM",
+          "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
           "summary": "Growing phase, shrinking phase, lock conversion, cascading abort prevention, and Thomas write rule."
         }
       ]
@@ -386,7 +386,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Indexing in Databases: Primary, Secondary, Clustered & Dense vs Sparse Indexing",
           "channel": "Gate Smashers",
           "duration": "24:10",
-          "url": "https://www.youtube.com/watch?v=T_rG_q0uK4w",
+          "url": "https://www.youtube.com/watch?v=aZjYr87r1b8",
           "summary": "Data blocks, index records, block access calculations, and multi-level indexing."
         },
         {
@@ -451,7 +451,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Process State Transition Diagram & Process Control Block (PCB)",
           "channel": "Gate Smashers",
           "duration": "16:40",
-          "url": "https://www.youtube.com/watch?v=ovS7Wmg9N_I",
+          "url": "https://www.youtube.com/watch?v=26QPDBe-NB8",
           "summary": "New, Ready, Running, Waiting, Terminated states, context switching overhead and scheduler types."
         }
       ]
@@ -466,7 +466,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "CPU Scheduling Algorithms: FCFS, SJF, SRTF Solved with Gantt Chart",
           "channel": "Gate Smashers",
           "duration": "28:30",
-          "url": "https://www.youtube.com/watch?v=zFnrUVqti3M",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "Average turnaround time, waiting time, response time calculations and Convoy Effect in FCFS."
         },
         {
@@ -474,7 +474,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Round Robin CPU Scheduling Algorithm with Time Quantum & Solved Numerical",
           "channel": "Gate Smashers",
           "duration": "22:15",
-          "url": "https://www.youtube.com/watch?v=TxjIlNYRZ5E",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "Impact of time quantum size, context switch frequency, and average waiting time calculations."
         }
       ]
@@ -489,7 +489,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Critical Section Problem, Race Conditions & Peterson's Solution Algorithm",
           "channel": "Gate Smashers",
           "duration": "21:40",
-          "url": "https://www.youtube.com/watch?v=1r_7iLq9F0w",
+          "url": "https://www.youtube.com/watch?v=ukM_zzrIeXs",
           "summary": "Mutual exclusion, progress, and bounded waiting criteria satisfied by software solutions."
         },
         {
@@ -497,7 +497,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Semaphores in OS: Binary vs Counting Semaphores & Producer-Consumer Problem",
           "channel": "Gate Smashers",
           "duration": "25:10",
-          "url": "https://www.youtube.com/watch?v=XDE0z0b_yE4",
+          "url": "https://www.youtube.com/watch?v=ukM_zzrIeXs",
           "summary": "Wait() and Signal() atomic operations, mutex implementation, and buffer synchronization."
         },
         {
@@ -520,7 +520,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Paging in OS: Logical to Physical Address Translation & Page Table Architecture",
           "channel": "Gate Smashers",
           "duration": "27:15",
-          "url": "https://www.youtube.com/watch?v=pJ6myTV3ca8",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "Page number, page offset, frame number, MMU translation, and TLB hit ratio calculations."
         },
         {
@@ -528,7 +528,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Page Replacement Algorithms: FIFO, Optimal, LRU & Belady's Anomaly Solved Problems",
           "channel": "Gate Smashers",
           "duration": "31:20",
-          "url": "https://www.youtube.com/watch?v=8XFEb8pQ2n4",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "Page fault frequency comparison, stack algorithms, and Belady anomaly illustration in FIFO."
         }
       ]
@@ -543,7 +543,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "File Allocation Methods: Contiguous, Linked & Inode Indexed Allocation",
           "channel": "Gate Smashers",
           "duration": "23:30",
-          "url": "https://www.youtube.com/watch?v=5aK8a5L0mP4",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "External fragmentation in contiguous allocation, pointer overhead in linked, and Unix inode structures."
         },
         {
@@ -551,7 +551,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
           "title": "Disk Scheduling Algorithms: FCFS, SSTF, SCAN, C-SCAN Solved with Total Head Movements",
           "channel": "Gate Smashers",
           "duration": "26:50",
-          "url": "https://www.youtube.com/watch?v=9_zW7L_v8K4",
+          "url": "https://www.youtube.com/watch?v=vBURTt97EkA",
           "summary": "Seek time calculation, cylinder tracks traversal, and algorithm efficiency comparison."
         }
       ]
@@ -579,11 +579,11 @@ export const INITIAL_SYLLABUS_VIDEOS = [
     oneShotVideo: {
       title: 'Universal Human Values (UHV) Complete One-Shot Revision Marathon',
       channel: 'Gate Smashers / AICTE UHV',
-      url: 'https://www.youtube.com/watch?v=Jm3U49XWv3c',
+      url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
       duration: '4h 45m',
       views: '850K'
     },
-    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiE49ZgYgV3sF2xQ2z4gT3sX',
+    playlistUrl: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
     units: [
       {
         unitNumber: 1,
@@ -595,7 +595,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Value Education, Right Understanding, Relationship & Physical Facility',
             channel: 'Gate Smashers',
             duration: '18:30',
-            url: 'https://www.youtube.com/watch?v=e_wK3b6Fk2s',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Understanding the triad of Right Understanding, Relationship (with humans) and Physical Facilities (with nature) for holistic happiness.'
           },
           {
@@ -603,7 +603,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Self-Exploration as the Process for Value Education',
             channel: 'AICTE UHV / NPTEL',
             duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=mD_3h_C0p9Y',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Content of self-exploration (Desire/Purpose & Program of action) and Natural Acceptance vs Experiential Validation.'
           },
           {
@@ -626,7 +626,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Human Being as Co-existence of Self (\'I\') and Body',
             channel: 'Gate Smashers',
             duration: '24:50',
-            url: 'https://www.youtube.com/watch?v=3n-vH_72s9w',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Needs, activities and types of Self (conscious) vs Body (physico-chemical) detailed tabular comparison.'
           },
           {
@@ -634,7 +634,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Harmony in the Self (\'I\'): Desires, Thoughts & Expectations (Imagination)',
             channel: 'AICTE UHV',
             duration: '20:10',
-            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Analyzing Pre-conditioning vs Sensation vs Natural Acceptance as sources of human imagination.'
           },
           {
@@ -642,7 +642,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Sanyam and Swasthya: Self-Regulation and Health Programs',
             channel: 'Gate Smashers',
             duration: '19:25',
-            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Feeling of responsibility for nurturing, protecting and rightly utilizing the body.'
           }
         ]
@@ -665,7 +665,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Respect (Samman) as Right Evaluation vs Differentiation',
             channel: 'AICTE UHV',
             duration: '23:15',
-            url: 'https://www.youtube.com/watch?v=83e6yWJ_05s',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Over-evaluation, under-evaluation and otherwise-evaluation vs right evaluation on the basis of Self.'
           },
           {
@@ -673,7 +673,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Comprehensive Human Goals & Five Dimensions of Human Order in Society',
             channel: 'Gate Smashers',
             duration: '21:30',
-            url: 'https://www.youtube.com/watch?v=1XATy2G1qJg',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Right understanding, Prosperity, Fearlessness (Trust) and Co-existence in society across 5 dimensions.'
           }
         ]
@@ -688,7 +688,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Four Orders of Nature & Mutual Fulfillment (Parasparata)',
             channel: 'Gate Smashers',
             duration: '25:20',
-            url: 'https://www.youtube.com/watch?v=404iM1lqfE4',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Material order, plant order, animal order, human order characteristics, activity, innateness, and natural characteristic.'
           },
           {
@@ -719,7 +719,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Holistic Technologies, Eco-Friendly Production Systems & Case Studies',
             channel: 'AICTE UHV',
             duration: '19:50',
-            url: 'https://www.youtube.com/watch?v=jDM6_TnYIuE',
+            url: 'https://www.youtube.com/watch?v=8hly31xKli0',
             summary: 'Criteria for holistic technologies: renewable, recyclable, non-polluting, locally adaptable and human-friendly.'
           },
           {
@@ -759,7 +759,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
       duration: '5h 15m',
       views: '1.4M'
     },
-    playlistUrl: 'https://www.youtube.com/playlist?list=PLxCzCOWd7aiHGhUL4eyP_eM-JbB_k_UuV',
+    playlistUrl: 'https://www.youtube.com/watch?v=5NgNicANyqM',
     units: [
       {
         unitNumber: 1,
@@ -779,7 +779,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Agents and Environments in AI (PEAS Model)',
             channel: 'Gate Smashers',
             duration: '14:20',
-            url: 'https://www.youtube.com/watch?v=mD_3h_C0p9Y',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Performance measure, Environment, Actuators, Sensors with real-world examples (Automated Taxi, Medical Diagnosis).'
           },
           {
@@ -787,7 +787,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Structure of Intelligent Agents (Simple Reflex, Model, Goal & Utility Based)',
             channel: 'Gate Smashers',
             duration: '18:10',
-            url: 'https://www.youtube.com/watch?v=e_wK3b6Fk2s',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Architectural diagrams and state transitions for all 4 major agent types and learning agents.'
           },
           {
@@ -810,7 +810,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Uninformed Search Strategies: Breadth First Search (BFS) & Depth First Search (DFS)',
             channel: 'Gate Smashers',
             duration: '19:40',
-            url: 'https://www.youtube.com/watch?v=pcK_iYp1s68',
+            url: 'https://www.youtube.com/watch?v=pcKY4hjDrxk',
             summary: 'Time/space complexity, completeness, and optimality comparison between BFS and DFS.'
           },
           {
@@ -818,7 +818,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Hill Climbing Algorithm (Simple, Steepest-Ascent & Problems Explained)',
             channel: 'Gate Smashers',
             duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=kYv_C2Z72hI',
+            url: 'https://www.youtube.com/watch?v=0IAPZzGSbME',
             summary: 'Local maxima, plateau, ridge problems and simulated annealing / random restart solutions.'
           },
           {
@@ -826,7 +826,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'A* Search Algorithm Step-by-Step with Numerical Example',
             channel: 'Gate Smashers',
             duration: '26:10',
-            url: 'https://www.youtube.com/watch?v=tvghPn_l_4k',
+            url: 'https://www.youtube.com/watch?v=0IAPZzGSbME',
             summary: 'Heuristic evaluation f(n) = g(n) + h(n), admissibility condition h(n) <= h*(n) and optimality proof.'
           },
           {
@@ -834,7 +834,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'AO* Search Algorithm (AND-OR Graphs & Problem Reduction)',
             channel: 'Gate Smashers',
             duration: '24:50',
-            url: 'https://www.youtube.com/watch?v=t_u_K4iU6zE',
+            url: 'https://www.youtube.com/watch?v=0IAPZzGSbME',
             summary: 'AND-OR graph decomposition, heuristic calculation, and branch tree updating.'
           },
           {
@@ -842,7 +842,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Mini-Max Algorithm in Game Theory with Game Tree Example',
             channel: 'Gate Smashers',
             duration: '21:30',
-            url: 'https://www.youtube.com/watch?v=zD_UPm_zH-M',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'MAX and MIN player turns, utility valuation, and zero-sum game trees.'
           },
           {
@@ -865,7 +865,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Knowledge Representation in AI: Issues & Approaches',
             channel: 'Gate Smashers',
             duration: '17:25',
-            url: 'https://www.youtube.com/watch?v=KzL_L6_Q28k',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Declarative vs Procedural knowledge, representation properties: representational adequacy, inferential adequacy.'
           },
           {
@@ -873,7 +873,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Semantic Networks, Frames and Inheritance Representation',
             channel: 'Gate Smashers',
             duration: '20:10',
-            url: 'https://www.youtube.com/watch?v=3n-vH_72s9w',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Nodes, links (IS-A, HAS-A), slots, fillers and default inheritance in frame-based systems.'
           },
           {
@@ -881,7 +881,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Bayes\' Probabilistic Inference & Bayesian Belief Networks',
             channel: 'Gate Smashers',
             duration: '27:30',
-            url: 'https://www.youtube.com/watch?v=83e6yWJ_05s',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Conditional probability, Bayes rule P(A|B) = [P(B|A)*P(A)] / P(B), joint distributions and DAG networks.'
           },
           {
@@ -912,7 +912,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Forward Chaining vs Backward Chaining in FOL',
             channel: 'Gate Smashers',
             duration: '18:40',
-            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Data-driven bottom-up reasoning (Forward) vs Goal-driven top-down reasoning (Backward) in rule engines.'
           },
           {
@@ -920,7 +920,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Unification Algorithm & Resolution Refutation in First Order Logic',
             channel: 'Gate Smashers',
             duration: '28:15',
-            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Substitutions, Most General Unifier (MGU), converting to CNF, Skolemization, and proof by contradiction.'
           },
           {
@@ -943,7 +943,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Architecture of Expert Systems (Inference Engine, Knowledge Base & UI)',
             channel: 'Gate Smashers',
             duration: '16:40',
-            url: 'https://www.youtube.com/watch?v=1XATy2G1qJg',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Working memory, inference engine, explanation facility, user interface and knowledge base.'
           },
           {
@@ -951,7 +951,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Knowledge Acquisition & Role of Domain Experts / Knowledge Engineers',
             channel: 'Neso Academy',
             duration: '14:20',
-            url: 'https://www.youtube.com/watch?v=404iM1lqfE4',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Knowledge elicitation techniques, rule induction, validation and verification in expert systems.'
           },
           {
@@ -1011,7 +1011,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'AVL Tree Rotations (LL, RR, LR, RL) Insert & Delete with Balance Factors',
             channel: 'Abdul Bari',
             duration: '38:10',
-            url: 'https://www.youtube.com/watch?v=jDM6_TnYIuE',
+            url: 'https://www.youtube.com/watch?v=8hly31xKli0',
             summary: 'Balance factor calculation {-1, 0, +1}, single rotations and double rotations with complete numerical examples.'
           },
           {
@@ -1081,7 +1081,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Merge Sort & Quick Sort Divide-and-Conquer Analysis',
             channel: 'Abdul Bari',
             duration: '36:15',
-            url: 'https://www.youtube.com/watch?v=ak-pzJ-P1GA',
+            url: 'https://www.youtube.com/watch?v=8hly31xKli0',
             summary: 'Partitioning algorithms, worst-case O(N^2) vs best-case O(N log N) analysis and recurrence trees.'
           },
           {
@@ -1160,7 +1160,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Travelling Salesperson Problem (TSP) using Dynamic Programming',
             channel: 'Abdul Bari',
             duration: '32:10',
-            url: 'https://www.youtube.com/watch?v=-JjA4hJrU2U',
+            url: 'https://www.youtube.com/watch?v=5dRGRueKU3M',
             summary: 'Subset state formulation g(i, S) = min_{j in S} { c_ij + g(j, S - {j}) } with O(N^2 * 2^N) complexity.'
           }
         ]
@@ -1183,7 +1183,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Sum of Subsets Problem using Backtracking State Space Tree',
             channel: 'Abdul Bari',
             duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=kyLxTBM3Gt8',
+            url: 'https://www.youtube.com/watch?v=0IAPZzGSbME',
             summary: 'Left child (include item) vs Right child (exclude item) bounding tests with remaining sum.'
           },
           {
@@ -1228,7 +1228,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
     oneShotVideo: {
       title: 'Complete Java + DSA + Interview Preparation Bootcamp',
       channel: 'Kunal Kushwaha',
-      url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+      url: 'https://www.youtube.com/watch?v=A74TOX803D0',
       duration: '60+ Hours',
       views: '5.8M'
     },
@@ -1244,7 +1244,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Introduction to Java: Architecture, Installation, JDK/JRE/JVM & First Program',
             channel: 'Kunal Kushwaha',
             duration: '1h 12m',
-            url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+            url: 'https://www.youtube.com/watch?v=A74TOX803D0',
             summary: 'How Java works, bytecode compilation, JIT compiler, memory architecture, installing JDK & IntelliJ IDEA, and writing your first Java application.'
           },
           {
@@ -1299,7 +1299,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'OOP 3: Inheritance, Polymorphism, Encapsulation & Dynamic Method Dispatch',
             channel: 'Kunal Kushwaha',
             duration: '2h 15m',
-            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Types of inheritance, super() constructor calls, method overriding vs overloading, runtime polymorphism via dynamic method dispatch, and data hiding via getters/setters.'
           }
         ]
@@ -1353,7 +1353,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Multithreading & Concurrency in Java: Thread class vs Runnable & Synchronization',
             channel: 'Telusko / Kunal Kushwaha',
             duration: '42:15',
-            url: 'https://www.youtube.com/watch?v=mD_3h_C0p9Y',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Thread states, thread priorities, synchronized methods, synchronized blocks, wait(), notify(), and inter-thread communication.'
           },
           {
@@ -1361,7 +1361,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'JDBC Step-by-Step Architecture: Connection, PreparedStatement & Database CRUD',
             channel: 'Telusko',
             duration: '35:20',
-            url: 'https://www.youtube.com/watch?v=3n-vH_72s9w',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Connecting Java to MySQL/PostgreSQL databases using JDBC Driver, DriverManager, Statement, and ResultSet execution.'
           }
         ]
@@ -1384,7 +1384,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'HashMap & HashSet Internal Working: Hashing, Buckets & Collision Resolution',
             channel: 'Kunal Kushwaha',
             duration: '1h 15m',
-            url: 'https://www.youtube.com/watch?v=480gE_wE-2k',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'hashCode(), equals(), bucket index calculation, linked list chaining, and treeification in Java 8+.'
           },
           {
@@ -1435,7 +1435,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Java Introduction, Setup, Memory Architecture & First Code',
             channel: 'Kunal Kushwaha',
             duration: '1h 12m',
-            url: 'https://www.youtube.com/watch?v=4EP8YHp8i60',
+            url: 'https://www.youtube.com/watch?v=A74TOX803D0',
             summary: 'JVM internals, Stack vs Heap memory, primitive data types, Scanner input, and compilation workflow.'
           },
           {
@@ -1568,7 +1568,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'OOP 3: Inheritance, Polymorphism, Encapsulation & Runtime Dispatch',
             channel: 'Kunal Kushwaha',
             duration: '2h 15m',
-            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Super keyword, constructor chaining, method overriding rules, runtime polymorphism, and encapsulation.'
           },
           {
@@ -1756,7 +1756,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Exp 1: Construct AVL Tree & Implement Insert/Delete Operations in C/C++',
             channel: 'Code Help',
             duration: '22:40',
-            url: 'https://www.youtube.com/watch?v=jDM6_TnYIuE',
+            url: 'https://www.youtube.com/watch?v=8hly31xKli0',
             summary: 'Writing file reading routines and balance factor rotation code.'
           },
           {
@@ -1862,7 +1862,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Prog 3 & 4: Dynamic Method Dispatch & User-Defined Packages in Java',
             channel: 'Telusko',
             duration: '22:30',
-            url: 'https://www.youtube.com/watch?v=46T2wYdVElc',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Implementing Shape base class with Circle/Rectangle subclasses and package directory bundling.'
           }
         ]
@@ -1877,7 +1877,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Prog 5 & 6: String Manipulation & Custom Exception Handling in Java',
             channel: 'Telusko',
             duration: '24:15',
-            url: 'https://www.youtube.com/watch?v=e_wK3b6Fk2s',
+            url: 'https://www.youtube.com/watch?v=RO5alU6PpSU',
             summary: 'Custom AgeNotValidException, try-catch-finally block structure and string methods.'
           },
           {
@@ -1885,7 +1885,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Prog 7 & 8: Multithreading Timers, Producer-Consumer & Collections Program',
             channel: 'Telusko',
             duration: '31:45',
-            url: 'https://www.youtube.com/watch?v=mD_3h_C0p9Y',
+            url: 'https://www.youtube.com/watch?v=5NgNicANyqM',
             summary: 'Thread sleep timers, wait/notify synchronized queue, and ArrayList/HashSet student records.'
           }
         ]
@@ -2005,7 +2005,7 @@ export const INITIAL_SYLLABUS_VIDEOS = [
             title: 'Mohr Circle of Stress Step by Step Construction',
             channel: 'Learn Engineering',
             duration: '22:15',
-            url: 'https://www.youtube.com/watch?v=jDM6_TnYIuE',
+            url: 'https://www.youtube.com/watch?v=8hly31xKli0',
             summary: 'Graphical determination of principal stresses and maximum shear planes.'
           }
         ]

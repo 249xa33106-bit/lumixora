@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import GlobalSearchModal from '../components/GlobalSearchModal';
+import PlatformNavigatorChatbot from '../components/PlatformNavigatorChatbot';
+import Realistic3DLogo from '../components/Realistic3DLogo';
+import { ALL_PORTALS } from '../utils/portalMapping';
+import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
 import { 
   Search, Bell, Sparkles, AlertCircle, Menu, Camera, Save, X, Flame, 
   Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power,
   Bot, Award, HelpCircle, BookOpen, CheckSquare, UserCheck, Rocket, FileText,
   Building2, Check, Plus, Layers, Trophy, CheckCircle2, TrendingUp, Download, 
-  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork
+  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -20,7 +24,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 import { useTheme } from '../context/ThemeContext';
-import { FRAMES } from '../services/gamificationService';
+import { FRAMES, ALL_ACHIEVEMENTS, getPlacementTier } from '../services/gamificationService';
 import { DEFAULT_COLLEGES } from '../data/collegesData';
 
 const QUICK_FEATURES = [
@@ -35,31 +39,33 @@ const QUICK_FEATURES = [
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
   { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle },
   { id: 'attendance', label: 'Attendance', icon: UserCheck },
-  { id: 'edupulse', label: 'EduPulse (Test-to-Action)', icon: Activity, highlight: true },
-  { id: 'relay', label: 'LUMIXORA RELAY', icon: GitFork, highlight: true },
 ];
 
 export default function MainLayout({ children, activeTab, setActiveTab, user, onUpdateUser, onLogout, onExitApp }) {
   const { addToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showNavigatorBot, setShowNavigatorBot] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cursorGlowEnabled, setCursorGlowEnabled] = useState(() => {
     try {
-      return localStorage.getItem('lumixora_cursor_glow') !== 'false';
+      const userActive = localStorage.getItem('lumixora_companion_v2_active');
+      const savedGlow = localStorage.getItem('lumixora_cursor_glow');
+      const savedMode = localStorage.getItem('lumixora_cursor_mode');
+      return userActive === 'true' && savedGlow === 'true' && savedMode && savedMode !== 'off';
     } catch (e) {
-      return true;
+      return false;
     }
   });
 
   const [cursorStyle, setCursorStyle] = useState(() => {
     try {
-      return localStorage.getItem('lumixora_cursor_mode') || 'tom_and_jerry';
+      return localStorage.getItem('lumixora_cursor_mode') || 'off';
     } catch (e) {
-      return 'tom_and_jerry';
+      return 'off';
     }
   });
 
@@ -68,12 +74,12 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
   const [cursorSearch, setCursorSearch] = useState('');
 
   const ALL_CURSOR_STYLES = [
-    { id: 'naruto', name: '🍥 Naruto Nine-Tails Rasengan', desc: 'Nine-Tails fox red chakra flames & spinning blue Rasengan orb!', cat: 'cartoons' },
+    { id: 'naruto', name: '🦊 Naruto Nine-Tails Rasengan', desc: 'Nine-Tails fox red chakra flames & spinning blue Rasengan orb!', cat: 'cartoons' },
     { id: 'goku', name: '⚡ Goku Super Saiyan Kamehameha', desc: 'Fiery golden Super Saiyan aura with lightning arcs & Kamehameha beam!', cat: 'cartoons' },
     { id: 'oggy', name: '🐱🪳 Oggy & Cockroaches Chase', desc: 'Oggy chases Joey, Dee Dee & Marky with flyswatter pop stars!', cat: 'cartoons' },
     { id: 'kdrama', name: '🌸 K-Drama Romantic Hearts', desc: 'Glowing pink hearts, falling Sakura cherry blossom petals & romantic aura!', cat: 'cartoons' },
     { id: 'spiderman', name: '🕷️ Spider-Man Web Launcher', desc: 'Neon red & blue web threads with spider-sense pulse rings!', cat: 'cartoons' },
-    { id: 'spongebob', name: '🍍 SpongeBob & Jellyfish Bubble', desc: 'SpongeBob flying on jellyfish emitting ocean bubbles & Krabby Patty stars!', cat: 'cartoons' },
+    { id: 'spongebob', name: '🧽 SpongeBob & Jellyfish Bubble', desc: 'SpongeBob flying on jellyfish emitting ocean bubbles & Krabby Patty stars!', cat: 'cartoons' },
     { id: 'demon_slayer', name: '⚔️ Demon Slayer Sun Breathing', desc: 'Rengoku Sun Breathing golden-red fire dragon blade trail!', cat: 'cartoons' },
     { id: 'cinema_drama', name: '🎬 Cinema & K-Pop Drama Spotlight', desc: 'Golden Hollywood spotlight beam, camera flash sparkles & musical notes!', cat: 'cartoons' },
     { id: 'tom_and_jerry', name: '🐱🐭 Tom & Jerry Cartoon Chase', desc: 'Tom & Jerry chase across screen with cartoon sparks', cat: 'cartoons' },
@@ -106,6 +112,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       setCursorGlowEnabled(true);
       setCursorStyle(styleId);
       try {
+        localStorage.setItem('lumixora_companion_v2_active', 'true');
         localStorage.setItem('lumixora_cursor_glow', 'true');
         localStorage.setItem('lumixora_cursor_mode', styleId);
       } catch(e){}
@@ -188,7 +195,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           list = [
             {
               id: 'profile-audit-alert',
-              text: '📢 Action Required: Please review & verify your profile details (Roll No, Branch, Year, Semester, Section, Mobile) for accurate placement dossiers.',
+              text: '📋 Action Required: Please review & verify your profile details (Roll No, Branch, Year, Semester, Section, Mobile) for accurate placement dossiers.',
               time: 'Important',
               unread: true,
               action: 'open_profile_settings'
@@ -246,6 +253,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
   const [editMobileNumber, setEditMobileNumber] = useState('');
   const [editCgpa, setEditCgpa] = useState('9.0');
   const [editCareerGoal, setEditCareerGoal] = useState('Placement');
+  const [editInterests, setEditInterests] = useState([]);
+  const [editActivePortals, setEditActivePortals] = useState([]);
   const [editLearningStyle, setEditLearningStyle] = useState('Practical');
   const [editWeakSubjects, setEditWeakSubjects] = useState('None');
   const [editLeetcode, setEditLeetcode] = useState('');
@@ -453,6 +462,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     setEditMobileNumber(prof.mobileNumber || user?.mobileNumber || user?.phone || '');
     setEditCgpa(prof.cgpa || user?.cgpa || '9.0');
     setEditCareerGoal(prof.careerGoal || user?.careerGoal || 'Placement');
+    setEditInterests(Array.isArray(user?.interests) ? user.interests : (Array.isArray(prof.interests) ? prof.interests : []));
+    setEditActivePortals(Array.isArray(user?.activePortals) ? user.activePortals : (Array.isArray(prof.activePortals) ? prof.activePortals : []));
     setEditLearningStyle(prof.learningStyle || user?.learningStyle || 'Practical');
     setEditWeakSubjects(prof.weakSubjects || user?.weakSubjects || 'None');
     setEditLeetcode(localStorage.getItem('lumixora_leetcode_user') || prof.leetcodeUser || '');
@@ -797,6 +808,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         mobileNumber: cleanMobile,
         cgpa: cleanCgpa,
         careerGoal: cleanGoal,
+        interests: editInterests,
+        activePortals: editActivePortals,
+        onboardingCompleted: true,
         learningStyle: cleanLearning,
         weakSubjects: cleanWeak,
         avatarUrl: finalAvatarUrl || user?.avatarUrl,
@@ -829,6 +843,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         phone: cleanMobile,
         cgpa: cleanCgpa,
         careerGoal: cleanGoal,
+        interests: editInterests,
+        activePortals: editActivePortals,
+        onboardingCompleted: true,
         learningStyle: cleanLearning,
         weakSubjects: cleanWeak,
         leetcodeUser: editLeetcode.trim(),
@@ -860,7 +877,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           const userEmail = (user?.email || '').toLowerCase().trim();
           if (userEmail) {
             await supabase.from('users').update({
-              name: cleanName,
+              name: `${cleanName} ${JSON.stringify(packedMetadata)}`,
               full_name: cleanName,
               college: cleanCollege,
               year: editYear,
@@ -918,8 +935,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         user={user} 
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
         onLogout={onLogout}
         onExitApp={onExitApp}
       />
@@ -939,9 +956,20 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             </button>
 
             {/* Native App Back Button */}
-            {activeTab !== 'dashboard' && activeTab !== 'founder-portal' && (
+            {activeTab !== 'dashboard' && activeTab !== 'founder-portal' && activeTab !== 'ai-commander' && activeTab !== 'tpo-dashboard' && (
               <button
-                onClick={() => setActiveTab(user?.role === 'founder' ? 'founder-portal' : 'dashboard')}
+                onClick={() => {
+                  const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+                  if (isOff) {
+                    setActiveTab('tpo-dashboard');
+                  } else if (isGprecPlacementSubdomain()) {
+                    setActiveTab('ai-commander');
+                  } else if (user?.role === 'founder') {
+                    setActiveTab('founder-portal');
+                  } else {
+                    setActiveTab('dashboard');
+                  }
+                }}
                 className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-extrabold text-xs tracking-wide flex items-center gap-1.5 border border-white/10 cursor-pointer shadow-sm"
               >
                 <ArrowLeft className="w-4 h-4 text-brand-teal" />
@@ -951,13 +979,24 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
 
             <div className="hidden xl:block">
               <h2 className="text-sm font-semibold text-[var(--text-main)] flex items-center gap-1.5 tracking-wide">
-                Welcome back, {profile.name ? profile.name.split(' ')[0].charAt(0).toUpperCase() + profile.name.split(' ')[0].slice(1).toLowerCase() : 'Student'} <span className="animate-bounce">👋</span>
+                {isGprecPlacementSubdomain() ? (
+                  <>
+                    <span className="text-amber-400 font-extrabold">🏛️ GPREC Placement Suite</span>
+                    <span className="text-xs text-gray-400 font-normal">| {profile.name || 'Scholar'}</span>
+                  </>
+                ) : (
+                  <>
+                    Welcome back, {profile.name ? profile.name.split(' ')[0].charAt(0).toUpperCase() + profile.name.split(' ')[0].slice(1).toLowerCase() : 'Student'} <span className="animate-bounce">👋</span>
+                  </>
+                )}
               </h2>
-              <p className="text-[10px] text-[var(--text-secondary)] font-semibold tracking-wide mt-0.5">Explore your personalized academic portal</p>
+              <p className="text-[10px] text-[var(--text-secondary)] font-semibold tracking-wide mt-0.5">
+                {isGprecPlacementSubdomain() ? 'Official Institutional Placement Command Center' : 'Explore your personalized academic portal'}
+              </p>
             </div>
           </div>
 
-          {/* Middle: Sleek Global Spotlight Search Bar (Ctrl+K) */}
+                                {/* Middle: Sleek Global Spotlight Search Bar (Ctrl+K) */}
           <div className="flex-1 max-w-xl mx-2 md:mx-6 min-w-0">
             <button
               onClick={() => setShowGlobalSearch(true)}
@@ -981,7 +1020,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           {/* Right: Actions */}
           <div className="flex items-center gap-2.5 shrink-0">
             {/* Super Admin B2B Campus Switcher */}
-            {(user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || user?.email?.toLowerCase() === '249xa33106@gprec.ac.in' || user?.email?.toLowerCase() === '249xa33106@gmail.com') && (
+            {(user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com'  ) && (
               <div className="relative">
                 <button
                   onClick={() => setShowCampusMenu(!showCampusMenu)}
@@ -1040,7 +1079,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                             <span className="text-base">{c.logo || '🏛️'}</span>
                             <div className="max-w-[170px] truncate">
                               <p className="font-extrabold text-white text-xs truncate">{c.shortName || c.name}</p>
-                              <p className="text-[10px] text-gray-400 truncate">{c.code || c.id} · {c.licenseTier || 'Pro'}</p>
+                              <p className="text-[10px] text-gray-400 truncate">{c.code || c.id} • {c.licenseTier || 'Pro'}</p>
                             </div>
                           </div>
                           {activeCampusId === c.id && <Check className="w-4 h-4 text-brand-teal" />}
@@ -1345,7 +1384,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </main>
       </div>
 
-      {/* Mobile App Bottom Navigation Bar */}
+                  {/* Mobile App Bottom Navigation Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0b0b14]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 flex justify-around items-center text-white shadow-2xl">
         <button
           onClick={() => setActiveTab(user?.role === 'founder' ? 'founder-portal' : 'dashboard')}
@@ -1388,7 +1427,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </button>
       </div>
 
-      {/* Scholar Profile & Verified Progress Center Modal */}
+{/* Scholar Profile & Verified Progress Center Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-xl z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="glass-panel w-full max-w-2xl rounded-3xl p-5 sm:p-7 border border-white/15 relative overflow-hidden bg-[#0a0b12] text-white shadow-2xl animate-fade-in my-8 max-h-[90vh] flex flex-col">
@@ -1453,6 +1492,17 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                 Solved Codes & History ({myProgressStats.tasksCount + myProgressStats.testsCount})
               </button>
               <button
+                onClick={() => setProfileModalTab('badges')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  profileModalTab === 'badges'
+                    ? 'bg-amber-400 text-black shadow-md font-black'
+                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5" />
+                Badges & Placement Tier
+              </button>
+              <button
                 onClick={() => setProfileModalTab('settings')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   profileModalTab === 'settings'
@@ -1462,6 +1512,17 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               >
                 <UserCheck className="w-3.5 h-3.5" />
                 Edit Profile
+              </button>
+              <button
+                onClick={() => setProfileModalTab('portals')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  profileModalTab === 'portals'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-md font-black'
+                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                My Portals & Workspace
               </button>
             </div>
 
@@ -1609,6 +1670,91 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+
+              
+              {profileModalTab === 'badges' && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* Placement Tier Card */}
+                  {(() => {
+                    const tier = getPlacementTier(myProgressStats.placementScore);
+                    return (
+                      <div className={`p-5 rounded-2xl border ${tier.borderColor} ${tier.bgSoft} flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Current Placement Rank</span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wider bg-black/40 ${tier.textColor} border border-white/10`}>
+                              {tier.badge}
+                            </span>
+                          </div>
+                          <h3 className={`text-lg font-black bg-gradient-to-r ${tier.color} bg-clip-text text-transparent`}>
+                            {tier.tier}
+                          </h3>
+                          <p className="text-xs text-gray-300 leading-relaxed max-w-xl">
+                            {tier.desc}
+                          </p>
+                        </div>
+                        <div className="text-right sm:border-l sm:border-white/10 sm:pl-5 shrink-0">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Readiness Score</span>
+                          <span className="text-3xl font-black text-white font-mono">{myProgressStats.placementScore}%</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Badges Grid */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                        <Award className="w-4 h-4 text-amber-400" />
+                        <span>Achievement Badges & Skills Earned</span>
+                      </h4>
+                      <span className="text-[11px] font-bold text-brand-teal">
+                        {(gamifyProfile?.badges || ['first_login']).length} / {ALL_ACHIEVEMENTS.length} Unlocked
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+                      {ALL_ACHIEVEMENTS.map(badge => {
+                        const userBadges = gamifyProfile?.badges || ['first_login'];
+                        const isUnlocked = userBadges.includes(badge.id);
+                        return (
+                          <div
+                            key={badge.id}
+                            className={`p-3.5 rounded-2xl border flex items-center gap-3.5 transition-all ${
+                              isUnlocked
+                                ? 'bg-white/[0.04] border-white/10 text-white'
+                                : 'bg-white/[0.01] border-white/5 text-gray-500 opacity-60'
+                            }`}
+                          >
+                            <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 border ${
+                              isUnlocked
+                                ? 'bg-amber-400/10 border-amber-400/30 shadow-md shadow-amber-500/10'
+                                : 'bg-white/5 border-white/5 grayscale'
+                            }`}>
+                              {badge.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <h5 className={`text-xs font-bold truncate ${isUnlocked ? 'text-white' : 'text-gray-400'}`}>
+                                  {badge.name}
+                                </h5>
+                                <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${
+                                  isUnlocked ? 'bg-amber-400/20 text-amber-300' : 'bg-white/5 text-gray-500'
+                                }`}>
+                                  +{badge.xpReward} AP
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-gray-400 leading-snug line-clamp-2 mt-0.5">
+                                {badge.desc}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1901,6 +2047,78 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                   </button>
                 </form>
               )}
+
+              {profileModalTab === 'portals' && (
+                <div className="space-y-5 animate-fade-in">
+                  <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-black text-cyan-300 uppercase tracking-wider">
+                        Customize Your Visible Portals
+                      </h4>
+                      <p className="text-[11px] text-gray-300 mt-0.5">
+                        Choose which modules appear in your sidebar. Unchecked portals can always be revealed anytime using the "Show All" toggle in the sidebar.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-4">
+                      <button
+                        type="button"
+                        onClick={() => setEditActivePortals(ALL_PORTALS.map(p => p.id))}
+                        className="text-[10px] font-bold text-cyan-400 hover:underline"
+                      >
+                        Select All
+                      </button>
+                      <span className="text-gray-600">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setEditActivePortals(['dashboard', 'community'])}
+                        className="text-[10px] font-bold text-gray-400 hover:text-white"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {ALL_PORTALS.map(portal => {
+                      const isChecked = editActivePortals.includes(portal.id);
+                      return (
+                        <div
+                          key={portal.id}
+                          onClick={() => {
+                            setEditActivePortals(prev => 
+                              prev.includes(portal.id) 
+                                ? prev.filter(id => id !== portal.id) 
+                                : [...prev, portal.id]
+                            );
+                          }}
+                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                            isChecked
+                              ? 'bg-cyan-500/10 border-cyan-500/40 text-white'
+                              : 'bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">{portal.label}</span>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {}}
+                            className="w-4 h-4 rounded text-cyan-500 focus:ring-0 cursor-pointer pointer-events-none"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={handleSaveProfile}
+                    className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-cyan-400 to-blue-600 text-black hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
+                  >
+                    {isSaving ? <span>Saving Live Portals...</span> : <span>Save Workspace Portals</span>}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1973,6 +2191,49 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </div>
       )}
 
+      {/* Floating AI Platform Navigator Chatbot Launcher */}
+      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+        {/* Helper Tooltip Prompt */}
+        <div 
+          onClick={() => setShowNavigatorBot(true)}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#0A0E1A]/90 hover:bg-[#0e1424] border border-cyan-500/30 text-white shadow-xl cursor-pointer backdrop-blur-md transition-all hover:scale-105 group"
+        >
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="text-xs font-bold text-gray-200 group-hover:text-cyan-300">
+            Need help finding a portal?
+          </span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">
+            Ask AI
+          </span>
+        </div>
+
+        {/* Floating Action Button */}
+        <button
+          onClick={() => setShowNavigatorBot(true)}
+          title="Open Lumixora Navigator Bot"
+          className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#101A35] via-[#0284c7] to-[#06b6d4] p-0.5 shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer flex items-center justify-center relative group"
+        >
+          <div className="w-full h-full bg-[#0A0E1A] rounded-[14px] flex items-center justify-center relative overflow-hidden group-hover:bg-[#0c1322] transition-colors">
+            <Realistic3DLogo size="sm" interactive={false} />
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0A0E1A]" />
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* Lumixora Platform Navigator Chatbot Modal */}
+      <PlatformNavigatorChatbot
+        isOpen={showNavigatorBot}
+        onClose={() => setShowNavigatorBot(false)}
+        onNavigate={(tab) => {
+          setActiveTab(tab);
+          setShowNavigatorBot(false);
+        }}
+        user={user}
+      />
+
       {/* Global Command / Spotlight Search Modal */}
       <GlobalSearchModal 
         isOpen={showGlobalSearch} 
@@ -1982,3 +2243,4 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     </div>
   );
 }
+

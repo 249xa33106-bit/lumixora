@@ -36,19 +36,31 @@ export default function CursorGlow() {
 
   const [styleMode, setStyleMode] = useState(() => {
     try {
+      if (localStorage.getItem('lumixora_cursor_mode') === 'tom_and_jerry' && !localStorage.getItem('lumixora_companion_v2_active')) {
+        return 'off';
+      }
       const saved = localStorage.getItem('lumixora_cursor_mode');
       if (saved && CURSOR_STYLES.some(s => s.id === saved)) return saved;
-      return 'tom_and_jerry';
+      return saved || 'off';
     } catch (e) {
-      return 'tom_and_jerry';
+      return 'off';
     }
   });
 
   const [enabled, setEnabled] = useState(() => {
     try {
-      return localStorage.getItem('lumixora_cursor_glow') !== 'false';
+      // Clear legacy default keys if present from previous builds
+      if (localStorage.getItem('lumixora_cursor_mode') === 'tom_and_jerry' && !localStorage.getItem('lumixora_companion_v2_active')) {
+        localStorage.removeItem('lumixora_cursor_mode');
+        localStorage.removeItem('lumixora_cursor_glow');
+        return false;
+      }
+      const savedGlow = localStorage.getItem('lumixora_cursor_glow');
+      const savedMode = localStorage.getItem('lumixora_cursor_mode');
+      const userActive = localStorage.getItem('lumixora_companion_v2_active');
+      return userActive === 'true' && savedGlow === 'true' && savedMode && savedMode !== 'off';
     } catch (e) {
-      return true;
+      return false;
     }
   });
 

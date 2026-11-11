@@ -1,6 +1,8 @@
+﻿import { cloudSync } from '../services/cloudSyncService';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
+
   Briefcase, 
   CheckCircle, 
   Clock, 
@@ -267,7 +269,7 @@ export default function InternWorkspacePortal({ user, setActiveTab, initialSubVi
     internEmail: '',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
     track: 'Full-Stack Software Architecture & Cloud Systems',
-    duration: '8 Weeks Intensive Internship (Sep 2026 – Oct 2026)',
+    duration: '8 Weeks Intensive Internship (Sep 2026 "“ Oct 2026)',
     issueDate: 'October 2026',
     score: '98% Performance Score',
     grade: 'Elite Distinction (A+ Grade)',
@@ -478,7 +480,7 @@ export default function InternWorkspacePortal({ user, setActiveTab, initialSubVi
   // Handle Copy Full Intern Credentials & Instructions
   const handleCopyCredentials = (intern) => {
     const passcode = intern.accessPin || ('LMX@' + (intern.refId ? intern.refId.replace(/[^0-9]/g, '') : '2026'));
-    const message = `🚀 LUMIXORA AUTONOMOUS SYSTEMS — INTERN ACCESS CREDENTIALS
+    const message = `🚀 LUMIXORA AUTONOMOUS SYSTEMS "” INTERN ACCESS CREDENTIALS
 Portal: ${window.location.origin}/#intern-portal
 Intern Name: ${intern.name}
 Intern ID: ${intern.refId || intern.id}
@@ -578,6 +580,7 @@ Instructions:
       const next = { ...prev, [milestoneId]: !currentStatus };
       try {
         localStorage.setItem('lumixora_roadmap_overrides', JSON.stringify(next));
+        if (user?.email) cloudSync.set(user.email, 'roadmap_overrides', next);
       } catch (e) {}
       return next;
     });
@@ -895,7 +898,7 @@ Instructions:
             >
               {allInterns.map(i => (
                 <option key={i.id || i.email} value={i.email} className="bg-slate-900 text-white">
-                  {i.name} — {i.track} ({i.refId || i.id})
+                  {i.name} "” {i.track} ({i.refId || i.id})
                 </option>
               ))}
             </select>
@@ -1124,14 +1127,14 @@ Instructions:
               </div>
               <div className="flex items-baseline justify-between mt-1">
                 <p className="text-xl md:text-2xl font-black text-amber-400 font-sora">
-                  {selectedCert ? 'Issued 📜' : (approvedCount >= 4 ? 'Eligible ⚡' : 'In Progress')}
+                  {selectedCert ? 'Issued 🎓' : (approvedCount >= 4 ? 'Eligible ⚡' : 'In Progress')}
                 </p>
                 <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-500/30">
                   {approvedCount}/4 Req
                 </span>
               </div>
               <span className="text-[11px] text-slate-400 font-medium block mt-1">
-                {selectedCert ? 'Ready to Download & Share' : 'Verified completion badge'}
+                {selectedCert ? 'Ready to Download & Share' : 'Verified ✓'}
               </span>
             </div>
           </div>
@@ -1246,7 +1249,7 @@ Instructions:
                       Cohort Dates
                     </span>
                     <strong className="text-slate-200 font-mono text-[11px]">
-                      {internProfile?.startDate || 'Oct 2026'} – {internProfile?.endDate || 'Dec 2026'}
+                      {internProfile?.startDate || 'Oct 2026'} "“ {internProfile?.endDate || 'Dec 2026'}
                     </strong>
                   </div>
 
@@ -1497,7 +1500,7 @@ Instructions:
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <strong className="text-xs font-black text-amber-300">Shaik Sowban</strong>
-                          <span className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider">• Founder & Tech Lead</span>
+                          <span className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider">"¢ Founder & Tech Lead</span>
                         </div>
                         <p className="text-[11.5px] text-slate-300 leading-relaxed italic">
                           "Welcome to Lumixora Autonomous AI Labs, {internProfile?.name ? internProfile.name.split(' ')[0] : 'Scholar'}! High-velocity execution starts with clean system architecture and small, regular pull requests. Submit your initial milestone early and let's ship impactful work."
@@ -1527,7 +1530,7 @@ Instructions:
                               <div className="flex items-center gap-1.5 text-[10px] text-indigo-300 font-mono bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20 w-fit mt-1">
                                 <Calendar className="w-3 h-3 text-indigo-400" />
                                 <span>{task.submissionDate || ''}</span>
-                                {task.submissionDay && <span>• {task.submissionDay}</span>}
+                                {task.submissionDay && <span>"¢ {task.submissionDay}</span>}
                               </div>
                             )}
                             <p className="text-xs text-slate-400 mt-1 line-clamp-2">
@@ -1585,7 +1588,7 @@ Instructions:
 
                           {task.score && (
                             <div className="flex items-center gap-1 text-amber-400 font-bold">
-                              <span>⭐ {task.score}/5</span>
+                              <span>â­ {task.score}/5</span>
                             </div>
                           )}
                         </div>
@@ -1669,7 +1672,7 @@ Instructions:
                   Lumixora Scholar Sprint Roadmap
                 </h2>
                 <p className="text-xs md:text-sm text-slate-300 max-w-2xl mt-1 leading-relaxed">
-                  {activeRoadmapDomainConfig.subTitle} — Complete weekly milestones and deliverables to unlock your executive credential and letter of recommendation.
+                  {activeRoadmapDomainConfig.subTitle} "” Complete weekly milestones and deliverables to unlock your executive credential and letter of recommendation.
                 </p>
               </div>
 
@@ -1714,8 +1717,7 @@ Instructions:
                   className={`p-6 rounded-3xl border transition-all relative overflow-hidden flex flex-col justify-between ${
                     isCurrent 
                       ? 'bg-gradient-to-b from-[#181d3d] to-[#0f132b] border-indigo-500/50 shadow-xl shadow-indigo-500/10'
-                      : isDone
-                        ? 'bg-[#0f1424] border-emerald-500/30'
+                      : isDone ? 'bg-[#0f1424] border-emerald-500/30'
                         : 'bg-white/[0.03] border-white/10'
                   }`}
                 >
@@ -1729,8 +1731,7 @@ Instructions:
                         <h3 className="text-lg font-black text-white">{sprint.sprint}</h3>
                       </div>
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        isDone
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                           : isCurrent
                             ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 animate-pulse'
                             : 'bg-white/10 text-slate-400 border border-white/10'
@@ -1900,7 +1901,7 @@ Instructions:
                       Work Velocity & State
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {['🔥 In Flow', '🚀 High Velocity', '☕ Steady Progress', '🧩 Deep Debugging'].map(m => (
+                      {['🔥 In Flow', '🚀 High Velocity', '☕ Steady Progress', ' Deep Debugging'].map(m => (
                         <button
                           key={m}
                           type="button"
@@ -1965,7 +1966,7 @@ Instructions:
                     <span>Standup Activity Ledger ({standupsList.length} Entries)</span>
                   </h3>
                   <span className="text-[11px] text-slate-400 font-mono">
-                    Verified by Founder Shaik Sowban
+                    Verified ✓
                   </span>
                 </div>
 
@@ -2366,7 +2367,7 @@ Instructions:
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-indigo-400" />
                           <span>{task.submissionDate || ''}</span>
-                          {task.submissionDay && <span>• {task.submissionDay}</span>}
+                          {task.submissionDay && <span>"¢ {task.submissionDay}</span>}
                         </span>
                       )}
                     </div>
@@ -2484,7 +2485,7 @@ Instructions:
                         <MessageSquare className="w-3.5 h-3.5" /> Mentor Feedback
                       </span>
                       {task.score && (
-                        <span className="text-amber-400 font-bold">⭐ {task.score} / 5</span>
+                        <span className="text-amber-400 font-bold">â­ {task.score} / 5</span>
                       )}
                     </div>
                     <p className="text-slate-300 text-[11px] leading-relaxed">
@@ -2563,7 +2564,7 @@ Instructions:
                   <div>
                     <span className="text-xs font-mono font-bold text-indigo-400 block">{trackedApp.refId || trackedApp.id}</span>
                     <h3 className="text-lg font-black text-white mt-0.5">{trackedApp.fullName}</h3>
-                    <p className="text-xs text-slate-400">{trackedApp.collegeName} • {trackedApp.degreeAndBranch}</p>
+                    <p className="text-xs text-slate-400">{trackedApp.collegeName} "¢ {trackedApp.degreeAndBranch}</p>
                   </div>
                   <div className="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black uppercase tracking-wider">
                     Status: {trackedApp.status || 'Active Intern'}
@@ -2590,7 +2591,7 @@ Instructions:
                         }`}
                       >
                         <div className="w-6 h-6 rounded-full mx-auto flex items-center justify-center text-[10px] font-black mb-1.5 bg-white/10">
-                          {st.done ? '✓' : st.step}
+                          {st.done ? 'âœ“' : st.step}
                         </div>
                         <span className="text-[11px] font-bold block">{st.label}</span>
                       </div>
@@ -2635,7 +2636,7 @@ Instructions:
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
                   <Award className="w-6 h-6 text-amber-400" />
-                  <span>Lumixora Verified Certificate Engine</span>
+                  <span>Lumixora Verified ✓</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   Authenticate official Lumixora Internship Completion Certificates with cryptographic verification.
@@ -2687,18 +2688,18 @@ Instructions:
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-xs font-black text-white uppercase tracking-wider">
-                          Officially Verified Credential & Competence Record
+                          Officially Verified ✓
                         </h4>
                         <span className="px-2 py-0.5 rounded text-[9px] bg-emerald-500 text-black font-black uppercase">VALID & ACTIVE</span>
                       </div>
                       <p className="text-[11px] text-emerald-300 font-mono mt-0.5">
-                        CERT ID: {selectedCert.id} • Ref: {selectedCert.refId || 'Cohort Batch 01'}
+                        CERT ID: {selectedCert.id} "¢ Ref: {selectedCert.refId || 'Cohort Batch 01'}
                       </p>
                     </div>
                   </div>
 
                   <div className="text-right text-[11px] font-mono text-slate-400 border-t md:border-t-0 pt-2 md:pt-0 border-white/10">
-                    <span className="text-amber-300 font-bold block">Lumixora — a product of Vyomra</span>
+                    <span className="text-amber-300 font-bold block">Lumixora "” a product of Vyomra</span>
                     <span className="text-slate-400 text-[10px]">Cryptographic Central Registry</span>
                   </div>
                 </div>
@@ -2799,7 +2800,7 @@ Instructions:
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-cyan-400" /> Verified Effort
+                          <Clock className="w-3.5 h-3.5 text-cyan-400" /> Verified ✓
                         </span>
                         <p className="text-xl font-black text-white">{selectedCert.hoursLogged || 0}+ Hours</p>
                         <p className="text-[10px] text-emerald-400 font-mono">Logged & Audited</p>
@@ -2826,7 +2827,7 @@ Instructions:
                           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Credential Type
                         </span>
                         <p className="text-xl font-black text-emerald-300">Completion</p>
-                        <p className="text-[10px] text-slate-400 font-mono">Lumixora — a product of Vyomra</p>
+                        <p className="text-[10px] text-slate-400 font-mono">Lumixora "” a product of Vyomra</p>
                       </div>
                     </div>
 
@@ -2836,7 +2837,7 @@ Instructions:
                         <div className="flex items-center justify-between">
                           <h4 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
                             <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                            Verified Technical Competency Index
+                            Verified ✓
                           </h4>
                           <span className="text-[10px] font-mono text-slate-400">Audited by Lumixora Engineering Board</span>
                         </div>
@@ -2846,7 +2847,7 @@ Instructions:
                             <div key={idx} className="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-2">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="font-bold text-white">{comp.name}</span>
-                                <span className="font-mono font-black text-emerald-400">{comp.score}% • {comp.level}</span>
+                                <span className="font-mono font-black text-emerald-400">{comp.score}% "¢ {comp.level}</span>
                               </div>
                               <div className="w-full h-2 rounded-full bg-black/50 overflow-hidden">
                                 <div 
@@ -2865,7 +2866,7 @@ Instructions:
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-sm font-black text-white uppercase tracking-wider">
-                            Verified Production Deliverables & Proof of Work
+                            Verified ✓
                           </h4>
                           <p className="text-xs text-slate-400">
                             Source code PRs, video walkthroughs, and research chat evidence
@@ -2889,10 +2890,10 @@ Instructions:
                               <p className="text-[11px] text-slate-400">
                                 Track: <span className="text-slate-300 font-medium">{task.track || selectedCert.track}</span>
                                 {task.submissionDate && (
-                                  <> • Submitted: <span className="text-amber-300 font-mono">{task.submissionDate} ({task.submissionDay || 'Verified'})</span></>
+                                  <> "¢ Submitted: <span className="text-amber-300 font-mono">{task.submissionDate} ({task.submissionDay || 'Verified'})</span></>
                                 )}
                                 {task.hoursSpent && (
-                                  <> • Effort: <span className="text-cyan-300 font-mono font-bold">{task.hoursSpent} hrs</span></>
+                                  <> "¢ Effort: <span className="text-cyan-300 font-mono font-bold">{task.hoursSpent} hrs</span></>
                                 )}
                               </p>
                             </div>
@@ -3103,7 +3104,7 @@ Instructions:
               onClick={() => handleSubViewChange(isFounder ? 'roster' : 'overview')}
               className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              ← Back to {isFounder ? 'Master Roster' : 'Dashboard'}
+              â† ← Back to {isFounder ? 'Master Roster' : 'Dashboard'}
             </button>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -3121,7 +3122,7 @@ Instructions:
               >
                 {allInterns.map(i => (
                   <option key={i.id || i.email} value={i.email} className="bg-slate-900 text-white">
-                    {i.name} — {i.track}
+                    {i.name} "” {i.track}
                   </option>
                 ))}
               </select>
@@ -3146,7 +3147,7 @@ Instructions:
                 <img src="/lumixora_logo_transparent.png" alt="Lumixora Logo" className="w-12 h-12 object-contain" />
                 <div>
                   <h1 className="text-xl font-black text-slate-950 tracking-tight">LUMIXORA AUTONOMOUS SYSTEMS</h1>
-                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Engineering Division • Vyomra Network</p>
+                  <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Engineering Division "¢ Vyomra Network</p>
                 </div>
               </div>
               <div className="text-right text-xs text-slate-600">
@@ -3185,9 +3186,9 @@ Instructions:
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 font-sans not-italic text-xs">
                 <div className="grid grid-cols-2 gap-2">
                   <div><strong className="text-slate-900">Program Duration:</strong> 6 to 8 Weeks (Remote)</div>
-                  <div><strong className="text-slate-900">Working Model:</strong> Flexible (15–20 hours/week)</div>
+                  <div><strong className="text-slate-900">Working Model:</strong> Flexible (15"“20 hours/week)</div>
                   <div><strong className="text-slate-900">Assigned Mentor:</strong> {internProfile?.mentor || 'Founder & Tech Lead'}</div>
-                  <div><strong className="text-slate-900">Perks:</strong> Verified Credential + Performance Bonus</div>
+                  <div><strong className="text-slate-900">Perks:</strong> Verified ✓</div>
                 </div>
               </div>
 
@@ -4232,7 +4233,7 @@ Instructions:
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 text-[10px] uppercase font-bold">Cohort:</span>
-                    <strong className="text-slate-200 text-[11px]">{internProfile?.startDate || 'Sep 2026'} – {internProfile?.endDate || 'Oct 2026'}</strong>
+                    <strong className="text-slate-200 text-[11px]">{internProfile?.startDate || 'Sep 2026'} "“ {internProfile?.endDate || 'Oct 2026'}</strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400 text-[10px] uppercase font-bold">Clearance:</span>
@@ -4293,3 +4294,7 @@ Instructions:
     </div>
   );
 }
+
+
+
+

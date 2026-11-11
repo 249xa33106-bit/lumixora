@@ -12,6 +12,7 @@ import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { cloudSync } from '../services/cloudSyncService';
 
 export default function PersonalMentor({ user }) {
   const { addToast } = useToast();

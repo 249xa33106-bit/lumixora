@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { 
   Target, Trophy, AlertTriangle, Monitor, Play, CheckCircle, Code, List, 
   ArrowLeft, XCircle, Edit2, Trash2, Save, X, Clock, FileText,
@@ -18,13 +18,14 @@ import { notifyFounderTestSubmission } from '../services/founderNotificationServ
 import { DEFAULT_TESTS } from '../data/defaultTestsData';
 import { DEFAULT_SUBMISSIONS } from '../data/defaultSubmissionsData';
 import { saveQuizScoreToSupabase } from '../services/supabaseDataSyncService';
+import { ExamProctorBridge } from '../services/examProctorService';
+import ExamProctorWarRoom from '../components/ExamProctorWarRoom';
 
 export default function TestPortal({ user, setActiveTab }) {
   const userEmail = (user?.email || '').toLowerCase().trim();
-  const isFounder = user?.role === 'founder' || 
-                    userEmail === 'founder@lumixora.com' ||
-                    userEmail === '249xa33106@gmail.com' ||
-                    userEmail === '249xa33106@gprec.ac.in';
+  const isFacultyOrFounder = user?.role === 'founder' || user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'admin' || (user?.email && (user.email.includes('gprec') || user.email.includes('faculty')));
+  const isFounder = isFacultyOrFounder || 
+                    userEmail === 'founder@lumixora.com'  ;
 
   const { addToast } = useToast();
   const [view, setView] = useState('list'); // 'list', 'taking', 'leaderboard'
@@ -53,7 +54,7 @@ export default function TestPortal({ user, setActiveTab }) {
   const [resultSolutionFilter, setResultSolutionFilter] = useState('all'); // 'all' | 'correct' | 'incorrect' | 'unanswered'
   const [catalogSearch, setCatalogSearch] = useState('');
 
-  // ── 🧮 CBT ADVANCED ACCESSIBILITY & TOOLS ──
+  // ──  CBT ADVANCED ACCESSIBILITY & TOOLS ──
   const [showCalculator, setShowCalculator] = useState(false);
   const [calcInput, setCalcInput] = useState('');
   const [calcResult, setCalcResult] = useState('');
@@ -71,10 +72,10 @@ export default function TestPortal({ user, setActiveTab }) {
     } else if (val === '=') {
       try {
         let expr = calcInput
-          .replace(/×/g, '*')
-          .replace(/÷/g, '/')
+          .replace(/Ã—/g, '*')
+          .replace(/Ã·/g, '/')
           .replace(/\^/g, '**')
-          .replace(/π/g, 'Math.PI')
+          .replace(/Ï€/g, 'Math.PI')
           .replace(/e/g, 'Math.E')
           .replace(/sin\(/g, 'Math.sin(')
           .replace(/cos\(/g, 'Math.cos(')
@@ -108,7 +109,7 @@ export default function TestPortal({ user, setActiveTab }) {
     }
   };
 
-  // ── 🎥 AI PROCTORING & BIOMETRIC SURVEILLANCE SUITE ──
+  // ──  AI PROCTORING & BIOMETRIC SURVEILLANCE SUITE ──
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isMicActive, setIsMicActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -135,6 +136,8 @@ export default function TestPortal({ user, setActiveTab }) {
   const [proctorLogs, setProctorLogs] = useState([]);
   const [faceStatus, setFaceStatus] = useState('centered'); // 'centered' | 'away' | 'multiple' | 'absent'
   const [showProctorAuditModal, setShowProctorAuditModal] = useState(false);
+  const [liveWarRoomExam, setLiveWarRoomExam] = useState(null);
+  const proctorBridgeSessionRef = useRef(null);
 
   // Synchronize Roll Number and Photo if user object is available
   useEffect(() => {
@@ -242,14 +245,14 @@ export default function TestPortal({ user, setActiveTab }) {
         console.warn("Audio Context init note:", _aErr);
       }
 
-      addProctorLog('🎥 Biometric camera & audio surveillance calibrated', 'info');
+      addProctorLog(' Biometric camera & audio surveillance calibrated', 'info');
       return stream;
     } catch (err) {
       console.warn("Media devices error:", err);
       setCameraError(err.message || 'Camera or microphone access denied.');
       setIsCameraActive(false);
       setIsMicActive(false);
-      addProctorLog(`⚠️ Hardware check: ${err.name || 'Device Access Restricted'}`, 'warning');
+      addProctorLog(`⚠️ï¸ Hardware check: ${err.name || 'Device Access Restricted'}`, 'warning');
       return null;
     } finally {
       setIsStartingMedia(false);
@@ -292,8 +295,8 @@ export default function TestPortal({ user, setActiveTab }) {
       if (testResult) {
         setTestResult(prev => ({ ...prev, candidatePhoto: dataUrl }));
       }
-      addToast({ message: '📸 Biometric candidate photo captured & verified!', type: 'success' });
-      addProctorLog('📸 Biometric candidate snapshot captured and verified', 'info');
+      addToast({ message: ' Biometric candidate photo captured & verified!', type: 'success' });
+      addProctorLog(' Biometric candidate snapshot captured and verified', 'info');
     } catch (e) {
       console.warn('Snapshot capture note:', e);
     }
@@ -304,7 +307,7 @@ export default function TestPortal({ user, setActiveTab }) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      addToast({ message: '⚠️ Photo size exceeds 5MB. Please choose a smaller image.', type: 'warning' });
+      addToast({ message: '⚠️ï¸ Photo size exceeds 5MB. Please choose a smaller image.', type: 'warning' });
       return;
     }
     const reader = new FileReader();
@@ -317,8 +320,8 @@ export default function TestPortal({ user, setActiveTab }) {
       if (testResult) {
         setTestResult(prev => ({ ...prev, candidatePhoto: dataUrl }));
       }
-      addToast({ message: '📸 Candidate photo uploaded & verified!', type: 'success' });
-      addProctorLog('📸 Candidate photo uploaded and verified for assessment identity', 'info');
+      addToast({ message: ' Candidate photo uploaded & verified!', type: 'success' });
+      addProctorLog(' Candidate photo uploaded and verified for assessment identity', 'info');
     };
     reader.readAsDataURL(file);
   };
@@ -366,10 +369,10 @@ export default function TestPortal({ user, setActiveTab }) {
       if (!vid || vid.videoWidth === 0) return;
       try {
         const canvas = hiddenCanvasRef.current || document.createElement('canvas');
-        canvas.width = 160;
-        canvas.height = 120;
+        canvas.width = 120;
+        canvas.height = 90;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(vid, 0, 0, 160, 120);
+        ctx.drawImage(vid, 0, 0, 120, 90);
         const imgData = ctx.getImageData(0, 0, 160, 120);
         const data = imgData.data;
         let totalBrightness = 0;
@@ -381,7 +384,7 @@ export default function TestPortal({ user, setActiveTab }) {
         if (avgBrightness < 16) {
           setFaceStatus('absent');
           setProctorTrustScore(prev => Math.max(0, prev - 5));
-          addProctorLog('⚠️ Insufficient lighting or camera obstructed', 'warning');
+          addProctorLog('⚠️ï¸ Insufficient lighting or camera obstructed', 'warning');
         } else {
           setFaceStatus('centered');
         }
@@ -390,12 +393,67 @@ export default function TestPortal({ user, setActiveTab }) {
     return () => clearInterval(interval);
   }, [view, isCameraActive]);
 
+  // Real-time WebRTC/Broadcast Proctor Bridge to Faculty War Room
+  useEffect(() => {
+    if (view === 'taking' && activeTest && isCameraActive && user?.email) {
+      const studentData = {
+        email: user.email,
+        name: user.name || user.displayName || 'Scholar',
+        roll: user.roll || user.rollNumber || user.email.split('@')[0],
+        department: user.department || user.branch || 'CSE'
+      };
+
+      const session = ExamProctorBridge.joinStudentSession(
+        activeTest.id || 'general',
+        studentData,
+        (intervention) => {
+          if (intervention.action === 'warning') {
+            addToast({ message: `⚠️ PROCTOR DIRECTIVE: ${intervention.message}`, type: 'warning' });
+            addProctorLog(`Faculty Directive: ${intervention.message}`, 'alert');
+          } else if (intervention.action === 'force_submit') {
+            addToast({ message: `🚫 EXAM TERMINATED: ${intervention.message}`, type: 'error' });
+            submitTest(true);
+          }
+        }
+      );
+
+      proctorBridgeSessionRef.current = session;
+
+      // Broadcast camera frame + audio metrics every 2.5 seconds to Faculty
+      const frameInterval = setInterval(() => {
+        const vid = activeExamVideoRef.current;
+        if (!vid || vid.videoWidth === 0) return;
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 160;
+          canvas.height = 120;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(vid, 0, 0, 160, 120);
+          const frameBase64 = canvas.toDataURL('image/jpeg', 0.35);
+
+          session?.sendLiveFrame({
+            frame: frameBase64,
+            warnings,
+            trustScore: proctorTrustScore,
+            faceStatus,
+            audioDb: Math.round(audioLevel),
+            currentQuestion: currentQuestionIdx,
+            totalQuestions: activeTest?.questions?.length || 0
+          });
+        } catch (_err) {}
+      }, 4000);
+
+      return () => {
+        clearInterval(frameInterval);
+        session?.leaveSession();
+      };
+    }
+  }, [view, activeTest?.id, isCameraActive, user?.email, warnings, proctorTrustScore, faceStatus, audioLevel, currentQuestionIdx]);
+
   // Clean unmount
   useEffect(() => {
     return () => {
-      if (isTestCameraRequired(currentActiveTest) && !candidatePhoto) {
-        takeBiometricSnapshot();
-      }
+      
       stopProctorMedia();
     };
   }, []);
@@ -850,14 +908,14 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       
       violationLockRef.current = true;
       setProctorTrustScore(prev => Math.max(0, prev - 15));
-      addProctorLog(`🚨 Security violation: ${reason}`, 'alert');
+      addProctorLog(` Security violation: ${reason}`, 'alert');
 
       setWarnings(prev => {
         const newCount = prev + 1;
         if (newCount < 3) {
-          addToast({ message: `⚠️ PROCTOR WARNING (${newCount}/3): ${reason}`, type: 'warning' });
+          addToast({ message: `⚠️ï¸ PROCTOR WARNING (${newCount}/3): ${reason}`, type: 'warning' });
         } else {
-          addToast({ message: `🚨 Maximum warnings (3/3) reached: ${reason}. Auto-submitting...`, type: 'error' });
+          addToast({ message: ` Maximum warnings (3/3) reached: ${reason}. Auto-submitting...`, type: 'error' });
         }
         return newCount;
       });
@@ -1002,8 +1060,8 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       setWarnings(0);
       setProctorTrustScore(100);
       setProctorLogs([]);
-      addProctorLog(`🛡️ Examination session started: ${test.title}`, 'info');
-      addProctorLog('🖥️ Fullscreen display locked. Single monitor focus active.', 'info');
+      addProctorLog(` Examination session started: ${test.title}`, 'info');
+      addProctorLog(' Fullscreen display locked. Single monitor focus active.', 'info');
 
       if (isTestCameraRequired(test) && !candidatePhoto) {
         setTimeout(() => takeBiometricSnapshot(), 800);
@@ -1017,7 +1075,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       setShowSubmitModal(false);
       setOnboardingTestModal(null);
       setView('taking');
-      addToast({ message: `🛡️ Environment Launched: ${test.title} (${isTestCameraRequired(test) ? 'Camera Monitored' : 'No Camera Required'})`, type: 'info' });
+      addToast({ message: ` Environment Launched: ${test.title} (${isTestCameraRequired(test) ? 'Camera Monitored' : 'No Camera Required'})`, type: 'info' });
     } catch (_err) {
       console.error("Error starting test in TestPortal:", _err);
       addToast({ message: 'Failed to start test. Please try again.', type: 'error' });
@@ -1111,6 +1169,30 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         notifyFounderTestSubmission(cleanResult);
         if (db) {
           addDoc(collection(db, 'test_results'), cleanResult).catch(() => {});
+        }
+        if (supabase && typeof supabase.from === 'function') {
+          const sbRecord = {
+            test_id: String(cleanResult.testId || cleanResult.id || Date.now()),
+            test_title: cleanResult.testTitle || 'Diagnostic Assessment',
+            user_name: cleanResult.user || 'Scholar',
+            user_id: cleanResult.userId || null,
+            user_email: (cleanResult.userEmail || '').toLowerCase().trim(),
+            department: cleanResult.department || 'CSE',
+            branch: cleanResult.branch || cleanResult.department || 'CSE',
+            year: cleanResult.year || '1st Year',
+            sem: cleanResult.sem || '1-1',
+            sec: cleanResult.sec || 'A',
+            roll_number: cleanResult.rollNumber || null,
+            score: Number(cleanResult.score || 0),
+            total: Number(cleanResult.total || 10),
+            type: cleanResult.type || 'standard',
+            flagged_for_tab_switch: Boolean(cleanResult.flaggedForTabSwitch),
+            answers: cleanResult.answers || null,
+            created_at: cleanResult.date || new Date().toISOString()
+          };
+          supabase.from('test_results').insert([sbRecord]).catch(err => {
+            console.warn('Supabase test_results insert notice:', err);
+          });
         }
 
         const rawUid = user?.id || user?.uid || (user?.email ? user.email.replace(/[@.]/g, '_') : 'guest');
@@ -1243,7 +1325,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                   Secure CBT Exam
                 </span>
                 <span className="text-xs text-gray-400 font-mono hidden sm:inline">
-                  {currentUserName} • {userBranch}
+                  {currentUserName} "¢ {userBranch}
                 </span>
               </div>
               <h2 className="text-sm md:text-base font-bold text-white truncate max-w-sm md:max-w-md font-sora">
@@ -1633,7 +1715,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
           <aside className="w-72 md:w-80 border-l border-white/10 bg-[#0a0f1d] p-4 flex flex-col shrink-0 overflow-y-auto space-y-4 custom-scrollbar">
             
 {isTestCameraRequired(activeTest) ? (
-            /* ── 🎥 LIVE AI PROCTORING CAMERA & SURVEILLANCE HUD ── */
+            /* ──  LIVE AI PROCTORING CAMERA & SURVEILLANCE HUD ── */
             <div className="rounded-2xl bg-black/90 border border-brand-teal/40 overflow-hidden shadow-2xl relative">
               <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
                 {isCameraActive ? (
@@ -1896,7 +1978,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
             <div className="max-w-md w-full bg-[#0c1222] border border-brand-teal/40 rounded-3xl p-6 space-y-5 shadow-2xl relative">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-brand-teal/20 text-brand-teal flex items-center justify-center text-2xl border border-brand-teal/30">
-                  📋
+                  
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white font-sora">Confirm Final Submission</h3>
@@ -2031,7 +2113,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
           </div>
         )}
 
-        {/* ── 🧮 FLOATING VIRTUAL SCIENTIFIC CALCULATOR MODAL ── */}
+        {/* ──  FLOATING VIRTUAL SCIENTIFIC CALCULATOR MODAL ── */}
         {showCalculator && (
           <div className="fixed bottom-6 right-6 md:right-88 z-[150] w-80 bg-[#001f3f]/95 backdrop-blur-2xl rounded-3xl border-2 border-[#003875] shadow-2xl p-4 text-white space-y-3 animate-scale-up">
             {/* Calc Header */}
@@ -2074,7 +2156,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
             {/* Scientific Functions Row */}
             {isScientificCalc && (
               <div className="grid grid-cols-4 gap-1.5 text-[11px] font-mono">
-                {['sin', 'cos', 'tan', 'sqrt', 'log', 'ln', 'x²', '1/x', '(', ')', 'π', 'e'].map(btn => (
+                {['sin', 'cos', 'tan', 'sqrt', 'log', 'ln', 'x²', '1/x', '(', ')', 'Ï€', 'e'].map(btn => (
                   <button
                     key={btn}
                     type="button"
@@ -2089,13 +2171,13 @@ If there is a compilation or runtime error, set "error" to true and put the erro
 
             {/* Keypad Grid */}
             <div className="grid grid-cols-4 gap-1.5 text-xs font-bold font-mono">
-              {['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', '0', '.', '%', '+'].map(k => (
+              {['7', '8', '9', 'Ã·', '4', '5', '6', 'Ã—', '1', '2', '3', '-', '0', '.', '%', '+'].map(k => (
                 <button
                   key={k}
                   type="button"
                   onClick={() => handleCalcButton(k)}
                   className={`p-2.5 rounded-xl transition-all cursor-pointer active:scale-95 text-center ${
-                    ['÷', '×', '-', '+'].includes(k)
+                    ['Ã·', 'Ã—', '-', '+'].includes(k)
                       ? 'bg-[#003875] text-[#38bdf8] hover:bg-[#002a5c] border border-[#004c9e]'
                       : 'bg-white/5 hover:bg-white/15 text-white border border-white/10'
                   }`}
@@ -2250,7 +2332,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                     violations: testResult.warnings || 0,
                     candidatePhoto: resolvedPhoto
                   });
-                  addToast({ message: '📥 Generating Official Proctored PDF Scorecard...', type: 'success' });
+                  addToast({ message: ' Generating Official Proctored PDF Scorecard...', type: 'success' });
                 } catch (e) {
                   console.warn("PDF generation error, fallback to print:", e);
                   window.print();
@@ -2331,8 +2413,8 @@ If there is a compilation or runtime error, set "error" to true and put the erro
           </div>
         </div>
 
-{isTestCameraRequired(testResult.test) ? (
-        /* ── 🛡️ OFFICIAL AI PROCTORING CERTIFICATE & SURVEILLANCE REPORT (CAMERA REQUIRED) ── */
+{isTestCameraRequired(testResult?.test) ? (
+        /* ──  OFFICIAL AI PROCTORING CERTIFICATE & SURVEILLANCE REPORT (CAMERA REQUIRED) ── */
         <div className="p-6 rounded-3xl bg-[#0c1424] border border-brand-teal/30 space-y-5 shadow-2xl relative">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -2735,6 +2817,14 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                 <RotateCcw className={`w-3.5 h-3.5 ${isSyncingTests ? 'animate-spin' : ''}`} />
                 <span>{isSyncingTests ? 'Syncing...' : 'Sync Default Tests'}</span>
               </button>
+              <button
+                onClick={() => setLiveWarRoomExam({ id: activeTest?.id || 'live_exam', title: 'Campus Examination Session' })}
+                className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-black transition-colors cursor-pointer shadow-sm animate-pulse"
+                title="Launch Live Invigilation Multi-Camera Grid"
+              >
+                <Radio className="w-4 h-4 text-red-400" />
+                Live Invigilation Room
+              </button>
               <button 
                 onClick={() => setActiveTab && setActiveTab('founder-portal')}
                 className="bg-brand-teal hover:opacity-90 text-black px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-opacity cursor-pointer shadow-sm"
@@ -2937,7 +3027,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-teal/20 to-blue-500/20 border border-brand-teal/40 flex items-center justify-center text-2xl text-brand-teal shadow-md shrink-0">
-                  🛡️
+                  
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -2989,7 +3079,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                   <UserCheck className="w-4 h-4 text-emerald-400" /> Candidate Scorecard Identity Verification
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
-                  ● Verified Profile
+                  â— Verified Profile
                 </span>
               </div>
 
@@ -3047,7 +3137,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                       className="w-full px-3 py-2 bg-black/60 border border-emerald-500/50 focus:border-brand-teal focus:ring-1 focus:ring-brand-teal rounded-xl text-white font-mono font-bold text-sm tracking-wider uppercase transition-all"
                     />
                     <p className="text-[10px] text-gray-400 font-mono">
-                      🔒 Official Roll Number & Photo are cryptographically locked onto your downloaded PDF Scorecard.
+                       Official Roll Number & Photo are cryptographically locked onto your downloaded PDF Scorecard.
                     </p>
                   </div>
                 </div>
@@ -3064,7 +3154,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
                   isCameraActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                 }`}>
-                  {isCameraActive ? '● Camera Active' : 'Restricted Mode'}
+                  {isCameraActive ? 'â— Camera Active' : 'Restricted Mode'}
                 </span>
               </div>
 
@@ -3644,6 +3734,17 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         className="hidden"
       />
       {mainContent}
+      {/* Live Exam Invigilation Multi-Camera War Room Modal */}
+      {liveWarRoomExam && (
+        <ExamProctorWarRoom
+          testId={liveWarRoomExam.id}
+          testTitle={liveWarRoomExam.title}
+          onClose={() => setLiveWarRoomExam(null)}
+        />
+      )}
     </>
   );
 }
+
+
+

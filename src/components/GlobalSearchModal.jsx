@@ -3,13 +3,12 @@ import {
   Search, X, Sparkles, BookOpen, Code, GraduationCap, 
   HelpCircle, Trophy, Briefcase, Mic, Film, Map, 
   ClipboardList, ArrowRight, CornerDownLeft, Clock,
-  Layers, ChevronRight, Hash, Compass, Flame, GitFork
+  Layers, ChevronRight, Hash, Compass, Flame, GitFork, Radio
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
 const SEARCHABLE_PORTALS = [
   { id: 'dashboard', title: 'Dashboard', desc: 'Main academic home, stats & daily roadmap', category: 'General', icon: Sparkles, keywords: ['home', 'overview', 'stats', 'analytics'] },
-  { id: 'relay', title: 'LUMIXORA RELAY™ (Component Fusion)', desc: 'Transform unfinished & abandoned projects into new opportunities via AI DNA extraction & component fusion', category: 'Innovation', icon: GitFork, badge: 'NEW', keywords: ['relay', 'fusion', 'dna', 'projects', 'salvage', 'abandoned', 'reusable', 'components', 'graph'] },
   { id: 'my-academics', title: 'My Academics', desc: 'Track SGPA, CGPA, semester marks & attendance', category: 'Academics', icon: GraduationCap, badge: 'NEW', keywords: ['marks', 'cgpa', 'sgpa', 'semester', 'grades', 'subjects', 'attendance'] },
   { id: 'doubts', title: 'Doubt Solver', desc: 'Instant AI & mentor step-by-step LaTeX academic solutions', category: 'Academics', icon: HelpCircle, badge: 'AI 24/7', keywords: ['questions', 'help', 'math', 'derivation', 'homework', 'equations'] },
   { id: 'learning-hub', title: 'Learning & Video Hub', desc: 'Video lectures, enhanced AI study notes & PPTs', category: 'Academics', icon: BookOpen, keywords: ['notes', 'lectures', 'videos', 'courses', 'curriculum'] },
@@ -17,6 +16,7 @@ const SEARCHABLE_PORTALS = [
   { id: 'attendance', title: 'My Attendance', desc: 'Subject-wise class attendance & safety thresholds', category: 'Academics', icon: ClipboardList, keywords: ['bunk', 'classes', 'percentage', 'threshold'] },
   { id: 'coding-practice', title: 'Code Arena & Practice', desc: '30-Day Java/Python track, algorithms & DSA challenges', category: 'Coding', icon: Code, keywords: ['dsa', 'java', 'python', 'leetcode', 'compiler', 'problems'] },
   { id: 'ai-commander', title: 'AI Placement Commander™', desc: 'Target company readiness, syllabus & recruitment drives', category: 'Career', icon: Briefcase, badge: 'HOT', keywords: ['jobs', 'placements', 'tcs', 'infosys', 'amazon', 'interviews'] },
+  { id: 'tech-pulse', title: 'TechPulse™ Live Radar', desc: 'Live tech news, verified jobs, freshers drives, salary hikes & trending tech', category: 'Career', icon: Radio, badge: 'LIVE', keywords: ['news', 'jobs', 'hikes', 'trending', 'salaries', 'hiring', 'tech news', 'freshers'] },
   { id: 'interview', title: 'AI Mock Interview Room', desc: 'Real-time voice speech AI technical & HR mock interviews', category: 'Career', icon: Mic, badge: 'Live AI', keywords: ['speech', 'voice', 'mock interview', 'hr', 'technical'] },
   { id: 'certificates', title: 'Proof-of-Skill Badges', desc: 'Verified academic badges & LinkedIn certificates', category: 'Career', icon: Trophy, keywords: ['certs', 'credentials', 'proof', 'linkedin'] },
   { id: 'alumni-referrals', title: 'Alumni & Referrals', desc: 'Connect with verified campus alumni for off-campus jobs', category: 'Career', icon: Briefcase, keywords: ['networking', 'referrals', 'seniors', 'jobs'] },

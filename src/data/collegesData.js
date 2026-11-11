@@ -211,6 +211,29 @@ export const DEFAULT_COLLEGES = [
     feeAmount: 10,
     feeBadge: '⚡ ₹10 One-Time Access Fee',
     description: 'Premier university located beside AP Secretariat near Vijayawada, Guntur empowering next-gen technical excellence, AI innovations, and global placements.'
+  },
+  {
+    id: 'mits',
+    name: 'MITS DEEMED TO BE UNIVERSITY',
+    shortName: 'MITS',
+    code: 'MITS',
+    domains: ['mits.ac.in', 'mits.edu.in'],
+    logo: '🏛️',
+    bannerColor: 'from-amber-600 via-rose-600 to-indigo-600',
+    established: '1998',
+    location: 'Madanapalle, Andhra Pradesh',
+    studentCount: 6500,
+    maxSeats: 8000,
+    licenseTier: 'enterprise',
+    licenseStatus: 'active',
+    licenseExpiry: '2027-12-31',
+    contractId: 'LMX-MITS-2026',
+    annualContractValue: '₹2,50,000',
+    isActive: true,
+    isFeeExempt: false,
+    feeAmount: 10,
+    feeBadge: '⚡ ₹10 One-Time Access Fee',
+    description: 'Madanapalle Institute of Technology & Science (MITS Deemed to be University) in Madanapalle, Andhra Pradesh empowering technical research, AI innovation, and industry placements.'
   }
 ];
 
@@ -563,13 +586,68 @@ export const decodeVitApRollNumber = (rollOrEmail = '') => {
   };
 };
 
+export const decodeMitsRollNumber = (rollOrEmail = '') => {
+  if (!rollOrEmail || typeof rollOrEmail !== 'string') {
+    return { year: '1st Year', department: 'Computer Science & Engineering (CSE)', rollNumber: '' };
+  }
+  const clean = rollOrEmail.trim().toLowerCase().split('@')[0];
+  const upperRoll = clean.toUpperCase();
+
+  let year = '1st Year';
+  let department = 'Computer Science & Engineering (CSE)';
+
+  const yrNum = parseInt(upperRoll.slice(0, 2), 10);
+  if (!isNaN(yrNum)) {
+    if (yrNum >= 25) year = '1st Year';
+    else if (yrNum === 24) year = '2nd Year';
+    else if (yrNum === 23) year = '3rd Year';
+    else if (yrNum <= 22) year = '4th Year';
+  }
+
+  const deptMap = {
+    '05': 'Computer Science & Engineering (CSE)',
+    '33': 'CSE - AI & Machine Learning',
+    '32': 'CSE - Data Science',
+    '35': 'CSE - Cyber Security',
+    '04': 'Electronics & Communication Engineering (ECE)',
+    '02': 'Electrical & Electronics Engineering (EEE)',
+    '03': 'Mechanical Engineering (MECH)',
+    '01': 'Civil Engineering (CIVIL)',
+    '12': 'Information Technology (IT)',
+    'CSE': 'Computer Science & Engineering (CSE)',
+    'CSM': 'CSE - AI & Machine Learning',
+    'CSD': 'CSE - Data Science',
+    'ECE': 'Electronics & Communication Engineering (ECE)',
+    'EEE': 'Electrical & Electronics Engineering (EEE)',
+    'MECH': 'Mechanical Engineering (MECH)',
+    'CIVIL': 'Civil Engineering (CIVIL)'
+  };
+
+  for (const [key, val] of Object.entries(deptMap)) {
+    if (upperRoll.includes(key)) {
+      department = val;
+      break;
+    }
+  }
+
+  return {
+    year,
+    department,
+    rollNumber: upperRoll
+  };
+};
+
 export const getCollegeIdFromUser = (user, customColleges = []) => {
   if (!user) return 'gprec';
   if (user.college_id) return user.college_id;
   if (user.collegeId) return user.collegeId;
   const colName = (user.college || user.collegeName || '').toLowerCase().trim();
   if (colName) {
+    if (colName.includes('mits') || colName.includes('madanapalli')) return 'mits';
     if (colName.includes('vit') || colName.includes('vitap')) return 'vitap';
+    if (colName.includes('rgukt') || colName.includes('rk valley')) return 'rgukt';
+    if (colName.includes('narayana') || colName.includes('nec')) return 'nec';
+    if (colName.includes('venkateshwara') || colName.includes('svce')) return 'svce';
     if (colName.includes('bheema') || colName.includes('bits')) return 'bits';
     if (colName.includes('ashoka')) return 'ashoka';
     if (colName.includes('annamacharya') || colName.includes('rajampet') || colName === 'au') return 'annamacharya';
@@ -678,6 +756,7 @@ export const isAnjum = (userOrEmail) => {
 };
 
 export const KNOWN_PAID_EMAILS = new Set([
+  'dean.placements@gprec.ac.in', // GPREC Dean / Placement Officer
   '249xa04050@gprec.ac.in', // Boya Yugandhar Naidu (Paid Rs 10 via Razorpay pay_TxETTpufj47pSk / Bank RRN 864259330644)
   '249xa33112@gprec.ac.in', // Mahendrakar Akhil (Paid ₹10 via UPI Ref 317827902237)
   '259xa05010@gprec.ac.in', // Avula Bhanu Priya (Paid ₹10 via Razorpay pay_TswlcoI1dleMdi)
@@ -710,6 +789,11 @@ export const isExemptFromPayment = (userOrEmail) => {
 
   // 1.1 Verified Paid Scholars Whitelist
   if (email && KNOWN_PAID_EMAILS.has(email)) {
+    return true;
+  }
+
+  // 1.2 GPREC Placement Scholars (Institutional contract covers fee)
+  if (email.endsWith('@gprec.ac.in') || (typeof userOrEmail === 'object' && (userOrEmail?.isGprecPlacementVerified || userOrEmail?.isGprecPlacementScholar))) {
     return true;
   }
 

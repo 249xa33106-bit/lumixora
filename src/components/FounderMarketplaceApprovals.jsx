@@ -129,6 +129,7 @@ export default function FounderMarketplaceApprovals({ college = 'All' }) {
             <option value="Sri Venkateshwara College Of Engineering" className="bg-[#121218]">SVCE Tirupati</option>
             <option value="Annamacharya University" className="bg-[#121218]">Annamacharya Univ</option>
             <option value="Narayana Engineering College" className="bg-[#121218]">Narayana Engg</option>
+            <option value="VIT-AP University" className="bg-[#121218]">VIT-AP University</option>
           </select>
 
           {/* Refresh */}

@@ -16,6 +16,7 @@ import { useGamification } from '../context/GamificationContext';
 // Core B.Tech Engineering Subject Categories and Missions Data
 import { BTECH_SUBJECT_CATEGORIES, PRESET_MISSIONS } from '../data/chaosMissionsData';
 import SubjectSymbol from '../components/SubjectSymbol';
+import { cloudSync } from '../services/cloudSyncService';
 
 export default function ChaosLabPortal({ user, setActiveTab }) {
   const { addToast } = useToast();
@@ -515,6 +516,7 @@ export default function ChaosLabPortal({ user, setActiveTab }) {
       const updated = [newRecord, ...prev];
       try {
         localStorage.setItem('lumixora_chaoslab_history', JSON.stringify(updated));
+        if (user?.email) cloudSync.set(user.email, 'chaoslab_history', updated);
       } catch(e) {}
       return updated;
     });
@@ -602,6 +604,7 @@ def execute_project_pipeline_resilient(data_payload):
         const updated = [synthesized, ...prev];
         try {
           localStorage.setItem('lumixora_chaoslab_custom_missions', JSON.stringify(updated));
+          if (user?.email) cloudSync.set(user.email, 'chaoslab_custom_missions', updated);
         } catch(e) {}
         return updated;
       });
@@ -1763,6 +1766,7 @@ def execute_project_pipeline_resilient(data_payload):
                     if (window.confirm("Are you sure you want to clear your local ChaosLab assessment history?")) {
                       setChaosHistory([]);
                       localStorage.removeItem('lumixora_chaoslab_history');
+                      if (user?.email) cloudSync.remove(user.email, 'chaoslab_history');
                       addToast?.({ type: 'info', message: 'ChaosLab assessment history cleared.' });
                     }
                   }}

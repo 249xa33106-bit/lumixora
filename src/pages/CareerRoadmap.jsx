@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ROADMAPS } from '../data/roadmapsData';
 import { resolveLectureVideo } from '../data/roadmapVideosMap';
+import { cloudSync } from '../services/cloudSyncService';
 
 export default function CareerRoadmap({ user }) {
   const [selectedRoadmap, setSelectedRoadmap] = useState(null);
@@ -85,6 +86,7 @@ export default function CareerRoadmap({ user }) {
     newProgress[roadmapId][stepId] = isNowCompleted;
     setProgress(newProgress);
     localStorage.setItem(`lumixora_roadmap_progress_${user.uid}`, JSON.stringify(newProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_progress', newProgress);
 
     // Also auto-toggle all subtasks of this step
     const roadmap = ROADMAPS.find(r => r.id === roadmapId);
@@ -98,6 +100,7 @@ export default function CareerRoadmap({ user }) {
       });
       setSubProgress(newSubProgress);
       localStorage.setItem(`lumixora_roadmap_subprogress_${user.uid}`, JSON.stringify(newSubProgress));
+      if (user?.email) cloudSync.set(user.email, 'roadmap_subprogress', newSubProgress);
     }
   };
 
@@ -111,6 +114,7 @@ export default function CareerRoadmap({ user }) {
     newSubProgress[key][itemIndex] = !newSubProgress[key][itemIndex];
     setSubProgress(newSubProgress);
     localStorage.setItem(`lumixora_roadmap_subprogress_${user.uid}`, JSON.stringify(newSubProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_subprogress', newSubProgress);
 
     // Check if all sub items in this step are completed
     const roadmap = ROADMAPS.find(r => r.id === roadmapId);
@@ -122,6 +126,7 @@ export default function CareerRoadmap({ user }) {
       newProgress[roadmapId][stepId] = allDone;
       setProgress(newProgress);
       localStorage.setItem(`lumixora_roadmap_progress_${user.uid}`, JSON.stringify(newProgress));
+      if (user?.email) cloudSync.set(user.email, 'roadmap_progress', newProgress);
     }
   };
 
@@ -132,6 +137,7 @@ export default function CareerRoadmap({ user }) {
     newVideoProgress[key] = !newVideoProgress[key];
     setVideoProgress(newVideoProgress);
     localStorage.setItem(`lumixora_roadmap_videos_${user.uid}`, JSON.stringify(newVideoProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_videos', newVideoProgress);
   };
 
   const isVideoWatched = (roadmapId, videoKey) => {
@@ -204,6 +210,7 @@ export default function CareerRoadmap({ user }) {
     delete newProgress[roadmapId];
     setProgress(newProgress);
     localStorage.setItem(`lumixora_roadmap_progress_${user.uid}`, JSON.stringify(newProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_progress', newProgress);
 
     const roadmap = ROADMAPS.find(r => r.id === roadmapId);
     const newSubProgress = { ...subProgress };
@@ -212,6 +219,7 @@ export default function CareerRoadmap({ user }) {
     });
     setSubProgress(newSubProgress);
     localStorage.setItem(`lumixora_roadmap_subprogress_${user.uid}`, JSON.stringify(newSubProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_subprogress', newSubProgress);
   };
 
   const markAllComplete = (roadmapId) => {
@@ -233,7 +241,9 @@ export default function CareerRoadmap({ user }) {
     setProgress(newProgress);
     setSubProgress(newSubProgress);
     localStorage.setItem(`lumixora_roadmap_progress_${user.uid}`, JSON.stringify(newProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_progress', newProgress);
     localStorage.setItem(`lumixora_roadmap_subprogress_${user.uid}`, JSON.stringify(newSubProgress));
+    if (user?.email) cloudSync.set(user.email, 'roadmap_subprogress', newSubProgress);
   };
 
   // Global Multi-Roadmap Stats

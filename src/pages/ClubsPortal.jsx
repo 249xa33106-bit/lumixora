@@ -770,7 +770,7 @@ export default function ClubsPortal({ user }) {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {(user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || user?.email?.toLowerCase() === '249xa33106@gmail.com') && (
+                    {(user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' ) && (
                       <button
                         onClick={() => handleOpenEditEventPortal(evt.clubId, evt)}
                         className="px-3.5 py-2.5 bg-brand-teal/20 text-brand-teal hover:bg-brand-teal hover:text-black font-extrabold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1 border border-brand-teal/30 shadow-md"

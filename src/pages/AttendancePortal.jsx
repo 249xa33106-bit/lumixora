@@ -310,10 +310,36 @@ export default function AttendancePortal({ user }) {
         setAttendanceData(docSnap.data());
         localStorage.setItem('lumixora_student_roll', searchRoll);
       } else {
-        setOfficialError(`No official attendance records found for Roll Number: ${searchRoll}.`);
+        // Fallback: check local backup cache and auto-push to real Firestore database
+        let foundInCache = false;
+        try {
+          const cache = JSON.parse(localStorage.getItem('lumixora_attendance_master_records') || '{}');
+          if (cache[searchRoll]) {
+            const cachedData = cache[searchRoll];
+            setAttendanceData(cachedData);
+            localStorage.setItem('lumixora_student_roll', searchRoll);
+            foundInCache = true;
+            // Store directly in real Firestore database for future instant lookups
+            setDoc(doc(db, 'attendance', searchRoll), { ...cachedData, lastUpdated: new Date().toISOString() }, { merge: true })
+              .catch(err => console.warn('Background Firestore push notice:', err));
+          }
+        } catch (cacheErr) {}
+
+        if (!foundInCache) {
+          setOfficialError(`No official attendance records found for Roll Number: ${searchRoll}.`);
+        }
       }
     } catch (err) {
       console.error("Error fetching attendance:", err);
+      // Even on network error, check local cache backup
+      try {
+        const cache = JSON.parse(localStorage.getItem('lumixora_attendance_master_records') || '{}');
+        if (cache[searchRoll]) {
+          setAttendanceData(cache[searchRoll]);
+          localStorage.setItem('lumixora_student_roll', searchRoll);
+          return;
+        }
+      } catch (cacheErr) {}
       setOfficialError(`Failed to fetch attendance: ${err.message || 'Network error'}.`);
     } finally {
       setLoadingOfficial(false);

@@ -383,6 +383,34 @@ export const recordTestSubmission = async (submission) => {
       } catch (e) {}
     }
 
+    // 5. Save to Supabase test_results
+    if (supabase && typeof supabase.from === 'function') {
+      try {
+        const sbRecord = {
+          test_id: String(cleanSub.testId || cleanSub.id || Date.now()),
+          test_title: cleanSub.testTitle || 'Diagnostic Assessment',
+          user_name: cleanSub.user || 'Scholar',
+          user_id: cleanSub.userId || null,
+          user_email: (cleanSub.userEmail || '').toLowerCase().trim(),
+          department: cleanSub.department || 'CSE',
+          branch: cleanSub.branch || cleanSub.department || 'CSE',
+          year: cleanSub.year || '1st Year',
+          sem: cleanSub.sem || '1-1',
+          sec: cleanSub.sec || 'A',
+          roll_number: cleanSub.rollNumber || null,
+          score: Number(cleanSub.score || 0),
+          total: Number(cleanSub.total || 10),
+          type: cleanSub.type || 'standard',
+          flagged_for_tab_switch: Boolean(cleanSub.flaggedForTabSwitch),
+          answers: cleanSub.answers || null,
+          created_at: cleanSub.date || new Date().toISOString()
+        };
+        supabase.from('test_results').insert([sbRecord]).catch(err => {
+          console.warn('Supabase test_results sync notice:', err);
+        });
+      } catch (e) {}
+    }
+
     return cleanSub;
   } catch (err) {
     console.warn('Error saving test submission:', err);

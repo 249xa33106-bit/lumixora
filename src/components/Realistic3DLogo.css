@@ -1,0 +1,71 @@
+/* =========================================================================
+   3D REALISTIC & ATTRACTIVE LOGO SYSTEM (Lumixora 3D Holographic / Glass)
+   ========================================================================= */
+
+@keyframes logo-float-subtle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0.6deg);
+  }
+}
+
+@keyframes logo-shimmer-pass {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  40%, 100% {
+    transform: translateX(250%) skewX(-25deg);
+  }
+}
+
+@keyframes logo-pulse-glow {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(1);
+    filter: blur(14px);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+    filter: blur(18px);
+  }
+}
+
+@keyframes logo-orbit-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-logo-float {
+  animation: logo-float-subtle 4.5s ease-in-out infinite;
+}
+
+.animate-logo-shimmer {
+  animation: logo-shimmer-pass 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-logo-glow {
+  animation: logo-pulse-glow 3.2s ease-in-out infinite;
+}
+
+.animate-logo-orbit {
+  animation: logo-orbit-rotate 16s linear infinite;
+}
+
+/* 3D Glass Layer with Specular Reflections */
+.logo-3d-glass {
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 45%, rgba(6, 182, 212, 0.08) 100%);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.6),
+    0 4px 12px -2px rgba(6, 182, 212, 0.35),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 4px 0 rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

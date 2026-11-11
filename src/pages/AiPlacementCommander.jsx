@@ -14,6 +14,7 @@ import { db } from '../config/firebase';
 import { doc, onSnapshot, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
 import AiMockInterviewRoom from './AiMockInterviewRoom';
+import { cloudSync } from '../services/cloudSyncService';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -509,6 +510,7 @@ export default function AiPlacementCommander({ user, setActiveTab }) {
           setDailyMissions(freshMissions);
           localStorage.setItem('lumixora_mission_date', todayStr);
           localStorage.setItem('lumixora_daily_missions', JSON.stringify(freshMissions));
+          if (user?.email) cloudSync.set(user.email, 'daily_missions', freshMissions);
         } else {
           setDailyMissions(JSON.parse(savedMissions));
         }
@@ -578,6 +580,7 @@ export default function AiPlacementCommander({ user, setActiveTab }) {
       });
       const todayStr = new Date().toISOString().split('T')[0];
       localStorage.setItem('lumixora_daily_missions', JSON.stringify(updated));
+      if (user?.email) cloudSync.set(user.email, 'daily_missions', updated);
       localStorage.setItem('lumixora_mission_date', todayStr);
       return updated;
     });
@@ -1685,6 +1688,7 @@ Analyze this code and return ONLY a valid JSON object:
                 const todayStr = new Date().toISOString().split('T')[0];
                 localStorage.setItem('lumixora_mission_date', todayStr);
                 localStorage.setItem('lumixora_daily_missions', JSON.stringify(fresh));
+                if (user?.email) cloudSync.set(user.email, 'daily_missions', fresh);
                 addToast({ message: '🔄 Today\'s Placement Mission dynamically updated!', type: 'success' });
               }}
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/10 flex items-center gap-2 cursor-pointer shrink-0"

@@ -330,8 +330,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
   const toastCtx = useToast();
   const addToast = toastCtx?.addToast || (({ message, type }) => console.log(`[Toast] (${type}):`, message));
   const isFounder = user?.role === 'founder' || 
-                    user?.email?.toLowerCase() === 'founder@lumixora.com' ||
-                    user?.email?.toLowerCase() === '249xa33106@gmail.com';
+                    user?.email?.toLowerCase() === 'founder@lumixora.com' ;
 
   const [teamMembers, setTeamMembers] = useState(DEFAULT_TEAM_MEMBERS);
   const [selectedDivision, setSelectedDivision] = useState('all');

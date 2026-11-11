@@ -19,10 +19,12 @@ import {
   INTERNSHIP_DOMAINS, 
   INTERNSHIP_BATCHES 
 } from '../data/internshipsData';
+import { getLiveStatus, getRemainingDays } from '../utils/opportunityStatus';
 import { db } from '../config/firebase';
 import { collection, onSnapshot, addDoc, setDoc, doc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 import { callAICompletion } from '../services/aiService';
+import { cloudSync } from '../services/cloudSyncService';
 
 export default function HackathonPortal({ user, setActiveTab }) {
   const { addToast } = useToast();
@@ -47,6 +49,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
   const [internshipSearchQuery, setInternshipSearchQuery] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('All Domains');
   const [selectedBatch, setSelectedBatch] = useState('All Batches');
+  const [internshipStatusFilter, setInternshipStatusFilter] = useState('All');
 
   // ── 3. BOOKMARKED OPPORTUNITIES ───────────────────────────────────
   const [bookmarkedIds, setBookmarkedIds] = useState(() => {
@@ -208,13 +211,21 @@ export default function HackathonPortal({ user, setActiveTab }) {
   const allHackathons = useMemo(() => {
     const customIds = new Set(customHackathons.map(h => h.id));
     const mergedDefaults = DEFAULT_HACKATHONS.filter(h => !customIds.has(h.id));
-    return [...customHackathons, ...mergedDefaults];
+    return [...customHackathons, ...mergedDefaults].map(h => {
+      const liveStatus = getLiveStatus(h.deadline, h.status, 'Open');
+      const remainingText = getRemainingDays(h.deadline);
+      return { ...h, status: liveStatus, remainingText };
+    });
   }, [customHackathons]);
 
   const allInternships = useMemo(() => {
     const customIds = new Set(customInternships.map(i => i.id));
     const mergedDefaults = DEFAULT_INTERNSHIPS.filter(i => !customIds.has(i.id));
-    return [...customInternships, ...mergedDefaults];
+    return [...customInternships, ...mergedDefaults].map(intern => {
+      const liveStatus = getLiveStatus(intern.deadline, intern.status, 'Actively Hiring');
+      const remainingText = getRemainingDays(intern.deadline);
+      return { ...intern, status: liveStatus, remainingText };
+    });
   }, [customInternships]);
 
   // Toggle Bookmark
@@ -229,6 +240,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
     }
     setBookmarkedIds(updated);
     localStorage.setItem('lumixora_bookmarked_hackathons', JSON.stringify(updated));
+    if (user?.email) cloudSync.set(user.email, 'bookmarked_hackathons', updated);
   };
 
   // Filtered Hackathons
@@ -238,7 +250,11 @@ export default function HackathonPortal({ user, setActiveTab }) {
       if (selectedCategory !== 'All' && h.category !== selectedCategory) return false;
       if (selectedPlatform !== 'All Platforms' && h.platform !== selectedPlatform) return false;
       if (selectedMode !== 'All' && h.mode !== selectedMode) return false;
-      if (selectedStatus !== 'All' && h.status !== selectedStatus) return false;
+      if (selectedStatus === 'Live') {
+        if (h.status === 'Closed') return false;
+      } else if (selectedStatus !== 'All') {
+        if (h.status.toLowerCase() !== selectedStatus.toLowerCase()) return false;
+      }
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -259,6 +275,11 @@ export default function HackathonPortal({ user, setActiveTab }) {
   const filteredInternships = useMemo(() => {
     return allInternships.filter(i => {
       if (activeTabMode === 'bookmarked' && !bookmarkedIds.includes(i.id)) return false;
+      if (internshipStatusFilter === 'Live') {
+        if (i.status === 'Closed') return false;
+      } else if (internshipStatusFilter !== 'All') {
+        if (i.status.toLowerCase() !== internshipStatusFilter.toLowerCase()) return false;
+      }
       if (selectedDomain !== 'All Domains' && i.domain !== selectedDomain) return false;
       if (selectedBatch !== 'All Batches') {
         const hasBatch = (i.batches || []).some(b => b.toLowerCase().includes(selectedBatch.toLowerCase()));
@@ -278,7 +299,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
 
       return true;
     });
-  }, [allInternships, activeTabMode, bookmarkedIds, selectedDomain, selectedBatch, internshipSearchQuery]);
+  }, [allInternships, activeTabMode, bookmarkedIds, selectedDomain, selectedBatch, internshipStatusFilter, internshipSearchQuery]);
 
   // Filtered Squad Posts
   const filteredSquadPosts = useMemo(() => {
@@ -607,7 +628,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 <Briefcase className="w-5 h-5 text-brand-teal" />
                 <div>
                   <span className="block text-xs text-gray-400 uppercase font-bold tracking-wider">Top Tier Internships</span>
-                  <span className="text-base font-black text-white">{allInternships.length} Actively Hiring</span>
+                  <span className="text-base font-black text-white">{allInternships.filter(i => i.status !== 'Closed').length} Live Hiring <span className="text-xs font-normal text-gray-400">({allInternships.filter(i => i.status === 'Closed').length} Closed)</span></span>
                 </div>
               </div>
 
@@ -615,7 +636,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 <Flame className="w-5 h-5 text-amber-400" />
                 <div>
                   <span className="block text-xs text-gray-400 uppercase font-bold tracking-wider">Active Hackathons</span>
-                  <span className="text-base font-black text-white">{allHackathons.length} Live Tracks</span>
+                  <span className="text-base font-black text-white">{allHackathons.filter(h => h.status !== 'Closed').length} Live Tracks <span className="text-xs font-normal text-gray-400">({allHackathons.filter(h => h.status === 'Closed').length} Closed)</span></span>
                 </div>
               </div>
 
@@ -802,6 +823,29 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 ))}
               </div>
 
+              <div className="flex items-center gap-1.5 shrink-0 bg-white/5 p-1 rounded-xl border border-white/10">
+                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider px-2">Status:</span>
+                {[
+                  { id: 'Live', label: '🟢 Live Only' },
+                  { id: 'All', label: 'All' },
+                  { id: 'Closing Soon', label: '⏳ Closing Soon' },
+                  { id: 'Upcoming', label: '🚀 Upcoming' },
+                  { id: 'Closed', label: '🔒 Closed' }
+                ].map(st => (
+                  <button
+                    key={st.id}
+                    onClick={() => setSelectedStatus(st.id)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      selectedStatus === st.id
+                        ? 'bg-amber-400 text-black shadow-sm font-black'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Mode:</span>
                 {HACKATHON_MODES.map((m) => (
@@ -856,16 +900,33 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f18] via-transparent to-black/30" />
 
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase backdrop-blur-md shadow-md ${
-                        h.mode === 'Online' ? 'bg-blue-500/80 text-white' : h.mode === 'Offline' ? 'bg-purple-500/80 text-white' : 'bg-emerald-500/80 text-white'
-                      }`}>
-                        {h.mode}
-                      </span>
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase backdrop-blur-md shadow-md ${
+                          h.mode === 'Online' ? 'bg-blue-500/80 text-white' : h.mode === 'Offline' ? 'bg-purple-500/80 text-white' : 'bg-emerald-500/80 text-white'
+                        }`}>
+                          {h.mode}
+                        </span>
+
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase backdrop-blur-md shadow-md flex items-center gap-1 ${
+                          h.status === 'Closed'
+                            ? 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
+                            : h.status === 'Closing Soon'
+                            ? 'bg-amber-500/90 text-black border border-amber-300 animate-pulse font-extrabold'
+                            : h.status === 'Upcoming'
+                            ? 'bg-blue-900/80 text-cyan-300 border border-cyan-500/30'
+                            : 'bg-emerald-500/90 text-black border border-emerald-300 font-extrabold'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            h.status === 'Closed' ? 'bg-rose-400' : h.status === 'Closing Soon' ? 'bg-amber-900' : 'bg-white'
+                          }`} />
+                          {h.status === 'Closed' ? 'Closed' : h.status === 'Closing Soon' ? 'Closing Soon' : h.status === 'Upcoming' ? 'Upcoming' : 'Live'}
+                        </span>
+                      </div>
 
                       <button
                         onClick={() => toggleBookmark(h.id)}
-                        className={`p-2 rounded-xl backdrop-blur-md transition-colors ${
+                        className={`p-2 rounded-xl backdrop-blur-md transition-colors shrink-0 ${
                           isBookmarked ? 'bg-amber-400 text-black' : 'bg-black/60 text-white hover:bg-black/80'
                         }`}
                       >
@@ -916,11 +977,26 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-cyan-400" /> Register By:
+                          <Clock className="w-3.5 h-3.5 text-cyan-400" /> Deadline:
                         </span>
-                        <span className={`font-bold ${isUrgent ? 'text-rose-400 animate-pulse' : 'text-gray-200'}`}>
-                          {h.deadline}
-                        </span>
+                        <div className="text-right">
+                          <span className={`font-bold block ${
+                            h.status === 'Closed'
+                              ? 'text-rose-400 line-through'
+                              : isUrgent
+                              ? 'text-amber-400 font-black animate-pulse'
+                              : 'text-gray-200'
+                          }`}>
+                            {h.deadline}
+                          </span>
+                          {h.remainingText && (
+                            <span className={`text-[10px] font-semibold ${
+                              h.status === 'Closed' ? 'text-rose-400/80' : isUrgent ? 'text-amber-300 font-black' : 'text-gray-400'
+                            }`}>
+                              ({h.remainingText})
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -949,15 +1025,21 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                       <UserPlus className="w-4 h-4" />
                     </button>
 
-                    <a
-                      href={h.applyUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
-                    >
-                      <span>Apply Official</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                    {h.status === 'Closed' ? (
+                      <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                        <span>Registration Closed</span>
+                      </span>
+                    ) : (
+                      <a
+                        href={h.applyUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
+                      >
+                        <span>Apply Official</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
                   </div>
                 </div>
               );
@@ -984,6 +1066,29 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                     }`}
                   >
                     {dom}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0 bg-white/5 p-1 rounded-xl border border-white/10">
+                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider px-2">Status:</span>
+                {[
+                  { id: 'Live', label: '🟢 Live Hiring' },
+                  { id: 'All', label: 'All' },
+                  { id: 'Closing Soon', label: '⏳ Closing Soon' },
+                  { id: 'Upcoming', label: '🚀 Upcoming' },
+                  { id: 'Closed', label: '🔒 Closed' }
+                ].map(st => (
+                  <button
+                    key={st.id}
+                    onClick={() => setInternshipStatusFilter(st.id)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      internshipStatusFilter === st.id
+                        ? 'bg-brand-teal text-black shadow-sm font-black'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {st.label}
                   </button>
                 ))}
               </div>
@@ -1028,13 +1133,26 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                       {/* Top Company Row */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform">
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform shrink-0">
                             {intern.logo || '🏢'}
                           </div>
                           <div>
-                            <h4 className="text-sm font-extrabold text-white group-hover:text-brand-teal transition-colors">
-                              {intern.company}
-                            </h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-extrabold text-white group-hover:text-brand-teal transition-colors">
+                                {intern.company}
+                              </h4>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                intern.status === 'Closed'
+                                  ? 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
+                                  : intern.status === 'Closing Soon'
+                                  ? 'bg-amber-400 text-black border border-amber-300 font-extrabold animate-pulse'
+                                  : intern.status === 'Upcoming'
+                                  ? 'bg-blue-900/80 text-cyan-300 border border-cyan-500/30'
+                                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              }`}>
+                                {intern.status === 'Closed' ? 'Closed' : intern.status === 'Closing Soon' ? 'Closing Soon' : intern.status === 'Upcoming' ? 'Upcoming' : 'Live'}
+                              </span>
+                            </div>
                             <span className="text-[11px] text-gray-400 font-medium">📍 {intern.location}</span>
                           </div>
                         </div>
@@ -1077,6 +1195,30 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-400 flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-amber-400" /> Deadline:
+                          </span>
+                          <div className="text-right">
+                            <span className={`font-bold ${
+                              intern.status === 'Closed'
+                                ? 'text-rose-400 line-through'
+                                : intern.status === 'Closing Soon'
+                                ? 'text-amber-400 animate-pulse font-black'
+                                : 'text-gray-200'
+                            }`}>
+                              {intern.deadline || 'Rolling'}
+                            </span>
+                            {intern.remainingText && (
+                              <span className={`text-[10px] ml-1 font-semibold ${
+                                intern.status === 'Closed' ? 'text-rose-400/80' : intern.status === 'Closing Soon' ? 'text-amber-300 font-black' : 'text-gray-400'
+                              }`}>
+                                ({intern.remainingText})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-400 flex items-center gap-1">
                             <GraduationCap className="w-3.5 h-3.5 text-purple-400" /> Batches:
                           </span>
                           <span className="font-bold text-purple-300">{(intern.batches || []).join(', ')}</span>
@@ -1107,15 +1249,21 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         <span className="hidden sm:inline">AI Pitch Kit</span>
                       </button>
 
-                      <a
-                        href={intern.applyUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
-                      >
-                        <span>Apply Official</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
+                      {intern.status === 'Closed' ? (
+                        <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                          <span>Applications Closed</span>
+                        </span>
+                      ) : (
+                        <a
+                          href={intern.applyUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
+                        >
+                          <span>Apply Official</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 );

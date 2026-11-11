@@ -750,7 +750,11 @@ export default function CoursesPortal({ user, setActiveTab }) {
           <div className="flex flex-wrap gap-2">
             {[
               { id: 'all', label: 'All Courses' },
-              { id: 'courses', label: 'Core Engineering' },
+              { id: 'courses', label: 'Core Full-Stack' },
+              { id: 'aiml', label: 'AI & Data Science' },
+              { id: 'cloud', label: 'Cloud & DevOps' },
+              { id: 'security', label: 'Cybersecurity' },
+              { id: 'mobile', label: 'Mobile Engineering' },
               { id: 'languages', label: 'Programming Languages' },
               { id: 'problems', label: 'DSA & Algorithms' },
               { id: 'weekly', label: 'Arena Championships' }

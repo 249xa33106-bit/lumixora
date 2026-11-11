@@ -14,7 +14,8 @@ import {
 import { doc, setDoc, collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 import { 
-  DEFAULT_COLLEGES, isValidInstitutionalEmail, isTeammateEmail, decodeGprecRollNumber,
+  DEFAULT_COLLEGES, isValidInstitutionalEmail, isTeammateEmail, decodeGprecRollNumber, decodeVitApRollNumber,
+  decodeMitsRollNumber,
   isGprecScholar, hasPaidCollegeFee, recordLocalFeePayment, getStoredCustomColleges, fetchCollegesFromSupabase,
   isAnjum, isExemptFromPayment
 } from '../data/collegesData';
@@ -205,6 +206,30 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         roll: decoded.rollNumber,
         isPromptRequired: decoded.isPromptRequired
       };
+    } else if (domain === 'mits.ac.in' || domain?.includes('mits') || (selectedCollege && (selectedCollege.id === 'mits' || selectedCollege.code === 'MITS'))) {
+      isInstitutional = true;
+      detectedCollege = 'MITS DEEMED TO BE UNIVERSITY';
+      const decoded = decodeMitsRollNumber(prefix);
+      return {
+        isInstitutional,
+        college: detectedCollege,
+        department: decoded.department,
+        year: decoded.year,
+        roll: decoded.rollNumber,
+        isPromptRequired: false
+      };
+    } else if (domain === 'vitapstudent.ac.in' || domain === 'vitap.ac.in' || domain?.includes('vitap') || (selectedCollege && (selectedCollege.id === 'vitap' || selectedCollege.code === 'VIT-AP'))) {
+      isInstitutional = true;
+      detectedCollege = 'VIT-AP University';
+      const decoded = decodeVitApRollNumber(prefix);
+      return {
+        isInstitutional,
+        college: detectedCollege,
+        department: decoded.department,
+        year: decoded.year,
+        roll: decoded.rollNumber,
+        isPromptRequired: false
+      };
     } else if (domain?.includes('ashoka')) {
       isInstitutional = true;
       detectedCollege = "Ashoka Women's Engineering College";
@@ -295,7 +320,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const processOAuthUser = async (firebaseUser, providerName = 'Google') => {
     try {
       const oauthEmail = (firebaseUser.email || '').toLowerCase().trim();
-      const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com' || oauthEmail === '249xa33106@gmail.com' || oauthEmail === '249xa33106@gprec.ac.in';
+      const isFounderOrAdmin = oauthEmail === 'founder@lumixora.com'  ;
       const isAnjumUser = isAnjum(oauthEmail) || isAnjum(firebaseUser.displayName);
       const isAllowedDomain = isValidInstitutionalEmail(oauthEmail, customColleges) || isTeammateEmail(oauthEmail) || oauthEmail.endsWith('@gprec.ac.in') || isFounderOrAdmin || isAnjumUser;
       
@@ -472,7 +497,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       if (session?.user) {
         const sbEmail = (session.user.email || '').toLowerCase().trim();
         if (sbEmail) {
-          const isF = sbEmail === 'founder@lumixora.com' || sbEmail === '249xa33106@gmail.com';
+          const isF = sbEmail === 'founder@lumixora.com' ;
           const isAnjumUser = isAnjum(sbEmail);
           const isAllowedDomain = isValidInstitutionalEmail(sbEmail, customColleges) || isF || isAnjumUser;
           if (!isF && !isAnjumUser && !isAllowedDomain) {
@@ -789,7 +814,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
-      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' || cleanEmail === '249xa33106@gmail.com';
+      const isFounderOrAdmin = cleanEmail === 'founder@lumixora.com' ;
       const cleanPassword = password.trim();
 
       if (isLogin) {
@@ -1124,7 +1149,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
       return;
     }
 
-    const isF = query === 'founder@lumixora.com' || query === '249xa33106@gmail.com' || query === '249xa33106@gprec.ac.in';
+    const isF = query === 'founder@lumixora.com'  ;
     if (!isF && !isValidInstitutionalEmail(query, customColleges)) {
       setResetError('Security Access Restricted: Password reset is strictly available for official college accounts (e.g. @gprec.ac.in).');
       return;
