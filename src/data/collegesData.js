@@ -660,7 +660,7 @@ export const getCollegeIdFromUser = (user, customColleges = []) => {
 /**
  * Validates whether an entity belongs to GPREC (G. Pulla Reddy Engineering College)
  * or is an exempt administrator/founder/core-teammate.
- * Returns true if 100% exempt from the ₹10 registration/login fee.
+ * Note: GPREC students MUST pay the ?10 registration/access fee like all partner campuses.
  */
 export const isGprecScholar = (userOrEmail, collegeIdentifier) => {
   if (!userOrEmail && !collegeIdentifier) return false;
@@ -792,8 +792,8 @@ export const isExemptFromPayment = (userOrEmail) => {
     return true;
   }
 
-  // 1.2 GPREC Placement Scholars (Institutional contract covers fee)
-  if (email.endsWith('@gprec.ac.in') || (typeof userOrEmail === 'object' && (userOrEmail?.isGprecPlacementVerified || userOrEmail?.isGprecPlacementScholar))) {
+  // 1.2 Strictly GPREC TPO Placement Scholars only (Verified via Dean OTP; general students MUST pay ?10)
+  if (typeof userOrEmail === 'object' && (userOrEmail?.isGprecPlacementVerified === true || userOrEmail?.isGprecPlacementScholar === true)) {
     return true;
   }
 
