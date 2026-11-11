@@ -96,7 +96,7 @@ import FounderFacultyApprovals from '../components/FounderFacultyApprovals';
 import FounderCollegesManager from '../components/FounderCollegesManager';
 import FounderClubsManager from '../components/FounderClubsManager';
 import FounderFeedbackManager from '../components/FounderFeedbackManager';
-import { DEFAULT_COLLEGES, fetchCollegesFromSupabase, getStoredCustomColleges, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from '../data/collegesData';
+import { DEFAULT_COLLEGES, mergeCollegesWithDefaults, fetchCollegesFromSupabase, getStoredCustomColleges, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from '../data/collegesData';
 
 // --- Mentor Connect & Doubt Manager ---
 function FounderDoubtManager() {
@@ -930,7 +930,7 @@ export default function FounderPortal({ user, setActiveTab }) {
               setDoc(doc(db, 'college_tenants', col.id), col, { merge: true }).catch(() => {});
             });
           }
-          const finalList = [...missingDefaults, ...fetched];
+          const finalList = mergeCollegesWithDefaults(fetched);
           setOnboardedTenants(finalList);
         }, () => {});
       } catch (e) {}

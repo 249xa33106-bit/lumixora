@@ -237,13 +237,74 @@ export const DEFAULT_COLLEGES = [
   }
 ];
 
+/**
+ * Resolves the official logo image path for any partner college.
+ * Ensures that stale browser cache or generic building emojis ('🏛️')
+ * never overwrite the official uploaded image emblems.
+ */
+export const resolveCollegeLogo = (logo, idOrObject) => {
+  if (logo && typeof logo === 'string') {
+    const trimmed = logo.trim();
+    if (
+      trimmed.startsWith('/') ||
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://') ||
+      trimmed.includes('.png') ||
+      trimmed.includes('.jpg') ||
+      trimmed.includes('.svg') ||
+      trimmed.includes('.webp')
+    ) {
+      return trimmed;
+    }
+  }
+
+  const collegeId = (typeof idOrObject === 'string' ? idOrObject : (idOrObject?.id || idOrObject?.code))?.toLowerCase()?.trim();
+  if (collegeId) {
+    const defaultCol = DEFAULT_COLLEGES.find(
+      c => c.id.toLowerCase() === collegeId || (c.code && c.code.toLowerCase() === collegeId)
+    );
+    if (defaultCol && defaultCol.logo && (defaultCol.logo.startsWith('/') || defaultCol.logo.startsWith('http'))) {
+      return defaultCol.logo;
+    }
+  }
+
+  return (logo && logo !== '🏛️') ? logo : (DEFAULT_COLLEGES.find(c => c.id.toLowerCase() === collegeId)?.logo || logo || '🏛️');
+};
+
+
+/**
+ * Merges custom/fetched college tenants with DEFAULT_COLLEGES,
+ * guaranteeing that official logo image paths are never replaced with generic building emojis.
+ */
+export const mergeCollegesWithDefaults = (customList = []) => {
+  const map = new Map();
+  DEFAULT_COLLEGES.forEach(c => map.set(c.id, { ...c, logo: resolveCollegeLogo(c.logo, c) }));
+  if (Array.isArray(customList)) {
+    customList.forEach(c => {
+      if (c && c.id && c.id !== 'init' && !c.is_deleted && !c.isDeleted) {
+        const base = map.get(c.id) || {};
+        const logo = resolveCollegeLogo(c.logo || base.logo, c.id || base.id);
+        map.set(c.id, { ...base, ...c, logo });
+      }
+    });
+  }
+  return Array.from(map.values()).map(c => ({
+    ...c,
+    logo: resolveCollegeLogo(c.logo, c)
+  }));
+};
+
 export const getStoredCustomColleges = () => {
   try {
     if (typeof window === 'undefined' || !window.localStorage) return [];
     const raw = localStorage.getItem('lumixora_custom_college_tenants');
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(c => ({
+      ...c,
+      logo: resolveCollegeLogo(c?.logo, c)
+    }));
   } catch (e) {
     return [];
   }
@@ -284,7 +345,7 @@ export const fetchCollegesFromSupabase = async () => {
           shortName: row.name,
           code: row.id.toUpperCase(),
           domains,
-          logo: row.logo || '🏛️',
+          logo: resolveCollegeLogo(row.logo, tenantId),
           isActive: row.active !== false,
           isFeeExempt: false,
           feeAmount: 10,
@@ -310,9 +371,16 @@ export const fetchCollegesFromSupabase = async () => {
       // Merge with stored local
       const stored = getStoredCustomColleges();
       const combined = new Map();
-      stored.forEach(c => combined.set(c.id, c));
-      fetchedColleges.forEach(c => combined.set(c.id, { ...(combined.get(c.id) || {}), ...c }));
-      const mergedList = Array.from(combined.values());
+      stored.forEach(c => combined.set(c.id, { ...c, logo: resolveCollegeLogo(c.logo, c) }));
+      fetchedColleges.forEach(c => {
+        const base = combined.get(c.id) || {};
+        const logo = resolveCollegeLogo(c.logo || base.logo, c.id || base.id);
+        combined.set(c.id, { ...base, ...c, logo });
+      });
+      const mergedList = Array.from(combined.values()).map(c => ({
+        ...c,
+        logo: resolveCollegeLogo(c.logo, c)
+      }));
       saveCustomCollegesToStorage(mergedList);
       return mergedList;
     }

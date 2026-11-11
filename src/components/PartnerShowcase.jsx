@@ -8,6 +8,20 @@ import { Building2, Award, ShieldCheck, CheckCircle2, ExternalLink } from 'lucid
 export default function PartnerShowcase() {
   const INSTITUTION_PARTNERS = [
     {
+      id: 'vitap',
+      code: 'VIT-AP',
+      name: 'VIT-AP University',
+      status: 'Institution of Eminence • Global',
+      location: 'Near Vijayawada, AP',
+      badge: 'Elite Tech University',
+      accent: '#6366f1',
+      bgGlow: 'rgba(99, 102, 241, 0.15)',
+      initials: 'VIT-AP',
+      sub: 'Amaravati',
+      logoUrl: '/vitap_logo.png'
+    },
+
+    {
       id: 'gprec',
       code: 'GPREC',
       name: 'G. Pulla Reddy Engineering College',

@@ -25,7 +25,7 @@ import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 import { useTheme } from '../context/ThemeContext';
 import { FRAMES, ALL_ACHIEVEMENTS, getPlacementTier } from '../services/gamificationService';
-import { DEFAULT_COLLEGES } from '../data/collegesData';
+import { DEFAULT_COLLEGES, resolveCollegeLogo, mergeCollegesWithDefaults } from '../data/collegesData';
 
 const QUICK_FEATURES = [
   { id: 'dashboard', label: 'Omiverse Hub', icon: Home, highlight: true },
@@ -144,9 +144,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           fetched.push({ id: d.id, ...data });
         }
       });
-      const existingIds = new Set(fetched.map(c => c.id));
-      const missing = DEFAULT_COLLEGES.filter(c => !existingIds.has(c.id));
-      setCampusesList([...missing, ...fetched]);
+      const allCampuses = mergeCollegesWithDefaults(fetched);
+      setCampusesList(allCampuses);
     }, () => {});
 
     const handleCampusEvt = (e) => {

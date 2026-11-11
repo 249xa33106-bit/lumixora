@@ -5,7 +5,7 @@ import {
   Check, ExternalLink, ArrowRight, Layers, Eye
 } from 'lucide-react';
 import { 
-  DEFAULT_COLLEGES, B2B_LICENSING_TIERS, getStoredCustomColleges, 
+  DEFAULT_COLLEGES, resolveCollegeLogo, mergeCollegesWithDefaults, B2B_LICENSING_TIERS, getStoredCustomColleges, 
   saveCustomCollegesToStorage, fetchCollegesFromSupabase, saveCollegeToSupabase 
 } from '../data/collegesData';
 import { db } from '../config/firebase';
@@ -15,17 +15,7 @@ import { useToast } from '../context/ToastContext';
 
 export default function FounderCollegesManager() {
   const { addToast } = useToast();
-  const [colleges, setColleges] = useState(() => {
-    const stored = getStoredCustomColleges();
-    const map = new Map();
-    DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
-    stored.forEach(c => {
-      if (c && c.id && !c.is_deleted && !c.isDeleted) {
-        map.set(c.id, { ...(map.get(c.id) || {}), ...c });
-      }
-    });
-    return Array.from(map.values());
-  });
+  const [colleges, setColleges] = useState(() => mergeCollegesWithDefaults(getStoredCustomColleges()));
   const [editingCollege, setEditingCollege] = useState(null);
   const [activeCampusId, setActiveCampusId] = useState(() => {
     return localStorage.getItem('lumixora_active_campus_id') || 'all';
@@ -54,16 +44,7 @@ export default function FounderCollegesManager() {
     // 1. Initial sync from local storage
     const stored = getStoredCustomColleges();
     if (stored.length > 0) {
-      setColleges(() => {
-        const map = new Map();
-        DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
-        stored.forEach(c => {
-          if (c && c.id && !c.is_deleted && !c.isDeleted) {
-            map.set(c.id, { ...(map.get(c.id) || {}), ...c });
-          }
-        });
-        return Array.from(map.values());
-      });
+      setColleges(mergeCollegesWithDefaults(stored));
     }
 
     // 2. Fetch fresh cloud partner colleges from Supabase
@@ -71,16 +52,7 @@ export default function FounderCollegesManager() {
       try {
         const customList = await fetchCollegesFromSupabase();
         if (customList && customList.length > 0) {
-          setColleges(() => {
-            const map = new Map();
-            DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
-            customList.forEach(c => {
-              if (c && c.id && !c.is_deleted && !c.isDeleted) {
-                map.set(c.id, { ...(map.get(c.id) || {}), ...c });
-              }
-            });
-            return Array.from(map.values());
-          });
+          setColleges(mergeCollegesWithDefaults(customList));
         }
       } catch (e) {}
     };
@@ -89,16 +61,7 @@ export default function FounderCollegesManager() {
     // 3. Listen to custom event when colleges change
     const handleUpdate = (e) => {
       if (e?.detail) {
-        setColleges(() => {
-          const map = new Map();
-          DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
-          e.detail.forEach(c => {
-            if (c && c.id && !c.is_deleted && !c.isDeleted) {
-              map.set(c.id, { ...(map.get(c.id) || {}), ...c });
-            }
-          });
-          return Array.from(map.values());
-        });
+        setColleges(mergeCollegesWithDefaults(e.detail));
       }
     };
     window.addEventListener('lumixora_colleges_updated', handleUpdate);

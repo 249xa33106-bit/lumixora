@@ -29,12 +29,18 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const [feeModalUser, setFeeModalUser] = useState(null);
   const [feeModalMode, setFeeModalMode] = useState('login'); // 'login' | 'registration'
   const [selectedCollege, setSelectedCollege] = useState(() => {
-    if (mode === 'teammate' || mode === 'team') {
-      return { id: 'team', name: 'Vyomra Core Team Contributor', shortName: 'Core Team', code: 'TEAM', logo: '⚡' };
-    }
-    if (mode === 'intern') {
-      return { id: 'intern', name: 'Lumixora Autonomous Engineering Internship Program', shortName: 'Lumixora Interns', code: 'INTERN', logo: '🚀' };
-    }
+    try {
+      const saved = localStorage.getItem('lumixora_selected_college');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) {
+          return {
+            ...parsed,
+            logo: resolveCollegeLogo(parsed.logo, parsed)
+          };
+        }
+      }
+    } catch (e) {}
     return null;
   });
   const [authMode, setAuthMode] = useState(mode || 'student');
@@ -173,14 +179,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
   // Compute unified, deduplicated list of all available colleges
   const allAvailableColleges = useMemo(() => {
-    const map = new Map();
-    DEFAULT_COLLEGES.forEach(c => map.set(c.id, c));
-    customColleges.forEach(c => {
-      if (c && c.id && c.id !== 'init' && !c.is_deleted && !c.isDeleted) {
-        map.set(c.id, { ...(map.get(c.id) || {}), ...c });
-      }
-    });
-    return Array.from(map.values());
+    return mergeCollegesWithDefaults(customColleges);
   }, [customColleges]);
 
   // AI & Domain Auto-Detection Intelligence with exact GPREC rules
@@ -1242,11 +1241,12 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           {/* Campus Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allAvailableColleges.map((col) => {
+              const displayLogo = resolveCollegeLogo(col.logo, col);
               return (
                 <div
                   key={col.id}
                   onClick={() => {
-                    setSelectedCollege(col);
+                    setSelectedCollege({ ...col, logo: displayLogo });
                     setCollegeName(col.shortName || col.name || col.code);
                     setError('');
                     // If previously typed email belongs to a different college, reset it so placeholder displays cleanly
@@ -1260,11 +1260,11 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
 
                   <div>
                     <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
-                        {col.logo && (col.logo.startsWith('/') || col.logo.startsWith('http') || col.logo.includes('.png')) ? (
-                          <img src={col.logo} alt={col.shortName || col.name} className="w-full h-full object-contain" />
+                      <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform overflow-hidden p-2">
+                        {displayLogo && (displayLogo.startsWith('/') || displayLogo.startsWith('http') || displayLogo.includes('.png')) ? (
+                          <img src={displayLogo} alt={col.shortName || col.name} className="w-full h-full object-contain" />
                         ) : (
-                          col.logo || '🏛️'
+                          displayLogo || '🏛️'
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
@@ -1353,11 +1353,14 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
             </button>
 
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-[#00f5d4]">
-              {selectedCollege.logo && (selectedCollege.logo.startsWith('/') || selectedCollege.logo.startsWith('http') || selectedCollege.logo.includes('.png')) ? (
-                <img src={selectedCollege.logo} alt={selectedCollege.shortName} className="w-4 h-4 object-contain rounded-full" />
-              ) : (
-                <span>{selectedCollege.logo || '🏛️'}</span>
-              )}
+              {(() => {
+                const sLogo = resolveCollegeLogo(selectedCollege?.logo, selectedCollege);
+                return sLogo && (sLogo.startsWith('/') || sLogo.startsWith('http') || sLogo.includes('.png')) ? (
+                  <img src={sLogo} alt={selectedCollege?.shortName} className="w-4 h-4 object-contain rounded-full" />
+                ) : (
+                  <span>{sLogo || '🏛️'}</span>
+                );
+              })()}
               <span>{selectedCollege.shortName || selectedCollege.code}</span>
             </div>
           </div>
