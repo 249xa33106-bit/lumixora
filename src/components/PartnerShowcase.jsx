@@ -17,7 +17,8 @@ export default function PartnerShowcase() {
       accent: '#06b6d4',
       bgGlow: 'rgba(6, 182, 212, 0.15)',
       initials: 'GPREC',
-      sub: 'Est. 1985'
+      sub: 'Est. 1985',
+      logoUrl: '/gprec_logo.png'
     },
     {
       id: 'ashoka',
@@ -89,7 +90,8 @@ export default function PartnerShowcase() {
       accent: '#06b6d4',
       bgGlow: 'rgba(6, 182, 212, 0.15)',
       initials: 'MITS',
-      sub: 'Madanapalle'
+      sub: 'Madanapalle',
+      logoUrl: '/mits_logo.png'
     }
   ];
 
@@ -156,8 +158,14 @@ export default function PartnerShowcase() {
                     boxShadow: `0 4px 16px ${col.accent}30`
                   }}
                 >
-                  <span className="text-sm font-black tracking-tighter text-white font-mono">{col.initials}</span>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-cyan-300 -mt-0.5">{col.sub}</span>
+                  {col.logoUrl ? (
+                    <img src={col.logoUrl} alt={col.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-sm font-black tracking-tighter text-white font-mono">{col.initials}</span>
+                  )}
+                  {!col.logoUrl && (
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-cyan-300 -mt-0.5">{col.sub}</span>
+                  )}
                 </div>
 
                 {/* Details */}

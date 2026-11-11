@@ -1261,7 +1261,11 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
                   <div>
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
-                        {col.logo || '🏛️'}
+                        {col.logo && (col.logo.startsWith('/') || col.logo.startsWith('http') || col.logo.includes('.png')) ? (
+                          <img src={col.logo} alt={col.shortName || col.name} className="w-full h-full object-contain" />
+                        ) : (
+                          col.logo || '🏛️'
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
                         <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-black text-gray-300">
@@ -1349,7 +1353,11 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
             </button>
 
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-[#00f5d4]">
-              <span>{selectedCollege.logo || '🏛️'}</span>
+              {selectedCollege.logo && (selectedCollege.logo.startsWith('/') || selectedCollege.logo.startsWith('http') || selectedCollege.logo.includes('.png')) ? (
+                <img src={selectedCollege.logo} alt={selectedCollege.shortName} className="w-4 h-4 object-contain rounded-full" />
+              ) : (
+                <span>{selectedCollege.logo || '🏛️'}</span>
+              )}
               <span>{selectedCollege.shortName || selectedCollege.code}</span>
             </div>
           </div>

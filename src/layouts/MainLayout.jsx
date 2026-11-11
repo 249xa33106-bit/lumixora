@@ -1076,7 +1076,11 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-base">{c.logo || '🏛️'}</span>
+                            {c.logo && (c.logo.startsWith('/') || c.logo.startsWith('http') || c.logo.includes('.png')) ? (
+                              <img src={c.logo} alt={c.name} className="w-5 h-5 object-contain rounded-full inline-block" />
+                            ) : (
+                              <span className="text-base">{c.logo || '🏛️'}</span>
+                            )}
                             <div className="max-w-[170px] truncate">
                               <p className="font-extrabold text-white text-xs truncate">{c.shortName || c.name}</p>
                               <p className="text-[10px] text-gray-400 truncate">{c.code || c.id} • {c.licenseTier || 'Pro'}</p>

@@ -355,7 +355,11 @@ export default function FounderCollegesManager() {
                     : 'text-gray-300 hover:bg-white/10'
                 }`}
               >
-                <span>{c.logo || '🏛️'}</span>
+                {c.logo && (c.logo.startsWith('/') || c.logo.startsWith('http') || c.logo.includes('.png')) ? (
+                  <img src={c.logo} alt={c.code} className="w-4 h-4 object-contain rounded-full inline-block" />
+                ) : (
+                  <span>{c.logo || '🏛️'}</span>
+                )}
                 <span>{c.code || c.shortName}</span>
               </button>
             ))}
@@ -555,7 +559,11 @@ export default function FounderCollegesManager() {
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl">{c.logo || '🏛️'}</span>
+                    {c.logo && (c.logo.startsWith('/') || c.logo.startsWith('http') || c.logo.includes('.png')) ? (
+                      <img src={c.logo} alt={c.name} className="w-8 h-8 object-contain rounded-lg border border-white/10 p-0.5 bg-white/5" />
+                    ) : (
+                      <span className="text-2xl">{c.logo || '🏛️'}</span>
+                    )}
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-black bg-amber-400/20 text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded-full uppercase">
                         {c.licenseTier || 'Pro'}
