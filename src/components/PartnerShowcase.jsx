@@ -30,7 +30,8 @@ export default function PartnerShowcase() {
       accent: '#ec4899',
       bgGlow: 'rgba(236, 72, 153, 0.15)',
       initials: 'AWEC',
-      sub: 'Est. 2008'
+      sub: 'Est. 2008',
+      logoUrl: '/ashoka_logo.png'
     },
     {
       id: 'rgukt',
@@ -42,7 +43,8 @@ export default function PartnerShowcase() {
       accent: '#8b5cf6',
       bgGlow: 'rgba(139, 92, 246, 0.15)',
       initials: 'RGUKT',
-      sub: 'IIIT Campus'
+      sub: 'IIIT Campus',
+      logoUrl: '/rgukt_logo.png'
     },
     {
       id: 'aits',
@@ -54,7 +56,8 @@ export default function PartnerShowcase() {
       accent: '#10b981',
       bgGlow: 'rgba(16, 185, 129, 0.15)',
       initials: 'AITS',
-      sub: 'Est. 1998'
+      sub: 'Est. 1998',
+      logoUrl: '/annamacharya_logo.png'
     },
     {
       id: 'svce',
@@ -66,7 +69,8 @@ export default function PartnerShowcase() {
       accent: '#f59e0b',
       bgGlow: 'rgba(245, 158, 11, 0.15)',
       initials: 'SVCE',
-      sub: 'Tirupati'
+      sub: 'Tirupati',
+      logoUrl: '/svce_logo.png'
     },
     {
       id: 'necn',
@@ -78,7 +82,8 @@ export default function PartnerShowcase() {
       accent: '#3b82f6',
       bgGlow: 'rgba(59, 130, 246, 0.15)',
       initials: 'NEC',
-      sub: 'Nellore'
+      sub: 'Nellore',
+      logoUrl: '/nec_logo.png'
     },
     {
       id: 'mits',
