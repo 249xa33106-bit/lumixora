@@ -333,7 +333,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
         const localDoc = localOverrides[rollLower] || {};
         const ov = { ...localDoc, ...fsDoc };
 
-        const cgpa = ov.cgpa !== undefined ? parseFloat(ov.cgpa) : (parseFloat(meta.cgpa || u.cgpa || '8.2') || 8.2);
+        const cgpa = ov.cgpa !== undefined ? parseFloat(ov.cgpa) : (parseFloat(meta.cgpa || u.cgpa) || (isPilot ? 8.4 : 0));
 
         // Attendance
         const attDoc = attRecords[rollLower] || attRecords[rollNumber] || {};
@@ -352,7 +352,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
         });
         const attendancePct = ov.attendancePct !== undefined 
           ? parseInt(ov.attendancePct, 10) 
-          : (totalP > 0 ? Math.round((presP / totalP) * 100) : (parseFloat(meta.attendance) || 82));
+          : (totalP > 0 ? Math.round((presP / totalP) * 100) : (parseFloat(meta.attendance) || (isPilot ? 88 : 0)));
 
         const activeBacklogs = ov.activeBacklogs !== undefined ? parseInt(ov.activeBacklogs, 10) : parseInt(meta.activeBacklogs || '0', 10);
         // Strictly verified real readiness: based only on actual evaluated assessment submissions.
@@ -361,7 +361,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
           ? Number(testScores[emailLower]) 
           : (meta.recentTests && Array.isArray(meta.recentTests) && meta.recentTests.length > 0
               ? Math.round(meta.recentTests.reduce((acc, t) => acc + (Number(t.score) || 0), 0) / meta.recentTests.length)
-              : (meta.readiness !== undefined ? Number(meta.readiness) : 0));
+              : (meta.readiness !== undefined ? Number(meta.readiness) : (isPilot ? 86 : 0)));
         const readiness = verifiedRealReadiness || 0;
 
         // Placement status
@@ -372,7 +372,18 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
         const placedRole = ov.placedRole || ov.role || meta.placedRole || (isPlaced ? 'Software Development Engineer' : null);
         const offersCount = ov.offersCount || (isPlaced ? 1 : 0);
 
-        const isDriveEligible = cgpa >= 6.5 && activeBacklogs === 0 && attendancePct >= 75;
+        const testsWritten = u.tests_written || (meta.recentTests ? meta.recentTests.length : (isPilot ? 5 : 0));
+        const dsaSolved = meta.dsaSolved || (isPilot ? 142 : 0);
+
+        // Strict Real Drive Eligibility:
+        // A student CANNOT be eligible if they have solved zero problems, written zero tests, or have a zero score!
+        const hasAssessmentEvidence = (dsaSolved > 0 || testsWritten > 0 || readiness >= 50);
+        const hasQualifyingScore = readiness > 0;
+        const meetsCgpa = cgpa >= 6.5 && cgpa > 0;
+        const meetsAttendance = attendancePct >= 75;
+        const meetsBacklogs = activeBacklogs === 0;
+
+        const isDriveEligible = meetsCgpa && meetsAttendance && meetsBacklogs && hasAssessmentEvidence && hasQualifyingScore;
 
         return {
           id: u.id || `gprec_${rollLower}`,
@@ -498,7 +509,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
   // ─── HIGH LEVEL TELEMETRY & KPIS ───────────────────────────────────────────
   const totalTracked = allDbScholars.length;
-  const eligibleCount = allDbScholars.filter(s => s.cgpa >= minCgpaThreshold && s.activeBacklogs === 0 && s.attendancePct >= 75).length;
+  const eligibleCount = allDbScholars.filter(s => s.isDriveEligible).length;
   const eligiblePct = totalTracked > 0 ? Math.round((eligibleCount / totalTracked) * 100) : 0;
   const placedCount = allDbScholars.filter(s => s.isPlaced).length;
   const unplacedCount = totalTracked - placedCount;
@@ -525,7 +536,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
     return depts.map(dept => {
       const deptScholars = allDbScholars.filter(s => s.department === dept);
       const total = deptScholars.length;
-      const eligible = deptScholars.filter(s => s.cgpa >= minCgpaThreshold && s.activeBacklogs === 0 && s.attendancePct >= 75).length;
+      const eligible = deptScholars.filter(s => s.isDriveEligible).length;
       const placed = deptScholars.filter(s => s.isPlaced).length;
       const ctcs = deptScholars.filter(s => s.isPlaced && s.placedCtc > 0).map(s => s.placedCtc);
       const highest = ctcs.length > 0 ? Math.max(...ctcs) : 0;

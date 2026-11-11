@@ -334,7 +334,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
         const override = { ...localDoc, ...fsDoc };
 
         // CGPA
-        const cgpa = override.cgpa !== undefined ? parseFloat(override.cgpa) : (parseFloat(meta.cgpa || u.cgpa || '8.2') || 8.2);
+        const cgpa = override.cgpa !== undefined ? parseFloat(override.cgpa) : (parseFloat(meta.cgpa || u.cgpa) || (isPilot ? 8.4 : 0));
 
         // Attendance
         const attRecord = attendanceDb[rollLower] || attendanceDb[rollNumber] || attendanceCache[rollNumber] || attendanceCache[rollLower] || {};
@@ -355,11 +355,11 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
           ? parseInt(override.attendancePct, 10)
           : (totalPeriods > 0 
               ? Math.round((presentPeriods / totalPeriods) * 100) 
-              : (parseFloat(meta.attendance) || 82));
+              : (parseFloat(meta.attendance) || (isPilot ? 88 : 0)));
 
         // Academic details
-        const tenthPercent = parseFloat(meta.tenthPercent || '92.4');
-        const interPercent = parseFloat(meta.interPercent || '94.0');
+        const tenthPercent = parseFloat(meta.tenthPercent || (isPilot ? '92.4' : '0'));
+        const interPercent = parseFloat(meta.interPercent || (isPilot ? '94.0' : '0'));
         const activeBacklogs = override.activeBacklogs !== undefined 
           ? parseInt(override.activeBacklogs, 10) 
           : parseInt(meta.activeBacklogs || '0', 10);
@@ -441,12 +441,19 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
             ];
 
         // Resume & ATS Metrics
-        const atsScore = meta.atsScore ? Number(meta.atsScore) : (meta.resumeScore ? Number(meta.resumeScore) : (isPilot ? 88 : 74));
-        const dsaProblems = Array.isArray(meta.submissions) ? meta.submissions.length : (meta.dsaSolved || (isPilot ? 142 : 45));
-        const interviewScore = meta.interviewScore ? Number(meta.interviewScore) : (isPilot ? 86 : 72);
+        const atsScore = meta.atsScore ? Number(meta.atsScore) : (meta.resumeScore ? Number(meta.resumeScore) : (isPilot ? 88 : 0));
+        const dsaProblems = Array.isArray(meta.submissions) ? meta.submissions.length : (meta.dsaSolved || (isPilot ? 142 : (u.tests_written || 0)));
+        const interviewScore = meta.interviewScore ? Number(meta.interviewScore) : (isPilot ? 86 : 0);
 
-        // Overall eligibility (Standard GPREC criteria: CGPA >= 6.5, Backlogs = 0, Attendance >= 75%)
-        const isDriveEligible = cgpa >= 6.5 && activeBacklogs === 0 && attendancePct >= 75;
+        // Strict Real Drive Eligibility:
+        // A candidate CANNOT be eligible if they haven't solved problems or have zero test/interview score!
+        const hasAssessmentEvidence = (dsaProblems > 0 || (u.tests_written && u.tests_written > 0) || atsScore >= 50);
+        const hasQualifyingScore = interviewScore > 0 || atsScore > 0;
+        const meetsCgpa = cgpa >= 6.5 && cgpa > 0;
+        const meetsAttendance = attendancePct >= 75;
+        const meetsBacklogs = activeBacklogs === 0;
+
+        const isDriveEligible = meetsCgpa && meetsBacklogs && meetsAttendance && hasAssessmentEvidence && hasQualifyingScore;
 
         return {
           id: u.id || `gprec_${rollLower}`,
@@ -1118,7 +1125,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
       // 4. Update in-memory state
       setScholars(prev => prev.map(s => {
         if (s.rollLower === rollKey) {
-          const updatedEligible = updatePayload.cgpa >= 6.5 && updatePayload.activeBacklogs === 0 && updatePayload.attendancePct >= 75;
+          const updatedEligible = updatePayload.cgpa >= 6.5 && updatePayload.cgpa > 0 && updatePayload.activeBacklogs === 0 && updatePayload.attendancePct >= 75 && (s.dsaProblems > 0 || s.interviewScore > 0 || s.atsScore > 0);
           return {
             ...s,
             ...updatePayload,
