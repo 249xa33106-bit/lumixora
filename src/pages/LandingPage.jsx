@@ -1589,6 +1589,7 @@ export default function LandingPage({ onLoginClick }) {
               <ul className="space-y-2 text-xs text-gray-300 font-medium">
                 <li><button onClick={() => handleAuth('student')} className="hover:text-white transition-colors cursor-pointer">For Students</button></li>
                 <li><button onClick={() => handleAuth('faculty')} className="hover:text-white transition-colors cursor-pointer">For Colleges</button></li>
+                <li><a href="https://tpo.lumixora.in" className="hover:text-amber-300 text-amber-200 transition-colors">TPO & Faculty Portal (tpo.lumixora.in)</a></li>
                 <li><button onClick={() => handleAuth('student')} className="hover:text-white transition-colors cursor-pointer">For Employers</button></li>
                 <li><button onClick={() => setShowAmbassadorModal(true)} className="hover:text-amber-400 transition-colors cursor-pointer text-amber-300">Campus Ambassador</button></li>
                 <li><button onClick={() => setShowTeamPortal(true)} className="hover:text-white transition-colors cursor-pointer">Our Team</button></li>

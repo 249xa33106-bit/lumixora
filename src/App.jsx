@@ -79,7 +79,8 @@ import GprecPlacementLanding from './components/GprecPlacementLanding';
 import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
 import GprecTpoPortal from './pages/GprecTpoPortal';
 import StudentPlacementDatabase from './pages/StudentPlacementDatabase';
-import { isGprecPlacementSubdomain, GPREC_PLACEMENT_PORTALS } from './utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS } from './utils/placementSubdomain';
+import TpoPortalLanding from './pages/TpoPortalLanding';
 
 function App() {
   const isGprecSubdomain = isGprecPlacementSubdomain();
@@ -159,6 +160,7 @@ function App() {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(null); // null, 'student', or 'faculty'
   const [showGprecLogin, setShowGprecLogin] = useState(false);
+  const [gprecLoginRole, setGprecLoginRole] = useState(isTpoSubdomain() ? 'officer' : 'student');
 
   const [showExitModal, setShowExitModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
@@ -576,9 +578,10 @@ function App() {
     const email = (user?.email || '').toLowerCase().trim();
     const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
     const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
+    const isTpoSub = isTpoSubdomain();
     const isGprecSub = isGprecPlacementSubdomain();
     const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
-    const defaultHomeTab = isOfficer 
+    const defaultHomeTab = (isTpoSub || isOfficer) 
       ? 'tpo-dashboard' 
       : (isGprecSub ? 'ai-commander' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
 
@@ -1576,6 +1579,32 @@ function App() {
         </ThemeProvider>
       );
     }
+    // 0. Dedicated TPO & Faculty Command Center Landing Page (when visiting tpo.lumixora.in without being logged in)
+    if (isTpoSubdomain()) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <TpoPortalLanding 
+              onLoginClick={(role) => {
+                setGprecLoginRole(role || 'officer');
+                setShowGprecLogin(true);
+              }}
+            />
+            <GprecPlacementLoginModal
+              isOpen={showGprecLogin}
+              defaultRole={gprecLoginRole || 'officer'}
+              onClose={() => setShowGprecLogin(false)}
+              onLoginSuccess={(verifiedUser) => {
+                handleLogin(verifiedUser);
+              }}
+            />
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     // GPREC Placement Suite Landing Page (when visiting gprec.lumixora.in without being logged in)
     if (isGprecPlacementSubdomain()) {
       return (
@@ -1585,12 +1614,17 @@ function App() {
             <GprecPlacementLanding 
               onEnterPlacement={(portalId) => {
                 setActiveTab(portalId || 'ai-commander');
+                setGprecLoginRole(portalId === 'tpo-dashboard' ? 'officer' : 'student');
                 setShowGprecLogin(true);
               }}
-              onLoginClick={() => setShowGprecLogin(true)}
+              onLoginClick={(role) => {
+                setGprecLoginRole(role || 'student');
+                setShowGprecLogin(true);
+              }}
             />
             <GprecPlacementLoginModal
               isOpen={showGprecLogin}
+              defaultRole={gprecLoginRole || 'student'}
               onClose={() => setShowGprecLogin(false)}
               onLoginSuccess={(verifiedUser) => {
                 handleLogin(verifiedUser);

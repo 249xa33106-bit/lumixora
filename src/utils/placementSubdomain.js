@@ -1,15 +1,71 @@
 /**
  * placementSubdomain.js
- * Central detector for GPREC Institutional Placement Suite
+ * Central detector for GPREC Institutional Placement Suite & TPO Subdomains
  * Matches:
- *  - Hostname containing "gprec." or "gprec-placement" or "gprec.lumixora"
- *  - Pathname starting with /gprec or /placement or /placements
- *  - Query param ?portal=gprec or ?portal=placement or ?subdomain=gprec
- *  - Hash starting with #gprec or #placement or #placements
+ *  - gprec.lumixora.in (Scholar & Placement Suite)
+ *  - tpo.lumixora.in (Dedicated TPO & Faculty Portal)
  */
+
+/**
+ * Detects whether the current session is on the dedicated TPO portal:
+ * Matches:
+ *  - Hostname containing "tpo." or "tpo.lumixora"
+ *  - Query param ?subdomain=tpo or ?portal=tpo or ?view=tpo
+ *  - Pathname /tpo or /tpo/
+ *  - Hash #tpo or #tpo-portal
+ */
+export function isTpoSubdomain() {
+  if (typeof window === 'undefined') return false;
+
+  const hostname = (window.location.hostname || '').toLowerCase();
+  const pathname = (window.location.pathname || '').toLowerCase();
+  const search = (window.location.search || '').toLowerCase();
+  const hash = (window.location.hash || '').toLowerCase();
+
+  // 1. Hostname detection (e.g. tpo.lumixora.in, tpo.lumixora.pages.dev)
+  if (
+    hostname.startsWith('tpo.') ||
+    hostname.includes('tpo.lumixora') ||
+    hostname.includes('tpo-lumixora')
+  ) {
+    return true;
+  }
+
+  // 2. Query param detection (e.g. lumixora.in/?subdomain=tpo or ?portal=tpo)
+  if (
+    search.includes('subdomain=tpo') ||
+    search.includes('portal=tpo') ||
+    search.includes('view=tpo') ||
+    search.includes('mode=tpo')
+  ) {
+    return true;
+  }
+
+  // 3. Pathname detection (e.g. /tpo or /tpo/dashboard)
+  if (
+    pathname === '/tpo' ||
+    pathname.startsWith('/tpo/')
+  ) {
+    return true;
+  }
+
+  // 4. Hash detection (e.g. #tpo or #tpo-portal)
+  if (
+    hash === '#tpo' ||
+    hash === '#tpo-portal' ||
+    hash.startsWith('#tpo/')
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 export function isGprecPlacementSubdomain() {
   if (typeof window === 'undefined') return false;
+
+  // If on tpo.lumixora.in, it is inherently part of the institutional placement ecosystem
+  if (isTpoSubdomain()) return true;
 
   const hostname = (window.location.hostname || '').toLowerCase();
   const pathname = (window.location.pathname || '').toLowerCase();
@@ -60,7 +116,7 @@ export function isGprecPlacementSubdomain() {
 }
 
 /**
- * Portals exclusively permitted on the GPREC Placement Suite
+ * Portals exclusively permitted on the GPREC Placement Suite & TPO Command Suite
  */
 export const GPREC_PLACEMENT_PORTALS = [
   'tpo-dashboard',      // Placement Officer Command Center

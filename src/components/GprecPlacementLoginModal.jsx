@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Mail, KeyRound, ArrowRight, CheckCircle2, 
   AlertCircle, RefreshCw, Lock, Sparkles, Building2, ChevronLeft, Eye, EyeOff,
@@ -19,9 +19,9 @@ import {
   GPREC_OFFICER_CONFIG 
 } from '../services/gprecOfficerAuth';
 
-export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSuccess }) {
+export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSuccess, defaultRole = 'student' }) {
   // Tabs: 'student' | 'officer'
-  const [authRole, setAuthRole] = useState('student');
+  const [authRole, setAuthRole] = useState(defaultRole || 'student');
 
   // Scholar State
   const [scholarStep, setScholarStep] = useState('roll'); // 'roll' | 'otp'
@@ -31,7 +31,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
   const [resendCooldown, setResendCooldown] = useState(0);
 
   // Officer / Dean State
-  const [officerEmail, setOfficerEmail] = useState(GPREC_OFFICER_CONFIG.deanEmail);
+  const [officerEmail, setOfficerEmail] = useState('');
   const [officerPassword, setOfficerPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [officerMode, setOfficerMode] = useState('login'); // 'login' | 'forgot' | 'reset'
@@ -42,6 +42,19 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Synchronize default role and reset inputs on modal open
+  useEffect(() => {
+    if (defaultRole) {
+      setAuthRole(defaultRole);
+    }
+    if (isOpen) {
+      setErrorMsg('');
+      setSuccessMsg('');
+      setOfficerEmail('');
+      setOfficerPassword('');
+    }
+  }, [defaultRole, isOpen]);
 
   if (!isOpen) return null;
 
@@ -463,6 +476,23 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
         {authRole === 'officer' && (
           officerMode === 'login' ? (
             <form onSubmit={handleOfficerLogin} className="space-y-4">
+              {/* Dedicated TPO Link Banner */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
+                <div className="flex items-center gap-1.5 text-[#0B132B] font-semibold">
+                  <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
+                  <span>Dedicated TPO & Faculty Node:</span>
+                </div>
+                <a
+                  href="https://tpo.lumixora.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono font-bold text-[#0B132B] hover:text-[#9A7328] hover:underline flex items-center gap-1"
+                >
+                  tpo.lumixora.in
+                  <ExternalLink className="w-3 h-3 text-[#C5A059]" />
+                </a>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
                   Placement Officer / Coordinator Email
@@ -472,38 +502,16 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                     type="email"
                     value={officerEmail}
                     onChange={(e) => setOfficerEmail(e.target.value)}
-                    placeholder="e.g. srikanth.csm@gprec.ac.in"
+                    placeholder="Enter official email (e.g. srikanth.csm@gprec.ac.in)"
                     className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-xs font-mono font-semibold text-[#0B132B] outline-none transition-all pr-10"
+                    autoFocus
                     required
                   />
                   <Mail className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 </div>
-                {/* Fast Select Options */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                  <span className="text-[10px] text-[#64748B]">Quick select:</span>
-                  <button
-                    type="button"
-                    onClick={() => { setOfficerEmail('srikanth.csm@gprec.ac.in'); setErrorMsg(''); }}
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors cursor-pointer ${
-                      officerEmail.toLowerCase() === 'srikanth.csm@gprec.ac.in'
-                        ? 'bg-[#0B132B] text-white border-[#0B132B] font-bold'
-                        : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                    }`}
-                  >
-                    srikanth.csm@gprec.ac.in
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setOfficerEmail('dean.placements@gprec.ac.in'); setErrorMsg(''); }}
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors cursor-pointer ${
-                      officerEmail.toLowerCase() === 'dean.placements@gprec.ac.in'
-                        ? 'bg-[#0B132B] text-white border-[#0B132B] font-bold'
-                        : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                    }`}
-                  >
-                    dean.placements@gprec.ac.in
-                  </button>
-                </div>
+                <p className="text-[11px] text-[#64748B]">
+                  Official GPREC placement officer or department coordinator email.
+                </p>
               </div>
 
               <div className="space-y-1.5">
