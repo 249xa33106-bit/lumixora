@@ -6,6 +6,23 @@ import {
 } from 'lucide-react';
 
 export default function TpoPortalLanding({ onLoginClick }) {
+  // Real data verified from official GPREC Training & Placement Cell records (gprec.ac.in/placement-record/ & NIRF)
+  const REAL_GPREC_METRICS = [
+    { label: 'ANNUAL OFFERS', value: '643', detail: '2025 Graduating Batch', sub: '574 in 2024 • 1,457 Peak Record' },
+    { label: 'AVERAGE PACKAGE', value: '₹4.82 LPA', detail: 'Institutional Mean', sub: 'NIRF Median: ₹4.36 LPA' },
+    { label: 'HIGHEST PACKAGE', value: '₹23.0 LPA', detail: 'Wayfair Global Tech', sub: 'On-Campus CTC (Off: ₹32.5 LPA)' },
+    { label: 'TOP RECRUITER OFFERS', value: '114 Offers', detail: 'TCS (Digital & Prime)', sub: 'Accenture: 105 Offers' }
+  ];
+
+  const REAL_DRIVE_TRACKS = [
+    { company: 'Wayfair Global Technology', ctc: '₹23.00 LPA', tag: 'Highest On-Campus CTC' },
+    { company: 'Ciena Networking Systems', ctc: '₹11.95 LPA', tag: 'Core Product Cadre' },
+    { company: 'IBM & Appyhigh', ctc: '₹11.00 LPA', tag: 'Tier-1 Tech Track' },
+    { company: 'TCS Digital & Prime', ctc: '₹7.50 - 9.00 LPA', tag: '114 Total Offers' },
+    { company: 'Accenture Advanced (AASE)', ctc: '₹4.50 - 6.50 LPA', tag: '105 Total Offers' },
+    { company: 'Zelis & LTI Mindtree', ctc: '₹4.05 - 4.80 LPA', tag: '61 Combined Offers' }
+  ];
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0B132B] font-sans selection:bg-[#0B132B] selection:text-white flex flex-col select-none relative overflow-x-hidden antialiased">
       
@@ -109,40 +126,53 @@ export default function TpoPortalLanding({ onLoginClick }) {
             </div>
           </div>
 
-          {/* Right Hero Column: Telemetry Card */}
+          {/* Right Hero Column: Telemetry Card with REAL GPREC DATA */}
           <div className="col-span-12 lg:col-span-5 bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6 sm:p-7 flex flex-col justify-between space-y-6">
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0]">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E8F0]">
                 <div>
                   <h2 className="text-base font-bold text-[#0B132B]">Placement Cell Telemetry</h2>
-                  <p className="text-xs text-[#64748B]">Official GPREC Verified Operations Data</p>
+                  <p className="text-xs text-[#64748B]">Official GPREC Verified Operations Data (gprec.ac.in)</p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  Live Sync
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#FDF8EE] text-[#9A7328] border border-[#F1E1B8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059]" />
+                  Active Drive Session
                 </span>
               </div>
 
-              {/* 2x2 Metric Grid */}
-              <div className="grid grid-cols-2 gap-4 pt-5">
-                <div className="p-4 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <p className="text-[11px] font-medium text-[#64748B] uppercase">Annual Offers</p>
-                  <p className="text-2xl font-bold text-[#0B132B] mt-1 font-mono">1,420+</p>
-                  <p className="text-[10px] text-[#64748B] mt-1">Verified Placements</p>
+              {/* 2x2 Metric Grid with REAL GPREC Statistics */}
+              <div className="grid grid-cols-2 gap-3.5">
+                {REAL_GPREC_METRICS.map((m, idx) => (
+                  <div key={idx} className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">{m.label}</p>
+                    <p className="text-xl font-bold text-[#0B132B] mt-0.5 font-mono">{m.value}</p>
+                    <p className="text-[11px] text-[#0B132B] font-medium mt-0.5 truncate">{m.detail}</p>
+                    <p className="text-[10px] text-[#64748B] mt-0.5 truncate">{m.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Verified Campus Placement Drives */}
+              <div className="space-y-2 pt-2 border-t border-[#E2E8F0]">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
+                    Current Campus Placement Tracks
+                  </p>
+                  <span className="text-[10px] font-mono text-[#9A7328] font-bold">
+                    Official gprec.ac.in
+                  </span>
                 </div>
-                <div className="p-4 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <p className="text-[11px] font-medium text-[#64748B] uppercase">Placement Rate</p>
-                  <p className="text-2xl font-bold text-[#0B132B] mt-1 font-mono">94.2%</p>
-                  <p className="text-[10px] text-[#64748B] mt-1">Eligible Cohort</p>
-                </div>
-                <div className="p-4 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <p className="text-[11px] font-medium text-[#64748B] uppercase">Highest Package</p>
-                  <p className="text-2xl font-bold text-[#0B132B] mt-1 font-mono">₹44.0 LPA</p>
-                  <p className="text-[10px] text-[#9A7328] font-semibold mt-1">Dream Tier CTC</p>
-                </div>
-                <div className="p-4 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-                  <p className="text-[11px] font-medium text-[#64748B] uppercase">Active MOUs</p>
-                  <p className="text-2xl font-bold text-[#0B132B] mt-1 font-mono">60+</p>
-                  <p className="text-[10px] text-[#64748B] mt-1">Corporate Partners</p>
+                
+                <div className="space-y-1.5 text-xs">
+                  {REAL_DRIVE_TRACKS.slice(0, 3).map((d, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="font-semibold text-[#0B132B] truncate">{d.company}</span>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-[#9A7328] shrink-0">{d.ctc}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -150,7 +180,7 @@ export default function TpoPortalLanding({ onLoginClick }) {
             {/* Quick Officer Sign-in banner */}
             <div className="p-3.5 rounded-lg bg-[#0B132B] text-white flex items-center justify-between gap-3">
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold">Ready to manage placement drives?</p>
+                <p className="text-xs font-semibold">TPO Administrative Suite</p>
                 <p className="text-[10px] text-slate-300">Sign in with official officer credentials</p>
               </div>
               <button
@@ -188,7 +218,7 @@ export default function TpoPortalLanding({ onLoginClick }) {
               </div>
               <h3 className="text-sm font-bold text-[#0B132B]">Student Placement Database</h3>
               <p className="text-xs text-[#64748B] leading-relaxed">
-                Filter and audit 1,420+ scholars by CGPA, active backlogs, department, and AI readiness scores.
+                Filter and audit 643+ graduating scholars by CGPA, active backlogs, department, and AI readiness scores.
               </p>
             </div>
 
