@@ -14,7 +14,7 @@ import {
 import { doc, setDoc, collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 import { 
-  DEFAULT_COLLEGES, isValidInstitutionalEmail, isTeammateEmail, decodeGprecRollNumber, decodeVitApRollNumber,
+  DEFAULT_COLLEGES, resolveCollegeLogo, mergeCollegesWithDefaults, isValidInstitutionalEmail, isTeammateEmail, decodeGprecRollNumber, decodeVitApRollNumber,
   decodeMitsRollNumber,
   isGprecScholar, hasPaidCollegeFee, recordLocalFeePayment, getStoredCustomColleges, fetchCollegesFromSupabase,
   isAnjum, isExemptFromPayment
