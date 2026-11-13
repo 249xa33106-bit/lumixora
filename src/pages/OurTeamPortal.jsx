@@ -55,28 +55,6 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 4
   },
   {
-    id: 'yaswitha',
-    name: 'RAAVI YASWITHA',
-    role: 'Problem Identification & User Testing',
-    division: 'feature-strategy',
-    divisionLabel: 'Feature Strategy & Product Innovation',
-    department: 'Feature Strategy Team',
-    lead: 'Under Feature Strategy Lead (C. Manasa)',
-    image: '/team_yaswitha.jpg',
-    color: 'amber',
-    gradient: 'from-amber-400 to-orange-500',
-    borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
-    bio: 'Drives student-centric problem discovery and usability testing. Evaluates prototype friction points and ensures every Vyomra feature is effortless to use.',
-    highlights: [
-      'Specializes in identifying day-to-day academic blockers and study habit bottlenecks.',
-      'Executes rigorous user testing protocols across diverse student batches.',
-      'Compiles structured usability reports for development sprints and design revamps.',
-      'Champions accessibility and simplicity across the student user journey.'
-    ],
-    skills: ['Problem Discovery', 'Usability Testing', 'Friction Analysis', 'User Feedback Loops', 'Quality Assurance'],
-    priority: 6
-  },
-  {
     id: 'ushasree',
     name: 'Y. USHA SREE',
     role: 'AI & Innovation Lead',

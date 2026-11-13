@@ -1,22 +1,4 @@
 export const teamMembersDetails = {
-  yaswitha: {
-    name: "RAAVI YASWITHA",
-    role: "Problem Identification & User Testing",
-    department: "Feature Strategy & Quality Engineering",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_yaswitha.jpg",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Specializes in identifying high-friction obstacles in the student learning experience, performing rigorous end-to-end user beta tests, and verifying problem-solution fit across Vyomra.",
-    highlights: [
-      "Pinpoints critical friction points and edge cases across student navigation and study flows.",
-      "Organizes and facilitates interactive student beta testing sessions for new Vyomra releases.",
-      "Gathers bug reports, performance bottlenecks, and UX feedback to drive iterative refinements.",
-      "Ensures every Vyomra feature delivers immediate, tangible value for daily student life."
-    ],
-    skills: ["Problem Identification", "User Beta Testing", "Usability Heuristics", "Feedback Synthesis", "Quality Validation"]
-  },
   manasa: {
     name: "C. MANASA",
     role: "Product Innovation Lead — Head of Feature Strategy & Student Insights",
@@ -28,7 +10,7 @@ export const teamMembersDetails = {
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
     bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
     highlights: [
-      "Directs the Feature Strategy team (including Raavi Yaswitha) in discovering student pain points.",
+      "Directs the Feature Strategy team in discovering student pain points.",
       "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
       "Aligns product initiatives with student academic success metrics and user retention goals.",
       "Bridges student communities and tech architects to accelerate feature delivery."

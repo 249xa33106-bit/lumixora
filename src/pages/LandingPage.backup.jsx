@@ -5,24 +5,6 @@ import CampusAmbassadorModal from '../components/CampusAmbassadorModal';
 
 
 const teamMembersDetails = {
-  yaswitha: {
-    name: "RAAVI YASWITHA",
-    role: "Problem Identification & User Testing",
-    department: "Feature Strategy & Quality Engineering",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_yaswitha.jpg",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Specializes in identifying high-friction obstacles in the student learning experience, performing rigorous end-to-end user beta tests, and verifying problem-solution fit across Vyomra.",
-    highlights: [
-      "Pinpoints critical friction points and edge cases across student navigation and study flows.",
-      "Organizes and facilitates interactive student beta testing sessions for new Vyomra releases.",
-      "Gathers bug reports, performance bottlenecks, and UX feedback to drive iterative refinements.",
-      "Ensures every Vyomra feature delivers immediate, tangible value for daily student life."
-    ],
-    skills: ["Problem Identification", "User Beta Testing", "Usability Heuristics", "Feedback Synthesis", "Quality Validation"]
-  },
   manasa: {
     name: "C. MANASA",
     role: "Product Innovation Lead — Head of Feature Strategy & Student Insights",
@@ -34,7 +16,7 @@ const teamMembersDetails = {
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
     bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
     highlights: [
-      "Directs the Feature Strategy team (including Raavi Yaswitha) in discovering student pain points.",
+      "Directs the Feature Strategy team in discovering student pain points.",
       "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
       "Aligns product initiatives with student academic success metrics and user retention goals.",
       "Bridges student communities and tech architects to accelerate feature delivery."
@@ -1186,37 +1168,6 @@ export default function LandingPage({ onLoginClick }) {
                   <p className="text-xs font-bold text-gray-400">Product Innovation Lead</p>
                   <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
                     Discovers real campus problems, researches student pain points, and conceptualizes breakthrough features.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 4: RAAVI YASWITHA */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.yaswitha)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_yaswitha.jpg" 
-                  name="RAAVI YASWITHA" 
-                  gradient="from-amber-400 to-orange-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
-                    Feature Strategy
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">RAAVI YASWITHA</h3>
-                  <p className="text-xs font-bold text-gray-400">Problem Identification & User Testing</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Identifies core student friction points and performs end-to-end user beta tests for seamless UX quality.
                   </p>
                 </div>
               </div>
