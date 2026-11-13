@@ -55,28 +55,6 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 4
   },
   {
-    id: 'vamsika',
-    name: 'PERAM VAMSIKA',
-    role: 'Feature Research & Student Insights',
-    division: 'feature-strategy',
-    divisionLabel: 'Feature Strategy & Product Innovation',
-    department: 'Feature Strategy Team',
-    lead: 'Under Feature Strategy Lead (C. Manasa)',
-    image: '/team_vamsika.png',
-    color: 'amber',
-    gradient: 'from-amber-400 to-orange-500',
-    borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
-    bio: 'Key driver in Vyomra Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research.',
-    highlights: [
-      'Conducts in-depth qualitative & quantitative campus surveys to uncover real student pain points.',
-      'Researches and benchmarks top-tier EdTech solutions to ideate intuitive platform features.',
-      'Collaborates directly with UI/UX and engineering teams to transform student feedback into roadmaps.',
-      'Validates feature prototypes against real academic workflows before general release.'
-    ],
-    skills: ['Student Insights', 'Feature Viability Research', 'Workflow Optimization', 'UX Discovery', 'Survey Analytics'],
-    priority: 5
-  },
-  {
     id: 'yaswitha',
     name: 'RAAVI YASWITHA',
     role: 'Problem Identification & User Testing',

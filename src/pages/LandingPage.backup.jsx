@@ -5,24 +5,6 @@ import CampusAmbassadorModal from '../components/CampusAmbassadorModal';
 
 
 const teamMembersDetails = {
-  vamsika: {
-    name: "PERAM VAMSIKA",
-    role: "Feature Research & Student Insights",
-    department: "Feature Strategy & Product Innovation",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_vamsika.png",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Key driver in Vyomra's Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research to make learning seamless.",
-    highlights: [
-      "Conducts in-depth qualitative & quantitative campus surveys to uncover real student pain points.",
-      "Researches and benchmarks top-tier EdTech solutions to ideate intuitive platform features.",
-      "Collaborates directly with UI/UX and engineering teams to transform student feedback into actionable roadmaps.",
-      "Validates feature prototypes against real academic workflows before general release."
-    ],
-    skills: ["Student Insights", "Feature Viability Research", "Workflow Optimization", "UX Discovery", "Survey Analytics"]
-  },
   yaswitha: {
     name: "RAAVI YASWITHA",
     role: "Problem Identification & User Testing",
@@ -52,7 +34,7 @@ const teamMembersDetails = {
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
     bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
     highlights: [
-      "Directs the Feature Strategy team (including Peram Vamsika & Raavi Yaswitha) in discovering student pain points.",
+      "Directs the Feature Strategy team (including Raavi Yaswitha) in discovering student pain points.",
       "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
       "Aligns product initiatives with student academic success metrics and user retention goals.",
       "Bridges student communities and tech architects to accelerate feature delivery."
@@ -1204,37 +1186,6 @@ export default function LandingPage({ onLoginClick }) {
                   <p className="text-xs font-bold text-gray-400">Product Innovation Lead</p>
                   <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
                     Discovers real campus problems, researches student pain points, and conceptualizes breakthrough features.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 mt-5 text-center">
-                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
-              </div>
-            </div>
-
-            {/* Team Member 3: PERAM VAMSIKA */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.vamsika)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_vamsika.png" 
-                  name="PERAM VAMSIKA" 
-                  gradient="from-amber-400 to-orange-500" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
-                    Feature Strategy
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">PERAM VAMSIKA</h3>
-                  <p className="text-xs font-bold text-gray-400">Feature Research & Student Insights</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Conducts campus surveys and student workflow analysis to design practical, high-impact platform tools.
                   </p>
                 </div>
               </div>

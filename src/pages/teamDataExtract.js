@@ -1,22 +1,4 @@
 export const teamMembersDetails = {
-  vamsika: {
-    name: "PERAM VAMSIKA",
-    role: "Feature Research & Student Insights",
-    department: "Feature Strategy & Product Innovation",
-    lead: "Feature Strategy Team (under C. Manasa)",
-    image: "/team_vamsika.png",
-    color: "amber",
-    gradient: "from-amber-400 to-orange-500",
-    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
-    bio: "Key driver in Vyomra's Feature Strategy division, spearheading student needs discovery, academic workflow analysis, and real-time usability research to make learning seamless.",
-    highlights: [
-      "Conducts in-depth qualitative & quantitative campus surveys to uncover real student pain points.",
-      "Researches and benchmarks top-tier EdTech solutions to ideate intuitive platform features.",
-      "Collaborates directly with UI/UX and engineering teams to transform student feedback into actionable roadmaps.",
-      "Validates feature prototypes against real academic workflows before general release."
-    ],
-    skills: ["Student Insights", "Feature Viability Research", "Workflow Optimization", "UX Discovery", "Survey Analytics"]
-  },
   yaswitha: {
     name: "RAAVI YASWITHA",
     role: "Problem Identification & User Testing",
@@ -46,7 +28,7 @@ export const teamMembersDetails = {
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
     bio: "Leads the feature ideation engine at Vyomra. Identifies emerging campus challenges, analyzes student behavioural patterns, and directs product roadmap discovery.",
     highlights: [
-      "Directs the Feature Strategy team (including Peram Vamsika & Raavi Yaswitha) in discovering student pain points.",
+      "Directs the Feature Strategy team (including Raavi Yaswitha) in discovering student pain points.",
       "Authors feature specification documents and translates complex academic workflows into elegant software concepts.",
       "Aligns product initiatives with student academic success metrics and user retention goals.",
       "Bridges student communities and tech architects to accelerate feature delivery."
