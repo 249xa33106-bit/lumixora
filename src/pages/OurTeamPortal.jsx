@@ -79,11 +79,11 @@ export const DEFAULT_TEAM_MEMBERS = [
   {
     id: 'tousif',
     name: 'SHAIK TOUSIF BASHA',
-    role: 'AI Solutions & Prototyping Lead',
+    role: 'AI Solutions',
     division: 'ai-tech',
     divisionLabel: 'AI & Intelligent Systems',
     department: 'AI Solutions Division',
-    lead: 'Lead — AI Solutions & Rapid Prototyping',
+    lead: 'Lead — AI Solutions',
     image: '/team_tousif.jpg',
     color: 'blue',
     gradient: 'from-blue-400 via-indigo-500 to-cyan-400',
@@ -101,11 +101,11 @@ export const DEFAULT_TEAM_MEMBERS = [
   {
     id: 'riyaz',
     name: 'SYED RIYAZ',
-    role: 'AI Solutions & Prototyping Member',
+    role: 'AI Solutions',
     division: 'ai-tech',
     divisionLabel: 'AI & Intelligent Systems',
     department: 'AI Solutions Division',
-    lead: 'Under AI Solutions Lead (Shaik Tousif Basha)',
+    lead: 'Under AI Solutions (Shaik Tousif Basha)',
     image: '/team_riyaz.png',
     color: 'cyan',
     gradient: 'from-cyan-400 via-blue-500 to-indigo-500',
@@ -271,16 +271,26 @@ export default function OurTeamPortal({ user, setActiveTab }) {
   // Sync custom/updated team members from Firestore & LocalStorage
   useEffect(() => {
     try {
-      const cached = localStorage.getItem('lumixora_team_directory_cache');
+      const REMOVED_IDS = new Set(['vamsika', 'yaswitha', 'bhanusree', 'krishnasai']);
+      const sanitize = (item) => {
+        if (!item || REMOVED_IDS.has(item.id)) return null;
+        if (item.id === 'tousif') return { ...item, role: 'AI Solutions', lead: 'Lead — AI Solutions' };
+        if (item.id === 'riyaz') return { ...item, role: 'AI Solutions' };
+        return item;
+      };
+
+      const cached = localStorage.getItem('lumixora_team_directory_cache_v3');
       if (cached) {
         try {
           const parsedCache = JSON.parse(cached);
           if (Array.isArray(parsedCache) && parsedCache.length > 0) {
             const mergedCache = [...DEFAULT_TEAM_MEMBERS];
             parsedCache.forEach(cItem => {
-              const idx = mergedCache.findIndex(m => m.id === cItem.id);
-              if (idx >= 0) mergedCache[idx] = { ...mergedCache[idx], ...cItem };
-              else mergedCache.push(cItem);
+              const cleanItem = sanitize(cItem);
+              if (!cleanItem) return;
+              const idx = mergedCache.findIndex(m => m.id === cleanItem.id);
+              if (idx >= 0) mergedCache[idx] = { ...mergedCache[idx], ...cleanItem };
+              else mergedCache.push(cleanItem);
             });
             setTeamMembers(mergedCache);
           }
@@ -290,20 +300,26 @@ export default function OurTeamPortal({ user, setActiveTab }) {
       const unsub = onSnapshot(collection(db, 'lumixora_team_directory'), (snap) => {
         if (!snap.empty) {
           const dbList = [];
-          snap.forEach(d => dbList.push({ id: d.id, ...d.data() }));
+          snap.forEach(d => {
+            if (!REMOVED_IDS.has(d.id)) {
+              dbList.push({ id: d.id, ...d.data() });
+            }
+          });
           
           // Merge defaults with custom DB entries
           const merged = [...DEFAULT_TEAM_MEMBERS];
           dbList.forEach(dbItem => {
-            const idx = merged.findIndex(m => m.id === dbItem.id);
+            const cleanItem = sanitize(dbItem);
+            if (!cleanItem) return;
+            const idx = merged.findIndex(m => m.id === cleanItem.id);
             if (idx >= 0) {
-              merged[idx] = { ...merged[idx], ...dbItem };
+              merged[idx] = { ...merged[idx], ...cleanItem };
             } else {
-              merged.push(dbItem);
+              merged.push(cleanItem);
             }
           });
           setTeamMembers(merged);
-          localStorage.setItem('lumixora_team_directory_cache', JSON.stringify(dbList));
+          localStorage.setItem('lumixora_team_directory_cache_v3', JSON.stringify(dbList));
         }
       }, (err) => console.warn('Team directory sync note:', err));
       return () => unsub();
@@ -394,7 +410,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
       } else {
         updated = [...prev, payload];
       }
-      localStorage.setItem('lumixora_team_directory_cache', JSON.stringify(updated));
+      localStorage.setItem('lumixora_team_directory_cache_v3', JSON.stringify(updated));
       return updated;
     });
 

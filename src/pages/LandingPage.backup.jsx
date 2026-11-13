@@ -115,7 +115,7 @@ const teamMembersDetails = {
   },
   tousif: {
     name: "SHAIK TOUSIF BASHA",
-    role: "AI Solutions & Prototyping Lead",
+    role: "AI Solutions",
     department: "Rapid Prototyping & AI Labs",
     lead: "Lead — Prototyping & POCs",
     image: "/team_tousif.jpg",
@@ -133,7 +133,7 @@ const teamMembersDetails = {
   },
   riyaz: {
     name: "SYED RIYAZ",
-    role: "AI Solutions & Prototyping Member",
+    role: "AI Solutions",
     department: "AI Solutions & Prototyping Team",
     lead: "AI Solutions & Prototyping Team (under Shaik Tousif Basha)",
     image: "/team_riyaz.png",
@@ -1320,7 +1320,7 @@ export default function LandingPage({ onLoginClick }) {
                     AI Solutions Lead
                   </span>
                   <h3 className="text-lg font-extrabold text-white group-hover:text-blue-300 transition-colors">SHAIK TOUSIF BASHA</h3>
-                  <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Lead</p>
+                  <p className="text-xs font-bold text-gray-400">AI Solutions</p>
                   <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
                     Uses AI tools to rapidly build demos, prototypes, and proof-of-concepts for new VYOMRA features.
                   </p>
@@ -1351,7 +1351,7 @@ export default function LandingPage({ onLoginClick }) {
                     AI Solutions Member
                   </span>
                   <h3 className="text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors">SYED RIYAZ</h3>
-                  <p className="text-xs font-bold text-gray-400">AI Solutions & Prototyping Member</p>
+                  <p className="text-xs font-bold text-gray-400">AI Solutions</p>
                   <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
                     Builds rapid AI-driven prototypes, proofs-of-concept, and intelligent automation workflows.
                   </p>

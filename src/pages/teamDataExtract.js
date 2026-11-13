@@ -109,9 +109,9 @@ export const teamMembersDetails = {
   },
   tousif: {
     name: "SHAIK TOUSIF BASHA",
-    role: "AI Solutions & Prototyping Lead",
+    role: "AI Solutions",
     department: "Rapid Prototyping & AI Labs",
-    lead: "Lead — Prototyping & POCs",
+    lead: "Lead — AI Solutions",
     image: "/team_tousif.jpg",
     color: "blue",
     gradient: "from-blue-400 via-indigo-500 to-cyan-400",
@@ -127,7 +127,7 @@ export const teamMembersDetails = {
   },
   riyaz: {
     name: "SYED RIYAZ",
-    role: "AI Solutions & Prototyping Member",
+    role: "AI Solutions",
     department: "AI Solutions & Prototyping Team",
     lead: "AI Solutions & Prototyping Team (under Shaik Tousif Basha)",
     image: "/team_riyaz.png",
