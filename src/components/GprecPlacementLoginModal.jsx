@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   ShieldCheck, Mail, KeyRound, ArrowRight, CheckCircle2, 
   AlertCircle, RefreshCw, Lock, Sparkles, Building2, ChevronLeft, Eye, EyeOff,
-  Check, Shield
+  Check, Shield,
+  ExternalLink
 } from 'lucide-react';
 import { 
   isAllowedGprecRoll, 
