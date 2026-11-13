@@ -91,6 +91,13 @@ function App() {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname.toLowerCase();
       if (pathname === '/verify' || pathname.startsWith('/verify/')) return 'verify';
+      if (isTpoSubdomain()) {
+        if (window.location.hash) {
+          const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+          if (['tpo-dashboard', 'student-database', 'student-placement-db', 'placement-database', 'faculty-portal', 'contact', 'report-bug'].includes(hash)) return hash;
+        }
+        return 'tpo-dashboard';
+      }
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
@@ -590,6 +597,15 @@ function App() {
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
+        if (isTpoSub) {
+          if (['tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'faculty-portal', 'contact', 'report-bug'].includes(tab)) {
+            setActiveTab(tab);
+          } else {
+            setActiveTab('tpo-dashboard');
+            window.location.hash = 'tpo-dashboard';
+          }
+          return;
+        }
         if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
@@ -1105,6 +1121,27 @@ function App() {
   };
 
   const renderContent = () => {
+    // 0. Dedicated TPO & Faculty Subdomain Enforcer: SHOW ONLY TPO AND FACULTY
+    if (isTpoSubdomain()) {
+      switch (activeTab) {
+        case 'student-database':
+        case 'student-placement-db':
+        case 'placement-database':
+          return <StudentPlacementDatabase user={user} setActiveTab={handleTabChange} />;
+        case 'faculty-portal':
+          return <FacultyPortal user={user} setActiveTab={handleTabChange} />;
+        case 'contact':
+          return <ContactUs user={user} />;
+        case 'report-bug':
+          return <ReportBug user={user} />;
+        case 'tpo-dashboard':
+        case 'tpo-analytics':
+        case 'placement-officer':
+        default:
+          return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+      }
+    }
+
     switch (activeTab) {
             case 'dashboard':
         const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
@@ -1258,6 +1295,8 @@ function App() {
       case 'clubs':
       case 'clubs-portal':
       case 'all-clubs':
+        if (isTpoSubdomain()) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+        if (isGprecPlacementSubdomain()) return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         return <ClubsPortal user={user} />;
       case 'cad':
       case 'cad-club':

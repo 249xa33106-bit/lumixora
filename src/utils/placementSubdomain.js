@@ -118,6 +118,18 @@ export function isGprecPlacementSubdomain() {
 /**
  * Portals exclusively permitted on the GPREC Placement Suite & TPO Command Suite
  */
+export const TPO_FACULTY_ONLY_PORTALS = [
+  'tpo-dashboard',
+  'tpo-analytics',
+  'tpo-command-center',
+  'student-database',
+  'student-placement-db',
+  'placement-database',
+  'faculty-portal',
+  'contact',
+  'report-bug'
+];
+
 export const GPREC_PLACEMENT_PORTALS = [
   'tpo-dashboard',      // Placement Officer Command Center
   'tpo-command-center',

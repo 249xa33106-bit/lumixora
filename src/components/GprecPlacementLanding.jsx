@@ -266,20 +266,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
 
           {/* Action CTAs */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <a
-              href="https://tpo.lumixora.in"
-              onClick={(e) => {
-                if (window.location.hostname !== 'tpo.lumixora.in' && onLoginClick) {
-                  e.preventDefault();
-                  onLoginClick('officer');
-                }
-              }}
-              className="hidden sm:inline-flex px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 text-[#0B132B] border border-[#CBD5E1] text-xs font-semibold shadow-xs transition-colors cursor-pointer items-center gap-1.5"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
-              <span>TPO & Faculty Portal</span>
-              <span className="text-[10px] text-[#64748B] font-mono">(tpo.lumixora.in)</span>
-            </a>
+            
             <button
               onClick={() => onLoginClick ? onLoginClick('student') : onEnterPlacement('ai-commander')}
               className="px-4 py-2 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
@@ -769,7 +756,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                 Nandyal Road, Kurnool - 518007, Andhra Pradesh
               </p>
               <p className="text-[11px] text-[#64748B]">
-                Deployment Node: <span className="font-mono text-[#0B132B]">gprec.lumixora.in</span> • TPO Suite: <a href="https://tpo.lumixora.in" className="font-mono text-[#9A7328] hover:underline font-semibold">tpo.lumixora.in</a>
+                Deployment Node: <span className="font-mono text-[#0B132B]">gprec.lumixora.in</span>
               </p>
             </div>
           </div>

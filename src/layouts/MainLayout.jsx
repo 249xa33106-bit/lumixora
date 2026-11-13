@@ -4,7 +4,7 @@ import GlobalSearchModal from '../components/GlobalSearchModal';
 import PlatformNavigatorChatbot from '../components/PlatformNavigatorChatbot';
 import Realistic3DLogo from '../components/Realistic3DLogo';
 import { ALL_PORTALS } from '../utils/portalMapping';
-import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain } from '../utils/placementSubdomain';
 import { 
   Search, Bell, Sparkles, AlertCircle, Menu, Camera, Save, X, Flame, 
   Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power,
@@ -958,7 +958,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             {activeTab !== 'dashboard' && activeTab !== 'founder-portal' && activeTab !== 'ai-commander' && activeTab !== 'tpo-dashboard' && (
               <button
                 onClick={() => {
-                  const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
+                  const isOff = isTpoSubdomain() || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
                   if (isOff) {
                     setActiveTab('tpo-dashboard');
                   } else if (isGprecPlacementSubdomain()) {
@@ -990,7 +990,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                 )}
               </h2>
               <p className="text-[10px] text-[var(--text-secondary)] font-semibold tracking-wide mt-0.5">
-                {isGprecPlacementSubdomain() ? 'Official Institutional Placement Command Center' : 'Explore your personalized academic portal'}
+                {isTpoSubdomain() ? 'Official Institutional T&P Command & Administration Center' : (isGprecPlacementSubdomain() ? 'Official Institutional Placement Command Center' : 'Explore your personalized academic portal')}
               </p>
             </div>
           </div>

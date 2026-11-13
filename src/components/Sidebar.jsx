@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Realistic3DLogo from './Realistic3DLogo';
-import { isGprecPlacementSubdomain, GPREC_PLACEMENT_PORTALS } from '../utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS } from '../utils/placementSubdomain';
 import { 
   LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, 
   GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, 
@@ -82,7 +82,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     }
   ];
 
-  const menuSections = isGprecSubdomain ? gprecSections : [
+  const menuSections = isTpo ? tpoSections : isGprecSubdomain ? gprecSections : [
     ...(isIntern ? [{
       key: 'intern',
       title: '💼 Intern Workspace Hub',

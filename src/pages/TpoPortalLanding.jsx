@@ -47,7 +47,7 @@ export default function TpoPortalLanding({ onLoginClick }) {
                 </span>
               </div>
               <p className="text-[11px] text-[#475569] font-medium tracking-normal truncate">
-                Training & Placement Cell • Dedicated Administrative Node (<span className="font-mono font-semibold text-[#0B132B]">tpo.lumixora.in</span>)
+                Training & Placement Cell • Dedicated Administrative Node 
               </p>
             </div>
           </div>
@@ -82,11 +82,7 @@ export default function TpoPortalLanding({ onLoginClick }) {
           <div className="col-span-12 lg:col-span-7 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               
-              {/* Domain & Accreditation Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#FDF8EE] border border-[#F1E1B8] text-[11px] font-semibold uppercase tracking-wider text-[#9A7328]">
-                <Building2 className="w-3.5 h-3.5 text-[#C5A059]" />
-                <span>Dedicated Institutional Gateway: tpo.lumixora.in</span>
-              </div>
+              
 
               {/* Display Headline */}
               <h1 className="text-3xl sm:text-5xl font-bold text-[#0B132B] tracking-tight leading-[1.15]">
