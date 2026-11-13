@@ -121,48 +121,6 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 9
   },
   {
-    id: 'bhanusree',
-    name: 'BHANU SREE',
-    role: 'AI & Research Team Member',
-    division: 'ai-tech',
-    divisionLabel: 'AI & Intelligent Systems',
-    department: 'AI & Research Division',
-    lead: 'Under AI & Innovation Lead (Y. Usha Sree)',
-    image: '/team_bhanusree.jpg',
-    color: 'violet',
-    gradient: 'from-violet-400 via-purple-500 to-indigo-500',
-    borderBadge: 'border-violet-400/40 text-violet-300 bg-violet-400/10',
-    bio: 'Core AI & Research Team member at Vyomra. Specializes in intelligent systems research, student analytics models, and AI feature integration.',
-    highlights: [
-      'Conducts AI research and model evaluations for academic intelligence tools.',
-      'Collaborates with the AI & Research division on prompt engineering and adaptive learning features.',
-      'Assists in testing AI workflows and student interaction models across platform modules.'
-    ],
-    skills: ['AI Research', 'Machine Learning', 'Python', 'Prompt Engineering', 'Intelligent Systems'],
-    priority: 10
-  },
-  {
-    id: 'krishnasai',
-    name: 'KRISHNA SAI',
-    role: 'AI & Research Team Member',
-    division: 'ai-tech',
-    divisionLabel: 'AI & Intelligent Systems',
-    department: 'AI & Research Division',
-    lead: 'Under AI & Innovation Lead (Y. Usha Sree)',
-    image: '/team_krishnasai.png',
-    color: 'indigo',
-    gradient: 'from-indigo-400 via-purple-500 to-violet-500',
-    borderBadge: 'border-indigo-400/40 text-indigo-300 bg-indigo-400/10',
-    bio: 'Core AI & Research Team member at Vyomra. Focuses on intelligent systems research, student learning models, and experimental AI integrations.',
-    highlights: [
-      'Participates in AI research and dataset preparation for platform tutoring models.',
-      'Works with the AI & Research division on model validation and prompt refinement.',
-      'Helps benchmark and evaluate educational AI features for enhanced student engagement.'
-    ],
-    skills: ['AI Research', 'Python', 'Machine Learning', 'Data Processing', 'Intelligent Systems'],
-    priority: 11
-  },
-  {
     id: 'chandrika',
     name: 'C. CHANDRIKA',
     role: 'Operations Head',
