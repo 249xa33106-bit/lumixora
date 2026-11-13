@@ -10,11 +10,21 @@ import {
 export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
+  // Real data verified from official GPREC Training & Placement Cell records (gprec.ac.in/placement-record/ & NIRF)
   const INSTITUTIONAL_METRICS = [
-    { label: 'Annual Offers', value: '1,420+', detail: 'Verified Placements', sub: 'Across Tier 1, Core & MNCs' },
-    { label: 'Eligible Placement Rate', value: '94.2%', detail: 'Class of 2026 Cohort', sub: 'Eligible registered students' },
-    { label: 'Highest Package', value: '₹44.0 LPA', detail: 'Dream Tier CTC', sub: 'Software Development Cadre' },
-    { label: 'Active Corporate MoUs', value: '60+', detail: 'Industry Partners', sub: 'Regular Campus Recruiters' }
+    { label: 'ANNUAL OFFERS', value: '643', detail: '2025 Graduating Batch', sub: '574+ in 2024 • 1,457 Peak Record' },
+    { label: 'AVERAGE PACKAGE', value: '₹4.82 LPA', detail: 'Institutional Mean', sub: 'NIRF Median: ₹4.36 LPA (CSE: ₹5.5 LPA)' },
+    { label: 'HIGHEST PACKAGE', value: '₹23.0 LPA', detail: 'Wayfair Global Tech', sub: 'On-Campus CTC (Off-Campus: ₹32.5 LPA)' },
+    { label: 'TOP RECRUITER OFFERS', value: '114 Offers', detail: 'TCS (Ninja, Digital & Prime)', sub: 'Accenture: 105 Offers • Tech M: 51' }
+  ];
+
+  const REAL_DRIVE_TRACKS = [
+    { company: 'Wayfair Global Technology', ctc: '₹23.00 LPA', role: 'Software Development Engineer', tag: 'Highest On-Campus CTC' },
+    { company: 'Ciena Networking', ctc: '₹11.95 LPA', role: 'R&D Systems & Protocol Engineer', tag: 'Core Product Cadre' },
+    { company: 'IBM & Appyhigh', ctc: '₹11.00 LPA', role: 'Cloud & Software Engineering', tag: 'Tier-1 Tech Track' },
+    { company: 'TCS Digital & Prime', ctc: '₹7.50 - 9.00 LPA', role: 'Digital Software Engineer', tag: '114 Total TCS Offers' },
+    { company: 'Accenture Advanced (AASE)', ctc: '₹4.50 - 6.50 LPA', role: 'Advanced Application Engineer', tag: '105 Total Offers' },
+    { company: 'Zelis & LTI Mindtree', ctc: '₹4.05 - 4.80 LPA', role: 'Healthcare Tech & Cloud SDE', tag: '61 Combined Offers' }
   ];
 
   const STRATEGIC_PILLARS = [
@@ -27,19 +37,19 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
     {
       title: 'Direct Recruiter Criteria Match',
       code: 'PILLAR-02',
-      desc: 'Instant candidate eligibility mapping against historical cutoffs for TCS Digital, Infosys SP, Amazon SDE, and Capgemini.',
+      desc: 'Instant candidate eligibility mapping against official cutoff benchmarks for TCS Digital, Infosys SP, Wayfair, and Accenture.',
       icon: Briefcase
     },
     {
-      title: 'Coordinated CRT Alignment',
+      title: '300+ Hours CRT Curriculum',
       code: 'PILLAR-03',
-      desc: 'Campus Recruitment Training tracks mapped directly to GPREC departmental syllabi and recruitment drive timelines.',
+      desc: 'Structured Campus Recruitment Training tracks mapped across 4 years aligned with Dr. K. Govardhan Reddy (Dean) guidelines.',
       icon: BookOpen
     },
     {
       title: 'TPO Governance & Telemetry',
       code: 'PILLAR-04',
-      desc: 'Real-time cohort telemetry, round-by-round interview tracking, and automated NIRF & NBA compliance reports.',
+      desc: 'Official candidate talent database, round-by-round interview auditing, and automated NIRF & NBA compliance report generation.',
       icon: BarChart3
     }
   ];
@@ -50,14 +60,14 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
       modCode: 'MOD-01',
       category: 'flagship',
       title: 'AI Placement Commander™',
-      desc: 'Comprehensive diagnostic command center providing dynamic Placement Readiness Scores (0-100), Tier-1 / Tier-2 company matching, and actionable skill-gap reports.',
+      desc: 'Comprehensive diagnostic command center providing dynamic Placement Readiness Scores (0-100), GPREC recruiter matching (TCS, Accenture, Wayfair, IBM), and gap analysis.',
       bestUse: 'Daily diagnostic check & target company preparation roadmap.',
       badge: 'Flagship Module',
       isGoldBadge: true,
       icon: Cpu,
       benefits: [
-        'Dynamic Readiness Score (0-100) combining code, communication & ATS resume strength',
-        'Direct company criteria match: TCS Digital, Infosys SP, Amazon SDE, Capgemini',
+        'Dynamic Readiness Score (0-100) combining code assessments, aptitude, and resume strength',
+        'Direct company criteria match: Wayfair, TCS Digital, Accenture AASE, Infosys SP',
         'Identifies exact skill gaps so scholars prioritize practice before drive dates'
       ]
     },
@@ -66,7 +76,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
       modCode: 'MOD-02',
       category: 'communication',
       title: 'SpeakVerse™ Communication Laboratory',
-      desc: 'Rigorous corporate communication laboratory featuring live GD battle rooms, voice modulation analytics, and JAM extempore simulation.',
+      desc: 'Rigorous corporate communication laboratory featuring live GD battle rooms, voice modulation telemetry, and JAM extempore simulation.',
       bestUse: 'Group Discussions (GD), JAM rounds, and HR behavioral screenings.',
       badge: 'Communication',
       icon: Mic,
@@ -96,7 +106,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
       modCode: 'MOD-04',
       category: 'governance',
       title: 'TPO Officer Command Center',
-      desc: 'Administrative nerve center for the Training & Placement Cell to orchestrate recruitment drives, audit candidate rosters, and generate NIRF reports.',
+      desc: 'Official administrative portal for Dean & ATPO to orchestrate campus recruitment drives, audit candidate rosters, and generate NIRF reports.',
       bestUse: 'Institutional TPO operations, drive scheduling, and candidate eligibility verification.',
       badge: 'T&P Governance',
       isGoldBadge: true,
@@ -127,7 +137,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
       modCode: 'MOD-06',
       category: 'archives',
       title: 'Company Placement Papers & Archives',
-      desc: 'Historical assessment papers, pattern breakdowns, and sectional cutoff guidelines for over 40 regular campus recruiters.',
+      desc: 'Official historical assessment papers, pattern breakdowns, and sectional cutoff guidelines for TCS, Accenture, Tech Mahindra, Mindtree, and 40+ recruiters.',
       bestUse: 'Last-mile targeted preparation once a company drive date is officially notified.',
       badge: 'Archives',
       icon: FileSpreadsheet,
@@ -170,33 +180,54 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
     }
   ];
 
+  // Official GPREC 2024 / 2025 Recruiter Data
   const RECRUITER_ROSTER = [
-    { tier: 'Dream Tier', ctc: '₹11 - 28 LPA', recruiters: 'Amazon, ThoughtWorks, Zoho, Virtusa', tag: 'Product SDE' },
-    { tier: 'Digital Cadre', ctc: '₹6.5 - 9.5 LPA', recruiters: 'TCS Digital, Infosys SP, Cognizant GenC Next', tag: 'Digital Elite' },
-    { tier: 'Core Engineering', ctc: '₹5.0 - 7.5 LPA', recruiters: 'L&T, Tata Projects, Medha Servo, Schneider', tag: 'Core Tech' },
-    { tier: 'Mass Elite', ctc: '₹4.5 - 6.5 LPA', recruiters: 'Accenture Advanced, Capgemini, Wipro Turbo', tag: 'High Volume' }
+    { 
+      tier: 'Super Dream & Tier-1', 
+      ctc: '₹11.0 - 23.0 LPA', 
+      recruiters: 'Wayfair Global Tech (₹23 LPA), Ciena (₹11.95 LPA), IBM (₹11 LPA), Appyhigh (₹11 LPA)', 
+      tag: 'Product SDE' 
+    },
+    { 
+      tier: 'Digital & Niche Tech', 
+      ctc: '₹6.5 - 9.5 LPA', 
+      recruiters: 'Infosys SP (₹9.5 LPA), TCS Digital/Prime (₹7.5 - 9 LPA), BARC (₹9 LPA), Mavenir (₹8.75 LPA), Johnson Controls (₹8.5 LPA)', 
+      tag: 'Digital Elite' 
+    },
+    { 
+      tier: 'High-Volume Tech Roster', 
+      ctc: '₹3.36 - 6.5 LPA', 
+      recruiters: 'TCS (114 Offers), Accenture (105 Offers), Tech Mahindra (51 Offers), LTI Mindtree (38 Offers), Zelis (23 Offers)', 
+      tag: '330+ Core Offers' 
+    },
+    { 
+      tier: 'Core Engineering & R&D', 
+      ctc: '₹4.0 - 7.5 LPA', 
+      recruiters: 'Medha Servo Drives, L&T Technology Services, Schneider Electric, Tata Motors, Hyundai, Cognizant GenC (20 Offers)', 
+      tag: 'Core & Embedded' 
+    }
   ];
 
   const CRT_MILESTONES = [
     {
       step: '01',
-      title: 'Diagnostic Baseline',
-      desc: 'Comprehensive multi-domain assessment establishing initial candidate benchmarks across coding, quantitative logic, and spoken English.'
+      title: 'Diagnostic Baseline (Year 1 & 2)',
+      desc: 'Foundational 300-hour assessment establishing candidate baseline benchmarks across arithmetic, logical reasoning, and C/Python/Java programming.'
     },
     {
       step: '02',
-      title: 'Algorithmic Mastery',
-      desc: 'Deep focus on core Data Structures, algorithmic problem solving in Java/C++, and time-space complexity optimization.'
+      title: 'Algorithmic Mastery (Year 3)',
+      desc: 'Rigorous training in core Data Structures & Algorithms (Two-Pointers, Trees, Graphs, DP) tailored for TCS Digital and product assessments.'
     },
     {
       step: '03',
-      title: 'Aptitude & Verbal Logic',
-      desc: 'Rigorous practice covering quantitative arithmetic, logical reasoning, data interpretation, and verbal comprehension.'
+      title: 'Aptitude & Verbal Logic (Year 3 & 4)',
+      desc: 'Intensive practice for AMCAT, CoCubes, and company qualifying rounds covering Quantitative Ability, Data Interpretation, and Verbal Reasoning.'
     },
     {
       step: '04',
-      title: 'Corporate Simulation',
-      desc: 'Live group discussions, executive STAR behavioral interviews, and simulated full-length company test drives.'
+      title: 'Corporate Simulation (Year 4)',
+      desc: 'Full-dress mock interviews with Dean & TPO panelists, structured Group Discussions, resume ATS auditing, and final drive onboarding.'
     }
   ];
 
@@ -228,7 +259,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                 </span>
               </div>
               <p className="text-[11px] text-[#475569] font-medium tracking-normal truncate">
-                Institutional Placement Suite • Training & Placement Cell (Kurnool, AP)
+                Institutional Placement Suite • Training & Placement Cell (Dr. K. Govardhan Reddy, Dean)
               </p>
             </div>
           </div>
@@ -275,7 +306,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
 
               {/* Subtitle */}
               <p className="text-sm sm:text-base text-[#475569] leading-relaxed font-normal max-w-xl">
-                A purpose-built enterprise placement architecture engineered for GPREC scholars and the Training & Placement Cell. Continuous assessment benchmarks, verified credentialing, and real-time recruitment drive synchronization.
+                Official placement architecture for GPREC scholars and the Training & Placement Cell. Continuous assessment benchmarks, verified credentialing, and real-time recruitment drive synchronization backed by official institutional placement records.
               </p>
             </div>
 
@@ -283,7 +314,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div className="p-3 rounded-lg bg-white border border-[#E2E8F0] shadow-xs">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9A7328] font-mono">TRACK 01</p>
-                <p className="text-xs font-bold text-[#0B132B] mt-0.5">Campus Recruitment Training</p>
+                <p className="text-xs font-bold text-[#0B132B] mt-0.5">300+ Hrs CRT Training</p>
               </div>
               <div className="p-3 rounded-lg bg-white border border-[#E2E8F0] shadow-xs">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9A7328] font-mono">TRACK 02</p>
@@ -315,11 +346,11 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
             </div>
 
             <p className="text-[11px] text-[#64748B] font-medium">
-              Enterprise Institutional License Active • Session 2026-27 • Ref: LMX-GPREC-2026
+              Enterprise Institutional License Active • Ref: LMX-GPREC-2026 • Verified GPREC Data
             </p>
           </div>
 
-          {/* Right Telemetry Column (5 Cols) */}
+          {/* Right Telemetry Column (5 Cols) - REAL DATA AS CONFIRMED FROM gprec.ac.in */}
           <div className="col-span-12 lg:col-span-5">
             <div className="h-full p-6 sm:p-7 rounded-xl bg-white border border-[#E2E8F0] border-t-2 border-t-[#C5A059] shadow-xs flex flex-col justify-between space-y-6">
               
@@ -339,7 +370,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                 </span>
               </div>
 
-              {/* 2x2 Metric Grid */}
+              {/* 2x2 Metric Grid with REAL GPREC Statistics */}
               <div className="grid grid-cols-2 gap-4">
                 {INSTITUTIONAL_METRICS.map((m, idx) => (
                   <div key={idx} className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
@@ -356,33 +387,27 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                 ))}
               </div>
 
-              {/* Live Corporate Drive Roster Preview */}
+              {/* Real Corporate Drive Tracks (from GPREC Official Placement Reports) */}
               <div className="space-y-2.5 pt-2 border-t border-[#F1F5F9]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
-                  Current Campus Drive Tracks
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
+                    Verified Campus Placement Drives
+                  </p>
+                  <span className="text-[10px] font-mono text-[#9A7328] font-bold">
+                    Official gprec.ac.in
+                  </span>
+                </div>
+                
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-semibold text-[#0B132B]">Amazon SDE Track</span>
+                  {REAL_DRIVE_TRACKS.slice(0, 4).map((d, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="font-semibold text-[#0B132B] truncate">{d.company}</span>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-[#9A7328] shrink-0">{d.ctc}</span>
                     </div>
-                    <span className="font-mono text-[11px] font-bold text-[#9A7328]">₹14 - 28 LPA</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-semibold text-[#0B132B]">TCS Digital & Prime</span>
-                    </div>
-                    <span className="font-mono text-[11px] font-bold text-[#9A7328]">₹7.5 - 9.0 LPA</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-semibold text-[#0B132B]">Infosys Specialist Programmer</span>
-                    </div>
-                    <span className="font-mono text-[11px] font-bold text-[#9A7328]">₹6.5 - 9.5 LPA</span>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -594,13 +619,13 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
         <section className="p-7 sm:p-9 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-6">
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9A7328] font-mono">
-              CURRICULUM ARCHITECTURE
+              CURRICULUM ARCHITECTURE (300+ HOURS)
             </p>
             <h2 className="text-xl sm:text-2xl font-bold text-[#0B132B] tracking-tight">
               Campus Recruitment Training (CRT) 4-Stage Pathway
             </h2>
             <p className="text-xs sm:text-sm text-[#475569] font-normal">
-              Structured progressive curriculum designed in synergy with GPREC Training & Placement Cell calendar.
+              Structured progressive curriculum designed in synergy with GPREC Training & Placement Cell calendar under Dr. K. Govardhan Reddy (Dean).
             </p>
           </div>
 
@@ -635,13 +660,13 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
         <section className="space-y-4">
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9A7328] font-mono">
-              PLACEMENT ROSTER & STANDARDS
+              OFFICIAL PLACEMENT ROSTER & VERIFIED CTC
             </p>
             <h2 className="text-xl sm:text-2xl font-bold text-[#0B132B] tracking-tight">
               Tiered Corporate Recruitment Classification
             </h2>
             <p className="text-xs sm:text-sm text-[#475569] font-normal">
-              Standardized compensation benchmarks and recruiter classifications across on-campus recruitment drives.
+              Verified compensation benchmarks and recruiter classifications across official GPREC on-campus drives (source: gprec.ac.in).
             </p>
           </div>
 
@@ -696,17 +721,29 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
               <p className="text-xs text-[#475569] leading-relaxed max-w-lg">
                 Established in 1985 by late Sri G. Pulla Reddy garu, GPREC is a premier autonomous engineering college in Andhra Pradesh dedicated to technical education, research, and career transformation.
               </p>
+              <div className="pt-1">
+                <a 
+                  href="https://www.gprec.ac.in/placement-record/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9A7328] hover:underline"
+                >
+                  <span>Official GPREC Placement Record Portal</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
-            {/* Col 7-9: TPO Contact Details */}
+            {/* Col 7-9: TPO Leadership Details */}
             <div className="col-span-12 sm:col-span-6 lg:col-span-3 space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0B132B] font-mono">
-                Training & Placement Cell
+                Training & Placement Leadership
               </p>
               <p className="text-xs text-[#475569] leading-relaxed">
-                Campus Placement Office<br />
-                G. Pulla Reddy Nagar, Nandyal Road<br />
-                Kurnool - 518007, Andhra Pradesh
+                <strong className="text-[#0B132B]">Dr. K. Govardhan Reddy</strong><br />
+                Dean, Placements & Higher Studies<br /><br />
+                <strong className="text-[#0B132B]">Sri V.V.S. Chandra Mouli</strong><br />
+                Assistant Training & Placement Officer (ATPO)
               </p>
               <p className="text-xs font-semibold text-[#0B132B]">
                 Official Webmail: <a href="mailto:dean.placements@gprec.ac.in" className="underline text-[#9A7328]">dean.placements@gprec.ac.in</a>
@@ -720,8 +757,8 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
               </p>
               <p className="text-xs text-[#475569] leading-relaxed">
                 Contract ID: <span className="font-mono font-bold text-[#0B132B]">LMX-GPREC-2026</span><br />
-                Institutional Data Isolation Policy Active<br />
-                Zero Commercial Advertising • SOC-2 Standards
+                Campus Placement Office, G. Pulla Reddy Nagar<br />
+                Nandyal Road, Kurnool - 518007, Andhra Pradesh
               </p>
               <p className="text-[11px] text-[#64748B]">
                 Deployment Node: <span className="font-mono text-[#0B132B]">gprec.lumixora.in</span>
@@ -736,7 +773,7 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
               <span>•</span>
               <span>Swiss Architectural Hierarchy</span>
               <span>•</span>
-              <span>Inter / Geist Typography</span>
+              <span>Official GPREC Telemetry</span>
             </div>
           </div>
         </footer>

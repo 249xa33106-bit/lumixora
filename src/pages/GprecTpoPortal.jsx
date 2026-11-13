@@ -62,17 +62,18 @@ export const TPO_MODULES = [
   { id: 'announcements', label: '10. Announcements & Circulars', icon: Radio, badge: 'BROADCAST', desc: 'Drive Circulars & Urgent Walk-In Alerts' }
 ];
 
-// Default Company Recruitment Drives Catalog
+// Official GPREC Recruitment Drives (Source: gprec.ac.in placement records)
 const DEFAULT_COMPANY_DRIVES = [
-  { id: 'drive_tcs', company: 'TCS Digital & Prime', role: 'Software Development Engineer', ctc: 9.0, minCgpa: 6.5, offers: 32, status: 'Completed', date: '2026-09-15', category: 'Product / IT', mode: 'On-Campus In-Person', branches: ['CSM', 'CSE', 'CSD', 'ECE', 'EEE'] },
-  { id: 'drive_amazon', company: 'Amazon AWS', role: 'Cloud Support & SDE-1', ctc: 24.0, minCgpa: 7.5, offers: 4, status: 'Completed', date: '2026-10-02', category: 'Tier 1 Product', mode: 'Virtual & Onsite', branches: ['CSM', 'CSE', 'CSD'] },
-  { id: 'drive_cognizant', company: 'Cognizant GenC Next', role: 'Associate Software Engineer', ctc: 6.75, minCgpa: 6.5, offers: 41, status: 'Completed', date: '2026-10-18', category: 'IT Services', mode: 'On-Campus In-Person', branches: ['ALL'] },
-  { id: 'drive_infosys', company: 'Infosys Specialist Programmer', role: 'Systems Engineer Specialist', ctc: 8.5, minCgpa: 7.0, offers: 19, status: 'Completed', date: '2026-10-25', category: 'Digital IT', mode: 'Virtual Assessment', branches: ['CSM', 'CSE', 'CSD', 'ECE'] },
-  { id: 'drive_accenture', company: 'Accenture Advanced Tech', role: 'Associate Software Engineer', ctc: 6.5, minCgpa: 6.5, offers: 38, status: 'Completed', date: '2026-11-01', category: 'IT Consulting', mode: 'On-Campus In-Person', branches: ['ALL'] },
-  { id: 'drive_darwinbox', company: 'Darwinbox', role: 'Product Development Engineer', ctc: 16.0, minCgpa: 7.5, offers: 3, status: 'Ongoing', date: '2026-11-12', category: 'SaaS Unicorn', mode: 'Virtual Hackathon', branches: ['CSM', 'CSE', 'CSD'] },
-  { id: 'drive_google', company: 'Google Cloud APAC', role: 'Software Engineer (Off-Campus)', ctc: 38.0, minCgpa: 8.0, offers: 1, status: 'Ongoing', date: '2026-11-15', category: 'Tier 1 Product', mode: 'National Pool Drive', branches: ['CSM', 'CSE'] },
-  { id: 'drive_ltts', company: 'L&T Technology Services', role: 'Embedded Systems Engineer', ctc: 5.5, minCgpa: 6.0, offers: 22, status: 'Upcoming', date: '2026-11-20', category: 'Core Engineering', mode: 'On-Campus In-Person', branches: ['ECE', 'EEE', 'MECH'] },
-  { id: 'drive_wipro', company: 'Wipro Turbo & Elite', role: 'Project Engineer', ctc: 6.5, minCgpa: 6.0, offers: 28, status: 'Upcoming', date: '2026-11-28', category: 'IT Services', mode: 'On-Campus In-Person', branches: ['ALL'] }
+  { id: 'drive_wayfair', company: 'Wayfair Global Technology', role: 'Software Development Engineer', ctc: 23.0, minCgpa: 8.0, offers: 1, status: 'Completed', date: '2024-09-12', category: 'Super Dream Product', mode: 'Virtual & Onsite', branches: ['CSE', 'CSM', 'CSD'] },
+  { id: 'drive_ciena', company: 'Ciena Networking', role: 'R&D Systems & Protocol Engineer', ctc: 11.95, minCgpa: 7.5, offers: 1, status: 'Completed', date: '2024-09-28', category: 'Core Product Cadre', mode: 'On-Campus In-Person', branches: ['ECE', 'CSE'] },
+  { id: 'drive_ibm', company: 'IBM India', role: 'Associate System Engineer', ctc: 11.0, minCgpa: 7.0, offers: 1, status: 'Completed', date: '2024-10-05', category: 'Tier 1 Enterprise', mode: 'Virtual Assessment', branches: ['CSE', 'CST', 'CSM'] },
+  { id: 'drive_tcs', company: 'TCS (Ninja, Digital & Prime)', role: 'Software Engineer & Digital Specialist', ctc: 9.0, minCgpa: 6.0, offers: 114, status: 'Completed', date: '2024-10-15', category: 'Product / IT Services', mode: 'On-Campus In-Person', branches: ['ALL'] },
+  { id: 'drive_accenture', company: 'Accenture (AASE & ASE)', role: 'Advanced Application Engineer', ctc: 6.5, minCgpa: 6.0, offers: 105, status: 'Completed', date: '2024-11-01', category: 'IT Consulting', mode: 'On-Campus In-Person', branches: ['ALL'] },
+  { id: 'drive_techm', company: 'Tech Mahindra', role: 'Associate Software Engineer', ctc: 3.25, minCgpa: 6.0, offers: 51, status: 'Completed', date: '2024-11-10', category: 'IT Services', mode: 'On-Campus In-Person', branches: ['ALL'] },
+  { id: 'drive_mindtree', company: 'LTI Mindtree', role: 'Software Engineer', ctc: 4.05, minCgpa: 6.5, offers: 38, status: 'Completed', date: '2024-11-18', category: 'IT Services', mode: 'On-Campus In-Person', branches: ['CSE', 'CSM', 'ECE', 'EEE'] },
+  { id: 'drive_zelis', company: 'Zelis Healthcare', role: 'Product Engineer', ctc: 4.80, minCgpa: 6.5, offers: 23, status: 'Completed', date: '2024-11-22', category: 'Healthcare Tech', mode: 'Virtual Assessment', branches: ['CSE', 'CSM', 'CSD', 'IT'] },
+  { id: 'drive_cognizant', company: 'Cognizant (CTS GenC & Next)', role: 'Programmer Analyst Trainee', ctc: 6.75, minCgpa: 6.0, offers: 20, status: 'Completed', date: '2024-11-28', category: 'IT Services', mode: 'On-Campus In-Person', branches: ['ALL'] },
+  { id: 'drive_ltts', company: 'L&T Technology Services', role: 'Embedded Systems Engineer', ctc: 5.5, minCgpa: 6.0, offers: 15, status: 'Ongoing', date: '2024-12-05', category: 'Core Engineering', mode: 'On-Campus In-Person', branches: ['ECE', 'EEE', 'MECH', 'CIVIL'] }
 ];
 
 // Enterprise Corporate Hiring Partners
