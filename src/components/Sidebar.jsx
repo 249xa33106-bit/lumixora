@@ -42,7 +42,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   };
 
   // GPREC Placement Suite dedicated menu items
-  const isOfficerOrFaculty = isFaculty || isFounder || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+  const isOfficerOrFaculty = isFaculty || isFounder || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
 
   const gprecSections = [
     ...(isOfficerOrFaculty ? [{

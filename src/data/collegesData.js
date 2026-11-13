@@ -825,6 +825,7 @@ export const isAnjum = (userOrEmail) => {
 
 export const KNOWN_PAID_EMAILS = new Set([
   'dean.placements@gprec.ac.in', // GPREC Dean / Placement Officer
+  'srikanth.csm@gprec.ac.in', // GPREC CSM TPO Coordinator
   '249xa04050@gprec.ac.in', // Boya Yugandhar Naidu (Paid Rs 10 via Razorpay pay_TxETTpufj47pSk / Bank RRN 864259330644)
   '249xa33112@gprec.ac.in', // Mahendrakar Akhil (Paid ₹10 via UPI Ref 317827902237)
   '259xa05010@gprec.ac.in', // Avula Bhanu Priya (Paid ₹10 via Razorpay pay_TswlcoI1dleMdi)
@@ -862,6 +863,12 @@ export const isExemptFromPayment = (userOrEmail) => {
 
   // 1.2 Strictly GPREC TPO Placement Scholars only (Verified via Dean OTP; general students MUST pay ?10)
   if (typeof userOrEmail === 'object' && (userOrEmail?.isGprecPlacementVerified === true || userOrEmail?.isGprecPlacementScholar === true)) {
+    return true;
+  }
+
+  // 1.3 GPREC Placement Officer, Dean & CSM Coordinator (Administrative access)
+  if (email === 'srikanth.csm@gprec.ac.in' || email === 'dean.placements@gprec.ac.in') return true;
+  if (typeof userOrEmail === 'object' && (userOrEmail?.isOfficer === true || userOrEmail?.isDean === true)) {
     return true;
   }
 

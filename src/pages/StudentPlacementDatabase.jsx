@@ -120,6 +120,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
       user.isDean ||
       user.isFounder ||
       email === 'dean.placements@gprec.ac.in' ||
+      email === 'srikanth.csm@gprec.ac.in' ||
       email === 'tpo@gprec.ac.in' ||
       email === 'placement@gprec.ac.in' ||
       email === 'mohammedsowban44@gmail.com'

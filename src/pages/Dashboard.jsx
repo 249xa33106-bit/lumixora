@@ -402,7 +402,7 @@ Do NOT use markdown backticks. Return raw JSON.`
       <Dashboard3DBackground />
 
       {/* 🌟🌟🌟 Premium Founder Banner & Story 🌟🌟🌟 */}
-      {!isGprecPlacementSubdomain() && !user?.email?.toLowerCase().endsWith('@gprec.ac.in') && !user?.isOfficer && !user?.isDean && user?.email !== 'dean.placements@gprec.ac.in' && (
+      {!isGprecPlacementSubdomain() && !user?.email?.toLowerCase().endsWith('@gprec.ac.in') && !user?.isOfficer && !user?.isDean && user?.email !== 'dean.placements@gprec.ac.in' && user?.email !== 'srikanth.csm@gprec.ac.in' && (
       <div className="w-full space-y-6 relative z-10">
         {/* Banner Image */}
         <div className="w-full rounded-3xl overflow-hidden border border-white/5 shadow-2xl aspect-[1024/480] md:aspect-[21/9]">

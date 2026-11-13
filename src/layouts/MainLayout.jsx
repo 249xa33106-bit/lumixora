@@ -958,7 +958,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             {activeTab !== 'dashboard' && activeTab !== 'founder-portal' && activeTab !== 'ai-commander' && activeTab !== 'tpo-dashboard' && (
               <button
                 onClick={() => {
-                  const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+                  const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
                   if (isOff) {
                     setActiveTab('tpo-dashboard');
                   } else if (isGprecPlacementSubdomain()) {

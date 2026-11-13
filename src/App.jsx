@@ -172,7 +172,7 @@ function App() {
       if (!userId) return;
 
       const isFounder = user.role === 'founder' || cleanEmail === 'founder@lumixora.com';
-      const isOfficer = user.isOfficer || user.isDean || cleanEmail === 'dean.placements@gprec.ac.in';
+      const isOfficer = user.isOfficer || user.isDean || cleanEmail === 'dean.placements@gprec.ac.in' || cleanEmail === 'srikanth.csm@gprec.ac.in';
       const isFaculty = user.role === 'faculty' || user.role === 'mentor';
       const isPlacementSub = isGprecPlacementSubdomain();
 
@@ -577,7 +577,7 @@ function App() {
     const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
     const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
     const isGprecSub = isGprecPlacementSubdomain();
-    const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+    const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
     const defaultHomeTab = isOfficer 
       ? 'tpo-dashboard' 
       : (isGprecSub ? 'ai-commander' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
@@ -1081,7 +1081,7 @@ function App() {
       }).catch(() => {});
     }
 
-    if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in') {
+    if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in' || finalizedUser?.email === 'srikanth.csm@gprec.ac.in') {
       setActiveTab('tpo-dashboard');
       window.location.hash = 'tpo-dashboard';
     } else if (isGprecPlacementSubdomain()) {
@@ -1104,7 +1104,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
             case 'dashboard':
-        const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+        const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
         if (isOff) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
         if (isGprecPlacementSubdomain()) {
           return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
@@ -1296,7 +1296,7 @@ function App() {
       case 'placement-database':
         return <StudentPlacementDatabase user={user} setActiveTab={handleTabChange} />;
       case 'faculty-portal':
-        const isFacultyUser = user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+        const isFacultyUser = user?.role === 'faculty' || user?.role === 'mentor' || user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
         if (isFacultyUser) {
           return <FacultyPortal user={user} setActiveTab={handleTabChange} />;
         }
@@ -1309,7 +1309,7 @@ function App() {
         }
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
       default:
-        const isOffDefault = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in';
+        const isOffDefault = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
         if (isOffDefault) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
         if (isGprecPlacementSubdomain()) return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         return <Dashboard setActiveTab={handleTabChange} user={user} />;

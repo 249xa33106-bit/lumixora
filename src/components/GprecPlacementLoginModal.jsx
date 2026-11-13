@@ -158,17 +158,22 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
       return;
     }
 
-    const res = authenticatePlacementOfficer(officerEmail, officerPassword);
-    if (res.success) {
-      setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess(res.user);
-        }
-        onClose();
-      }, 600);
-    } else {
-      setErrorMsg(res.error || 'Incorrect official password.');
+    try {
+      const res = authenticatePlacementOfficer(officerEmail, officerPassword);
+      const userObj = res.user || res;
+      if (res.success || userObj.isOfficer || userObj.isDean) {
+        setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(userObj);
+          }
+          onClose();
+        }, 500);
+      } else {
+        setErrorMsg(res.error || 'Incorrect official password.');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Incorrect official password.');
     }
   };
 
@@ -180,7 +185,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
     setLoading(true);
 
     try {
-      const res = await sendOfficerPasswordResetCode();
+      const res = await sendOfficerPasswordResetCode(officerEmail);
       if (res.success) {
         setOfficerMode('reset');
         setSuccessMsg('6-digit reset code dispatched to official mailbox: dean.placements@gprec.ac.in');
@@ -188,7 +193,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
         setErrorMsg(res.error || 'Failed to dispatch reset code.');
       }
     } catch (err) {
-      setErrorMsg('Error requesting reset code.');
+      setErrorMsg(err.message || 'Error requesting reset code.');
     } finally {
       setLoading(false);
     }
@@ -209,17 +214,22 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
       return;
     }
 
-    const res = verifyAndResetOfficerPassword(resetCode, newPassword);
-    if (res.success) {
-      setSuccessMsg('Official password successfully reset. You are now logged in.');
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess(res.user);
-        }
-        onClose();
-      }, 800);
-    } else {
-      setErrorMsg(res.error || 'Invalid or expired recovery code.');
+    try {
+      const res = verifyAndResetOfficerPassword(resetCode, newPassword, officerEmail);
+      const userObj = res.user || res;
+      if (res.success) {
+        setSuccessMsg('Official password successfully reset. You are now logged in.');
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(userObj);
+          }
+          onClose();
+        }, 800);
+      } else {
+        setErrorMsg(res.error || 'Invalid or expired recovery code.');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Verification failed.');
     }
   };
 
@@ -455,18 +465,44 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
             <form onSubmit={handleOfficerLogin} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
-                  Placement Officer Official Email
+                  Placement Officer / Coordinator Email
                 </label>
                 <div className="relative">
                   <input
                     type="email"
                     value={officerEmail}
                     onChange={(e) => setOfficerEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-mono font-semibold text-[#0B132B] outline-none"
+                    placeholder="e.g. srikanth.csm@gprec.ac.in"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-xs font-mono font-semibold text-[#0B132B] outline-none transition-all pr-10"
                     required
-                    readOnly
                   />
                   <Mail className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+                {/* Fast Select Options */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="text-[10px] text-[#64748B]">Quick select:</span>
+                  <button
+                    type="button"
+                    onClick={() => { setOfficerEmail('srikanth.csm@gprec.ac.in'); setErrorMsg(''); }}
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors cursor-pointer ${
+                      officerEmail.toLowerCase() === 'srikanth.csm@gprec.ac.in'
+                        ? 'bg-[#0B132B] text-white border-[#0B132B] font-bold'
+                        : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                    }`}
+                  >
+                    srikanth.csm@gprec.ac.in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setOfficerEmail('dean.placements@gprec.ac.in'); setErrorMsg(''); }}
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors cursor-pointer ${
+                      officerEmail.toLowerCase() === 'dean.placements@gprec.ac.in'
+                        ? 'bg-[#0B132B] text-white border-[#0B132B] font-bold'
+                        : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                    }`}
+                  >
+                    dean.placements@gprec.ac.in
+                  </button>
                 </div>
               </div>
 
@@ -506,7 +542,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                   </button>
                 </div>
                 <p className="text-[10px] text-[#64748B]">
-                  Default Access Token: <span className="font-mono font-bold text-[#0B132B]">Lumi@2026</span>
+                  Default Access Token: <span className="font-mono font-bold text-[#0B132B]">LUMI@2026</span>
                 </p>
               </div>
 
@@ -542,7 +578,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                 </p>
                 <p className="text-[11px] leading-relaxed">
                   A 6-digit password reset authorization token will be dispatched to: <br />
-                  <span className="font-mono font-bold text-[#0B132B]">dean.placements@gprec.ac.in</span>
+                  <span className="font-mono font-bold text-[#0B132B]">{officerEmail || "dean.placements@gprec.ac.in"}</span>
                 </p>
               </div>
 
