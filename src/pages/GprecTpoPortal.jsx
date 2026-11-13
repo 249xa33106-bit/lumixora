@@ -677,13 +677,13 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-24 animate-fade-in text-[#101A35]">
+    <div className="space-y-6 max-w-7xl mx-auto pb-24 animate-fade-in text-[#0B132B]">
       {/* ─── TPO HEADER & LIVE TELEMETRY BAR ──────────────────────────────────── */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-50 text-[#7553E8] border border-purple-200 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-[#7553E8]" />
+            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FDF8EE] text-[#9A7328] border border-[#F1E1B8] flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[#9A7328]" />
               GPREC Placement Cell • TPO Administration Suite
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 font-mono">
@@ -697,10 +697,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black font-sora text-[#101A35] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black font-sora text-[#0B132B] tracking-tight">
             Placement Officer Command & Operations Suite
           </h1>
-          <p className="text-xs sm:text-sm text-[#101A35]/70 max-w-2xl font-normal leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#0B132B]/70 max-w-2xl font-normal leading-relaxed">
             Institutional recruitment ecosystem: End-to-end recruitment drive orchestration, student talent database, automated eligibility cutoff screening, round-by-round interview tracking, offer verification, and NIRF/NBA compliance reports.
           </p>
         </div>
@@ -713,23 +713,23 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
             className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
             title="Synchronize live student records & test telemetry"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#7553E8] ${isSyncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#9A7328] ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
           </button>
 
           <button
             onClick={exportPlacementReport}
-            className="px-4 py-2.5 rounded-xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95"
+            className="px-4 py-2.5 rounded-xl bg-[#0B132B] hover:bg-[#152042] text-white font-black text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95"
             title="Download full candidate raw metrics in CSV spreadsheet format"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#08BFD0]" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-[#C5A059]" />
             <span>Export Master CSV</span>
           </button>
         </div>
       </div>
 
       {/* ─── 10 OFFICIAL ADMINISTRATION MODULES NAVIGATION TABS ───────────────── */}
-      <div className="p-2 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs">
+      <div className="p-2 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
           {TPO_MODULES.map(module => {
             const Icon = module.icon;
@@ -740,11 +740,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                 onClick={() => setActiveTpoTab(module.id)}
                 className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   isActive 
-                    ? 'bg-[#101A35] text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-[#101A35] hover:bg-slate-100'
+                    ? 'bg-[#0B132B] text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-[#0B132B] hover:bg-slate-100'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#08BFD0]' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#C5A059]' : 'text-slate-400'}`} />
                 <span>{module.label}</span>
                 <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-mono ${
                   isActive ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
@@ -771,13 +771,13 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div 
               onClick={() => setActiveTpoTab('student-database')}
-              className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1 cursor-pointer hover:border-[#7553E8]/50 transition-all group"
+              className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1 cursor-pointer hover:border-[#C5A059]/50 transition-all group"
             >
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Total Pool</span>
-                <Users className="w-3.5 h-3.5 text-[#7553E8] group-hover:scale-110 transition-transform" />
+                <Users className="w-3.5 h-3.5 text-[#9A7328] group-hover:scale-110 transition-transform" />
               </div>
-              <p className="text-2xl font-black font-sora text-[#101A35]">
+              <p className="text-2xl font-black font-sora text-[#0B132B]">
                 {isLoading ? '...' : allDbScholars.length}
               </p>
               <p className="text-[10px] text-slate-500 font-medium">Campus Database Pool</p>
@@ -785,7 +785,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
             <div 
               onClick={() => setActiveTpoTab('shortlisting')}
-              className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1 cursor-pointer hover:border-emerald-500/50 transition-all group"
+              className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1 cursor-pointer hover:border-emerald-500/50 transition-all group"
             >
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Drive Eligible</span>
@@ -799,13 +799,13 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
             <div 
               onClick={() => setActiveTpoTab('offers')}
-              className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1 cursor-pointer hover:border-cyan-500/50 transition-all group"
+              className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1 cursor-pointer hover:border-cyan-500/50 transition-all group"
             >
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Placed Candidates</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#08BFD0] group-hover:scale-110 transition-transform" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A059] group-hover:scale-110 transition-transform" />
               </div>
-              <p className="text-2xl font-black font-sora text-[#08BFD0]">
+              <p className="text-2xl font-black font-sora text-[#C5A059]">
                 {isLoading ? '...' : placedCount}
               </p>
               <p className="text-[10px] text-cyan-600 font-bold">{placementRatePct}% Placement Ratio</p>
@@ -813,7 +813,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
             <div 
               onClick={() => setActiveTpoTab('drives')}
-              className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1 cursor-pointer hover:border-amber-500/50 transition-all group"
+              className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1 cursor-pointer hover:border-amber-500/50 transition-all group"
             >
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Active Drives</span>
@@ -825,18 +825,18 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
               <p className="text-[10px] text-amber-600 font-bold">2025-2026 Season</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1">
+            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Highest Package</span>
-                <Award className="w-3.5 h-3.5 text-[#7553E8]" />
+                <Award className="w-3.5 h-3.5 text-[#9A7328]" />
               </div>
-              <p className="text-2xl font-black font-sora text-[#7553E8]">
+              <p className="text-2xl font-black font-sora text-[#9A7328]">
                 ₹{packageMetrics.highestCtc} <span className="text-xs font-normal text-slate-400">LPA</span>
               </p>
               <p className="text-[10px] text-purple-600 font-bold">Tier 1 Product MNC</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#101A35]/10 shadow-xs space-y-1">
+            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Average Package</span>
                 <TrendingUp className="w-3.5 h-3.5 text-[#00B987]" />
@@ -850,10 +850,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
           {/* Composed Chart & Salary Band Visual */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+            <div className="lg:col-span-2 p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-black font-sora text-[#101A35]">
+                  <h3 className="text-sm font-black font-sora text-[#0B132B]">
                     Branch-Wise Placement Progress & CTC Distribution
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -873,7 +873,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                     <YAxis yAxisId="left" stroke="#64748B" fontSize={11} />
                     <YAxis yAxisId="right" orientation="right" stroke="#7553E8" fontSize={11} unit=" LPA" />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#101A35', borderRadius: '16px', border: 'none', color: '#fff', fontSize: '12px' }}
+                      contentStyle={{ backgroundColor: '#0B132B', borderRadius: '16px', border: 'none', color: '#fff', fontSize: '12px' }}
                     />
                     <Legend />
                     <Bar yAxisId="left" dataKey="placed" name="Placed Students" fill="#08BFD0" radius={[6, 6, 0, 0]} />
@@ -884,9 +884,9 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
               </div>
             </div>
 
-            <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4 flex flex-col justify-between">
+            <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4 flex flex-col justify-between">
               <div className="space-y-1">
-                <h3 className="text-sm font-black font-sora text-[#101A35]">
+                <h3 className="text-sm font-black font-sora text-[#0B132B]">
                   Salary Band Distribution
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -902,7 +902,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#101A35', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0B132B', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -912,7 +912,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   <div key={i} className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 font-bold">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
                     <span className="text-slate-600 line-clamp-1">{b.name}</span>
-                    <span className="ml-auto font-mono text-[#101A35] font-black">{b.count}</span>
+                    <span className="ml-auto font-mono text-[#0B132B] font-black">{b.count}</span>
                   </div>
                 ))}
               </div>
@@ -924,10 +924,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 3: COMPANY & RECRUITER MANAGEMENT ────────────────────────── */}
       {activeTpoTab === 'companies' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#9A7328]" />
                 <span>Enterprise Corporate Hiring Partners & HR Contacts Directory</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -946,11 +946,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {companyPartners.map(partner => (
-              <div key={partner.id} className="p-5 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#7553E8]/40 transition-all">
+              <div key={partner.id} className="p-5 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-3 flex flex-col justify-between hover:border-[#C5A059]/40 transition-all">
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-sm text-[#101A35]">{partner.company}</h4>
+                      <h4 className="font-bold text-sm text-[#0B132B]">{partner.company}</h4>
                       <span className="text-[10px] text-slate-400 font-mono">{partner.tier}</span>
                     </div>
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -959,12 +959,12 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   </div>
 
                   <div className="p-3 rounded-2xl bg-slate-50 space-y-1 text-xs text-slate-700">
-                    <p className="font-bold flex items-center gap-1.5 text-xs text-[#101A35]">
-                      <Users className="w-3.5 h-3.5 text-[#7553E8]" />
+                    <p className="font-bold flex items-center gap-1.5 text-xs text-[#0B132B]">
+                      <Users className="w-3.5 h-3.5 text-[#9A7328]" />
                       <span>{partner.hrName}</span>
                     </p>
                     <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
-                      <Mail className="w-3 h-3 text-[#08BFD0]" />
+                      <Mail className="w-3 h-3 text-[#C5A059]" />
                       <span>{partner.hrEmail}</span>
                     </p>
                     <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
@@ -977,11 +977,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                   <div>
                     <span className="text-[9px] text-slate-400 uppercase font-bold block">Past Total Hires</span>
-                    <span className="font-mono font-black text-[#101A35]">{partner.pastHires} Scholars</span>
+                    <span className="font-mono font-black text-[#0B132B]">{partner.pastHires} Scholars</span>
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] text-slate-400 uppercase font-bold block">CTC Range</span>
-                    <span className="font-mono font-black text-[#7553E8]">₹{partner.avgCtc} - {partner.maxCtc} LPA</span>
+                    <span className="font-mono font-black text-[#9A7328]">₹{partner.avgCtc} - {partner.maxCtc} LPA</span>
                   </div>
                 </div>
               </div>
@@ -993,10 +993,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 4: RECRUITMENT DRIVE MANAGER ──────────────────────────────── */}
       {activeTpoTab === 'drives' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-[#9A7328]" />
                 <span>Campus Recruitment Drive Lifecycle & Schedule Manager</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1015,17 +1015,17 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {companyDrives.map(drive => (
-              <div key={drive.id} className="p-5 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#7553E8]/40 transition-all">
+              <div key={drive.id} className="p-5 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-3 flex flex-col justify-between hover:border-[#C5A059]/40 transition-all">
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-sm text-[#101A35]">{drive.company}</h4>
+                      <h4 className="font-bold text-sm text-[#0B132B]">{drive.company}</h4>
                       <p className="text-xs text-slate-500 font-medium">{drive.role}</p>
                     </div>
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                       drive.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                       drive.status === 'Ongoing' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                      'bg-purple-50 text-[#7553E8] border-purple-200'
+                      'bg-[#FDF8EE] text-[#9A7328] border-purple-200'
                     }`}>
                       {drive.status}
                     </span>
@@ -1034,11 +1034,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   <div className="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-slate-50 text-xs">
                     <div>
                       <span className="text-[9px] text-slate-400 uppercase font-bold block">Package</span>
-                      <span className="font-mono font-black text-[#7553E8]">₹{drive.ctc} LPA</span>
+                      <span className="font-mono font-black text-[#9A7328]">₹{drive.ctc} LPA</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-slate-400 uppercase font-bold block">Min CGPA</span>
-                      <span className="font-mono font-black text-[#101A35]">{drive.minCgpa}</span>
+                      <span className="font-mono font-black text-[#0B132B]">{drive.minCgpa}</span>
                     </div>
                   </div>
 
@@ -1054,7 +1054,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   </span>
                   <button 
                     onClick={() => { setShortlistDrive(drive.id); setActiveTpoTab('shortlisting'); }}
-                    className="text-[#7553E8] hover:underline font-bold text-xs"
+                    className="text-[#9A7328] hover:underline font-bold text-xs"
                   >
                     View Shortlist →
                   </button>
@@ -1068,11 +1068,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 5: ELIGIBILITY & SHORTLISTING ENGINE ──────────────────────── */}
       {activeTpoTab === 'shortlisting' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                  <Sliders className="w-5 h-5 text-[#7553E8]" />
+                <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-[#9A7328]" />
                   <span>Automated Eligibility Cutoff Screening & Shortlisting Engine</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -1082,9 +1082,9 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
               <button
                 onClick={handleExportShortlistExcel}
-                className="px-4 py-2.5 rounded-xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 w-fit"
+                className="px-4 py-2.5 rounded-xl bg-[#0B132B] hover:bg-[#152042] text-white font-black text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 w-fit"
               >
-                <Download className="w-3.5 h-3.5 text-[#08BFD0]" />
+                <Download className="w-3.5 h-3.5 text-[#C5A059]" />
                 <span>Export Shortlist Excel ({computedShortlist.length})</span>
               </button>
             </div>
@@ -1161,8 +1161,8 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {computedShortlist.slice(0, 15).map(scholar => (
                     <tr key={scholar.id} className="hover:bg-slate-50">
-                      <td className="p-3 font-mono font-bold text-[#7553E8]">{scholar.rollNumber}</td>
-                      <td className="p-3 font-bold text-[#101A35]">{scholar.name}</td>
+                      <td className="p-3 font-mono font-bold text-[#9A7328]">{scholar.rollNumber}</td>
+                      <td className="p-3 font-bold text-[#0B132B]">{scholar.name}</td>
                       <td className="p-3 font-mono font-bold text-slate-600">{scholar.department}</td>
                       <td className="p-3 font-mono font-bold">{scholar.cgpa.toFixed(2)}</td>
                       <td className="p-3 font-mono text-emerald-600 font-bold">{scholar.activeBacklogs} Backlogs</td>
@@ -1184,10 +1184,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 6: SELECTION & INTERVIEW TRACKER ──────────────────────────── */}
       {activeTpoTab === 'interviews' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <Target className="w-5 h-5 text-[#9A7328]" />
                 <span>Round-by-Round Selection & Interview Progression Board</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1208,7 +1208,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   onClick={() => setSelectedInterviewRound(r.round)}
                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     selectedInterviewRound === r.round
-                      ? 'bg-[#101A35] text-white border-[#101A35] shadow-xs'
+                      ? 'bg-[#0B132B] text-white border-[#0B132B] shadow-xs'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -1235,13 +1235,13 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   {allDbScholars.slice(0, 8).map((scholar, idx) => (
                     <tr key={scholar.id} className="hover:bg-slate-50">
                       <td className="p-3">
-                        <span className="font-mono font-bold text-[#7553E8] block text-[11px]">{scholar.rollNumber}</span>
-                        <strong className="text-[#101A35]">{scholar.name}</strong>
+                        <span className="font-mono font-bold text-[#9A7328] block text-[11px]">{scholar.rollNumber}</span>
+                        <strong className="text-[#0B132B]">{scholar.name}</strong>
                       </td>
                       <td className="p-3 font-mono font-bold">{scholar.department}</td>
                       <td className="p-3 font-mono font-bold text-emerald-600">8.{5 - idx % 3} / 10</td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-[#7553E8] border border-purple-200">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FDF8EE] text-[#9A7328] border border-[#F1E1B8]">
                           Recommended for Next Round ✓
                         </span>
                       </td>
@@ -1265,10 +1265,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 7: OFFER & PLACEMENT VERIFICATION ────────────────────────── */}
       {activeTpoTab === 'offers' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <Award className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <Award className="w-5 h-5 text-[#9A7328]" />
                 <span>Offer Letter Audit & Dual-Offer Placement Policy Compliance</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1281,17 +1281,17 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                 <div key={scholar.id} className="p-4 rounded-2xl bg-white border border-purple-100 shadow-xs space-y-2">
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="font-mono font-bold text-[#7553E8] text-xs">{scholar.rollNumber}</span>
-                      <h4 className="font-bold text-xs text-[#101A35]">{scholar.name}</h4>
+                      <span className="font-mono font-bold text-[#9A7328] text-xs">{scholar.rollNumber}</span>
+                      <h4 className="font-bold text-xs text-[#0B132B]">{scholar.name}</h4>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
                       LOI Verified ✓
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-purple-50/50 space-y-0.5 text-xs">
-                    <p className="font-black text-[#101A35]">{scholar.placedCompany}</p>
-                    <p className="font-mono font-bold text-[#7553E8]">₹{scholar.placedCtc} LPA</p>
+                  <div className="p-2.5 rounded-xl bg-[#FDF8EE]/50 space-y-0.5 text-xs">
+                    <p className="font-black text-[#0B132B]">{scholar.placedCompany}</p>
+                    <p className="font-mono font-bold text-[#9A7328]">₹{scholar.placedCtc} LPA</p>
                     <p className="text-[10px] text-slate-500">{scholar.placedRole || 'Software Engineer'}</p>
                   </div>
 
@@ -1308,10 +1308,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 8: PLACEMENT TRAINING MANAGEMENT (CRT) ───────────────────── */}
       {activeTpoTab === 'training' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[#9A7328]" />
                 <span>Campus Recruitment Training (CRT) & Skill Readiness Hub</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1322,19 +1322,19 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Quant & Aptitude Track</span>
-                <p className="text-xl font-black font-sora text-[#101A35]">78.4% Avg Score</p>
+                <p className="text-xl font-black font-sora text-[#0B132B]">78.4% Avg Score</p>
                 <p className="text-[10px] text-emerald-600 font-bold">340 Students Completed</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Core Java & DSA Track</span>
-                <p className="text-xl font-black font-sora text-[#7553E8]">82.1% Avg Score</p>
+                <p className="text-xl font-black font-sora text-[#9A7328]">82.1% Avg Score</p>
                 <p className="text-[10px] text-purple-600 font-bold">142+ Problems Solved</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">SpeakVerse™ AI Mocks</span>
-                <p className="text-xl font-black font-sora text-[#08BFD0]">86.0 / 100</p>
+                <p className="text-xl font-black font-sora text-[#C5A059]">86.0 / 100</p>
                 <p className="text-[10px] text-cyan-600 font-bold">Corporate Communication</p>
               </div>
 
@@ -1351,11 +1351,11 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 9: PLACEMENT ANALYTICS & REPORTS (NIRF / NBA) ─────────────── */}
       {activeTpoTab === 'reports' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-[#7553E8]" />
+                <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#9A7328]" />
                   <span>Official Accreditation Placement Reports & Dossier Center</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -1375,10 +1375,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
             {/* Official Report Letterhead Preview */}
             <div className="p-8 rounded-3xl bg-white border-2 border-slate-200 space-y-6">
               <div className="text-center pb-6 border-b-2 border-slate-200 space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#7553E8]">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#9A7328]">
                   G. PULLA REDDY ENGINEERING COLLEGE (AUTONOMOUS) : KURNOOL
                 </span>
-                <h2 className="text-lg font-black text-[#101A35]">
+                <h2 className="text-lg font-black text-[#0B132B]">
                   OFFICIAL CAMPUS PLACEMENT PROGRESS REPORT — 2025–2026 SEASON
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -1389,7 +1389,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
               <div className="grid grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-center text-xs">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Total Registered</span>
-                  <span className="text-base font-black text-[#101A35]">{allDbScholars.length}</span>
+                  <span className="text-base font-black text-[#0B132B]">{allDbScholars.length}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Drive Eligible</span>
@@ -1397,7 +1397,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Confirmed Placements</span>
-                  <span className="text-base font-black text-[#7553E8]">{placedCount}</span>
+                  <span className="text-base font-black text-[#9A7328]">{placedCount}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold block">Highest Package</span>
@@ -1422,13 +1422,13 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   <tbody className="divide-y divide-slate-100 font-medium">
                     {branchAnalytics.map(b => (
                       <tr key={b.department}>
-                        <td className="p-3 font-bold text-[#101A35]">{b.department}</td>
+                        <td className="p-3 font-bold text-[#0B132B]">{b.department}</td>
                         <td className="p-3 font-mono">{b.total}</td>
                         <td className="p-3 font-mono text-emerald-600">{b.eligible}</td>
-                        <td className="p-3 font-mono text-[#7553E8] font-bold">{b.placed}</td>
+                        <td className="p-3 font-mono text-[#9A7328] font-bold">{b.placed}</td>
                         <td className="p-3 font-mono font-bold">{b.placementPercentage}%</td>
                         <td className="p-3 font-mono">{b.averagePackage} LPA</td>
-                        <td className="p-3 font-mono text-right font-black text-[#101A35]">₹{b.highestPackage} LPA</td>
+                        <td className="p-3 font-mono text-right font-black text-[#0B132B]">₹{b.highestPackage} LPA</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1442,7 +1442,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
                   <p className="text-[10px] text-slate-400">Date: {new Date().toLocaleDateString()}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-black text-[#101A35]">Dr. Dean — Training & Placements</p>
+                  <p className="font-black text-[#0B132B]">Dr. Dean — Training & Placements</p>
                   <p className="text-[10px] text-slate-400">G. Pulla Reddy Engineering College (Autonomous)</p>
                 </div>
               </div>
@@ -1454,10 +1454,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
       {/* ─── MODULE 10: ANNOUNCEMENTS & NOTIFICATIONS ─────────────────────────── */}
       {activeTpoTab === 'announcements' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="p-6 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35] flex items-center gap-2">
-                <Radio className="w-5 h-5 text-[#7553E8]" />
+              <h2 className="text-base font-black font-sora text-[#0B132B] flex items-center gap-2">
+                <Radio className="w-5 h-5 text-[#9A7328]" />
                 <span>Official Placement Circulars & Notification Broadcast Dispatcher</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1476,17 +1476,17 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
           <div className="space-y-3">
             {announcements.map(ann => (
-              <div key={ann.id} className="p-5 rounded-3xl bg-white border border-[#101A35]/10 shadow-xs space-y-2 hover:border-[#7553E8]/40 transition-all">
+              <div key={ann.id} className="p-5 rounded-3xl bg-white border border-[#E2E8F0] shadow-xs space-y-2 hover:border-[#C5A059]/40 transition-all">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border ${
-                      ann.category === 'Drive Alert' ? 'bg-purple-50 text-[#7553E8] border-purple-200' :
+                      ann.category === 'Drive Alert' ? 'bg-[#FDF8EE] text-[#9A7328] border-purple-200' :
                       ann.category === 'Urgent' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                       'bg-emerald-50 text-emerald-700 border-emerald-200'
                     }`}>
                       {ann.category}
                     </span>
-                    <h4 className="font-bold text-sm text-[#101A35] pt-1">{ann.title}</h4>
+                    <h4 className="font-bold text-sm text-[#0B132B] pt-1">{ann.title}</h4>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono shrink-0">{ann.date}</span>
                 </div>
@@ -1495,7 +1495,7 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
                   <span>Target: <strong className="text-slate-700">{ann.target}</strong></span>
-                  <span>Issued by: <strong className="text-[#101A35]">{ann.author}</strong></span>
+                  <span>Issued by: <strong className="text-[#0B132B]">{ann.author}</strong></span>
                 </div>
               </div>
             ))}
@@ -1505,10 +1505,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
       {/* ─── MODAL: DISPATCH ANNOUNCEMENT (MODULE 10) ─────────────────────────── */}
       {newAnnouncementModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#101A35]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#0B132B]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-black font-sora text-[#101A35]">
+              <h3 className="text-base font-black font-sora text-[#0B132B]">
                 Dispatch Official Placement Circular
               </h3>
               <button onClick={() => setNewAnnouncementModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
@@ -1589,10 +1589,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
       {/* ─── MODAL: ADD ENTERPRISE RECRUITER (MODULE 3) ───────────────────────── */}
       {newPartnerModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#101A35]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#0B132B]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-black font-sora text-[#101A35]">
+              <h3 className="text-base font-black font-sora text-[#0B132B]">
                 Add Enterprise Corporate Recruiter
               </h3>
               <button onClick={() => setNewPartnerModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
@@ -1693,10 +1693,10 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
 
       {/* ─── MODAL: RECORD NEW RECRUITMENT DRIVE (MODULE 4) ──────────────────── */}
       {newDriveModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#101A35]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#0B132B]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-black font-sora text-[#101A35]">
+              <h3 className="text-base font-black font-sora text-[#0B132B]">
                 Schedule New Campus Recruitment Drive
               </h3>
               <button onClick={() => setNewDriveModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">

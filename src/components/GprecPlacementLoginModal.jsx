@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Realistic3DLogo from './Realistic3DLogo';
 import { 
   ShieldCheck, Mail, KeyRound, ArrowRight, CheckCircle2, 
-  AlertCircle, RefreshCw, Lock, Sparkles, Building2, ChevronLeft, Eye, EyeOff
+  AlertCircle, RefreshCw, Lock, Sparkles, Building2, ChevronLeft, Eye, EyeOff,
+  Check, Shield
 } from 'lucide-react';
 import { 
   isAllowedGprecRoll, 
@@ -27,54 +27,115 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
   const [scholarStep, setScholarStep] = useState('roll'); // 'roll' | 'otp'
   const [rollNumber, setRollNumber] = useState('');
   const [otp, setOtp] = useState('');
+  const [targetEmail, setTargetEmail] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   // Officer / Dean State
   const [officerEmail, setOfficerEmail] = useState(GPREC_OFFICER_CONFIG.deanEmail);
   const [officerPassword, setOfficerPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [officerMode, setOfficerMode] = useState('login'); // 'login' | 'forgot' | 'verify_reset'
+  const [officerMode, setOfficerMode] = useState('login'); // 'login' | 'forgot' | 'reset'
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  // Shared UI state
+  // Status & Feedback
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   if (!isOpen) return null;
 
-  // --- SCHOLAR OTP FLOW ---
+  // ─── 1. SCHOLAR: SUBMIT ROLL & SEND OTP ──────────────────────────────────
   const handleRollSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    const clean = normalizeRollNumber(rollNumber);
-    if (!clean) {
-      setErrorMsg('Please enter your GPREC college roll number.');
+    const cleanRoll = normalizeRollNumber(rollNumber);
+    if (!cleanRoll) {
+      setErrorMsg('Please enter a valid GPREC roll number.');
       return;
     }
 
-    if (!isAllowedGprecRoll(clean)) {
-      setErrorMsg(`Roll number "${clean.toUpperCase()}" is not registered in this placement cohort. Contact ${PLACEMENT_SUPPORT_EMAIL} to request access.`);
+    if (!isAllowedGprecRoll(cleanRoll)) {
+      setErrorMsg(`Roll number "${cleanRoll}" is not verified for the GPREC Placement Suite. Only verified GPREC scholars are permitted.`);
       return;
     }
 
+    const email = getGprecEmailFromRoll(cleanRoll);
+    setTargetEmail(email);
     setLoading(true);
+
     try {
-      await sendGprecPlacementOtp(clean);
-      setScholarStep('otp');
-      startCooldown();
+      const res = await sendGprecPlacementOtp(cleanRoll);
+      if (res.success) {
+        setScholarStep('otp');
+        setSuccessMsg(`6-digit OTP dispatched to ${email}. Check inbox & spam folder.`);
+        startResendTimer();
+      } else {
+        setErrorMsg(res.error || 'Failed to dispatch OTP. Please try again.');
+      }
     } catch (err) {
-      setErrorMsg(err.message || `Unable to send verification code. Please contact ${PLACEMENT_SUPPORT_EMAIL}`);
+      setErrorMsg('Network error while dispatching OTP. Please retry.');
     } finally {
       setLoading(false);
     }
   };
 
-  const startCooldown = () => {
-    setResendCooldown(45);
+  // ─── 2. SCHOLAR: VERIFY OTP ──────────────────────────────────────────────
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!otp || otp.trim().length < 6) {
+      setErrorMsg('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await verifyGprecPlacementOtp(rollNumber, otp.trim());
+      if (res.success) {
+        setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(res.user);
+          }
+          onClose();
+        }, 600);
+      } else {
+        setErrorMsg(res.error || 'Invalid or expired OTP code.');
+      }
+    } catch (err) {
+      setErrorMsg('Verification failed. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── 3. SCHOLAR: RESEND OTP ──────────────────────────────────────────────
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      const res = await sendGprecPlacementOtp(rollNumber);
+      if (res.success) {
+        setSuccessMsg(`New OTP dispatched to ${targetEmail}.`);
+        startResendTimer();
+      } else {
+        setErrorMsg(res.error || 'Failed to resend OTP.');
+      }
+    } catch (err) {
+      setErrorMsg('Could not resend OTP. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startResendTimer = () => {
+    setResendCooldown(60);
     const interval = setInterval(() => {
       setResendCooldown((prev) => {
         if (prev <= 1) {
@@ -86,64 +147,32 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
     }, 1000);
   };
 
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0 || loading) return;
-    setErrorMsg('');
-    setSuccessMsg('');
-    setLoading(true);
-    try {
-      await sendGprecPlacementOtp(rollNumber);
-      startCooldown();
-      setSuccessMsg('A new OTP has been dispatched to your college email.');
-    } catch (err) {
-      setErrorMsg(err.message || 'Failed to resend code.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOtpSubmit = async (e) => {
+  // ─── 4. OFFICER: PASSWORD LOGIN ─────────────────────────────────────────
+  const handleOfficerLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    const cleanOtp = otp.trim();
-    if (!cleanOtp || cleanOtp.length < 6) {
-      setErrorMsg('Please enter the 6-digit OTP sent to your email.');
+    if (!officerPassword) {
+      setErrorMsg('Please enter the official TPO administration password.');
       return;
     }
 
-    setLoading(true);
-    try {
-      const userProfile = await verifyGprecPlacementOtp(rollNumber, cleanOtp);
-      if (onLoginSuccess) {
-        onLoginSuccess(userProfile);
-      }
-      onClose();
-    } catch (err) {
-      setErrorMsg(err.message || 'Invalid or expired OTP. Please verify and try again.');
-    } finally {
-      setLoading(false);
+    const res = authenticatePlacementOfficer(officerEmail, officerPassword);
+    if (res.success) {
+      setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess(res.user);
+        }
+        onClose();
+      }, 600);
+    } else {
+      setErrorMsg(res.error || 'Incorrect official password.');
     }
   };
 
-  // --- PLACEMENT OFFICER / DEAN PASSWORD FLOW ---
-  const handleOfficerLogin = (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    try {
-      const officerUser = authenticatePlacementOfficer(officerEmail, officerPassword);
-      if (onLoginSuccess) {
-        onLoginSuccess(officerUser);
-      }
-      onClose();
-    } catch (err) {
-      setErrorMsg(err.message);
-    }
-  };
-
+  // ─── 5. OFFICER: FORGOT PASSWORD (REQUEST CODE) ──────────────────────────
   const handleSendResetCode = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -151,67 +180,83 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
     setLoading(true);
 
     try {
-      await sendOfficerPasswordResetCode(officerEmail);
-      setOfficerMode('verify_reset');
-      setSuccessMsg('Reset code dispatched to official mailbox: dean.placements@gprec.ac.in');
+      const res = await sendOfficerPasswordResetCode();
+      if (res.success) {
+        setOfficerMode('reset');
+        setSuccessMsg('6-digit reset code dispatched to official mailbox: dean.placements@gprec.ac.in');
+      } else {
+        setErrorMsg(res.error || 'Failed to dispatch reset code.');
+      }
     } catch (err) {
-      setErrorMsg(err.message);
+      setErrorMsg('Error requesting reset code.');
     } finally {
       setLoading(false);
     }
   };
 
+  // ─── 6. OFFICER: VERIFY CODE & SET NEW PASSWORD ─────────────────────────
   const handleResetPasswordSubmit = (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    try {
-      verifyAndResetOfficerPassword(resetCode, newPassword);
-      setOfficerPassword(newPassword);
-      setOfficerMode('login');
-      setSuccessMsg('Password successfully updated! You can now log in with your new password.');
-    } catch (err) {
-      setErrorMsg(err.message);
+    if (!resetCode || resetCode.length < 6) {
+      setErrorMsg('Please enter the full 6-digit recovery code.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setErrorMsg('New password must be at least 6 characters.');
+      return;
+    }
+
+    const res = verifyAndResetOfficerPassword(resetCode, newPassword);
+    if (res.success) {
+      setSuccessMsg('Official password successfully reset. You are now logged in.');
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess(res.user);
+        }
+        onClose();
+      }, 800);
+    } else {
+      setErrorMsg(res.error || 'Invalid or expired recovery code.');
     }
   };
 
-  const targetEmail = getGprecEmailFromRoll(rollNumber);
-
   return (
-    <div className="fixed inset-0 z-[99999] bg-[#101A35]/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-[#101A35]/10 shadow-2xl p-6 sm:p-8 space-y-5 relative overflow-hidden text-[#101A35] animate-in fade-in zoom-in-95 duration-200">
-        {/* Decorative Top Accent Gradient */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#7553E8] via-[#08BFD0] to-[#00B987]" />
+    <div className="fixed inset-0 z-[99999] bg-[#0B132B]/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-xl border border-[#E2E8F0] shadow-xl p-6 sm:p-7 space-y-5 relative overflow-hidden text-[#0B132B] animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Subtle Gold Hairline Accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#C5A059]" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-3">
-            <Realistic3DLogo size="sm" />
             <img 
-              src="/gprec-logo.png" 
-              alt="GPREC Logo" 
-              className="w-11 h-11 object-contain rounded-xl p-0.5 bg-white border border-slate-200 shadow-xs" 
+              src="/gprec_logo.png" 
+              alt="GPREC Crest" 
+              className="w-10 h-10 object-contain rounded p-0.5 bg-white border border-[#E2E8F0] shrink-0" 
             />
             <div>
-              <h2 className="text-base font-black font-sora text-[#101A35]">
-                {authRole === 'student' ? 'GPREC Scholar Login' : 'Placement Officer Login'}
+              <h2 className="text-base font-bold text-[#0B132B] tracking-tight">
+                {authRole === 'student' ? 'GPREC Scholar Verification' : 'TPO Administration Login'}
               </h2>
-              <p className="text-[11px] text-[#7553E8] font-bold uppercase tracking-wider">
-                {authRole === 'student' ? 'Placement Suite Verification' : 'Dean & T&P Faculty Cell'}
+              <p className="text-[10px] text-[#9A7328] font-semibold uppercase tracking-wider">
+                {authRole === 'student' ? 'Placement Suite Access' : 'Training & Placement Cell'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0B132B] font-bold text-xs cursor-pointer transition-colors"
           >
             ✕
           </button>
         </div>
 
-        {/* Role Selector Tabs (Scholar vs Placement Officer) */}
-        <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl text-xs font-black">
+        {/* Swiss Segmented Role Selector */}
+        <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] rounded-lg text-xs font-semibold">
           <button
             type="button"
             onClick={() => {
@@ -219,13 +264,13 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
               setErrorMsg('');
               setSuccessMsg('');
             }}
-            className={`py-2 rounded-xl transition-all cursor-pointer ${
+            className={`py-2 rounded-md transition-all cursor-pointer ${
               authRole === 'student' 
-                ? 'bg-white text-[#101A35] shadow-xs' 
-                : 'text-slate-500 hover:text-[#101A35]'
+                ? 'bg-white text-[#0B132B] shadow-xs border border-[#E2E8F0]' 
+                : 'text-[#64748B] hover:text-[#0B132B]'
             }`}
           >
-            🎓 Scholar (OTP)
+            Scholar (OTP Auth)
           </button>
           <button
             type="button"
@@ -234,28 +279,28 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
               setErrorMsg('');
               setSuccessMsg('');
             }}
-            className={`py-2 rounded-xl transition-all cursor-pointer ${
+            className={`py-2 rounded-md transition-all cursor-pointer ${
               authRole === 'officer' 
-                ? 'bg-white text-[#7553E8] shadow-xs' 
-                : 'text-slate-500 hover:text-[#101A35]'
+                ? 'bg-white text-[#0B132B] shadow-xs border border-[#E2E8F0]' 
+                : 'text-[#64748B] hover:text-[#0B132B]'
             }`}
           >
-            🏛️ TPO / Dean Login
+            TPO / Dean Office
           </button>
         </div>
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
-            <div className="leading-relaxed font-medium">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+            <div className="leading-relaxed font-normal">
               <p>{errorMsg}</p>
               {authRole === 'student' && (
                 <a 
                   href={`mailto:${PLACEMENT_SUPPORT_EMAIL}`}
-                  className="text-xs font-bold text-[#7553E8] underline block mt-1"
+                  className="text-xs font-semibold text-[#0B132B] underline block mt-1"
                 >
-                  Email Support: {PLACEMENT_SUPPORT_EMAIL}
+                  Contact Support: {PLACEMENT_SUPPORT_EMAIL}
                 </a>
               )}
             </div>
@@ -264,9 +309,9 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
 
         {/* Success Alert */}
         {successMsg && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5">
+          <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5">
             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
-            <p className="leading-relaxed font-medium">{successMsg}</p>
+            <p className="leading-relaxed font-normal">{successMsg}</p>
           </div>
         )}
 
@@ -275,8 +320,8 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
           scholarStep === 'roll' ? (
             <form onSubmit={handleRollSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                  Enter College Roll Number
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                  College Roll Number
                 </label>
                 <div className="relative">
                   <input
@@ -284,41 +329,41 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                     value={rollNumber}
                     onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
                     placeholder="e.g. 249XA33106"
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:border-[#7553E8] focus:bg-white text-sm font-mono font-bold tracking-wider uppercase outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-sm font-mono font-bold tracking-wider uppercase outline-none transition-all"
                     autoFocus
                     required
                   />
-                  <ShieldCheck className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                  <ShieldCheck className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 </div>
-                <p className="text-[11px] text-slate-500 leading-normal">
-                  Only approved GPREC Placement cohort roll numbers are permitted.
+                <p className="text-[11px] text-[#64748B] leading-normal">
+                  Registered GPREC placement candidate roll numbers only.
                 </p>
               </div>
 
-              <div className="p-3 rounded-2xl bg-purple-50/70 border border-purple-100 text-[11px] text-purple-900 space-y-1">
-                <div className="font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#7553E8]" />
+              <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-[11px] text-[#475569] space-y-1">
+                <div className="font-semibold text-[#0B132B] flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-[#C5A059]" />
                   Institutional OTP Verification
                 </div>
-                <p className="text-purple-800/80 leading-relaxed font-normal">
-                  A 6-digit OTP will be sent to your college email (<span className="font-mono font-semibold">roll@gprec.ac.in</span>) from <span className="font-mono font-bold">lumixora.team@gmail.com</span>.
+                <p className="text-[#475569] leading-relaxed font-normal">
+                  A 6-digit authorization token will be dispatched to your official student webmail (<span className="font-mono font-bold text-[#0B132B]">roll@gprec.ac.in</span>).
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#08BFD0]" />
-                    <span>Verifying Roll & Sending OTP...</span>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#C5A059]" />
+                    <span>Verifying Roll Number...</span>
                   </>
                 ) : (
                   <>
-                    <span>Send OTP</span>
-                    <ArrowRight className="w-4 h-4 text-[#08BFD0]" />
+                    <span>Send Verification OTP</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#C5A059]" />
                   </>
                 )}
               </button>
@@ -329,32 +374,32 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                 <button
                   type="button"
                   onClick={() => { setScholarStep('roll'); setErrorMsg(''); setSuccessMsg(''); }}
-                  className="text-xs font-bold text-[#7553E8] flex items-center gap-1 hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#0B132B] flex items-center gap-1 hover:underline cursor-pointer"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Change Roll Number
                 </button>
-                <span className="text-[11px] font-mono font-bold text-slate-500">
+                <span className="text-[11px] font-mono font-bold text-[#0B132B]">
                   {rollNumber.toUpperCase()}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-                <div className="flex items-center gap-2 font-bold text-slate-700">
-                  <Mail className="w-3.5 h-3.5 text-[#08BFD0]" />
+              <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-1">
+                <div className="flex items-center gap-2 font-semibold text-[#0B132B]">
+                  <Mail className="w-3.5 h-3.5 text-[#C5A059]" />
                   <span>OTP Dispatched To:</span>
                 </div>
-                <p className="font-mono font-bold text-[#101A35] text-[13px] break-all">
+                <p className="font-mono font-bold text-[#0B132B] text-[12px] break-all">
                   {targetEmail}
                 </p>
-                <p className="text-[11px] text-slate-500 pt-0.5">
-                  Sent from <span className="font-semibold text-purple-700">lumixora.team@gmail.com</span> (expires in 5 mins).
+                <p className="text-[11px] text-[#64748B]">
+                  Official GPREC Student Mailbox • Valid for 5 minutes.
                 </p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                  Enter 6-Digit OTP
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                  6-Digit Verification Code
                 </label>
                 <div className="relative">
                   <input
@@ -363,40 +408,40 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     placeholder="• • • • • •"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-[#08BFD0] focus:bg-white text-center font-mono font-black text-xl tracking-[0.5em] outline-none transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-center font-mono font-bold text-lg tracking-[0.4em] outline-none transition-all"
                     autoFocus
                     required
                   />
-                  <KeyRound className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                  <KeyRound className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-slate-500">Didn't receive the OTP?</span>
+                <span className="text-[#64748B]">Didn't receive the token?</span>
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={resendCooldown > 0 || loading}
-                  className="font-bold text-[#7553E8] hover:underline cursor-pointer disabled:text-slate-400 disabled:no-underline"
+                  className="font-semibold text-[#0B132B] hover:underline cursor-pointer disabled:text-[#94A3B8] disabled:no-underline"
                 >
-                  {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend OTP'}
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
                 </button>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 transition-all cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                    <span>Verifying OTP...</span>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#C5A059]" />
+                    <span>Verifying Code...</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-white" />
-                    <span>Verify OTP & Enter Placement Suite</span>
+                    <Check className="w-4 h-4 text-[#C5A059]" />
+                    <span>Authorize & Enter Placement Suite</span>
                   </>
                 )}
               </button>
@@ -409,26 +454,26 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
           officerMode === 'login' ? (
             <form onSubmit={handleOfficerLogin} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                  Placement Officer Email
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                  Placement Officer Official Email
                 </label>
                 <div className="relative">
                   <input
                     type="email"
                     value={officerEmail}
                     onChange={(e) => setOfficerEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-mono font-semibold text-[#0B132B] outline-none"
                     required
                     readOnly
                   />
-                  <Mail className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                    Official Password / PIN
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                    Administrative Password
                   </label>
                   <button
                     type="button"
@@ -437,7 +482,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-[11px] font-bold text-[#7553E8] hover:underline cursor-pointer"
+                    className="text-[11px] font-semibold text-[#9A7328] hover:underline cursor-pointer"
                   >
                     Forgot Password?
                   </button>
@@ -448,29 +493,29 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                     value={officerPassword}
                     onChange={(e) => setOfficerPassword(e.target.value)}
                     placeholder="Enter official password"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-[#7553E8] focus:bg-white text-sm outline-none transition-all pr-11"
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-xs outline-none transition-all pr-10"
                     autoFocus
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0B132B] cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  Default: <span className="font-mono font-bold text-slate-600">Lumi@2026</span>
+                <p className="text-[10px] text-[#64748B]">
+                  Default Access Token: <span className="font-mono font-bold text-[#0B132B]">Lumi@2026</span>
                 </p>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
               >
-                <Lock className="w-4 h-4 text-[#08BFD0]" />
-                <span>Enter Placement Officer Command Suite</span>
+                <Lock className="w-4 h-4 text-[#C5A059]" />
+                <span>Enter TPO Operations Suite</span>
               </button>
             </form>
           ) : officerMode === 'forgot' ? (
@@ -480,41 +525,41 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                 <button
                   type="button"
                   onClick={() => { setOfficerMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-                  className="text-xs font-bold text-[#7553E8] flex items-center gap-1 hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#0B132B] flex items-center gap-1 hover:underline cursor-pointer"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   Back to Login
                 </button>
-                <span className="text-[11px] font-bold text-slate-500 uppercase">
-                  Account Recovery
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase font-mono">
+                  Recovery
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 text-xs text-purple-900 space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#7553E8]" />
+              <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#475569] space-y-1">
+                <p className="font-semibold text-[#0B132B] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#C5A059]" />
                   Secure Recovery Protocol
                 </p>
-                <p className="text-[11px] text-purple-800/80 leading-relaxed font-normal">
-                  A 6-digit password reset authorization code will be sent to official mailbox: <br />
-                  <span className="font-mono font-bold text-purple-950">dean.placements@gprec.ac.in</span>
+                <p className="text-[11px] leading-relaxed">
+                  A 6-digit password reset authorization token will be dispatched to: <br />
+                  <span className="font-mono font-bold text-[#0B132B]">dean.placements@gprec.ac.in</span>
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-[#08BFD0]" />
-                    <span>Dispatching Reset Code...</span>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#C5A059]" />
+                    <span>Dispatching Token...</span>
                   </>
                 ) : (
                   <>
-                    <span>Send Reset Code to Dean Mailbox</span>
-                    <ArrowRight className="w-4 h-4 text-[#08BFD0]" />
+                    <span>Dispatch Reset Token to Dean Mailbox</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#C5A059]" />
                   </>
                 )}
               </button>
@@ -526,19 +571,19 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                 <button
                   type="button"
                   onClick={() => { setOfficerMode('forgot'); setErrorMsg(''); setSuccessMsg(''); }}
-                  className="text-xs font-bold text-[#7553E8] flex items-center gap-1 hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#0B132B] flex items-center gap-1 hover:underline cursor-pointer"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
-                  Resend Code
+                  Resend Token
                 </button>
-                <span className="text-[11px] font-bold text-slate-500 uppercase">
-                  Enter Reset Token
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase font-mono">
+                  Token Verification
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                  6-Digit Recovery Code
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                  6-Digit Recovery Token
                 </label>
                 <input
                   type="text"
@@ -546,42 +591,42 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                   value={resetCode}
                   onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
                   placeholder="• • • • • •"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-[#7553E8] focus:bg-white text-center font-mono font-black text-xl tracking-[0.5em] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-center font-mono font-bold text-lg tracking-[0.4em] outline-none"
                   autoFocus
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                  New Official Password
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
+                  New Administrative Password
                 </label>
                 <input
                   type="text"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new strong password"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-[#7553E8] focus:bg-white text-sm outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-xs outline-none"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 transition-all cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4 text-white" />
-                <span>Save New Password & Log In</span>
+                <Check className="w-4 h-4 text-[#C5A059]" />
+                <span>Save New Password & Enter Suite</span>
               </button>
             </form>
           )
         )}
 
-        {/* Footer info */}
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-          <span>GPREC Placement Cell • Kurnool</span>
-          <span className="flex items-center gap-1 font-mono text-emerald-600 font-bold">
-            <Lock className="w-3 h-3" /> Secure Auth
+        {/* Modal Footer */}
+        <div className="pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
+          <span>GPREC Training & Placement Cell</span>
+          <span className="flex items-center gap-1 font-mono text-[#0B132B] font-semibold">
+            <Lock className="w-3 h-3 text-[#C5A059]" /> Verified Encryption
           </span>
         </div>
       </div>
