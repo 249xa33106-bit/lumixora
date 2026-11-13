@@ -10,7 +10,7 @@ const teamMembersDetails = {
     role: "Product Innovation Lead — Head of Feature Strategy & Student Insights",
     department: "Product Leadership",
     lead: "Team Lead — Feature Strategy Division",
-    image: "/team_manasa.jpg",
+    image: "/team_manasa.jpg?v=2",
     color: "amber",
     gradient: "from-amber-400 to-orange-500",
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
@@ -27,8 +27,8 @@ const teamMembersDetails = {
     name: "BANDI MEGHANA",
     role: "UI/UX Designer",
     department: "UI/UX & Product Design",
-    lead: "Under Feature Strategy Lead (C. Manasa)",
-    image: "/team_meghana.jpg",
+    lead: "",
+    image: "/team_meghana.jpg?v=2",
     color: "amber",
     gradient: "from-amber-400 via-orange-500 to-rose-500",
     borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
@@ -100,7 +100,7 @@ const teamMembersDetails = {
     role: "Mentorship & Support Lead — Head of Doubt Solver Network",
     department: "Academic Mentorship & Student Support",
     lead: "Lead — Mentorship Operations",
-    image: "/team_pooja.jpg",
+    image: "/team_pooja.jpg?v=2",
     color: "cyan",
     gradient: "from-cyan-400 to-blue-600",
     borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
@@ -136,7 +136,7 @@ const teamMembersDetails = {
     role: "AI Solutions",
     department: "AI Solutions & Prototyping Team",
     lead: "AI Solutions & Prototyping Team (under Shaik Tousif Basha)",
-    image: "/team_riyaz.png",
+    image: "/team_riyaz.jpg?v=2",
     color: "cyan",
     gradient: "from-cyan-400 via-blue-500 to-indigo-500",
     borderBadge: "border-cyan-400/30 text-cyan-400 bg-cyan-400/10",
@@ -154,7 +154,7 @@ const teamMembersDetails = {
     role: "Product Testing & Quality Assurance Lead",
     department: "Product Testing & Quality Assurance",
     lead: "Lead — Product Testing & Quality Assurance",
-    image: "/team_ushaeswari.jpg",
+    image: "/team_ushaeswari.jpg?v=2",
     color: "rose",
     gradient: "from-rose-400 via-pink-500 to-indigo-500",
     borderBadge: "border-rose-400/30 text-rose-400 bg-rose-400/10",
@@ -1155,7 +1155,7 @@ export default function LandingPage({ onLoginClick }) {
               
               <div>
                 <TeamAvatar 
-                  src="/team_manasa.jpg" 
+                  src="/team_manasa.jpg?v=2" 
                   name="C. MANASA" 
                   gradient="from-amber-400 to-orange-500" 
                 />
@@ -1186,7 +1186,7 @@ export default function LandingPage({ onLoginClick }) {
               
               <div>
                 <TeamAvatar 
-                  src="/team_meghana.jpg" 
+                  src="/team_meghana.jpg?v=2" 
                   name="BANDI MEGHANA" 
                   gradient="from-amber-400 via-orange-500 to-rose-500" 
                 />
@@ -1279,7 +1279,7 @@ export default function LandingPage({ onLoginClick }) {
               
               <div>
                 <TeamAvatar 
-                  src="/team_pooja.jpg" 
+                  src="/team_pooja.jpg?v=2" 
                   name="A. POOJA REDDY" 
                   gradient="from-cyan-400 to-blue-600" 
                 />
@@ -1346,7 +1346,7 @@ export default function LandingPage({ onLoginClick }) {
               
               <div>
                 <TeamAvatar 
-                  src="/team_riyaz.png" 
+                  src="/team_riyaz.jpg?v=2" 
                   name="SYED RIYAZ" 
                   gradient="from-cyan-400 via-blue-500 to-indigo-500" 
                 />
@@ -1377,7 +1377,7 @@ export default function LandingPage({ onLoginClick }) {
               
               <div>
                 <TeamAvatar 
-                  src="/team_ushaeswari.jpg" 
+                  src="/team_ushaeswari.jpg?v=2" 
                   name="USHA ESWARI" 
                   gradient="from-rose-400 via-pink-500 to-indigo-500" 
                 />

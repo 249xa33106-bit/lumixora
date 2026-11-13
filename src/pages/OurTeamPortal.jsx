@@ -40,7 +40,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'Feature Strategy & Product Innovation',
     department: 'Feature Strategy & Innovation',
     lead: 'Feature Strategy Team Lead',
-    image: '/team_manasa.jpg',
+    image: '/team_manasa.jpg?v=2',
     color: 'amber',
     gradient: 'from-amber-400 to-orange-500',
     borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
@@ -61,8 +61,8 @@ export const DEFAULT_TEAM_MEMBERS = [
     division: 'feature-strategy',
     divisionLabel: 'Feature Strategy & UX',
     department: 'UI/UX & Product Design',
-    lead: 'Under Feature Strategy Lead (C. Manasa)',
-    image: '/team_meghana.jpg',
+    lead: '',
+    image: '/team_meghana.jpg?v=2',
     color: 'amber',
     gradient: 'from-amber-400 via-orange-500 to-rose-500',
     borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
@@ -128,7 +128,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'AI & Intelligent Systems',
     department: 'AI Solutions Division',
     lead: 'Under AI Solutions (Shaik Tousif Basha)',
-    image: '/team_riyaz.png',
+    image: '/team_riyaz.jpg?v=2',
     color: 'cyan',
     gradient: 'from-cyan-400 via-blue-500 to-indigo-500',
     borderBadge: 'border-cyan-400/40 text-cyan-300 bg-cyan-400/10',
@@ -172,7 +172,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'Mentorship & Student Support',
     department: 'Mentorship Division',
     lead: 'Head of Doubt Solver Network',
-    image: '/team_pooja.jpg',
+    image: '/team_pooja.jpg?v=2',
     color: 'cyan',
     gradient: 'from-cyan-400 to-blue-600',
     borderBadge: 'border-cyan-400/40 text-cyan-300 bg-cyan-400/10',
@@ -194,7 +194,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'Operations & Quality Management',
     department: 'Product Testing & QA Division',
     lead: 'Lead — Product Testing & Quality Assurance',
-    image: '/team_ushaeswari.jpg',
+    image: '/team_ushaeswari.jpg?v=2',
     color: 'rose',
     gradient: 'from-rose-500 via-pink-500 to-indigo-500',
     borderBadge: 'border-rose-400/40 text-rose-300 bg-rose-400/10',
@@ -275,11 +275,15 @@ export default function OurTeamPortal({ user, setActiveTab }) {
       const sanitize = (item) => {
         if (!item || REMOVED_IDS.has(item.id)) return null;
         if (item.id === 'tousif') return { ...item, role: 'AI Solutions', lead: 'Lead — AI Solutions' };
-        if (item.id === 'riyaz') return { ...item, role: 'AI Solutions' };
+        if (item.id === 'riyaz') return { ...item, role: 'AI Solutions', image: '/team_riyaz.jpg?v=2' };
+        if (item.id === 'meghana') return { ...item, lead: '', image: '/team_meghana.jpg?v=2' };
+        if (item.id === 'manasa') return { ...item, image: '/team_manasa.jpg?v=2' };
+        if (item.id === 'pooja') return { ...item, image: '/team_pooja.jpg?v=2' };
+        if (item.id === 'ushaeswari') return { ...item, image: '/team_ushaeswari.jpg?v=2' };
         return item;
       };
 
-      const cached = localStorage.getItem('lumixora_team_directory_cache_v3');
+      const cached = localStorage.getItem('lumixora_team_directory_cache_v5');
       if (cached) {
         try {
           const parsedCache = JSON.parse(cached);
@@ -319,7 +323,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
             }
           });
           setTeamMembers(merged);
-          localStorage.setItem('lumixora_team_directory_cache_v3', JSON.stringify(dbList));
+          localStorage.setItem('lumixora_team_directory_cache_v5', JSON.stringify(dbList));
         }
       }, (err) => console.warn('Team directory sync note:', err));
       return () => unsub();
@@ -410,7 +414,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
       } else {
         updated = [...prev, payload];
       }
-      localStorage.setItem('lumixora_team_directory_cache_v3', JSON.stringify(updated));
+      localStorage.setItem('lumixora_team_directory_cache_v5', JSON.stringify(updated));
       return updated;
     });
 
