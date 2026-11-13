@@ -23,6 +23,24 @@ const teamMembersDetails = {
     ],
     skills: ["Product Innovation", "Feature Roadmapping", "Student Analytics", "Team Leadership", "Design Thinking"]
   },
+  meghana: {
+    name: "BANDI MEGHANA",
+    role: "UI/UX Designer",
+    department: "UI/UX & Product Design",
+    lead: "Under Feature Strategy Lead (C. Manasa)",
+    image: "/team_meghana.jpg",
+    color: "amber",
+    gradient: "from-amber-400 via-orange-500 to-rose-500",
+    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
+    bio: "Designs intuitive, student-centric user experiences and interactive interfaces across Vyomra. Specializes in design systems, responsive layouts, usability research, and modern UI/UX workflows.",
+    highlights: [
+      "Crafts pixel-perfect interfaces, interaction models, and cohesive design systems for web and mobile.",
+      "Translates student workflows and complex educational tools into frictionless, intuitive experiences.",
+      "Conducts usability research, prototype validation, and design iterations based on user feedback.",
+      "Collaborates closely with product strategy and engineering teams to ensure design fidelity."
+    ],
+    skills: ["UI/UX Design", "Figma & Prototyping", "Design Systems", "User Research", "Wireframing & Interaction Design"]
+  },
   sowban: {
     name: "SHAIK SOWBAN",
     role: "Founder, CEO & Tech Lead",
@@ -94,24 +112,6 @@ const teamMembersDetails = {
       "Monitors academic discussion threads to uphold high accuracy and clarity standards."
     ],
     skills: ["Mentorship Management", "Doubt Resolution", "Student Support", "Academic QA", "Community Care"]
-  },
-  chandrika: {
-    name: "C. CHANDRIKA",
-    role: "Campus Ops Lead — Head of Operations & Support",
-    department: "Academic Operations",
-    lead: "Lead — Operations & Academic Verification",
-    image: "/team_chandrika.jpg",
-    color: "emerald",
-    gradient: "from-emerald-400 to-teal-600",
-    borderBadge: "border-emerald-400/30 text-emerald-400 bg-emerald-400/10",
-    bio: "Oversees daily platform operations, curriculum alignment, verified study material repositories, and academic content curation.",
-    highlights: [
-      "Audits and verifies university syllabus notes, lecture summaries, and reference materials.",
-      "Streamlines operational pipelines for content uploads and faculty contributions.",
-      "Coordinates cross-department operations to maintain high uptime and resource availability.",
-      "Drives student success initiatives through structured academic resource management."
-    ],
-    skills: ["Operations Management", "Curriculum Curation", "Academic Verification", "Process Optimization", "Student Success"]
   },
   tousif: {
     name: "SHAIK TOUSIF BASHA",
@@ -1177,6 +1177,37 @@ export default function LandingPage({ onLoginClick }) {
               </div>
             </div>
 
+            {/* Team Member: BANDI MEGHANA - UI/UX Designer */}
+            <div 
+              onClick={() => setSelectedMember(teamMembersDetails.meghana)}
+              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all"></div>
+              
+              <div>
+                <TeamAvatar 
+                  src="/team_meghana.jpg" 
+                  name="BANDI MEGHANA" 
+                  gradient="from-amber-400 via-orange-500 to-rose-500" 
+                />
+
+                <div className="text-center space-y-1">
+                  <span className="text-[10px] font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full uppercase tracking-widest border border-amber-400/20 inline-block mb-2">
+                    UI/UX Designer
+                  </span>
+                  <h3 className="text-lg font-extrabold text-white group-hover:text-amber-300 transition-colors">BANDI MEGHANA</h3>
+                  <p className="text-xs font-bold text-gray-400">UI/UX & Product Design</p>
+                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
+                    Designs intuitive student user experiences, design systems, interactive prototypes, and modern UI workflows.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 mt-5 text-center">
+                <span className="text-[11px] font-extrabold text-amber-400 group-hover:underline">View Profile & Details &rarr;</span>
+              </div>
+            </div>
+
             {/* Team Member 5: Y. USHA SREE - AI & Innovation Lead */}
             <div 
               onClick={() => setSelectedMember(teamMembersDetails.ushasree)}
@@ -1269,32 +1300,6 @@ export default function LandingPage({ onLoginClick }) {
                 <span className="text-[11px] font-extrabold text-cyan-400 group-hover:underline">View Profile & Details &rarr;</span>
               </div>
             </div>
-
-            {/* Team Member 8: C. CHANDRIKA - Operations Head */}
-            <div 
-              onClick={() => setSelectedMember(teamMembersDetails.chandrika)}
-              className="glass-panel p-6 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-              
-              <div>
-                <TeamAvatar 
-                  src="/team_chandrika.jpg" 
-                  name="C. CHANDRIKA" 
-                  gradient="from-emerald-400 to-teal-600" 
-                />
-
-                <div className="text-center space-y-1">
-                  <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-500/20 inline-block mb-2">
-                    Operations Head
-                  </span>
-                  <h3 className="text-lg font-extrabold text-white group-hover:text-emerald-300 transition-colors">C. CHANDRIKA</h3>
-                  <p className="text-xs font-bold text-gray-400">Head of Operations & Support</p>
-                  <p className="text-xs text-gray-400 pt-2.5 leading-relaxed">
-                    Overseeing academic content verification, student support, mentorship programs, and daily campus operations.
-                  </p>
-                </div>
-              </div>
 
               <div className="pt-4 border-t border-white/5 mt-5 text-center">
                 <span className="text-[11px] font-extrabold text-emerald-400 group-hover:underline">View Profile & Details &rarr;</span>

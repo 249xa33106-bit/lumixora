@@ -17,6 +17,24 @@ export const teamMembersDetails = {
     ],
     skills: ["Product Innovation", "Feature Roadmapping", "Student Analytics", "Team Leadership", "Design Thinking"]
   },
+  meghana: {
+    name: "BANDI MEGHANA",
+    role: "UI/UX Designer",
+    department: "UI/UX & Product Design",
+    lead: "Under Feature Strategy Lead (C. Manasa)",
+    image: "/team_meghana.jpg",
+    color: "amber",
+    gradient: "from-amber-400 via-orange-500 to-rose-500",
+    borderBadge: "border-amber-400/30 text-amber-400 bg-amber-400/10",
+    bio: "Designs intuitive, student-centric user experiences and interactive interfaces across Vyomra. Specializes in design systems, responsive layouts, usability research, and modern UI/UX workflows.",
+    highlights: [
+      "Crafts pixel-perfect interfaces, interaction models, and cohesive design systems for web and mobile.",
+      "Translates student workflows and complex educational tools into frictionless, intuitive experiences.",
+      "Conducts usability research, prototype validation, and design iterations based on user feedback.",
+      "Collaborates closely with product strategy and engineering teams to ensure design fidelity."
+    ],
+    skills: ["UI/UX Design", "Figma & Prototyping", "Design Systems", "User Research", "Wireframing & Interaction Design"]
+  },
   sowban: {
     name: "SHAIK SOWBAN",
     role: "Founder, CEO & Tech Lead",
@@ -88,24 +106,6 @@ export const teamMembersDetails = {
       "Monitors academic discussion threads to uphold high accuracy and clarity standards."
     ],
     skills: ["Mentorship Management", "Doubt Resolution", "Student Support", "Academic QA", "Community Care"]
-  },
-  chandrika: {
-    name: "C. CHANDRIKA",
-    role: "Campus Ops Lead — Head of Operations & Support",
-    department: "Academic Operations",
-    lead: "Lead — Operations & Academic Verification",
-    image: "/team_chandrika.jpg",
-    color: "emerald",
-    gradient: "from-emerald-400 to-teal-600",
-    borderBadge: "border-emerald-400/30 text-emerald-400 bg-emerald-400/10",
-    bio: "Oversees daily platform operations, curriculum alignment, verified study material repositories, and academic content curation.",
-    highlights: [
-      "Audits and verifies university syllabus notes, lecture summaries, and reference materials.",
-      "Streamlines operational pipelines for content uploads and faculty contributions.",
-      "Coordinates cross-department operations to maintain high uptime and resource availability.",
-      "Drives student success initiatives through structured academic resource management."
-    ],
-    skills: ["Operations Management", "Curriculum Curation", "Academic Verification", "Process Optimization", "Student Success"]
   },
   tousif: {
     name: "SHAIK TOUSIF BASHA",

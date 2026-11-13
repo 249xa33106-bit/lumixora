@@ -55,6 +55,28 @@ export const DEFAULT_TEAM_MEMBERS = [
     priority: 4
   },
   {
+    id: 'meghana',
+    name: 'BANDI MEGHANA',
+    role: 'UI/UX Designer',
+    division: 'feature-strategy',
+    divisionLabel: 'Feature Strategy & UX',
+    department: 'UI/UX & Product Design',
+    lead: 'Under Feature Strategy Lead (C. Manasa)',
+    image: '/team_meghana.jpg',
+    color: 'amber',
+    gradient: 'from-amber-400 via-orange-500 to-rose-500',
+    borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
+    bio: 'Designs intuitive, student-centric user experiences and interactive interfaces across Vyomra. Specializes in design systems, responsive layouts, usability research, and modern UI/UX workflows.',
+    highlights: [
+      'Crafts pixel-perfect interfaces, interaction models, and cohesive design systems for web and mobile.',
+      'Translates student workflows and complex educational tools into frictionless, intuitive experiences.',
+      'Conducts usability research, prototype validation, and design iterations based on user feedback.',
+      'Collaborates closely with product strategy and engineering teams to ensure design fidelity.'
+    ],
+    skills: ['UI/UX Design', 'Figma & Prototyping', 'Design Systems', 'User Research', 'Wireframing & Interaction Design'],
+    priority: 5
+  },
+  {
     id: 'ushasree',
     name: 'Y. USHA SREE',
     role: 'AI & Innovation Lead',
@@ -118,28 +140,6 @@ export const DEFAULT_TEAM_MEMBERS = [
       'Works alongside team leads to translate cutting-edge AI research into working platform prototypes.'
     ],
     skills: ['AI Prototyping', 'Prompt Engineering', 'Python', 'Proof of Concepts', 'Model Evaluation'],
-    priority: 9
-  },
-  {
-    id: 'chandrika',
-    name: 'C. CHANDRIKA',
-    role: 'Operations Head',
-    division: 'operations',
-    divisionLabel: 'Operations & Quality Management',
-    department: 'Operations & Support Division',
-    lead: 'Head of Operations & Support',
-    image: '/team_chandrika.jpg',
-    color: 'emerald',
-    gradient: 'from-emerald-400 to-teal-600',
-    borderBadge: 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10',
-    bio: 'Oversees academic content verification, student support channels, mentorship programs, and daily campus operational logistics.',
-    highlights: [
-      'Manages verified study material pipelines and faculty review coordination.',
-      'Streamlines support desk response times and student satisfaction ratings.',
-      'Coordinates campus ambassador programs and institutional stakeholder communication.',
-      'Establishes standard operating procedures for scalable academic platform operations.'
-    ],
-    skills: ['Operations Management', 'Content Verification', 'Student Support', 'Process Optimization', 'Campus Logistics'],
     priority: 9
   },
   {
@@ -271,7 +271,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
   // Sync custom/updated team members from Firestore & LocalStorage
   useEffect(() => {
     try {
-      const REMOVED_IDS = new Set(['vamsika', 'yaswitha', 'bhanusree', 'krishnasai']);
+      const REMOVED_IDS = new Set(['vamsika', 'yaswitha', 'bhanusree', 'krishnasai', 'chandrika']);
       const sanitize = (item) => {
         if (!item || REMOVED_IDS.has(item.id)) return null;
         if (item.id === 'tousif') return { ...item, role: 'AI Solutions', lead: 'Lead — AI Solutions' };
