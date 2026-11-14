@@ -42,6 +42,8 @@ import JoinGroup from './pages/JoinGroup';
 import CareerRoadmap from './pages/CareerRoadmap';
 import SimulationPortal from './pages/SimulationPortal';
 import AiPlacementCommander from './pages/AiPlacementCommander';
+import LumixoraPlacementCommander from './pages/LumixoraPlacementCommander';
+import LumixoraTechPulse from './pages/LumixoraTechPulse';
 import ClubsPortal from './pages/ClubsPortal';
 import FacultyPortal from './pages/FacultyPortal';
 import HackathonPortal from './pages/HackathonPortal';
@@ -107,11 +109,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['ai-commander', 'placement-commander', 'placement', 'placements'].includes(hash)) {
-          try { window.location.hash = 'dashboard'; } catch (e) {}
-          return 'dashboard';
-        }
-        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'community', 'simulations', 'my-academics', 'test-portal'].includes(hash)) return hash;
+        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'community', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'ai-commander'].includes(hash)) return hash;
       }
     }
     return 'dashboard';
@@ -636,12 +634,8 @@ function App() {
           }
           return;
         }
-        if (!isGprecSub && !isTpoSub && ['ai-commander', 'placement-commander', 'placement', 'placements'].includes(tab)) {
-          setActiveTab('dashboard');
-          try { window.location.hash = 'dashboard'; } catch (e) {}
-          return;
-        }
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
@@ -1163,7 +1157,7 @@ function App() {
   };
 
   const renderContent = () => {
-    if (isGprecPlacementSubdomain(user) && !isAllowedGprecPlacementTab(activeTab)) {
+    if (isGprecPlacementSubdomain() && !isAllowedGprecPlacementTab(activeTab)) {
       return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
     }
     // 0. Dedicated TPO & Faculty Subdomain Enforcer: SHOW ONLY TPO AND FACULTY
@@ -1192,12 +1186,12 @@ function App() {
       switch (activeTab) {
         case 'ai-commander':
         case 'placement-commander':
-          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} initialNav={activeTab} embedded={!isGprecOnlySubdomain(user)} onLogout={handleLogout} />;
         case 'tech-pulse':
         case 'tech-news':
         case 'jobs-radar':
         case 'tech-radar':
-          return <TechPulsePortal user={user} setActiveTab={handleTabChange} />;
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} initialNav="tech_pulse" embedded={!isGprecOnlySubdomain(user)} onLogout={handleLogout} />;
         case 'speakverse':
         case 'speak-verse':
         case 'lumixora-speakverse':
@@ -1312,13 +1306,17 @@ function App() {
         return <AlumniReferralBridge user={user} setActiveTab={handleTabChange} />;
       case 'ai-commander':
       case 'placement-commander':
-        return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
       case 'future-twin':
       case 'twin':
       case 'ai-twin':
       case 'ai-future-twin':
       case 'careerverse':
-        return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        return <LumixoraPlacementCommander user={user} setActiveTab={handleTabChange} onLogout={handleLogout} />;
+      case 'tech-pulse':
+      case 'tech-news':
+      case 'jobs-radar':
+      case 'tech-radar':
+        return <LumixoraTechPulse user={user} setActiveTab={handleTabChange} />;
       case 'coding-practice':
         return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
       case 'code-editor':
@@ -1359,11 +1357,6 @@ function App() {
       case 'lumixora-speakverse':
       case 'speaking-coach':
         return <SpeakVersePortal user={user} setActiveTab={handleTabChange} />;
-      case 'tech-pulse':
-      case 'tech-news':
-      case 'jobs-radar':
-      case 'tech-radar':
-        return <TechPulsePortal user={user} setActiveTab={handleTabChange} />;
       case 'projectverse':
       case 'project-verse':
       case 'projects-hub':
@@ -1925,10 +1918,14 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            {isGprecOnlySubdomain() ? (
-              <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
-                {renderContent()}
-              </div>
+            {isGprecOnlySubdomain(user) ? (
+              <AiPlacementCommander 
+                user={user} 
+                setActiveTab={handleTabChange} 
+                initialNav={activeTab} 
+                onLogout={handleLogout} 
+                embedded={false} 
+              />
             ) : (
               <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
                 {renderContent()}

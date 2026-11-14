@@ -62,26 +62,14 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       key: 'gprec_flagship',
       title: '🎯 GPREC Placement Suite',
       items: [
-        { id: 'ai-commander', label: 'Placement Commander™', icon: Cpu, badge: 'COMMAND ⚡' },
-        { id: 'tech-pulse', label: 'Tech Pulse & Job Radar', icon: Radio, badge: 'LIVE 📡' },
-        { id: 'speakverse', label: 'SpeakVerse™ AI Communication', icon: Mic, badge: 'COMMUNICATION 👑' },
-        { id: 'interview', label: 'AI Mock Interview Room', icon: Mic, badge: 'HR & Tech 🎙️' },
-        { id: 'coding-practice', label: 'Code Arena & 30D Java', icon: Code, badge: 'DSA Track' },
-        { id: 'test-portal', label: 'Tests & Assignments', icon: FileText, badge: 'TESTS 📄' },
-        { id: 'company-papers', label: 'Placement Papers (TCS/Amazon)', icon: Target, badge: 'Papers 📄' },
-        { id: 'aptitude-arena', label: 'Aptitude & Reasoning Arena', icon: Brain, badge: 'Quant' },
-        { id: 'resume', label: 'AI Resume Builder & ATS', icon: FileText, badge: 'ATS 90+' },
-        { id: 'certificates', label: 'Proof-of-Skill Badges', icon: Award, badge: 'LinkedIn 📜' },
-        { id: 'alumni-referrals', label: 'Alumni Referral Bridge', icon: Briefcase, badge: 'Drives 🚀' },
-        { id: 'career-roadmap', label: 'Career Roadmap & Roles', icon: Map, badge: 'Guidance' },
-      ]
-    },
-    {
-      key: 'support',
-      title: '🏛️ GPREC Placement Cell',
-      items: [
-        { id: 'contact', label: 'Placement Support / Help', icon: Mail },
-        { id: 'report-bug', label: 'Report Issue', icon: AlertTriangle },
+        { id: 'ai-commander', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'placement', label: 'My Placement', icon: Briefcase },
+        { id: 'tech-pulse', label: 'TechPulse', icon: Activity, badge: 'LIVE' },
+        { id: 'interview', label: 'Mock Interviews', icon: Video },
+        { id: 'coding-practice', label: 'Skill Hub', icon: Code },
+        { id: 'analytics', label: 'Analytics', icon: Target },
+        { id: 'company-papers', label: 'Resources', icon: BookOpen },
+        { id: 'contact', label: 'Settings & Support', icon: Settings }
       ]
     }
   ];
@@ -218,10 +206,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     if (isGprecSubdomain && !isAllowedGprecPlacementTab(tabId)) {
       setActiveTab('ai-commander');
     } else {
-      if (!isGprecSubdomain && (tabId === 'ai-commander' || tabId === 'placement-commander')) {
-        window.location.href = 'https://gprec.lumixora.in/#ai-commander';
-        return;
-      }
       setActiveTab(tabId);
     }
     if (onClose) onClose();
