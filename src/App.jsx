@@ -102,6 +102,10 @@ function App() {
       if (isGprecPlacementSubdomain()) {
         if (window.location.hash) {
           const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+          if (hash === 'tpo-dashboard' || hash.startsWith('tpo') || !isAllowedGprecPlacementTab(hash)) {
+            try { window.location.hash = 'ai-commander'; } catch (e) {}
+            return 'ai-commander';
+          }
           if (isAllowedGprecPlacementTab(hash)) return hash;
         }
         return 'ai-commander';
@@ -601,9 +605,9 @@ function App() {
     const isTpoSub = isTpoSubdomain();
     const isGprecSub = isGprecPlacementSubdomain();
     const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
-    const defaultHomeTab = (isTpoSub || isOfficer) 
-      ? 'tpo-dashboard' 
-      : (isGprecSub ? 'ai-commander' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
+    const defaultHomeTab = isGprecSub 
+      ? 'ai-commander' 
+      : ((isTpoSub || isOfficer) ? 'tpo-dashboard' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
 
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1); // remove '#'
@@ -620,6 +624,11 @@ function App() {
           return;
         }
         if (isGprecSub) {
+          if (tab === 'tpo-dashboard' || tab.startsWith('tpo') || !isAllowedGprecPlacementTab(tab)) {
+            setActiveTab('ai-commander');
+            window.location.hash = 'ai-commander';
+            return;
+          }
           if (isAllowedGprecPlacementTab(tab)) {
             if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
               setActiveTab('tech-pulse');
@@ -878,6 +887,41 @@ function App() {
       localStorage.setItem('lumixora_isAuthenticated', 'true');
     }
   }, [isAuthenticated, user]);
+
+  // Automated background payment check for users who might have just paid on Razorpay
+  useEffect(() => {
+    if (!user || isExemptFromPayment(user) || hasPaidCollegeFee(user) || user?.role === 'intern' || user?.isIntern) return;
+    const email = (user.email || '').toLowerCase().trim();
+    if (!email) return;
+
+    let isMounted = true;
+    const verifyRemotePayment = async () => {
+      try {
+        const resp = await fetch(`/api/check-payment?email=${encodeURIComponent(email)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.paid && isMounted) {
+            console.log('[App Gate] Remote Razorpay payment detected for:', email);
+            const updated = { ...user, oneTimeFeePaid: true, feePaid: true, feeTxId: data.txId || 'RZP-VERIFIED' };
+            setUser(updated);
+            localStorage.setItem('lumixora_user', JSON.stringify(updated));
+            localStorage.setItem(`lumixora_fee_paid_${email}`, 'true');
+          }
+        }
+      } catch (e) {}
+    };
+
+    verifyRemotePayment();
+    // Poll twice shortly after login in case Razorpay is completing webhook
+    const timer1 = setTimeout(verifyRemotePayment, 3000);
+    const timer2 = setTimeout(verifyRemotePayment, 8000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [user]);
 
   // Listen for Firebase Auth changes (handles Google OAuth redirect on page load seamlessly)
   useEffect(() => {
@@ -1819,40 +1863,7 @@ function App() {
     );
   }
 
-  // Automated background payment check for users who might have just paid on Razorpay
-  useEffect(() => {
-    if (!user || isExemptFromPayment(user) || hasPaidCollegeFee(user) || user?.role === 'intern' || user?.isIntern) return;
-    const email = (user.email || '').toLowerCase().trim();
-    if (!email) return;
 
-    let isMounted = true;
-    const verifyRemotePayment = async () => {
-      try {
-        const resp = await fetch(`/api/check-payment?email=${encodeURIComponent(email)}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          if (data && data.paid && isMounted) {
-            console.log('[App Gate] Remote Razorpay payment detected for:', email);
-            const updated = { ...user, oneTimeFeePaid: true, feePaid: true, feeTxId: data.txId || 'RZP-VERIFIED' };
-            setUser(updated);
-            localStorage.setItem('lumixora_user', JSON.stringify(updated));
-            localStorage.setItem(`lumixora_fee_paid_${email}`, 'true');
-          }
-        }
-      } catch (e) {}
-    };
-
-    verifyRemotePayment();
-    // Poll twice shortly after login in case Razorpay is completing webhook
-    const timer1 = setTimeout(verifyRemotePayment, 3000);
-    const timer2 = setTimeout(verifyRemotePayment, 8000);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [user]);
 
   // ZERO-TOLERANCE SECURITY GATE: Completely block mounting or rendering of any workspace/data if unpaid
   if (user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern) {
@@ -1918,7 +1929,7 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            {isGprecOnlySubdomain(user) ? (
+            {isGprecPlacementSubdomain() ? (
               <AiPlacementCommander 
                 user={user} 
                 setActiveTab={handleTabChange} 

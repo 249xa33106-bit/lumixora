@@ -145,7 +145,7 @@ function resolveYear(email, meta, dbYear) {
 }
 
 export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
-  const { addToast } = useToast ? useToast() : { addToast: () => {} };
+  const { addToast } = useToast();
 
   // ─── 10 TPO SUB-MODULES NAVIGATION ─────────────────────────────────────────
   const [activeTpoTab, setActiveTpoTab] = useState(() => {

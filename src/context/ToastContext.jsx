@@ -30,21 +30,21 @@ export function ToastProvider({ children }) {
         {toasts.map(toast => (
           <div 
             key={toast.id} 
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg animate-fade-in-up backdrop-blur-md ${
-              toast.type === 'success' ? 'bg-brand-teal/10 border-white/10 text-brand-teal' :
-              toast.type === 'error' ? 'bg-brand-pink/10 border-white/10 text-brand-pink' :
-              'bg-brand-blue/10 border-white/10 text-brand-blue'
+            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl animate-fade-in-up backdrop-blur-md bg-[#0B132B]/95 text-white ${
+              toast.type === 'success' ? 'border-emerald-500/40 text-emerald-400' :
+              toast.type === 'error' ? 'border-rose-500/40 text-rose-400' :
+              'border-blue-500/40 text-blue-400'
             }`}
           >
-            {toast.type === 'success' && <CheckCircle className="w-5 h-5" />}
-            {toast.type === 'error' && <AlertCircle className="w-5 h-5" />}
-            {toast.type === 'info' && <Info className="w-5 h-5" />}
+            {toast.type === 'success' && <CheckCircle className="w-5 h-5 flex-shrink-0" />}
+            {toast.type === 'error' && <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+            {toast.type === 'info' && <Info className="w-5 h-5 flex-shrink-0" />}
             
-            <span className="text-sm font-semibold text-white">{toast.message}</span>
+            <span className="text-xs md:text-sm font-semibold text-white tracking-wide">{toast.message}</span>
             
             <button 
               onClick={() => removeToast(toast.id)}
-              className="ml-4 text-gray-400 hover:text-white transition-colors"
+              className="ml-3 text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

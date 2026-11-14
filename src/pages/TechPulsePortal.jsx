@@ -7,7 +7,7 @@ import {
   ChevronRight, AlertCircle, Check, Users, ShieldCheck, Zap,
   Copy, Terminal, Calculator, ArrowRight, Star, Target, Compass, X,
   Radio, Rocket, ChevronDown, CheckSquare, Info, BarChart2, Play,
-  Calendar, Lock, Shield, Send, BellRing, Bell, Atom, CheckCheck
+  Calendar, Lock, Shield, Send, BellRing, Bell, Atom, CheckCheck, Trophy
 } from 'lucide-react';
 import { 
   INITIAL_TECH_JOBS, 
@@ -232,20 +232,14 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
             </div>
           </div>
 
-          {/* Architectural Campus Building & Student Image (Right Side) */}
-          <div className="mt-4 md:mt-0 md:absolute md:right-0 md:bottom-0 md:top-0 md:w-1/2 flex items-center justify-end pointer-events-none opacity-90 md:opacity-100">
-            <div className="relative w-full h-full flex items-center justify-end">
+          {/* Architectural Campus Building & Student Image (Right Side - cleanly positioned below header) */}
+          <div className="mt-4 md:mt-0 md:absolute md:right-4 md:bottom-3 md:top-24 md:w-5/12 flex items-end justify-end pointer-events-none opacity-90 md:opacity-100 z-0">
+            <div className="relative w-full h-full flex items-end justify-end overflow-hidden">
               <img
-                src="/techpulse-student-campus-hero.png"
-                alt="Student exploring tech campus"
-                className="max-h-60 md:max-h-full object-contain object-right-bottom drop-shadow-sm"
+                src="/techpulse-architectural-hero.png"
+                alt="Tech campus building"
+                className="max-h-40 md:max-h-48 object-contain object-right-bottom drop-shadow-sm"
               />
-              {/* Script Overlay: "Build Your Tech Career" */}
-              <div className="absolute top-4 right-6 hidden lg:block text-right">
-                <span className="font-serif italic text-base md:text-lg text-slate-800/85 tracking-wide select-none drop-shadow-2xs">
-                  Build Your<br />Tech Career
-                </span>
-              </div>
             </div>
           </div>
 

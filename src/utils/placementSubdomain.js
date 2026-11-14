@@ -22,6 +22,17 @@ export function isTpoSubdomain() {
   const search = (window.location.search || '').toLowerCase();
   const hash = (window.location.hash || '').toLowerCase();
 
+  // Strict domain isolation: gprec.lumixora.in is ALWAYS the GPREC Placement Suite, NEVER TPO Subdomain!
+  if (
+    hostname.startsWith('gprec.') ||
+    hostname.includes('gprec.lumixora') ||
+    hostname.includes('gpreclumixora') ||
+    hostname.includes('gprec-lumixora') ||
+    hostname.includes('gprec-placement')
+  ) {
+    return false;
+  }
+
   // 1. Hostname detection (e.g. tpo.lumixora.in, tpo.lumixora.pages.dev)
   if (
     hostname.startsWith('tpo.') ||
@@ -49,7 +60,7 @@ export function isTpoSubdomain() {
     return true;
   }
 
-  // 4. Hash detection (e.g. #tpo or #tpo-portal)
+  // 4. Hash detection (e.g. #tpo or #tpo-portal on main domain)
   if (
     hash === '#tpo' ||
     hash === '#tpo-portal' ||
@@ -124,7 +135,10 @@ export function isGprecPlacementSubdomain(user = null) {
  */
 export function isGprecOnlySubdomain(user = null) {
   if (typeof window === 'undefined') return false;
-  return isGprecPlacementSubdomain(user) && !isTpoSubdomain();
+  if (isTpoSubdomain()) return false;
+  const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
+  if (isOfficer) return false;
+  return isGprecPlacementSubdomain(user);
 }
 
 /**
@@ -195,9 +209,7 @@ export function isAllowedGprecPlacementTab(tab) {
     'alumni', 'alumni-referrals', 'alumni-bridge', 'referrals',
     'career-roadmap', 'career-roles',
     'internships', 'internship',
-    'contact', 'report-bug',
-    'tpo-dashboard', 'tpo-command-center', 'tpo-analytics',
-    'student-database', 'student-placement-db', 'placement-database', 'faculty-portal'
+    'contact', 'report-bug'
   ];
   return allowed.includes(t);
 }

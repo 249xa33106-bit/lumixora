@@ -106,7 +106,7 @@ function resolveBatchYear(email, meta, dbYear) {
 }
 
 export default function StudentPlacementDatabase({ user, setActiveTab }) {
-  const { addToast } = useToast ? useToast() : { addToast: () => {} };
+  const { addToast } = useToast();
 
   // ─── ROLE-BASED ACCESS CONTROL ─────────────────────────────────────────────
   const isTpo = useMemo(() => {
