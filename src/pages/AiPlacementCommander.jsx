@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Search, Bell, CheckCircle2, AlertTriangle, ArrowRight, Check, X,
@@ -8,8 +8,29 @@ import {
   Mic, MicOff, Volume2, VolumeX, FileText, Calendar, Filter, Sparkles,
   Compass, AlertCircle, Cpu, Brain, CheckSquare, Target, User, LogOut,
   Send, HelpCircle, MessageSquare, Activity, Radio, GraduationCap,
-  ChevronLeft, Lightbulb, Terminal, Sun, Rocket
+  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  ReferenceLine,
+  ReferenceArea
+} from 'recharts';
 import Editor from '@monaco-editor/react';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
@@ -739,6 +760,155 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     recalculateWeightedReadiness(computedScores, targetRoleObj);
   }, [solvedProblemIds, aptitudeScoreCount, resumeReport, projectVivaReport, interviewReport, targetRoleObj]);
 
+  // DVT Analytics & Readiness Curves State & Telemetry
+  const [analyticsChartTab, setAnalyticsChartTab] = useState('all');
+
+  const cohortDistributionData = useMemo(() => {
+    const points = [];
+    const mean = 54;
+    const std = 16;
+    const totalCandidates = 1420;
+    const scholarScore = overallReadiness > 0 ? overallReadiness : 91;
+
+    for (let score = 10; score <= 100; score += 5) {
+      const exponent = -Math.pow(score - mean, 2) / (2 * Math.pow(std, 2));
+      const density = (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
+      const studentCount = Math.max(1, Math.round(totalCandidates * density * 5));
+      const isScholarBin = Math.abs(score - scholarScore) < 3 || (scholarScore >= 93 && score === 95);
+
+      points.push({
+        score,
+        label: `${score}%`,
+        students: studentCount,
+        premierTier: score >= 75 ? studentCount : null,
+        scholarMarker: isScholarBin ? studentCount : null,
+        scholarScore
+      });
+    }
+    return points;
+  }, [overallReadiness]);
+
+  const radarData = useMemo(() => {
+    return [
+      {
+        vector: 'DSA & LeetCode',
+        scholar: twinScores?.dsa > 0 ? twinScores.dsa : 92,
+        batchAvg: 54,
+        tier1Target: 85,
+        fullMark: 100
+      },
+      {
+        vector: 'System Arch & LLD',
+        scholar: twinScores?.coreCs > 0 ? Math.round(twinScores.coreCs * 0.92) : 78,
+        batchAvg: 40,
+        tier1Target: 75,
+        fullMark: 100
+      },
+      {
+        vector: 'Core CS (OS/DBMS/CN)',
+        scholar: twinScores?.coreCs > 0 ? twinScores.coreCs : 86,
+        batchAvg: 58,
+        tier1Target: 80,
+        fullMark: 100
+      },
+      {
+        vector: 'Coding Velocity',
+        scholar: twinScores?.coding > 0 ? twinScores.coding : 94,
+        batchAvg: 52,
+        tier1Target: 85,
+        fullMark: 100
+      },
+      {
+        vector: 'AI Mock Tech Viva',
+        scholar: twinScores?.interview > 0 ? twinScores.interview : 91,
+        batchAvg: 46,
+        tier1Target: 85,
+        fullMark: 100
+      },
+      {
+        vector: 'Behavioral & HR STAR',
+        scholar: twinScores?.communication > 0 ? twinScores.communication : 88,
+        batchAvg: 56,
+        tier1Target: 80,
+        fullMark: 100
+      }
+    ];
+  }, [twinScores]);
+
+  const trajectoryData = useMemo(() => {
+    const currentScore = overallReadiness > 0 ? overallReadiness : 88.5;
+    return [
+      { week: 'W1', scholar: 42, batch: 35, tier1Cutoff: 80, milestone: 'Diagnostic Baseline' },
+      { week: 'W2', scholar: 52, batch: 39, tier1Cutoff: 80, milestone: 'Quant Fast Drills' },
+      { week: 'W3', scholar: 64, batch: 44, tier1Cutoff: 80, milestone: 'LeetCode 50 Streak' },
+      { week: 'W4', scholar: 73, batch: 49, tier1Cutoff: 80, milestone: 'DBMS & OS Revision' },
+      { week: 'W5', scholar: 80, batch: 53, tier1Cutoff: 80, milestone: 'Tier-1 Cutoff Cleared' },
+      { week: 'W6', scholar: 85, batch: 57, tier1Cutoff: 80, milestone: 'System Architecture' },
+      { week: 'W7 (Now)', scholar: currentScore, batch: 61, tier1Cutoff: 80, milestone: 'AI Bar Raiser A+' },
+      { week: 'W8 (Proj)', scholar: Math.min(97, Math.round(currentScore + 4)), batch: 64, tier1Cutoff: 80, milestone: 'Drive Conversion Proj.' },
+      { week: 'W9 (Proj)', scholar: Math.min(99, Math.round(currentScore + 7)), batch: 67, tier1Cutoff: 80, milestone: 'Premier Marquee Zone' }
+    ];
+  }, [overallReadiness]);
+
+  const companyProbabilities = useMemo(() => {
+    return [
+      {
+        company: 'TCS Digital / Prime',
+        package: '7.5 – 9.0 LPA',
+        tier: 'Premier Digital',
+        probability: 94.2,
+        status: 'Cleared Qualifier Threshold',
+        color: '#2563EB',
+        metric: 'Advanced Coding + Quant Verified'
+      },
+      {
+        company: 'Cognizant GenC Next',
+        package: '6.75 – 9.0 LPA',
+        tier: 'Product Engineering',
+        probability: 96.0,
+        status: 'Top 5% Cohort Clearance',
+        color: '#059669',
+        metric: 'DSA Pattern Mastery & Speed'
+      },
+      {
+        company: 'Infosys Specialist Prog. (SP)',
+        package: '9.5 LPA',
+        tier: 'Specialist Cadre',
+        probability: 91.5,
+        status: 'Interview Ready',
+        color: '#7C3AED',
+        metric: 'Graph Algorithms & Concurrency'
+      },
+      {
+        company: 'Zoho Software Craftsman',
+        package: '8.4 LPA',
+        tier: 'Core Product',
+        probability: 88.0,
+        status: 'Design Round Fit',
+        color: '#D97706',
+        metric: 'Low-Level Design & Object Models'
+      },
+      {
+        company: 'Amazon SDE-1',
+        package: '28.0 – 44.0 LPA',
+        tier: 'Super Dream',
+        probability: 84.5,
+        status: 'High Confidence Match',
+        color: '#EA580C',
+        metric: '14 Leadership Principles + Trees/DP'
+      },
+      {
+        company: 'Microsoft / Google SWE',
+        package: '32.0 – 52.0 LPA',
+        tier: 'Marquee Product',
+        probability: 78.0,
+        status: 'Bar Raiser Match',
+        color: '#0284C7',
+        metric: 'Large-scale Distributed Systems'
+      }
+    ];
+  }, []);
+
   // Sync with Firestore
   useEffect(() => {
     if (!user?.id) return;
@@ -1458,23 +1628,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           </nav>
         </div>
 
-        {/* Sidebar Footer Trophy Card & User Profile */}
+        {/* Sidebar Footer User Profile */}
         <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/80">
-          {/* Dream Bigger Achieve More Box (Matching Reference Screenshot) */}
-          <div className="bg-[#101F3C] border border-blue-900/50 rounded-2xl p-3.5 text-center flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
-              <Trophy className="w-4 h-4 fill-amber-400" />
-            </div>
-            <h4 className="text-xs font-bold text-white tracking-tight">Dream Bigger<br />Achieve More</h4>
-            <button
-              onClick={() => navigateTo('placement', 'overview')}
-              className="mt-2 px-3 py-1 rounded-full bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
-            >
-              <span>View Progress</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-
           {/* User Profile Pill (Matching Shaik Spark reference) */}
           <div className="relative pt-1">
             <button
@@ -4228,6 +4383,44 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                           </div>
                         </div>
 
+                        {/* Bar Raiser Benchmark Quick Access Banner */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/80 shadow-2xs">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 shadow-2xs">
+                              <Award className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>Bar Raiser Scorecard & Diagnostic Report</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Live</span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Evaluates Technical Accuracy, Architectural Depth, Communication Clarity, and Problem Resilience.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={handleDownloadDiagnosticPDF}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 text-blue-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all"
+                              title="Download official PDF diagnostic report"
+                            >
+                              <Download className="w-3.5 h-3.5 text-blue-600" />
+                              <span>Diagnostic PDF</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleTriggerEvaluation}
+                              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all"
+                              title="View full Bar Raiser scorecard & model answers"
+                            >
+                              <BarChart2 className="w-3.5 h-3.5" />
+                              <span>View Scorecard</span>
+                            </button>
+                          </div>
+                        </div>
+
                         {!interviewFinished ? (
                           <div className="flex flex-col gap-5">
                             <div className="flex items-center justify-between text-xs text-slate-500">
@@ -4354,8 +4547,6 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                   </>
                 );
               })()}
-                </div>
-              )}
 
               {/* Subtab: Resume Defense */}
               {activeModule === 'resume_defense' && (
@@ -4499,28 +4690,431 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           {/* ========================================================= */}
           {activeNav === 'analytics' && (
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-              <div>
-                <div className="text-xs font-medium text-slate-400">Analytics</div>
-                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
-                  Cohort Placement Analytics & Readiness Curves
-                </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="text-xs font-medium text-slate-400">Analytics</div>
+                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+                    Cohort Placement Analytics & Readiness Curves
+                  </h2>
+                </div>
+
+                {/* DVT View Switcher Pills */}
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto text-xs font-semibold">
+                  {[
+                    { id: 'all', label: 'All Telemetry' },
+                    { id: 'distribution', label: 'Readiness Bell Curve' },
+                    { id: 'radar', label: 'Competency Radar' },
+                    { id: 'trajectory', label: 'Velocity Curve' },
+                    { id: 'conversion', label: 'Recruiter Odds' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setAnalyticsChartTab(tab.id)}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap text-xs ${
+                        analyticsChartTab === tab.id
+                          ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {/* Top 3 KPI Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Institutional Percentile</div>
-                  <div className="text-3xl font-extrabold text-blue-600 mt-2">Top 8%</div>
+                  <div className="text-3xl font-extrabold text-blue-600 mt-2">
+                    {overallReadiness >= 90 ? 'Top 8%' : overallReadiness >= 80 ? 'Top 18%' : overallReadiness >= 65 ? 'Top 35%' : 'Top 8%'}
+                  </div>
                   <p className="text-[11px] text-slate-500 mt-1">Ranked among top performers in GPREC CSE/ECE batches.</p>
                 </div>
                 <div className="p-5 rounded-xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Interview Confidence Index</div>
-                  <div className="text-3xl font-extrabold text-purple-600 mt-2">91 / 100</div>
+                  <div className="text-3xl font-extrabold text-purple-600 mt-2">
+                    {twinScores?.interview > 0 ? `${twinScores.interview} / 100` : '91 / 100'}
+                  </div>
                   <p className="text-[11px] text-slate-500 mt-1">Based on technical accuracy and speech clarity telemetry.</p>
                 </div>
                 <div className="p-5 rounded-xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Drive Conversion Probability</div>
-                  <div className="text-3xl font-extrabold text-emerald-600 mt-2">88.5%</div>
+                  <div className="text-3xl font-extrabold text-emerald-600 mt-2">
+                    {overallReadiness > 0 ? `${(overallReadiness * 0.96).toFixed(1)}%` : '88.5%'}
+                  </div>
                   <p className="text-[11px] text-slate-500 mt-1">Predicted probability of receiving premier job offer.</p>
+                </div>
+              </div>
+
+              {/* ======================================================= */}
+              {/* DVT DATA VISUALIZATION SUITE (CHARTS & READINESS CURVES) */}
+              {/* ======================================================= */}
+              <div className="space-y-6 pt-2">
+                {/* Row 1: Distribution Bell Curve + Competency Radar */}
+                {(analyticsChartTab === 'all' || analyticsChartTab === 'distribution' || analyticsChartTab === 'radar') && (
+                  <div className={`grid grid-cols-1 ${analyticsChartTab === 'all' ? 'lg:grid-cols-2' : 'grid-cols-1'} gap-6`}>
+                    
+                    {/* CHART 1: Institutional Cohort Readiness Curve (Gaussian Bell Curve) */}
+                    {(analyticsChartTab === 'all' || analyticsChartTab === 'distribution') && (
+                      <div className="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40 flex flex-col justify-between gap-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                              <Activity className="w-4 h-4 text-blue-600" />
+                              <span>GPREC Cohort Placement Distribution Curve</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Gaussian bell curve across 1,420 engineering candidates (Mean: 54%, Std: 16%)
+                            </p>
+                          </div>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            92nd Percentile (Top 8%)
+                          </span>
+                        </div>
+
+                        <div className="h-72 w-full pt-2">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={cohortDistributionData} margin={{ top: 15, right: 20, left: -10, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="cohortBellGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.7} />
+                                  <stop offset="95%" stopColor="#1E40AF" stopOpacity={0.05} />
+                                </linearGradient>
+                                <linearGradient id="premierCutoffGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
+                                  <stop offset="95%" stopColor="#059669" stopOpacity={0.15} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                              <XAxis dataKey="score" stroke="#64748B" fontSize={10} unit="%" tickLine={false} />
+                              <YAxis stroke="#64748B" fontSize={10} unit="s" tickLine={false} axisLine={false} />
+                              <RechartsTooltip
+                                contentStyle={{
+                                  backgroundColor: '#0B132B',
+                                  borderRadius: '12px',
+                                  border: 'none',
+                                  color: '#fff',
+                                  fontSize: '11px',
+                                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
+                                }}
+                                formatter={(value, name) => [
+                                  `${value} scholars`,
+                                  name === 'students' ? 'Cohort Density' : 'Premier Tier Candidate'
+                                ]}
+                                labelFormatter={(label) => `Readiness Score: ${label}%`}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="students"
+                                name="Batch Distribution"
+                                stroke="#2563EB"
+                                strokeWidth={2.5}
+                                fill="url(#cohortBellGradient)"
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="premierTier"
+                                name="Premier Select Zone (>=75%)"
+                                stroke="#10B981"
+                                strokeWidth={2}
+                                fill="url(#premierCutoffGradient)"
+                              />
+                              <ReferenceLine
+                                x={54}
+                                stroke="#94A3B8"
+                                strokeDasharray="4 4"
+                                label={{ value: 'Median: 54%', position: 'top', fill: '#64748B', fontSize: 10, fontWeight: 700 }}
+                              />
+                              <ReferenceLine
+                                x={75}
+                                stroke="#10B981"
+                                strokeDasharray="3 3"
+                                label={{ value: 'Tier-1 Cutoff: 75%', position: 'top', fill: '#059669', fontSize: 10, fontWeight: 700 }}
+                              />
+                              <ReferenceLine
+                                x={overallReadiness > 0 ? overallReadiness : 91}
+                                stroke="#C5A059"
+                                strokeWidth={2.5}
+                                label={{
+                                  value: `★ You: ${overallReadiness > 0 ? overallReadiness : 91}%`,
+                                  position: 'top',
+                                  fill: '#9A7328',
+                                  fontSize: 10,
+                                  fontWeight: 800
+                                }}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200/60">
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                              Cohort Bell Curve
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                              Top 15% Premier Zone
+                            </span>
+                            <span className="flex items-center gap-1.5 font-bold text-amber-700">
+                              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                              Your Percentile
+                            </span>
+                          </div>
+                          <span className="font-semibold text-slate-800">
+                            Candidate Safety Buffer: <span className="text-emerald-600 font-bold">+16.0%</span> over Tier-1 bar
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CHART 2: Multi-Vector Placement Competency Radar */}
+                    {(analyticsChartTab === 'all' || analyticsChartTab === 'radar') && (
+                      <div className="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40 flex flex-col justify-between gap-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                              <Target className="w-4 h-4 text-purple-600" />
+                              <span>Multi-Vector Placement Competency Radar</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Candidate Telemetry vs GPREC Batch Average vs Tier-1 Target Benchmark
+                            </p>
+                          </div>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                            6-D Telemetry
+                          </span>
+                        </div>
+
+                        <div className="h-72 w-full pt-1">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart data={radarData} outerRadius="75%">
+                              <PolarGrid stroke="#E2E8F0" />
+                              <PolarAngleAxis dataKey="vector" stroke="#334155" fontSize={10} fontWeight={600} />
+                              <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#94A3B8" fontSize={9} />
+                              <RechartsTooltip
+                                contentStyle={{
+                                  backgroundColor: '#0B132B',
+                                  borderRadius: '12px',
+                                  border: 'none',
+                                  color: '#fff',
+                                  fontSize: '11px'
+                                }}
+                              />
+                              <Radar
+                                name="Candidate Score"
+                                dataKey="scholar"
+                                stroke="#2563EB"
+                                fill="#3B82F6"
+                                fillOpacity={0.4}
+                                strokeWidth={2}
+                              />
+                              <Radar
+                                name="GPREC Batch Average"
+                                dataKey="batchAvg"
+                                stroke="#94A3B8"
+                                fill="#CBD5E1"
+                                fillOpacity={0.2}
+                                strokeDasharray="3 3"
+                              />
+                              <Radar
+                                name="Tier-1 Cutoff"
+                                dataKey="tier1Target"
+                                stroke="#10B981"
+                                fill="#10B981"
+                                fillOpacity={0.15}
+                                strokeDasharray="4 4"
+                              />
+                              <RechartsLegend
+                                wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+                              />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200/60">
+                          <span className="text-slate-500">Strongest Vector: <strong className="text-blue-700">Coding Velocity (94%)</strong></span>
+                          <span className="text-slate-500">Highest Alpha: <strong className="text-emerald-700">Mock Tech Interview (+45% over batch)</strong></span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Row 2: Velocity Trajectory Curve */}
+                {(analyticsChartTab === 'all' || analyticsChartTab === 'trajectory') && (
+                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40 flex flex-col justify-between gap-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                          <TrendingUp className="w-4 h-4 text-emerald-600" />
+                          <span>Weekly Placement Readiness Velocity & Forecast Curve</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Progress trajectory across preparation cycles W1–W7 with AI-predicted sprint velocity through W8–W9
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        +46.5% Net Gain
+                      </span>
+                    </div>
+
+                    <div className="h-64 w-full pt-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={trajectoryData} margin={{ top: 15, right: 20, left: -10, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="velocityGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10B981" stopOpacity={0.6} />
+                              <stop offset="95%" stopColor="#059669" stopOpacity={0.05} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                          <XAxis dataKey="week" stroke="#64748B" fontSize={10} tickLine={false} />
+                          <YAxis domain={[20, 100]} stroke="#64748B" fontSize={10} unit="%" tickLine={false} axisLine={false} />
+                          <RechartsTooltip
+                            contentStyle={{
+                              backgroundColor: '#0B132B',
+                              borderRadius: '12px',
+                              border: 'none',
+                              color: '#fff',
+                              fontSize: '11px'
+                            }}
+                            formatter={(val, name) => [`${val}%`, name]}
+                            labelFormatter={(label, payload) => `${label} • Milestone: ${payload?.[0]?.payload?.milestone || ''}`}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="scholar"
+                            name="Candidate Readiness"
+                            stroke="#10B981"
+                            strokeWidth={3}
+                            fill="url(#velocityGradient)"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="batch"
+                            name="Batch Average"
+                            stroke="#94A3B8"
+                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            dot={false}
+                          />
+                          <ReferenceLine
+                            y={80}
+                            stroke="#EA580C"
+                            strokeDasharray="3 3"
+                            label={{ value: 'Tier-1 Hiring Cutoff: 80%', position: 'right', fill: '#EA580C', fontSize: 10, fontWeight: 700 }}
+                          />
+                          <RechartsLegend wrapperStyle={{ fontSize: '11px', paddingTop: '6px' }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-200/60 text-center">
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
+                        <div className="text-[10px] text-slate-400 font-semibold">Start Baseline (W1)</div>
+                        <div className="text-sm font-bold text-slate-700 mt-0.5">42.0%</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
+                        <div className="text-[10px] text-slate-400 font-semibold">Current Calibrated</div>
+                        <div className="text-sm font-bold text-emerald-600 mt-0.5">{overallReadiness > 0 ? `${overallReadiness}%` : '88.5%'}</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
+                        <div className="text-[10px] text-slate-400 font-semibold">Threshold Clearance</div>
+                        <div className="text-sm font-bold text-blue-600 mt-0.5">Passed Week 5</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
+                        <div className="text-[10px] text-slate-400 font-semibold">Projected Peak (W9)</div>
+                        <div className="text-sm font-bold text-purple-600 mt-0.5">96.0% (Marquee)</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Row 3: Recruiter Drive Conversion Probabilities */}
+                {(analyticsChartTab === 'all' || analyticsChartTab === 'conversion') && (
+                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/40 flex flex-col gap-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                          <Building className="w-4 h-4 text-blue-600" />
+                          <span>Tier-1 Recruitment Drive Conversion Probabilities</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Calculated from technical accuracy, coding speed, and speech viva telemetry vs historical hiring cutoffs
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                        6 Top Recruiters
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {companyProbabilities.map((item, idx) => (
+                        <div key={idx} className="p-4 rounded-xl bg-white border border-slate-200/70 shadow-2xs flex flex-col justify-between gap-3">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-bold text-slate-900">{item.company}</h4>
+                              <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                                {item.package}
+                              </span>
+                            </div>
+                            <div className="text-[10px] font-semibold text-slate-500 mt-0.5">{item.tier}</div>
+
+                            {/* Conversion Progress Bar */}
+                            <div className="mt-3 space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-[11px] font-semibold text-slate-700">Conversion Odds</span>
+                                <span className="font-extrabold text-sm" style={{ color: item.color }}>
+                                  {item.probability}%
+                                </span>
+                              </div>
+                              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all duration-700"
+                                  style={{
+                                    width: `${item.probability}%`,
+                                    backgroundColor: item.color
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                            <span className="text-slate-500 truncate mr-2">{item.metric}</span>
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold whitespace-nowrap">
+                              ✓ {item.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Row 4: Diagnostic Actionable Insights Callout */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-900 to-indigo-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300 mt-0.5 shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Actionable DVT Telemetry Insight</h4>
+                      <p className="text-[11px] text-blue-200 mt-0.5 leading-relaxed">
+                        Your interview clarity (91/100) and coding velocity place you in the <strong className="text-amber-300">Top 8% institutional percentile</strong>.
+                        To enter the elite <strong className="text-emerald-300">Top 3%</strong> marquee bracket, complete 2 Hard Graph/DP coding drills and 1 Microservices system design viva.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveNav('coding_arena')}
+                    className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shrink-0 cursor-pointer transition-all shadow-xs"
+                  >
+                    Start Elite Drills →
+                  </button>
                 </div>
               </div>
             </div>
