@@ -79,7 +79,7 @@ import GprecPlacementLanding from './components/GprecPlacementLanding';
 import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
 import GprecTpoPortal from './pages/GprecTpoPortal';
 import StudentPlacementDatabase from './pages/StudentPlacementDatabase';
-import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
 import TpoPortalLanding from './pages/TpoPortalLanding';
 
 function App() {
@@ -1186,9 +1186,12 @@ function App() {
         case 'tech-news':
         case 'jobs-radar':
         case 'tech-radar':
-          return <TechPulse user={user} setActiveTab={handleTabChange} />;
+          return <TechPulsePortal user={user} setActiveTab={handleTabChange} />;
         case 'speakverse':
-          return <SpeakVerse user={user} setActiveTab={handleTabChange} />;
+        case 'speak-verse':
+        case 'lumixora-speakverse':
+        case 'speaking-coach':
+          return <SpeakVersePortal user={user} setActiveTab={handleTabChange} />;
         case 'interview':
         case 'mock-interview':
         case 'ai-interview':
@@ -1205,13 +1208,13 @@ function App() {
           return <TestPortal user={user} setActiveTab={handleTabChange} />;
         case 'company-papers':
         case 'placement-papers':
-          return <PlacementPapers user={user} setActiveTab={handleTabChange} />;
+          return <CompanyPlacementPapers user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
         case 'aptitude-arena':
         case 'aptitude':
-          return <AptitudeArena user={user} setActiveTab={handleTabChange} />;
+          return <AptitudeArena user={user} isFounder={user?.role === "founder"} />;
         case 'resume':
         case 'ai-resume':
-          return <ResumeBuilder user={user} setActiveTab={handleTabChange} />;
+          return <ResumeCreator user={user} setActiveTab={handleTabChange} />;
         case 'certificates':
         case 'proof-of-skill':
         case 'badges':
@@ -1259,7 +1262,7 @@ function App() {
         case 'verify':
         case 'verify-cert':
         case 'cert-verify':
-          return <CertificateVerification user={user} setActiveTab={handleTabChange} />;
+          return <PublicCertificateVerification onBack={() => handleTabChange("ai-commander")} />;
         default:
           // Unrelated portals (tasks, doubts, notes, clubs, games, courses, simulations, attendance, dashboard, etc.)
           // CAN NEVER RENDER ON GPREC PLACEMENT SUBDOMAIN! Redirect to Placement Commander!
@@ -1911,9 +1914,15 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain() && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
-              {renderContent()}
-            </MainLayout>
+            {isGprecOnlySubdomain() ? (
+              <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
+                {renderContent()}
+              </div>
+            ) : (
+              <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
+                {renderContent()}
+              </MainLayout>
+            )}
             {renderUpdateModal()}
             {renderExitModal()}
             {!isGprecPlacementSubdomain() && (
