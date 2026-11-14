@@ -101,7 +101,7 @@ export default function CollegeAccessFeeModal({
     }).catch(() => {});
   }, []);
 
-  // 2. Check for existing pending UTR submission or pre-verified paid email on mount
+  // 2. Automated live verification against Razorpay & Remote Payment Registry on mount
   useEffect(() => {
     if (!userEmail) return;
 
@@ -109,6 +109,38 @@ export default function CollegeAccessFeeModal({
       finalizePayment('UTR-317827902237');
       return;
     }
+
+    // Automated check against Razorpay & Supabase verified payments
+    const checkLivePayment = async () => {
+      try {
+        const resp = await fetch(`/api/check-payment?email=${encodeURIComponent(userEmail)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.paid) {
+            console.log('[Fee Gate] Payment verified via Razorpay registry:', data.txId);
+            finalizePayment(data.txId || 'RZP-VERIFIED');
+            return true;
+          }
+        }
+      } catch (e) {}
+
+      // Direct fallback to Supabase users table
+      if (supabase && typeof supabase.from === 'function') {
+        try {
+          const { data: rows } = await supabase.from('users').select('name').ilike('email', userEmail);
+          if (rows && rows.length > 0 && rows[0].name?.includes('{')) {
+            const meta = JSON.parse(rows[0].name.substring(rows[0].name.indexOf('{')));
+            if (meta.oneTimeFeePaid === true || meta.feePaid === true || meta.is_fee_paid === true) {
+              console.log('[Fee Gate] Payment verified via Supabase profile');
+              finalizePayment(meta.feeTxId || 'RZP-VERIFIED');
+              return true;
+            }
+          }
+        } catch (e) {}
+      }
+      return false;
+    };
+    checkLivePayment();
 
     const cachedPending = localStorage.getItem(`lumixora_pending_utr_${userEmail}`);
     if (cachedPending) {
