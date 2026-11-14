@@ -4,7 +4,7 @@ import GlobalSearchModal from '../components/GlobalSearchModal';
 import PlatformNavigatorChatbot from '../components/PlatformNavigatorChatbot';
 import Realistic3DLogo from '../components/Realistic3DLogo';
 import { ALL_PORTALS, GPREC_PORTALS } from '../utils/portalMapping';
-import { isGprecPlacementSubdomain, isTpoSubdomain } from '../utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, isAllowedGprecPlacementTab } from '../utils/placementSubdomain';
 import { 
   Search, Bell, Sparkles, AlertCircle, Menu, Camera, Save, X, Flame, 
   Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power,
@@ -462,7 +462,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     setEditCgpa(prof.cgpa || user?.cgpa || '9.0');
     setEditCareerGoal(prof.careerGoal || user?.careerGoal || 'Placement');
     setEditInterests(Array.isArray(user?.interests) ? user.interests : (Array.isArray(prof.interests) ? prof.interests : []));
-    setEditActivePortals(Array.isArray(user?.activePortals) ? user.activePortals : (Array.isArray(prof.activePortals) ? prof.activePortals : []));
+    const isGprecUser = isGprecPlacementSubdomain(user);
+    const rawPortals = Array.isArray(user?.activePortals) ? user.activePortals : (Array.isArray(prof.activePortals) ? prof.activePortals : []);
+    setEditActivePortals(isGprecUser ? rawPortals.filter(id => isAllowedGprecPlacementTab(id)) : rawPortals);
     setEditLearningStyle(prof.learningStyle || user?.learningStyle || 'Practical');
     setEditWeakSubjects(prof.weakSubjects || user?.weakSubjects || 'None');
     setEditLeetcode(localStorage.getItem('lumixora_leetcode_user') || prof.leetcodeUser || '');
@@ -808,7 +810,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         cgpa: cleanCgpa,
         careerGoal: cleanGoal,
         interests: editInterests,
-        activePortals: editActivePortals,
+        activePortals: isGprecPlacementSubdomain(user) ? editActivePortals.filter(id => isAllowedGprecPlacementTab(id)) : editActivePortals,
         onboardingCompleted: true,
         learningStyle: cleanLearning,
         weakSubjects: cleanWeak,
@@ -1525,7 +1527,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
-                My Portals & Workspace
+                {isGprecPlacementSubdomain(user) ? 'Placement Modules' : 'My Portals & Workspace'}
               </button>
             </div>
 
@@ -1630,7 +1632,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                   <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest">Completed Daily Tasks & Coding</h3>
                   {myProgressStats.tasksList.length === 0 ? (
                     <div className="p-8 text-center bg-white/[0.02] border border-white/5 rounded-2xl text-xs text-gray-500">
-                      No daily tasks marked completed yet. Visit <span className="text-brand-teal font-bold">Assigned Tasks</span> to complete your Java 30-day track!
+                      No daily tasks marked completed yet. Visit <span className="text-brand-teal font-bold">{isGprecPlacementSubdomain(user) ? 'Code Arena & 30D Java' : 'Assigned Tasks'}</span> to complete your Java 30-day track!
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-60 overflow-y-auto pr-1">

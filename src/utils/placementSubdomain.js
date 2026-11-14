@@ -61,7 +61,7 @@ export function isTpoSubdomain() {
   return false;
 }
 
-export function isGprecPlacementSubdomain() {
+export function isGprecPlacementSubdomain(user = null) {
   if (typeof window === 'undefined') return false;
 
   // If on tpo.lumixora.in, it is inherently part of the institutional placement ecosystem
@@ -72,10 +72,12 @@ export function isGprecPlacementSubdomain() {
   const search = (window.location.search || '').toLowerCase();
   const hash = (window.location.hash || '').toLowerCase();
 
-  // 1. Hostname detection (e.g. gprec.lumixora.in, gprec.lumixora.pages.dev, gprec-placement.lumixora.in)
+  // 1. Hostname detection (e.g. gprec.lumixora.in, gpreclumixora.in, gprec-lumixora, gprec.lumixora.pages.dev)
   if (
     hostname.startsWith('gprec.') ||
     hostname.includes('gprec.lumixora') ||
+    hostname.includes('gpreclumixora') ||
+    hostname.includes('gprec-lumixora') ||
     hostname.includes('gprec-placement') ||
     hostname.startsWith('placement.gprec')
   ) {
@@ -87,7 +89,8 @@ export function isGprecPlacementSubdomain() {
     search.includes('subdomain=gprec') ||
     search.includes('portal=gprec') ||
     search.includes('portal=placement') ||
-    search.includes('view=gprec')
+    search.includes('view=gprec') ||
+    search.includes('mode=gprec')
   ) {
     return true;
   }
@@ -112,6 +115,16 @@ export function isGprecPlacementSubdomain() {
     return true;
   }
 
+  // 5. User-based detection (if logged in as a GPREC scholar with @gprec.ac.in or college GPREC)
+  try {
+    const savedUser = user || JSON.parse(localStorage.getItem('lumixora_user') || '{}');
+    const email = (savedUser?.email || '').toLowerCase().trim();
+    const college = (savedUser?.college || '').toLowerCase().trim();
+    if (email.endsWith('@gprec.ac.in') || college.includes('gprec') || college.includes('pulla reddy')) {
+      return true;
+    }
+  } catch (e) {}
+
   return false;
 }
 
@@ -119,9 +132,9 @@ export function isGprecPlacementSubdomain() {
  * Detects whether the current session is specifically on the GPREC Scholar Placement Portal
  * (e.g. gprec.lumixora.in, ?subdomain=gprec, /gprec) and NOT on the dedicated TPO Portal (tpo.lumixora.in).
  */
-export function isGprecOnlySubdomain() {
+export function isGprecOnlySubdomain(user = null) {
   if (typeof window === 'undefined') return false;
-  return isGprecPlacementSubdomain() && !isTpoSubdomain();
+  return isGprecPlacementSubdomain(user) && !isTpoSubdomain();
 }
 
 /**
