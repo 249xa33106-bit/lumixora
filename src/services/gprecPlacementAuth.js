@@ -120,14 +120,14 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
     throw new Error('Please enter the 6-digit OTP code.');
   }
 
-  // Current 5-min window code & previous window code (grace period)
-  const currentCode = getRolling5MinOtp(normalized, 0);
-  const previousCode = getRolling5MinOtp(normalized, -1);
+  // Check rolling windows: current (0), previous windows (-1, -2, -3 = up to 20 min grace), and clock skew (+1)
+  const allowedOffsets = [0, -1, -2, -3, 1];
+  const validCodes = allowedOffsets.map(offset => getRolling5MinOtp(normalized, offset));
 
-  const isValid = cleanToken === currentCode || cleanToken === previousCode;
+  const isValid = validCodes.includes(cleanToken);
 
   if (!isValid) {
-    throw new Error('Invalid or expired OTP. The code expires every 5 minutes. Please request a new code.');
+    throw new Error('Invalid or expired OTP code. Please request a new code.');
   }
 
   const rollUpper = normalized.toUpperCase();
@@ -152,5 +152,9 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
     isGprecPlacementVerified: true
   };
 
-  return userProfile;
+  return {
+    success: true,
+    user: userProfile,
+    ...userProfile
+  };
 }

@@ -110,19 +110,20 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
     setLoading(true);
     try {
       const res = await verifyGprecPlacementOtp(rollNumber, otp.trim());
-      if (res.success) {
+      const verifiedUser = res?.user || (res?.id ? res : null);
+      if (res?.success || verifiedUser) {
         setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
         setTimeout(() => {
           if (onLoginSuccess) {
-            onLoginSuccess(res.user);
+            onLoginSuccess(verifiedUser);
           }
           onClose();
         }, 600);
       } else {
-        setErrorMsg(res.error || 'Invalid or expired OTP code.');
+        setErrorMsg(res?.error || 'Invalid or expired OTP code.');
       }
     } catch (err) {
-      setErrorMsg('Verification failed. Please retry.');
+      setErrorMsg(err?.message || 'Verification failed. Please retry.');
     } finally {
       setLoading(false);
     }
