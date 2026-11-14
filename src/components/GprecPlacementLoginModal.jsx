@@ -535,9 +535,6 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] text-[#64748B]">
-                  Default Access Token: <span className="font-mono font-bold text-[#0B132B]">LUMI@2026</span>
-                </p>
               </div>
 
               <button
