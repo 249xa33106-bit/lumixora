@@ -594,7 +594,13 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                   {/* Card Action Footer */}
                   <div className="pt-4 border-t border-[#F1F5F9] flex items-center justify-between">
                     <button
-                      onClick={() => onEnterPlacement(portal.id)}
+                      onClick={() => {
+                        if (portal.id === 'tpo-dashboard') {
+                          window.location.href = 'https://tpo.lumixora.in';
+                          return;
+                        }
+                        onEnterPlacement(portal.id);
+                      }}
                       className="px-4 py-2 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                     >
                       <span>Access {portal.title.split(' ')[0]}</span>

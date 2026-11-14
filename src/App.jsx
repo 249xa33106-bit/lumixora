@@ -79,7 +79,7 @@ import GprecPlacementLanding from './components/GprecPlacementLanding';
 import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
 import GprecTpoPortal from './pages/GprecTpoPortal';
 import StudentPlacementDatabase from './pages/StudentPlacementDatabase';
-import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS } from './utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
 import TpoPortalLanding from './pages/TpoPortalLanding';
 
 function App() {
@@ -104,6 +104,10 @@ function App() {
         if (['ai-commander', 'placement', 'placements', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume'].includes(hash)) return hash;
       }
       if (isGprecPlacementSubdomain()) {
+        if (window.location.hash) {
+          const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+          if (isAllowedGprecPlacementTab(hash)) return hash;
+        }
         return 'ai-commander';
       }
     }
@@ -297,6 +301,14 @@ function App() {
       const tourDone = localStorage.getItem(tourKey);
       const isFounder = user.role === 'founder' || user.email?.toLowerCase() === 'founder@lumixora.com';
       
+      // Never show generic tour on GPREC placement or TPO subdomain
+      if (isGprecPlacementSubdomain()) {
+        if (userId) {
+          localStorage.setItem(`lumixora_tour_completed_${userId}`, 'true');
+        }
+        return;
+      }
+
       // If student/scholar and haven't completed the tour yet
       if (!tourDone && !isFounder) {
         const timer = setTimeout(() => {
@@ -606,6 +618,21 @@ function App() {
           }
           return;
         }
+        if (isGprecSub) {
+          if (isAllowedGprecPlacementTab(tab)) {
+            if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
+              setActiveTab('tech-pulse');
+            } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
+              setActiveTab('test-portal');
+            } else {
+              setActiveTab(tab);
+            }
+          } else {
+            setActiveTab('ai-commander');
+            window.location.hash = 'ai-commander';
+          }
+          return;
+        }
         if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
@@ -638,8 +665,15 @@ function App() {
   }, [isAuthenticated, user]);
 
   const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    window.location.hash = newTab;
+    let resolvedTab = newTab;
+    if (isGprecPlacementSubdomain()) {
+      if (!isAllowedGprecPlacementTab(newTab)) {
+        console.warn('Blocked navigation to unrelated portal on GPREC placement suite:', newTab);
+        resolvedTab = 'ai-commander';
+      }
+    }
+    setActiveTab(resolvedTab);
+    window.location.hash = resolvedTab;
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1139,6 +1173,97 @@ function App() {
         case 'placement-officer':
         default:
           return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+      }
+    }
+
+    // 1. Dedicated GPREC Placement Suite Enforcer: SHOW ONLY PLACEMENT PORTALS
+    if (isGprecPlacementSubdomain()) {
+      switch (activeTab) {
+        case 'ai-commander':
+        case 'placement-commander':
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        case 'tech-pulse':
+        case 'tech-news':
+        case 'jobs-radar':
+        case 'tech-radar':
+          return <TechPulse user={user} setActiveTab={handleTabChange} />;
+        case 'speakverse':
+          return <SpeakVerse user={user} setActiveTab={handleTabChange} />;
+        case 'interview':
+        case 'mock-interview':
+        case 'ai-interview':
+        case 'interview-room':
+          return <AiMockInterviewRoom user={user} setActiveTab={handleTabChange} />;
+        case 'coding-practice':
+          return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
+        case 'code-editor':
+          return <CodeEditorPage problem={selectedProblem} setActiveTab={setActiveTab} user={user} />;
+        case 'test-portal':
+        case 'tests':
+        case 'assignments':
+        case 'tests-assignments':
+          return <TestPortal user={user} setActiveTab={handleTabChange} />;
+        case 'company-papers':
+        case 'placement-papers':
+          return <PlacementPapers user={user} setActiveTab={handleTabChange} />;
+        case 'aptitude-arena':
+        case 'aptitude':
+          return <AptitudeArena user={user} setActiveTab={handleTabChange} />;
+        case 'resume':
+        case 'ai-resume':
+          return <ResumeBuilder user={user} setActiveTab={handleTabChange} />;
+        case 'certificates':
+        case 'proof-of-skill':
+        case 'badges':
+        case 'credentials':
+          return <ProofOfSkillCertificates user={user} setActiveTab={handleTabChange} />;
+        case 'alumni':
+        case 'alumni-referrals':
+        case 'alumni-bridge':
+        case 'referrals':
+          return <AlumniReferralBridge user={user} setActiveTab={handleTabChange} />;
+        case 'career-roadmap':
+        case 'career-roles':
+          return <CareerRoadmap user={user} setActiveTab={handleTabChange} />;
+        case 'future-twin':
+        case 'twin':
+        case 'ai-twin':
+        case 'ai-future-twin':
+          return <AiFutureTwin user={user} setActiveTab={handleTabChange} />;
+        case 'internships':
+        case 'internship':
+          return <InternshipPortal user={user} setActiveTab={handleTabChange} />;
+        case 'tpo-dashboard':
+        case 'tpo-analytics':
+        case 'placement-officer':
+          if (user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in') {
+            return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+          }
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        case 'student-database':
+        case 'student-placement-db':
+        case 'placement-database':
+          if (user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in') {
+            return <StudentPlacementDatabase user={user} setActiveTab={handleTabChange} />;
+          }
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        case 'faculty-portal':
+          if (user?.isOfficer || user?.isDean || user?.role === 'faculty') {
+            return <FacultyPortal user={user} setActiveTab={handleTabChange} />;
+          }
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+        case 'contact':
+          return <ContactUs user={user} />;
+        case 'report-bug':
+          return <ReportBug user={user} />;
+        case 'verify':
+        case 'verify-cert':
+        case 'cert-verify':
+          return <CertificateVerification user={user} setActiveTab={handleTabChange} />;
+        default:
+          // Unrelated portals (tasks, doubts, notes, clubs, games, courses, simulations, attendance, dashboard, etc.)
+          // CAN NEVER RENDER ON GPREC PLACEMENT SUBDOMAIN! Redirect to Placement Commander!
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
       }
     }
 
@@ -1663,7 +1788,8 @@ function App() {
             />
             <GprecPlacementLoginModal
               isOpen={showGprecLogin}
-              defaultRole={gprecLoginRole || 'student'}
+              defaultRole="student"
+              hideOfficerTab={true}
               onClose={() => setShowGprecLogin(false)}
               onLoginSuccess={(verifiedUser) => {
                 handleLogin(verifiedUser);
@@ -1685,6 +1811,41 @@ function App() {
       </ThemeProvider>
     );
   }
+
+  // Automated background payment check for users who might have just paid on Razorpay
+  useEffect(() => {
+    if (!user || isExemptFromPayment(user) || hasPaidCollegeFee(user) || user?.role === 'intern' || user?.isIntern) return;
+    const email = (user.email || '').toLowerCase().trim();
+    if (!email) return;
+
+    let isMounted = true;
+    const verifyRemotePayment = async () => {
+      try {
+        const resp = await fetch(`/api/check-payment?email=${encodeURIComponent(email)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.paid && isMounted) {
+            console.log('[App Gate] Remote Razorpay payment detected for:', email);
+            const updated = { ...user, oneTimeFeePaid: true, feePaid: true, feeTxId: data.txId || 'RZP-VERIFIED' };
+            setUser(updated);
+            localStorage.setItem('lumixora_user', JSON.stringify(updated));
+            localStorage.setItem(`lumixora_fee_paid_${email}`, 'true');
+          }
+        }
+      } catch (e) {}
+    };
+
+    verifyRemotePayment();
+    // Poll twice shortly after login in case Razorpay is completing webhook
+    const timer1 = setTimeout(verifyRemotePayment, 3000);
+    const timer2 = setTimeout(verifyRemotePayment, 8000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [user]);
 
   // ZERO-TOLERANCE SECURITY GATE: Completely block mounting or rendering of any workspace/data if unpaid
   if (user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern) {
@@ -1724,7 +1885,7 @@ function App() {
         {renderLockedAccountModal()}
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
-            {showIntro && (
+            {showIntro && !isGprecPlacementSubdomain() && (
               <CinematicIntro onComplete={() => setShowIntro(false)} />
             )}
             <CursorCompanionModal
@@ -1747,7 +1908,7 @@ function App() {
                 } catch (e) {}
               }}
             />
-            {showTomAndJerryIntro && (
+            {showTomAndJerryIntro && !isGprecPlacementSubdomain() && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
             <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
@@ -1755,17 +1916,21 @@ function App() {
             </MainLayout>
             {renderUpdateModal()}
             {renderExitModal()}
-            <PlatformTourModal 
-              isOpen={showTour} 
-              onClose={handleCloseTour} 
-              onNavigateTab={handleTabChange} 
-            />
-            <StudentOnboardingModal
-              isOpen={showOnboarding}
-              onClose={() => handleDismissOnboarding()}
-              user={user}
-              onSavePreferences={(prefs) => handleDismissOnboarding(prefs)}
-            />
+            {!isGprecPlacementSubdomain() && (
+              <PlatformTourModal 
+                isOpen={showTour} 
+                onClose={handleCloseTour} 
+                onNavigateTab={handleTabChange} 
+              />
+            )}
+            {!isGprecPlacementSubdomain() && (
+              <StudentOnboardingModal
+                isOpen={showOnboarding}
+                onClose={() => handleDismissOnboarding()}
+                user={user}
+                onSavePreferences={(prefs) => handleDismissOnboarding(prefs)}
+              />
+            )}
           </DataProvider>
         </GamificationProvider>
       </ToastProvider>

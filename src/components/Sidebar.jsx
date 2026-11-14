@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Realistic3DLogo from './Realistic3DLogo';
-import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS } from '../utils/placementSubdomain';
+import { isGprecPlacementSubdomain, isTpoSubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from '../utils/placementSubdomain';
 import { 
   LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, 
   GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, 
@@ -33,10 +33,13 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const userActivePortals = useMemo(() => {
     if (isFounder || isTeammate || isFaculty) return null; // Admins see all
     if (Array.isArray(user?.activePortals) && user.activePortals.length > 0) {
+      if (isGprecSubdomain) {
+        return new Set(user.activePortals.filter(id => isAllowedGprecPlacementTab(id)));
+      }
       return new Set(user.activePortals);
     }
     return null;
-  }, [user?.activePortals, isFounder, isTeammate, isFaculty]);
+  }, [user?.activePortals, isFounder, isTeammate, isFaculty, isGprecSubdomain]);
 
   const toggleSection = (sectionKey) => {
     setCollapsedSections(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
@@ -212,7 +215,11 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   }, [menuSections, menuSearchQuery, userActivePortals, showAllPortals]);
 
   const handleTabClick = (tabId) => {
-    setActiveTab(tabId);
+    if (isGprecSubdomain && !isAllowedGprecPlacementTab(tabId)) {
+      setActiveTab('ai-commander');
+    } else {
+      setActiveTab(tabId);
+    }
     if (onClose) onClose();
   };
 

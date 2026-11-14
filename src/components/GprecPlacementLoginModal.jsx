@@ -13,6 +13,7 @@ import {
   verifyGprecPlacementOtp,
   PLACEMENT_SUPPORT_EMAIL
 } from '../services/gprecPlacementAuth';
+import { isGprecOnlySubdomain } from '../utils/placementSubdomain';
 import { 
   authenticatePlacementOfficer, 
   sendOfficerPasswordResetCode, 
@@ -20,9 +21,17 @@ import {
   GPREC_OFFICER_CONFIG 
 } from '../services/gprecOfficerAuth';
 
-export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSuccess, defaultRole = 'student' }) {
-  // Tabs: 'student' | 'officer'
-  const [authRole, setAuthRole] = useState(defaultRole || 'student');
+export default function GprecPlacementLoginModal({ 
+  isOpen, 
+  onClose, 
+  onLoginSuccess, 
+  defaultRole = 'student',
+  hideOfficerTab = false 
+}) {
+  const isGprecOnly = isGprecOnlySubdomain() || hideOfficerTab;
+
+  // Tabs: 'student' | 'officer' (Enforced 'student' on gprec.lumixora.in only)
+  const [authRole, setAuthRole] = useState(isGprecOnly ? 'student' : (defaultRole || 'student'));
 
   // Scholar State
   const [scholarStep, setScholarStep] = useState('roll'); // 'roll' | 'otp'
@@ -46,7 +55,9 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
 
   // Synchronize default role and reset inputs on modal open
   useEffect(() => {
-    if (defaultRole) {
+    if (isGprecOnly) {
+      setAuthRole('student');
+    } else if (defaultRole) {
       setAuthRole(defaultRole);
     }
     if (isOpen) {
@@ -55,7 +66,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
       setOfficerEmail('');
       setOfficerPassword('');
     }
-  }, [defaultRole, isOpen]);
+  }, [defaultRole, isOpen, isGprecOnly]);
 
   if (!isOpen) return null;
 
@@ -280,8 +291,9 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
           </button>
         </div>
 
-        {/* Swiss Segmented Role Selector */}
-        <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] rounded-lg text-xs font-semibold">
+        {/* Swiss Segmented Role Selector (Hidden on gprec.lumixora.in only) */}
+        {!isGprecOnly && (
+          <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] rounded-lg text-xs font-semibold">
           <button
             type="button"
             onClick={() => {
@@ -313,6 +325,7 @@ export default function GprecPlacementLoginModal({ isOpen, onClose, onLoginSucce
             TPO / Dean Office
           </button>
         </div>
+        )}
 
         {/* Error Alert */}
         {errorMsg && (

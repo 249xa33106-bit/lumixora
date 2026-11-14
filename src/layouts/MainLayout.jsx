@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import GlobalSearchModal from '../components/GlobalSearchModal';
 import PlatformNavigatorChatbot from '../components/PlatformNavigatorChatbot';
 import Realistic3DLogo from '../components/Realistic3DLogo';
-import { ALL_PORTALS } from '../utils/portalMapping';
+import { ALL_PORTALS, GPREC_PORTALS } from '../utils/portalMapping';
 import { isGprecPlacementSubdomain, isTpoSubdomain } from '../utils/placementSubdomain';
 import { 
   Search, Bell, Sparkles, AlertCircle, Menu, Camera, Save, X, Flame, 
@@ -2051,21 +2051,26 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                 </form>
               )}
 
-              {profileModalTab === 'portals' && (
+              {profileModalTab === 'portals' && (() => {
+                const isGprecSub = isGprecPlacementSubdomain();
+                const activePortalsList = isGprecSub ? GPREC_PORTALS : ALL_PORTALS;
+                return (
                 <div className="space-y-5 animate-fade-in">
                   <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-black text-cyan-300 uppercase tracking-wider">
-                        Customize Your Visible Portals
+                        {isGprecSub ? 'Customize GPREC Placement Modules' : 'Customize Your Visible Portals'}
                       </h4>
                       <p className="text-[11px] text-gray-300 mt-0.5">
-                        Choose which modules appear in your sidebar. Unchecked portals can always be revealed anytime using the "Show All" toggle in the sidebar.
+                        {isGprecSub 
+                          ? 'Choose which official placement modules appear in your sidebar. Unrelated portals are disabled on GPREC.'
+                          : 'Choose which modules appear in your sidebar. Unchecked portals can always be revealed anytime using the "Show All" toggle in the sidebar.'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-4">
                       <button
                         type="button"
-                        onClick={() => setEditActivePortals(ALL_PORTALS.map(p => p.id))}
+                        onClick={() => setEditActivePortals(activePortalsList.map(p => p.id))}
                         className="text-[10px] font-bold text-cyan-400 hover:underline"
                       >
                         Select All
@@ -2073,7 +2078,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                       <span className="text-gray-600">|</span>
                       <button
                         type="button"
-                        onClick={() => setEditActivePortals(['dashboard', 'community'])}
+                        onClick={() => setEditActivePortals(isGprecSub ? ['ai-commander', 'interview', 'coding-practice'] : ['dashboard', 'community'])}
                         className="text-[10px] font-bold text-gray-400 hover:text-white"
                       >
                         Reset
@@ -2082,7 +2087,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {ALL_PORTALS.map(portal => {
+                    {activePortalsList.map(portal => {
                       const isChecked = editActivePortals.includes(portal.id);
                       return (
                         <div
@@ -2121,7 +2126,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                     {isSaving ? <span>Saving Live Portals...</span> : <span>Save Workspace Portals</span>}
                   </button>
                 </div>
-              )}
+              );
+              })()}
             </div>
           </div>
         </div>
@@ -2194,8 +2200,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </div>
       )}
 
-      {/* Floating AI Platform Navigator Chatbot Launcher */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+      {/* Floating AI Platform Navigator Chatbot Launcher (Hidden on gprec placement subdomain) */}
+      {!isGprecPlacementSubdomain() && (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
         {/* Helper Tooltip Prompt */}
         <div 
           onClick={() => setShowNavigatorBot(true)}
@@ -2225,6 +2232,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           </div>
         </button>
       </div>
+      )}
 
       {/* Lumixora Platform Navigator Chatbot Modal */}
       <PlatformNavigatorChatbot

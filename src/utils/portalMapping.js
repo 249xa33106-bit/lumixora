@@ -170,3 +170,21 @@ export function analyzeAndRecommendPortals({
 
   return Array.from(recommended);
 }
+
+
+export const GPREC_PORTALS = [
+  { id: 'ai-commander', label: 'AI Placement Commander™', category: 'career', tags: ['placement', 'career', 'resume', 'jobs'] },
+  { id: 'tech-pulse', label: 'Tech Pulse & Jobs Radar', category: 'career', tags: ['news', 'jobs', 'hiring', 'placement'] },
+  { id: 'speakverse', label: 'SpeakVerse™ AI Communication', category: 'career', tags: ['communication', 'english', 'interview', 'placement', 'soft-skills'] },
+  { id: 'interview', label: 'AI Mock Interview Room', category: 'career', tags: ['interview', 'placement', 'communication', 'mock'] },
+  { id: 'coding-practice', label: 'Code Arena & 30D Java', category: 'career', tags: ['coding', 'dsa', 'programming', 'placement'] },
+  { id: 'test-portal', label: 'Tests & Assessment Hub', category: 'academics', tags: ['exams', 'assessment', 'placement'] },
+  { id: 'company-papers', label: 'Placement Papers (TCS/Amazon)', category: 'career', tags: ['placement', 'papers', 'companies'] },
+  { id: 'aptitude-arena', label: 'Aptitude & Reasoning Arena', category: 'career', tags: ['aptitude', 'quant', 'reasoning', 'placement'] },
+  { id: 'resume', label: 'AI Resume Builder & ATS', category: 'career', tags: ['resume', 'ats', 'placement'] },
+  { id: 'certificates', label: 'Proof-of-Skill Badges', category: 'career', tags: ['placement', 'certification', 'linkedin'] },
+  { id: 'alumni-referrals', label: 'Alumni Referral Bridge & Off-Campus Jobs', category: 'career', tags: ['placement', 'referrals', 'jobs', 'career'] },
+  { id: 'career-roadmap', label: 'Career Roadmap & Target Roles', category: 'career', tags: ['career', 'guidance', 'roadmap'] },
+  { id: 'internships', label: 'Lumixora Internships', category: 'career', tags: ['internship', 'career', 'jobs'] },
+  { id: 'future-twin', label: 'AI Future Twin™', category: 'career', tags: ['career', 'roadmap', 'ai', 'placement'] }
+];

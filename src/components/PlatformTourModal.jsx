@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
 import { 
   Sparkles, Bot, Award, Code2, HelpCircle, BookOpen, 
   CheckSquare, Users, ArrowRight, ArrowLeft, 
@@ -147,7 +148,7 @@ export const TOUR_STEPS = [
 export default function PlatformTourModal({ isOpen, onClose, onNavigateTab }) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  if (!isOpen) return null;
+  if (!isOpen || isGprecPlacementSubdomain()) return null;
 
   const step = TOUR_STEPS[currentStep];
   const IconComponent = step.icon;

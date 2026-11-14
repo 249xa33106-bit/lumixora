@@ -6,6 +6,7 @@ import {
   Layers, ChevronRight, Hash, Compass, Flame, GitFork, Radio
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { isGprecPlacementSubdomain, isAllowedGprecPlacementTab } from '../utils/placementSubdomain';
 
 const SEARCHABLE_PORTALS = [
   { id: 'dashboard', title: 'Dashboard', desc: 'Main academic home, stats & daily roadmap', category: 'General', icon: Sparkles, keywords: ['home', 'overview', 'stats', 'analytics'] },
@@ -62,6 +63,10 @@ export default function GlobalSearchModal({ isOpen, onClose, onSelectTab }) {
   }, [isOpen, onClose]);
 
   const filteredResults = useMemo(() => {
+    const isGprec = isGprecPlacementSubdomain();
+    const targetPortals = isGprec 
+      ? SEARCHABLE_PORTALS.filter(p => isAllowedGprecPlacementTab(p.id))
+      : SEARCHABLE_PORTALS;
     const q = searchQuery.toLowerCase().trim();
     
     const matchedPortals = SEARCHABLE_PORTALS.filter(item => {

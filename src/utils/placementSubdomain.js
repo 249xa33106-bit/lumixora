@@ -116,6 +116,15 @@ export function isGprecPlacementSubdomain() {
 }
 
 /**
+ * Detects whether the current session is specifically on the GPREC Scholar Placement Portal
+ * (e.g. gprec.lumixora.in, ?subdomain=gprec, /gprec) and NOT on the dedicated TPO Portal (tpo.lumixora.in).
+ */
+export function isGprecOnlySubdomain() {
+  if (typeof window === 'undefined') return false;
+  return isGprecPlacementSubdomain() && !isTpoSubdomain();
+}
+
+/**
  * Portals exclusively permitted on the GPREC Placement Suite & TPO Command Suite
  */
 export const TPO_FACULTY_ONLY_PORTALS = [
@@ -161,3 +170,32 @@ export const GPREC_PLACEMENT_PORTALS = [
   'internships',        // Placement Internships
   'career-roadmap'      // Role-Specific Placement Roadmaps
 ];
+
+
+/**
+ * Strict validator for allowed placement portals on gprec.lumixora.in
+ */
+export function isAllowedGprecPlacementTab(tab) {
+  if (!tab || typeof tab !== 'string') return false;
+  const t = tab.toLowerCase().trim();
+  const allowed = [
+    'ai-commander', 'placement-commander',
+    'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar',
+    'speakverse',
+    'interview', 'mock-interview', 'ai-interview', 'interview-room',
+    'coding-practice', 'code-editor',
+    'test-portal', 'tests', 'assignments', 'tests-assignments',
+    'company-papers', 'placement-papers',
+    'aptitude-arena', 'aptitude',
+    'resume', 'ai-resume',
+    'certificates', 'proof-of-skill', 'badges', 'credentials', 'verify', 'verify-cert', 'cert-verify',
+    'alumni', 'alumni-referrals', 'alumni-bridge', 'referrals',
+    'career-roadmap', 'career-roles',
+    'internships', 'internship',
+    'future-twin', 'twin', 'ai-twin', 'ai-future-twin',
+    'contact', 'report-bug',
+    'tpo-dashboard', 'tpo-command-center', 'tpo-analytics',
+    'student-database', 'student-placement-db', 'placement-database', 'faculty-portal'
+  ];
+  return allowed.includes(t);
+}
