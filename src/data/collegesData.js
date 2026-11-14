@@ -837,6 +837,7 @@ export const KNOWN_PAID_EMAILS = new Set([
   '259xa33320@gprec.ac.in', // Vadigala Lokesh (Paid ₹10 via Razorpay pay_Tv1DYUxLld6o0l)
   '259xa04138@gprec.ac.in', // Student 259XA04138 (Paid ₹10 via Razorpay pay_TuvQmfUXOMcWEz)
   '259xa33079@gprec.ac.in', // Gajula Anusha (Paid ₹10 via Razorpay pay_Tu8rVAc8mVLav5)
+  '269xa05526@gprec.ac.in', // Keshava Reddy (Paid ₹10 via Razorpay pay_TzfB14FOkNIoHi / Bank RRN 618108507754)
 ]);
 
 /**
@@ -907,7 +908,8 @@ export const KNOWN_VERIFIED_UTRS = new Set([
   'UTR-235961656393', '235961656393', // Kundili Thriveni (SVCE)
   'UTR-012092850957', '012092850957', // Kundili Thriveni (SVCE alternate)
   '864259330644', 'UTR-864259330644', 'pay_TxETTpufj47pSk', 'RZP-pay_TxETTpufj47pSk',
-  'UTR-317827902237', '317827902237'  // Mahendrakar Akhil (GPREC - 249xa33112@gprec.ac.in)
+  'UTR-317827902237', '317827902237',  // Mahendrakar Akhil (GPREC - 249xa33112@gprec.ac.in)
+  'pay_TzfB14FOkNIoHi', 'RZP-pay_TzfB14FOkNIoHi', '618108507754', 'UTR-618108507754' // Keshava Reddy (269xa05526@gprec.ac.in)
 ]);
 
 /**
