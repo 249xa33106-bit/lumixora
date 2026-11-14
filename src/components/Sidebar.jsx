@@ -13,6 +13,7 @@ import {
 
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp }) {
   const isGprecSubdomain = isGprecPlacementSubdomain();
+  const isTpo = isTpoSubdomain();
   const userEmail = (user?.email || '').toLowerCase().trim();
   const isFounder = user?.role === 'founder' || 
                     userEmail === 'founder@lumixora.com' ;
@@ -70,6 +71,26 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         { id: 'certificates', label: 'Proof-of-Skill Badges', icon: Award, badge: 'LinkedIn 📜' },
         { id: 'alumni-referrals', label: 'Alumni Referral Bridge', icon: Briefcase, badge: 'Drives 🚀' },
         { id: 'career-roadmap', label: 'Career Roadmap & Roles', icon: Map, badge: 'Guidance' },
+      ]
+    },
+    {
+      key: 'support',
+      title: '🏛️ GPREC Placement Cell',
+      items: [
+        { id: 'contact', label: 'Placement Support / Help', icon: Mail },
+        { id: 'report-bug', label: 'Report Issue', icon: AlertTriangle },
+      ]
+    }
+  ];
+
+  const tpoSections = [
+    {
+      key: 'tpo_admin',
+      title: '🏛️ T&P Officer Command',
+      items: [
+        { id: 'tpo-dashboard', label: 'T&P Officer Dashboard', icon: Shield, badge: 'OFFICER 🛡️' },
+        { id: 'student-database', label: 'Student Placement Database', icon: Users, badge: 'DATABASE 🗄️' },
+        { id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap, badge: 'FACULTY 🎓' },
       ]
     },
     {
