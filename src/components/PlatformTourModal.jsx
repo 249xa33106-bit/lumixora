@@ -25,20 +25,20 @@ export const TOUR_STEPS = [
     ]
   },
   {
-    id: 'future-twin',
-    tab: 'future-twin',
-    title: 'AI Placement Commander & Twin',
-    subtitle: 'Role-Weighted Skill Engine & Mock Interviews',
-    badge: '🤖 Placement Engine',
+    id: 'ai-commander',
+    tab: 'ai-commander',
+    title: 'AI Placement Commander',
+    subtitle: 'Placement Readiness & Mock Interviews',
+    badge: 'Placement Suite',
     badgeColor: 'bg-brand-purple/20 text-brand-purple border-brand-purple/30',
     icon: Bot,
     iconColor: 'text-brand-purple',
     bgGlow: 'from-brand-purple/20 via-brand-pink/10 to-transparent',
-    description: 'Simulate technical and HR interviews, analyze your ATS resume, and track role-weighted telemetry across 8 core engineering dimensions.',
+    description: 'Simulate technical and HR interviews, analyze your ATS resume, and track role-weighted readiness across engineering dimensions.',
     highlights: [
-      '📊 Real-time skill telemetry across DSA, Coding, Aptitude, Core CS, and Resume.',
-      '🎙️ Voice & text AI mock interviews with instant rubrics and actionable feedback.',
-      '📄 ATS Resume Analyzer with job-fit scoring and keyword optimization.'
+      'Real-time skill telemetry across DSA, Coding, Aptitude, Core CS, and Resume.',
+      'Voice & text AI mock interviews with instant rubrics and actionable feedback.',
+      'ATS Resume Analyzer with job-fit scoring and keyword optimization.'
     ]
   },
   {

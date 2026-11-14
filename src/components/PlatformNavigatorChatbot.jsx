@@ -100,15 +100,6 @@ export const PORTAL_CATALOG = [
     suggestedQueries: ['Build an ATS-friendly resume', 'Export my resume to PDF']
   },
   {
-    id: 'future-twin',
-    name: 'AI Future Twin™',
-    category: 'Career & Placement',
-    description: 'Predictive career simulator forecasting salary packages, role readiness, and skill gaps.',
-    icon: Bot,
-    keywords: ['future twin', 'career twin', 'ai mentor', 'career prediction', 'skill gap', 'salary'],
-    suggestedQueries: ['Check my career twin readiness', 'Analyze my skill gap for software engineer']
-  },
-  {
     id: 'career-roadmap',
     name: 'Career Roadmap & Milestones',
     category: 'Career & Placement',
