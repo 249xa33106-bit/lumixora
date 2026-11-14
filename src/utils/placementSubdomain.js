@@ -115,16 +115,6 @@ export function isGprecPlacementSubdomain(user = null) {
     return true;
   }
 
-  // 5. User-based detection (if logged in as a GPREC scholar with @gprec.ac.in or college GPREC)
-  try {
-    const savedUser = user || JSON.parse(localStorage.getItem('lumixora_user') || '{}');
-    const email = (savedUser?.email || '').toLowerCase().trim();
-    const college = (savedUser?.college || '').toLowerCase().trim();
-    if (email.endsWith('@gprec.ac.in') || college.includes('gprec') || college.includes('pulla reddy')) {
-      return true;
-    }
-  } catch (e) {}
-
   return false;
 }
 

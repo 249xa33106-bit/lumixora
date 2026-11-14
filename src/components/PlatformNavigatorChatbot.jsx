@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
 import { 
   Bot, X, Send, Sparkles, Compass, ArrowRight, CornerDownLeft, 
   BookOpen, Code, GraduationCap, Briefcase, HelpCircle, Trophy, 
@@ -99,6 +100,15 @@ export const PORTAL_CATALOG = [
     suggestedQueries: ['Build an ATS-friendly resume', 'Export my resume to PDF']
   },
   {
+    id: 'future-twin',
+    name: 'AI Future Twin™',
+    category: 'Career & Placement',
+    description: 'Predictive career simulator forecasting salary packages, role readiness, and skill gaps.',
+    icon: Bot,
+    keywords: ['future twin', 'career twin', 'ai mentor', 'career prediction', 'skill gap', 'salary'],
+    suggestedQueries: ['Check my career twin readiness', 'Analyze my skill gap for software engineer']
+  },
+  {
     id: 'career-roadmap',
     name: 'Career Roadmap & Milestones',
     category: 'Career & Placement',
@@ -173,7 +183,6 @@ export const PORTAL_CATALOG = [
 ];
 
 export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, user }) {
-  if (!isOpen || isGprecPlacementSubdomain(user)) return null;
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -320,7 +329,7 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || isGprecPlacementSubdomain()) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-end sm:justify-center p-2 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">

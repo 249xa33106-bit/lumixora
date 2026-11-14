@@ -261,12 +261,33 @@ const BENCHMARK_TIERS = [
   }
 ];
 
-export default function AiPlacementCommander({ user, setActiveTab, onLogout, initialNav = 'dashboard' }) {
+export default function AiPlacementCommander({ user, setActiveTab, onLogout, initialNav = 'dashboard', embedded = false }) {
   const { addToast } = useToast();
   const { awardXP } = useGamification();
 
+  // Helper to resolve incoming nav string
+  const resolveNav = (nav) => {
+    if (!nav) return 'dashboard';
+    const clean = String(nav).toLowerCase().replace(/[-_]/g, '');
+    if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
+    if (clean.includes('mock') || clean.includes('interview')) return 'mock_interviews';
+    if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
+    if (clean.includes('analytic') || clean.includes('metric') || clean.includes('rejection') || clean.includes('tracker')) return 'analytics';
+    if (clean.includes('resource') || clean.includes('paper')) return 'resources';
+    if (clean.includes('setting')) return 'settings';
+    if (clean === 'placement' || clean.includes('twin') || clean.includes('jobmatch') || clean.includes('companysim')) return 'placement';
+    return 'dashboard';
+  };
+
   // Primary Navigation State (Supports all GPREC portal modules including TechPulse)
-  const [activeNav, setActiveNav] = useState(initialNav);
+  const [activeNav, setActiveNav] = useState(() => resolveNav(initialNav));
+
+  // Sync activeNav whenever initialNav prop changes
+  useEffect(() => {
+    if (initialNav) {
+      setActiveNav(resolveNav(initialNav));
+    }
+  }, [initialNav]);
   
   // Specific Module Sub-View State
   const [activeModule, setActiveModule] = useState('overview');
@@ -735,11 +756,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const studentInitials = studentName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'SS';
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col md:flex-row">
+    <div className={`min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col ${!embedded ? 'md:flex-row' : ''}`}>
       {/* ========================================================= */}
-      {/* LEFT FIXED SIDEBAR (GPREC Dark Navy Shell - Match Screen) */}
+      {/* LEFT FIXED SIDEBAR (Only rendered in standalone mode)    */}
       {/* ========================================================= */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B132B] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      {!embedded && (
+        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B132B] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="flex flex-col gap-6">
           {/* GPREC Placement Suite Brand Header */}
           <div className="flex items-center gap-3 px-1">
@@ -870,6 +892,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           </div>
         </div>
       </aside>
+      )}
 
       {/* Mobile Menu Backdrop */}
       {mobileMenuOpen && (
@@ -882,9 +905,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       {/* ========================================================= */}
       {/* MAIN CONTENT AREA WITH TOP NAVBAR                         */}
       {/* ========================================================= */}
-      <div className="flex-1 md:pl-64 flex flex-col min-w-0">
-        {/* Sticky Top Navigation Bar (Dark Navy Header matching reference) */}
-        <header className="sticky top-0 z-30 h-16 bg-[#0B132B] border-b border-slate-800/80 px-4 md:px-8 flex items-center justify-between gap-4">
+      <div className={`flex-1 ${!embedded ? 'md:pl-64' : ''} flex flex-col min-w-0`}>
+        {/* Sticky Top Navigation Bar (Only rendered in standalone mode) */}
+        {!embedded && (
+          <header className="sticky top-0 z-30 h-16 bg-[#0B132B] border-b border-slate-800/80 px-4 md:px-8 flex items-center justify-between gap-4">
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -975,6 +999,58 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
             </div>
           </div>
         </header>
+        )}
+
+        {/* Embedded Navigation Pill Bar */}
+        {embedded && (
+          <div className="p-4 md:px-8 pt-4 pb-0">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0B132B] text-slate-100 p-3 px-5 rounded-2xl shadow-sm border border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs flex-shrink-0">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2C10.8954 2 10 2.89543 10 4V8.17157C9.46957 8.05973 8.92484 8 8.375 8C5.95875 8 4 9.95875 4 12.375C4 13.5398 4.45396 14.5985 5.19526 15.3807L2.29289 18.2831C1.90237 18.6736 1.90237 19.3068 2.29289 19.6973C2.68342 20.0878 3.31658 20.0878 3.70711 19.6973L6.60948 16.7949C7.39174 17.5362 8.45041 17.9902 9.61523 17.9902C12.0315 17.9902 13.9902 16.0315 13.9902 13.6152C13.9902 13.0654 13.9305 12.5207 13.8186 11.9902H18C19.1046 11.9902 20 11.0948 20 9.99023C20 8.88566 19.1046 7.99023 18 7.99023H13.8284C13.9305 7.46957 14 6.92484 14 6.375C14 3.95875 12.0413 2 9.625 2H12Z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-white leading-tight">GPREC Placement Suite</div>
+                  <div className="text-[10px] text-slate-400">Institutional Placement Operations</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                {[
+                  { id: 'dashboard', label: 'Dashboard', icon: Home },
+                  { id: 'tech_pulse', label: 'TechPulse', icon: Activity, badge: 'LIVE' },
+                  { id: 'placement', label: 'My Placement', icon: Briefcase },
+                  { id: 'skill_hub', label: 'Skill Hub', icon: Zap },
+                  { id: 'mock_interviews', label: 'Mock Interviews', icon: Video },
+                  { id: 'analytics', label: 'Analytics', icon: BarChart2 }
+                ].map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeNav === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => navigateTo(tab.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        isActive 
+                          ? 'bg-blue-600 text-white shadow-xs' 
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{tab.label}</span>
+                      {tab.badge && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                          {tab.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Scrollable Dashboard Body */}
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">

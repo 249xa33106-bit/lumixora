@@ -97,17 +97,21 @@ function App() {
         }
         return 'tpo-dashboard';
       }
-      if (window.location.hash) {
-        const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
-        if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['ai-commander', 'placement', 'placements', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume'].includes(hash)) return hash;
-      }
       if (isGprecPlacementSubdomain()) {
         if (window.location.hash) {
           const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
           if (isAllowedGprecPlacementTab(hash)) return hash;
         }
         return 'ai-commander';
+      }
+      if (window.location.hash) {
+        const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+        if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
+        if (['ai-commander', 'placement-commander', 'placement', 'placements'].includes(hash)) {
+          try { window.location.hash = 'dashboard'; } catch (e) {}
+          return 'dashboard';
+        }
+        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'community', 'simulations', 'my-academics', 'test-portal'].includes(hash)) return hash;
       }
     }
     return 'dashboard';
@@ -630,6 +634,11 @@ function App() {
             setActiveTab('ai-commander');
             window.location.hash = 'ai-commander';
           }
+          return;
+        }
+        if (!isGprecSub && !isTpoSub && ['ai-commander', 'placement-commander', 'placement', 'placements'].includes(tab)) {
+          setActiveTab('dashboard');
+          try { window.location.hash = 'dashboard'; } catch (e) {}
           return;
         }
         if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {

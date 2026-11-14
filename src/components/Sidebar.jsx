@@ -218,6 +218,10 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     if (isGprecSubdomain && !isAllowedGprecPlacementTab(tabId)) {
       setActiveTab('ai-commander');
     } else {
+      if (!isGprecSubdomain && (tabId === 'ai-commander' || tabId === 'placement-commander')) {
+        window.location.href = 'https://gprec.lumixora.in/#ai-commander';
+        return;
+      }
       setActiveTab(tabId);
     }
     if (onClose) onClose();
