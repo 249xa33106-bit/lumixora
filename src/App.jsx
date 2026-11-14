@@ -1916,9 +1916,15 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
-              {renderContent()}
-            </MainLayout>
+            {isGprecOnlySubdomain() ? (
+              <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
+                {renderContent()}
+              </div>
+            ) : (
+              <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
+                {renderContent()}
+              </MainLayout>
+            )}
             {renderUpdateModal()}
             {renderExitModal()}
             {!isGprecPlacementSubdomain(user) && (
