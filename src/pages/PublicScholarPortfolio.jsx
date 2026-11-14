@@ -785,7 +785,7 @@ export default function PublicScholarPortfolio({ user, onBack, onNavigate, setAc
               </div>
             </div>
 
-            {/* Real Synergy & Readiness Ring (Gate to Future Twin + Formula Audit) */}
+            {/* Real Synergy & Readiness Ring (Gate to Placement Commander + Formula Audit) */}
             <div className="flex flex-col items-end gap-1">
               <div 
                 onClick={() => setShowReadinessAudit(true)}

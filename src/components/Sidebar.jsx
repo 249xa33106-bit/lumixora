@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp }) {
-  const isGprecSubdomain = isGprecPlacementSubdomain();
+  const isGprecSubdomain = isGprecPlacementSubdomain(user);
   const isTpo = isTpoSubdomain();
   const userEmail = (user?.email || '').toLowerCase().trim();
   const isFounder = user?.role === 'founder' || 

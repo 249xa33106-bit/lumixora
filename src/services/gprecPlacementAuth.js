@@ -121,7 +121,7 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
   }
 
   // Check rolling windows: current (0), previous windows (-1, -2, -3 = up to 20 min grace), and clock skew (+1)
-  const allowedOffsets = [0, -1, -2, -3, 1];
+  const allowedOffsets = [0, -1, -2, -3, -4, -5, -6, 1, 2];
   const validCodes = allowedOffsets.map(offset => getRolling5MinOtp(normalized, offset));
 
   const isValid = validCodes.includes(cleanToken);

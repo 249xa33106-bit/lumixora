@@ -205,7 +205,6 @@ export function isAllowedGprecPlacementTab(tab) {
     'alumni', 'alumni-referrals', 'alumni-bridge', 'referrals',
     'career-roadmap', 'career-roles',
     'internships', 'internship',
-    'future-twin', 'twin', 'ai-twin', 'ai-future-twin',
     'contact', 'report-bug',
     'tpo-dashboard', 'tpo-command-center', 'tpo-analytics',
     'student-database', 'student-placement-db', 'placement-database', 'faculty-portal'

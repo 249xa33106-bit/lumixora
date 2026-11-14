@@ -86,9 +86,9 @@ export const OMIVERSE_WORLDS = [
     gradient: 'from-pink-500/20 via-rose-500/10 to-transparent',
     border: 'border-pink-500/30',
     textGradient: 'from-pink-300 via-rose-200 to-amber-300',
-    primaryTab: 'future-twin',
+    primaryTab: 'ai-commander',
     features: [
-      { id: 'future-twin', name: 'AI Placement Twin', icon: 'Bot' },
+      { id: 'ai-commander', name: 'AI Placement Commander', icon: 'Briefcase' },
       { id: 'ai-commander', name: 'AI Placement Commander™', icon: 'Briefcase' },
       { id: 'resume', name: 'AI Resume PDF Builder', icon: 'FileText' },
       { id: 'career-roadmap', name: 'Career Roadmap & Skills', icon: 'Compass' },
@@ -227,7 +227,7 @@ export const calculateRealProveSkills = (user, activities = {}) => {
       recentEvidence: (activities.hasResume || (activities.studySessionsCount || 0) > 0)
         ? `${activities.hasResume ? 'Verified ATS Resume created' : ''} ${(activities.studySessionsCount || 0) > 0 ? `+ ${activities.studySessionsCount} AI Placement Twin viva session(s)` : ''}`.trim()
         : 'No interview sessions or ATS resume generated. Practice with AI Placement Twin in Careerverse.',
-      worldTarget: 'future-twin',
+      worldTarget: 'ai-commander',
       worldLabel: 'Launch Placement Twin',
       nextGoal: !activities.hasResume ? 'Build and export your AI Resume to unlock Level 2.' : 'Conduct 2 mock viva sessions with AI Placement Twin for Level 3.'
     },

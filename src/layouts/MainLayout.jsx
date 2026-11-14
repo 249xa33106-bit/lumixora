@@ -33,7 +33,7 @@ const QUICK_FEATURES = [
   { id: 'learning-hub', label: 'Learnverse', icon: BookOpen },
   { id: 'projects', label: 'Buildverse', icon: Rocket },
   { id: 'community', label: 'Connectverse', icon: Users },
-  { id: 'future-twin', label: 'Careerverse', icon: Bot },
+  { id: 'ai-commander', label: 'Placement', icon: Briefcase },
   { id: 'assigned-tasks', label: 'Talentverse', icon: Award },
   { id: 'resume', label: 'AI Resume PDF', icon: FileText },
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
@@ -1416,11 +1416,11 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </button>
 
         <button
-          onClick={() => setActiveTab('future-twin')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'future-twin' ? 'text-brand-pink' : 'text-gray-400'}`}
+          onClick={() => setActiveTab('ai-commander')}
+          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'ai-commander' ? 'text-brand-pink' : 'text-gray-400'}`}
         >
-          <Sparkles className="w-4 h-4" />
-          <span>AI Twin</span>
+          <Briefcase className="w-4 h-4" />
+          <span>Placement</span>
         </button>
 
         <button
@@ -2054,7 +2054,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               )}
 
               {profileModalTab === 'portals' && (() => {
-                const isGprecSub = isGprecPlacementSubdomain();
+                const isGprecSub = isGprecPlacementSubdomain(user);
                 const activePortalsList = isGprecSub ? GPREC_PORTALS : ALL_PORTALS;
                 return (
                 <div className="space-y-5 animate-fade-in">
@@ -2203,7 +2203,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       )}
 
       {/* Floating AI Platform Navigator Chatbot Launcher (Hidden on gprec placement subdomain) */}
-      {!isGprecPlacementSubdomain() && (
+      {!isGprecPlacementSubdomain(user) && (
         <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
         {/* Helper Tooltip Prompt */}
         <div 

@@ -21,7 +21,6 @@ const SEARCHABLE_PORTALS = [
   { id: 'interview', title: 'AI Mock Interview Room', desc: 'Real-time voice speech AI technical & HR mock interviews', category: 'Career', icon: Mic, badge: 'Live AI', keywords: ['speech', 'voice', 'mock interview', 'hr', 'technical'] },
   { id: 'certificates', title: 'Proof-of-Skill Badges', desc: 'Verified academic badges & LinkedIn certificates', category: 'Career', icon: Trophy, keywords: ['certs', 'credentials', 'proof', 'linkedin'] },
   { id: 'alumni-referrals', title: 'Alumni & Referrals', desc: 'Connect with verified campus alumni for off-campus jobs', category: 'Career', icon: Briefcase, keywords: ['networking', 'referrals', 'seniors', 'jobs'] },
-  { id: 'future-twin', title: 'AI Future Twin™', desc: 'Predictive career trajectory & AI persona simulator', category: 'Career', icon: Sparkles, keywords: ['simulation', 'twin', 'career path', 'prediction'] },
   { id: 'hackathons', title: 'Hackathons & Internships', desc: 'Curated national hackathons, bounties & paid internships', category: 'Opportunities', icon: Trophy, keywords: ['competitions', 'internships', 'projects', 'prizes'] },
   { id: 'career-roadmap', title: 'Career Roadmap', desc: 'Year-by-year engineering milestones & target skills', category: 'Career', icon: Map, keywords: ['guide', 'steps', 'curriculum', 'plan'] },
   { id: 'community', title: 'Class Community & Squads', desc: 'Study groups, peer discussion & resource sharing', category: 'Social', icon: Compass, keywords: ['chat', 'groups', 'peers', 'friends'] },

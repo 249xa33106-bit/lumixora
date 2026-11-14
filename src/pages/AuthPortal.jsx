@@ -1192,7 +1192,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
               Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] via-[#3a86ff] to-[#7209b7]">Portal</span>
             </h1>
             <p className="text-gray-400 text-sm md:text-base max-w-xl mx-auto">
-              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : 'Student AI Future Twin & Learning Engine'}.
+              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : 'Student AI Placement Commander & Learning Engine'}.
             </p>
 
             {/* Dedicated Role Tabs */}

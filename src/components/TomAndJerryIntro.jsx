@@ -19,7 +19,7 @@ export default function TomAndJerryIntro({ onComplete, onClose }) {
 
   // Core Showcase Features
   const FEATURES = [
-    { title: 'AI Future Twin & Placement Forecaster', icon: Bot, color: '#00f5d4', tag: 'Neural Placement CTC Prediction (₹18.5 - ₹28.2 LPA)' },
+    { title: 'AI Placement Commander & Forecaster', icon: Bot, color: '#00f5d4', tag: 'Neural Placement CTC Prediction (₹18.5 - ₹28.2 LPA)' },
     { title: 'Interactive Multi-Language Coding Lab', icon: Code2, color: '#a855f7', tag: 'Java, Python, C++, Go Sandbox with AI Feedback' },
     { title: 'Comprehensive Notes & PYQ Vault', icon: BookOpen, color: '#ffd166', tag: 'Autonomous Syllabus, Previous Papers & AI Summaries' },
     { title: 'Real-time Institutional Leaderboards', icon: Trophy, color: '#ff007a', tag: 'Campus Resonance AP, Badges & Activity Tracking' }

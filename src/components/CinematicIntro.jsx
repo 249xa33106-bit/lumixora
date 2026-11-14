@@ -31,7 +31,7 @@ const CARTOON_MASCOTS = [
     name: 'Doraemon & Nobita',
     emoji: '🐱🔔',
     universe: '22nd Century Gadgets',
-    quote: 'Nobita! With Vyomra’s 4D AI Future Twin, your exams and placements are 100% sorted!',
+    quote: 'Nobita! With Vyomra’s 4D AI Placement Commander, your exams and placements are 100% sorted!',
     color: '#00a0e9',
     collectible: '🛸 Bamboo Copter & Dorayaki',
     tag: 'Gadget AI Twin',

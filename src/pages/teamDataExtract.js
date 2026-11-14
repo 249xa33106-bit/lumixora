@@ -47,7 +47,7 @@ export const teamMembersDetails = {
     bio: "Visionary founder and chief software architect behind Vyomra. Leading system architecture, AI model integrations, scalable cloud infrastructure, and the core platform vision.",
     highlights: [
       "Architected the entire Vyomra Student OS full-stack ecosystem from concept to production.",
-      "Engineered the AI Future Twin, automated code execution engines, and smart academic portfolios.",
+      "Engineered the AI Placement Commander, automated code execution engines, and smart academic portfolios.",
       "Directs cross-functional engineering, infrastructure scaling, and real-time security protocols.",
       "Drives the mission to democratize state-of-the-art AI tooling for every university student."
     ],

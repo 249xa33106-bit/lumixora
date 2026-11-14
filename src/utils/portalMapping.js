@@ -24,7 +24,6 @@ export const ALL_PORTALS = [
   { id: 'certificates', label: 'Proof-of-Skill Badges', category: 'career', tags: ['placement', 'certification', 'linkedin'] },
   { id: 'internships', label: 'Lumixora Internships', category: 'career', tags: ['internship', 'career', 'jobs'] },
   { id: 'alumni-referrals', label: 'Alumni & Off-Campus Jobs', category: 'career', tags: ['placement', 'referrals', 'jobs', 'career'] },
-  { id: 'future-twin', label: 'AI Future Twin™', category: 'career', tags: ['career', 'roadmap', 'ai', 'placement'] },
   { id: 'career-roadmap', label: 'Career Roadmap', category: 'career', tags: ['career', 'guidance', 'roadmap'] },
 
   // Campus & Opportunities
@@ -137,7 +136,6 @@ export function analyzeAndRecommendPortals({
     }
     if (item.includes('ai') || item.includes('machine learning') || item.includes('data')) {
       recommended.add('coding-practice');
-      recommended.add('future-twin');
       recommended.add('courses');
     }
     if (item.includes('english') || item.includes('speaking') || item.includes('gd')) {
@@ -186,5 +184,4 @@ export const GPREC_PORTALS = [
   { id: 'alumni-referrals', label: 'Alumni Referral Bridge & Off-Campus Jobs', category: 'career', tags: ['placement', 'referrals', 'jobs', 'career'] },
   { id: 'career-roadmap', label: 'Career Roadmap & Target Roles', category: 'career', tags: ['career', 'guidance', 'roadmap'] },
   { id: 'internships', label: 'Lumixora Internships', category: 'career', tags: ['internship', 'career', 'jobs'] },
-  { id: 'future-twin', label: 'AI Future Twin™', category: 'career', tags: ['career', 'roadmap', 'ai', 'placement'] }
 ];

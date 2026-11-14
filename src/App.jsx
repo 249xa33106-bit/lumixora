@@ -8,7 +8,6 @@ import NotesPlatform from './pages/NotesPlatform';
 import TaskManager from './pages/TaskManager';
 import AuthPortal from './pages/AuthPortal';
 import LandingPage from './pages/LandingPage';
-import AiFutureTwin from './pages/AiFutureTwin';
 import LearningHub from './pages/LearningHub';
 import ContributeNotes from './pages/ContributeNotes';
 import ContactUs from './pages/ContactUs';
@@ -1155,6 +1154,9 @@ function App() {
   };
 
   const renderContent = () => {
+    if (isGprecPlacementSubdomain(user) && !isAllowedGprecPlacementTab(activeTab)) {
+      return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
+    }
     // 0. Dedicated TPO & Faculty Subdomain Enforcer: SHOW ONLY TPO AND FACULTY
     if (isTpoSubdomain()) {
       switch (activeTab) {
@@ -1232,7 +1234,7 @@ function App() {
         case 'twin':
         case 'ai-twin':
         case 'ai-future-twin':
-          return <AiFutureTwin user={user} setActiveTab={handleTabChange} />;
+          return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         case 'internships':
         case 'internship':
           return <InternshipPortal user={user} setActiveTab={handleTabChange} />;
@@ -1307,7 +1309,7 @@ function App() {
       case 'ai-twin':
       case 'ai-future-twin':
       case 'careerverse':
-        return <AiFutureTwin user={user} setActiveTab={handleTabChange} />;
+        return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
       case 'coding-practice':
         return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
       case 'code-editor':
@@ -1888,7 +1890,7 @@ function App() {
         {renderLockedAccountModal()}
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
-            {showIntro && !isGprecPlacementSubdomain() && (
+            {showIntro && !isGprecPlacementSubdomain(user) && (
               <CinematicIntro onComplete={() => setShowIntro(false)} />
             )}
             <CursorCompanionModal
@@ -1911,28 +1913,18 @@ function App() {
                 } catch (e) {}
               }}
             />
-            {showTomAndJerryIntro && !isGprecPlacementSubdomain() && (
+            {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            {isGprecOnlySubdomain() ? (
-              <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
-                {renderContent()}
-              </div>
-            ) : (
-              <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
-                {renderContent()}
-              </MainLayout>
-            )}
+            <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
+              {renderContent()}
+            </MainLayout>
             {renderUpdateModal()}
             {renderExitModal()}
-            {!isGprecPlacementSubdomain() && (
-              <PlatformTourModal 
-                isOpen={showTour} 
-                onClose={handleCloseTour} 
-                onNavigateTab={handleTabChange} 
-              />
+            {!isGprecPlacementSubdomain(user) && (
+              <PlatformTourModal isOpen={showTour} onClose={handleCloseTour} onNavigateTab={handleTabChange} user={user} />
             )}
-            {!isGprecPlacementSubdomain() && (
+            {!isGprecPlacementSubdomain(user) && (
               <StudentOnboardingModal
                 isOpen={showOnboarding}
                 onClose={() => handleDismissOnboarding()}

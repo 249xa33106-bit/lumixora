@@ -1840,7 +1840,7 @@ M. Akhil (Marketing Head, Lumixora)`;
                       A Product of Vyomra Networks · Global Innovation Division
                     </p>
                     <p className="text-[9px] text-slate-500 font-medium">
-                      Autonomous Educational Ecosystem & Student AI Future Twin
+                      Autonomous Educational Ecosystem & Student AI Placement Commander
                     </p>
                   </div>
                 </div>
