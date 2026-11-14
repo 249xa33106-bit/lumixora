@@ -6,7 +6,7 @@ import {
   Cpu, Globe, RefreshCw, SlidersHorizontal, Layers, ArrowUpRight, 
   ChevronRight, AlertCircle, Check, Users, ShieldCheck, Zap,
   Copy, Terminal, Calculator, ArrowRight, Star, Target, Compass, X,
-  Radio, Rocket, ChevronDown, CheckSquare, Info
+  Radio, Rocket, ChevronDown, CheckSquare, Info, BarChart2
 } from 'lucide-react';
 import { 
   INITIAL_TECH_JOBS, 

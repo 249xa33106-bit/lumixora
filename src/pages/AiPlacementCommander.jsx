@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, Clock, Headphones, Award, Building,
   Mic, MicOff, Volume2, VolumeX, FileText, Calendar, Filter, Sparkles,
   Compass, AlertCircle, Cpu, Brain, CheckSquare, Target, User, LogOut,
-  Send, HelpCircle, MessageSquare
+  Send, HelpCircle, MessageSquare, Activity, Radio, GraduationCap
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { useToast } from '../context/ToastContext';
@@ -16,6 +16,7 @@ import { db } from '../config/firebase';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
 import { cloudSync } from '../services/cloudSyncService';
+import TechPulsePortal from './TechPulsePortal';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -260,12 +261,12 @@ const BENCHMARK_TIERS = [
   }
 ];
 
-export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
+export default function AiPlacementCommander({ user, setActiveTab, onLogout, initialNav = 'dashboard' }) {
   const { addToast } = useToast();
   const { awardXP } = useGamification();
 
-  // Primary Navigation State (Apple HIG 7 tabs)
-  const [activeNav, setActiveNav] = useState('dashboard');
+  // Primary Navigation State (Supports all GPREC portal modules including TechPulse)
+  const [activeNav, setActiveNav] = useState(initialNav);
   
   // Specific Module Sub-View State
   const [activeModule, setActiveModule] = useState('overview');
@@ -736,9 +737,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col md:flex-row">
       {/* ========================================================= */}
-      {/* LEFT FIXED SIDEBAR (Apple Human Interface Guidelines)     */}
+      {/* LEFT FIXED SIDEBAR (GPREC Dark Navy Shell - Match Screen) */}
       {/* ========================================================= */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B132B] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="flex flex-col gap-6">
           {/* GPREC Placement Suite Brand Header */}
           <div className="flex items-center gap-3 px-1">
@@ -749,10 +750,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
               </svg>
             </div>
             <div>
-              <div className="font-bold text-slate-900 tracking-tight text-lg leading-tight flex items-center gap-1.5">
+              <div className="font-bold text-white tracking-tight text-lg leading-tight flex items-center gap-1.5">
                 GPREC
               </div>
-              <div className="text-[11px] font-medium text-slate-500 tracking-tight">
+              <div className="text-[11px] font-medium text-slate-400 tracking-tight">
                 Placement Suite
               </div>
             </div>
@@ -766,6 +767,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
               { id: 'skill_hub', label: 'Skill Hub', icon: Zap, defaultSub: 'daily_mission' },
               { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, defaultSub: 'mock_interview' },
               { id: 'analytics', label: 'Analytics', icon: BarChart2, defaultSub: 'analytics' },
+              { id: 'tech_pulse', label: 'TechPulse', icon: Activity, defaultSub: null },
               { id: 'resources', label: 'Resources', icon: BookOpen, defaultSub: null },
               { id: 'settings', label: 'Settings', icon: Settings, defaultSub: null }
             ].map((item) => {
@@ -785,10 +787,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
                   className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-left cursor-pointer ${
                     isActive 
                       ? 'bg-blue-600 text-white shadow-sm font-semibold' 
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} strokeWidth={isActive ? 2.2 : 1.9} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} strokeWidth={isActive ? 2.2 : 1.9} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -796,45 +798,38 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
           </nav>
         </div>
 
-        {/* Sidebar Footer Support Card & User Profile */}
-        <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-          {/* Need Help? Box */}
-          <div className="bg-blue-50/70 border border-blue-100/90 rounded-2xl p-3.5">
-            <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 mt-0.5">
-                <Headphones className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-900">Need Help?</h4>
-                <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                  Our placement cell is here to help you.
-                </p>
-                <button
-                  onClick={() => setShowSupportModal(true)}
-                  className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
-                >
-                  <span>Contact Support</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
+        {/* Sidebar Footer Trophy Card & User Profile */}
+        <div className="flex flex-col gap-3 pt-4 border-t border-slate-800/80">
+          {/* Dream Bigger Achieve More Box (Matching Reference Screenshot) */}
+          <div className="bg-[#101F3C] border border-blue-900/50 rounded-2xl p-4 text-center flex flex-col items-center">
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
+              <Trophy className="w-4 h-4 fill-amber-400" />
             </div>
+            <h4 className="text-xs font-bold text-white tracking-tight">Dream Bigger<br />Achieve More</h4>
+            <button
+              onClick={() => navigateTo('placement', 'overview')}
+              className="mt-2.5 px-3 py-1 rounded-full bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+            >
+              <span>View Progress</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
 
           {/* User Profile Pill */}
-          <div className="relative">
+          <div className="relative pt-1">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-100/80 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-800/60 transition-colors text-left cursor-pointer"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold text-xs flex items-center justify-center flex-shrink-0">
                   {studentInitials}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold text-slate-900 truncate">
+                  <div className="text-xs font-semibold text-white truncate">
                     {studentName}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-medium">
+                  <div className="text-[10px] text-slate-400 font-medium">
                     Student
                   </div>
                 </div>
@@ -844,19 +839,19 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
 
             {/* Profile Dropdown */}
             {showProfileMenu && (
-              <div className="absolute bottom-12 left-0 right-0 bg-white border border-slate-200/90 rounded-xl shadow-lg p-1.5 z-50 flex flex-col gap-1">
+              <div className="absolute bottom-12 left-0 right-0 bg-[#0B132B] border border-slate-700/90 rounded-xl shadow-xl p-1.5 z-50 flex flex-col gap-1">
                 <button
                   onClick={() => { setShowProfileMenu(false); setShowSettingsModal(true); }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
                 >
-                  <Sliders className="w-3.5 h-3.5 text-slate-500" />
+                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
                   <span>Placement Preferences</span>
                 </button>
                 <button
                   onClick={() => { setShowProfileMenu(false); setShowSupportModal(true); }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
                 >
-                  <Building className="w-3.5 h-3.5 text-slate-500" />
+                  <Building className="w-3.5 h-3.5 text-slate-400" />
                   <span>Placement Cell Office</span>
                 </button>
                 <button
@@ -865,7 +860,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
                     if (onLogout) onLogout();
                     else window.location.reload();
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-rose-400 hover:bg-rose-950/40 flex items-center gap-2 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Log Out</span>
@@ -880,7 +875,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
       {mobileMenuOpen && (
         <div 
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 md:hidden"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-30 md:hidden"
         />
       )}
 
@@ -888,44 +883,53 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
       {/* MAIN CONTENT AREA WITH TOP NAVBAR                         */}
       {/* ========================================================= */}
       <div className="flex-1 md:pl-64 flex flex-col min-w-0">
-        {/* Sticky Top Navigation Bar */}
-        <header className="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 flex items-center justify-between gap-4">
+        {/* Sticky Top Navigation Bar (Dark Navy Header matching reference) */}
+        <header className="sticky top-0 z-30 h-16 bg-[#0B132B] border-b border-slate-800/80 px-4 md:px-8 flex items-center justify-between gap-4">
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
           >
             <Layers className="w-5 h-5" />
           </button>
 
-          {/* Search Input Bar (Matches reference: Search companies, roles, skills... [Ctrl+K]) */}
+          {/* Search Input Bar (Matches reference: Search anything... (jobs, skills, companies, news) [Ctrl+K]) */}
           <div className="relative flex-1 max-w-md mx-auto md:mx-0">
             <button
               onClick={() => setShowSearchModal(true)}
-              className="w-full flex items-center justify-between bg-slate-100/90 hover:bg-slate-100 text-slate-500 text-xs md:text-sm pl-9 pr-3 py-2 rounded-full border border-slate-200/70 transition-all cursor-pointer text-left"
+              className="w-full flex items-center justify-between bg-[#131F37] hover:bg-slate-800/90 text-slate-400 text-xs md:text-sm pl-9 pr-3 py-2 rounded-full border border-slate-700/80 transition-all cursor-pointer text-left"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5" />
-                <span className="truncate">Search companies, roles, skills...</span>
+                <span className="truncate">Search anything.. (jobs, skills, companies, news)</span>
               </div>
-              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200 rounded shadow-2xs">
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-slate-800 border border-slate-700 rounded">
                 Ctrl+K
               </kbd>
             </button>
           </div>
 
-          {/* Top Right Actions: Notifications & Student Profile Circle */}
+          {/* Top Right Actions: Theme Toggle, Notifications & Student Profile Circle */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle Sun Icon */}
+            <button
+              onClick={() => addToast({ message: 'GPREC Placement Suite is actively running in Hybrid Theme Mode.', type: 'info' })}
+              className="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Toggle Theme"
+            >
+              <Sparkles className="w-4 h-4" />
+            </button>
+
             {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors relative cursor-pointer"
+                className="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors relative cursor-pointer"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4" />
                 {notificationsList.some(n => !n.read) && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                  <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-[#0B132B]">
                     {notificationsList.filter(n => !n.read).length}
                   </span>
                 )}
@@ -974,6 +978,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
 
         {/* Scrollable Dashboard Body */}
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+
+          {/* ========================================================= */}
+          {/* VIEW: TECHPULSE™ (FEATURE PORTAL)                          */}
+          {/* ========================================================= */}
+          {activeNav === 'tech_pulse' && (
+            <TechPulsePortal user={user} setActiveTab={setActiveTab} onNavigate={navigateTo} />
+          )}
 
           {/* ========================================================= */}
           {/* VIEW: 1. APPLE-INSPIRED MAIN DASHBOARD                    */}
@@ -2771,14 +2782,14 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
       {/* MODAL: Global Search (Ctrl+K)                             */}
       {/* ========================================================= */}
       {showSearchModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-start justify-center pt-20 p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-start justify-center pt-20 p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95">
             <div className="p-4 border-b border-slate-100 flex items-center gap-3">
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 autoFocus
-                placeholder="Search companies, modules, coding problems, aptitude..."
+                placeholder="Search anything.. (jobs, skills, companies, news)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
@@ -2789,6 +2800,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
             </div>
             <div className="p-3 max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
               {[
+                { title: 'TechPulse Intelligence & Opportunities', category: 'TechPulse', action: () => navigateTo('tech_pulse') },
                 { title: 'Coding Arena', category: 'Skill Hub', action: () => navigateTo('skill_hub', 'coding_arena') },
                 { title: 'Technical Mock Interview', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'mock_interview') },
                 { title: 'Resume Defense', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'resume_defense') },
@@ -2822,7 +2834,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
       {/* MODAL: Placement Target & Calibration Settings            */}
       {/* ========================================================= */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 flex flex-col gap-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-900">Placement Target & Preferences</h3>
@@ -2895,7 +2907,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout }) {
       {/* MODAL: Placement Cell Support                             */}
       {/* ========================================================= */}
       {showSupportModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 flex flex-col gap-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
