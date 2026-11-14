@@ -7,7 +7,7 @@ import {
   ChevronRight, AlertCircle, Check, Users, ShieldCheck, Zap,
   Copy, Terminal, Calculator, ArrowRight, Star, Target, Compass, X,
   Radio, Rocket, ChevronDown, CheckSquare, Info, BarChart2, Play,
-  Calendar, Lock, Shield, Send, BellRing, Bell, Atom
+  Calendar, Lock, Shield, Send, BellRing, Bell, Atom, CheckCheck
 } from 'lucide-react';
 import { 
   INITIAL_TECH_JOBS, 
@@ -46,11 +46,6 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
   // Carousel dot state
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // Alerts state
-  const [alertsEnabled, setAlertsEnabled] = useState(() => {
-    return localStorage.getItem('lumixora_techpulse_alerts') === 'true';
-  });
-
   // Modals state
   const [selectedNewsArticle, setSelectedNewsArticle] = useState(null);
   const [selectedJobDetail, setSelectedJobDetail] = useState(null);
@@ -86,19 +81,6 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
 
   const isItemBookmarked = (id) => bookmarks.some(b => b.id === id);
 
-  // Toggle Push Alerts
-  const handleToggleAlerts = () => {
-    const nextState = !alertsEnabled;
-    setAlertsEnabled(nextState);
-    localStorage.setItem('lumixora_techpulse_alerts', String(nextState));
-    addToast({
-      message: nextState 
-        ? 'Push alerts activated! You will receive daily verified off-campus drive notifications.' 
-        : 'TechPulse alerts muted.',
-      type: nextState ? 'success' : 'info'
-    });
-  };
-
   // Top featured jobs strictly matching the reference layout
   const topFeaturedJobs = useMemo(() => [
     {
@@ -107,8 +89,8 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       logo: 'https://www.google.com/favicon.ico',
       role: 'Software Engineer',
       isVerified: true,
-      tag: 'Off-Campus',
-      location: 'Bengaluru, Karnataka',
+      tag: 'Full Time',
+      location: 'Bengaluru, Karnataka • Full Time',
       ctc: '₹20 – 40 LPA',
       batch: '2025 Batch',
       deadline: 'Apr 25, 2025',
@@ -121,7 +103,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       role: 'SDE Intern',
       isVerified: true,
       tag: 'Internship',
-      location: 'Hyderabad, Telangana',
+      location: 'Hyderabad, Telangana • Internship',
       ctc: '₹1 – 2 LPA',
       batch: '2026 Batch',
       deadline: 'Apr 28, 2025',
@@ -133,8 +115,8 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       logo: 'https://www.amazon.com/favicon.ico',
       role: 'Software Development Engineer',
       isVerified: true,
-      tag: null,
-      location: 'Bengaluru, Karnataka',
+      tag: 'Full Time',
+      location: 'Bengaluru, Karnataka • Full Time',
       ctc: '₹28 – 45 LPA',
       batch: '2025 Batch',
       deadline: 'Apr 30, 2025',
@@ -167,18 +149,27 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* ======================================================= */}
-        {/* HERO CARD (LG COL-SPAN 8 or 9)                          */}
+        {/* HERO CARD (LG COL-SPAN 8)                               */}
         {/* ======================================================= */}
-        <div className="lg:col-span-8 bg-gradient-to-r from-blue-50/90 via-sky-50/40 to-white border border-blue-100/90 rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-gradient-to-r from-blue-50/90 via-sky-50/40 to-white border border-blue-100/90 rounded-3xl p-6 md:p-7 shadow-xs relative overflow-hidden flex flex-col justify-between">
           
-          {/* Top Row: TechPulse Badge + Live Updates Indicator & Sync */}
+          {/* Top Row: TechPulse Badge + Subtitle & Live Status */}
           <div className="flex items-center justify-between gap-3 z-10">
-            {/* TechPulse Brand Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 rounded-xl text-white shadow-xs">
-              <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="text-xs font-bold tracking-tight">TechPulse™</span>
+            {/* TechPulse Brand Header */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
+                <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-slate-900 tracking-tight leading-none">
+                  TechPulse<span className="text-blue-600 font-bold">™</span>
+                </h2>
+                <span className="text-[10px] text-slate-400 font-medium tracking-tight">
+                  Intelligence • Opportunities • Insights
+                </span>
+              </div>
             </div>
 
             {/* Live Updates & Sync Status */}
@@ -188,32 +179,39 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                 <span>Live Updates</span>
               </div>
               <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">
-                Synced: {lastSyncedTime}
+                Last synced: {lastSyncedTime}
               </span>
               <button
                 onClick={handleSyncData}
                 disabled={isSyncing}
                 className="w-7 h-7 rounded-full bg-white border border-slate-200/90 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shadow-2xs"
-                title="Refresh live tech intelligence"
+                title="Refresh live intelligence"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
               </button>
             </div>
           </div>
 
-          {/* Center Copy & CTAs */}
-          <div className="max-w-md z-10 flex flex-col gap-3 my-6">
-            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          {/* Center Copy: Explore • Grow • Get Hired + Headline + CTAs */}
+          <div className="max-w-md z-10 flex flex-col gap-2.5 my-5">
+            {/* Pill Tag */}
+            <div className="inline-flex items-center px-3 py-1 bg-blue-600/10 text-blue-700 border border-blue-200/80 rounded-full text-[11px] font-bold w-fit">
+              Explore • Grow • Get Hired
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-2xl md:text-3.5xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Exploring Tomorrow,<br />
               <span className="text-blue-600">Together.</span>
             </h1>
 
-            <p className="text-xs md:text-sm text-slate-600 font-normal leading-relaxed">
+            {/* Subtitle */}
+            <p className="text-xs text-slate-600 font-normal leading-relaxed max-w-sm">
               Real-time tech insights, career opportunities and industry trends — all in one place.
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 onClick={() => {
                   const el = document.getElementById('techpulse-news-section');
@@ -221,7 +219,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                 }}
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
               >
-                <span>Explore Insights</span>
+                <span>Explore TechPulse</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
               <button
@@ -234,17 +232,17 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
             </div>
           </div>
 
-          {/* Architectural Campus Building Image (Right Side) */}
+          {/* Architectural Campus Building & Student Image (Right Side) */}
           <div className="mt-4 md:mt-0 md:absolute md:right-0 md:bottom-0 md:top-0 md:w-1/2 flex items-center justify-end pointer-events-none opacity-90 md:opacity-100">
             <div className="relative w-full h-full flex items-center justify-end">
               <img
-                src="/techpulse-architectural-hero.png"
-                alt="Architectural Tech Campus"
-                className="max-h-64 md:max-h-full object-contain object-right-bottom drop-shadow-sm"
+                src="/techpulse-student-campus-hero.png"
+                alt="Student exploring tech campus"
+                className="max-h-60 md:max-h-full object-contain object-right-bottom drop-shadow-sm"
               />
               {/* Script Overlay: "Build Your Tech Career" */}
-              <div className="absolute top-6 right-8 hidden lg:block text-right">
-                <span className="font-serif italic text-lg text-slate-700/80 tracking-wide select-none drop-shadow-2xs">
+              <div className="absolute top-4 right-6 hidden lg:block text-right">
+                <span className="font-serif italic text-base md:text-lg text-slate-800/85 tracking-wide select-none drop-shadow-2xs">
                   Build Your<br />Tech Career
                 </span>
               </div>
@@ -252,7 +250,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
           </div>
 
           {/* Interactive Carousel Slider Dots at Bottom */}
-          <div className="flex items-center gap-1.5 z-10 pt-2">
+          <div className="flex items-center gap-1.5 z-10 pt-1">
             {[0, 1, 2, 3, 4].map(idx => (
               <button
                 key={idx}
@@ -270,59 +268,75 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
         {/* TECH MARKET PULSE PANEL (LG COL-SPAN 4)                 */}
         {/* ======================================================= */}
         <div className="lg:col-span-4 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
-          <div className="flex flex-col gap-4">
-            {/* Header */}
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-              <TrendingUp className="w-4 h-4 text-emerald-500 stroke-3" />
-              <span>Tech Market Pulse</span>
-            </div>
-
-            {/* Growth Stat */}
-            <div>
-              <div className="text-3xl md:text-4xl font-extrabold text-blue-600 tracking-tight leading-none">
-                +28%
+          <div className="flex flex-col gap-3">
+            {/* Header: Icon + Title + View Details */}
+            <div className="flex items-center justify-between text-slate-900 font-bold text-sm">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-blue-600 stroke-2.5" />
+                <span>Tech Market Pulse</span>
               </div>
-              <div className="text-xs font-medium text-slate-500 mt-1.5">
-                Growth in Campus Tech Hires
-              </div>
-            </div>
-
-            {/* Wave Trend Curve */}
-            <div className="relative h-24 w-full my-1">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 200 70">
-                <defs>
-                  <linearGradient id="marketCurveGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M 5,60 Q 40,55 70,42 T 130,22 T 195,8 L 195,70 L 5,70 Z"
-                  fill="url(#marketCurveGrad)"
-                />
-                <path
-                  d="M 5,60 Q 40,55 70,42 T 130,22 T 195,8"
-                  fill="none"
-                  stroke="#2563EB"
-                  strokeWidth="2.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-          </div>
-
-          {/* Top Hiring Companies Row */}
-          <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-800">Top Hiring Companies</span>
               <button 
-                onClick={() => setActiveView('companies')}
-                className="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 cursor-pointer text-[11px]"
+                onClick={() => setActiveView('trends')}
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 cursor-pointer"
               >
                 <span>View Details</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
+
+            {/* Growth Stat + Tooltip at peak */}
+            <div>
+              <div className="flex items-baseline justify-between">
+                <div className="text-3xl md:text-4xl font-extrabold text-blue-600 tracking-tight leading-none">
+                  +28%
+                </div>
+                <div className="bg-[#0B1528] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-2xs">
+                  +28%
+                </div>
+              </div>
+              <div className="text-xs font-medium text-slate-500 mt-1">
+                Growth in Campus Tech Hires
+              </div>
+            </div>
+
+            {/* Wave Trend Curve with Peak Tooltip & Dots */}
+            <div className="relative h-22 w-full my-1">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 200 65">
+                <defs>
+                  <linearGradient id="marketCurveGrad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M 5,55 Q 35,50 65,38 T 120,20 T 175,10 T 195,5 L 195,65 L 5,65 Z"
+                  fill="url(#marketCurveGrad2)"
+                />
+                <path
+                  d="M 5,55 Q 35,50 65,38 T 120,20 T 175,10 T 195,5"
+                  fill="none"
+                  stroke="#2563EB"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                />
+                {/* Data Points */}
+                {[
+                  { x: 5, y: 55 },
+                  { x: 45, y: 48 },
+                  { x: 90, y: 32 },
+                  { x: 135, y: 18 },
+                  { x: 175, y: 10 },
+                  { x: 195, y: 5 }
+                ].map((pt, i) => (
+                  <circle key={i} cx={pt.x} cy={pt.y} r={i === 5 ? 4 : 2.5} fill="#2563EB" stroke="#FFFFFF" strokeWidth={1.5} />
+                ))}
+              </svg>
+            </div>
+          </div>
+
+          {/* Top Hiring Companies Row */}
+          <div className="pt-3.5 border-t border-slate-100 flex flex-col gap-2.5">
+            <span className="font-bold text-slate-800 text-xs">Top Hiring Companies</span>
 
             {/* Logos Row: Google, Microsoft, Amazon, Meta, Apple */}
             <div className="flex items-center justify-between gap-2">
@@ -444,93 +458,96 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                   onClick={() => setActiveView('news')}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
-                  <span>View All</span>
+                  <span>View All News</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
 
               {/* Asymmetric Editorial News Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
                 
-                {/* 1. Large Featured Article (Left 58% - Col 7) */}
+                {/* 1. Large Featured Article (Left 60% - Col 7) with Dark Circuit + Glowing OpenAI Logo */}
                 <div
                   onClick={() => setSelectedNewsArticle({
                     title: 'OpenAI Unveils GPT-5: A New Era of AI Reasoning',
-                    category: 'AI',
+                    category: 'Artificial Intelligence',
                     source: 'TechCrunch',
                     time: '2h ago',
-                    image: '/techpulse-ai-chip.png',
-                    content: 'OpenAI has officially launched GPT-5, bringing significant improvements in reasoning, autonomous multi-step software synthesis, and system verification. The model integrates native execution sandboxes and self-correcting unit test suites designed to accelerate junior engineer productivity.'
+                    image: '/techpulse-openai-feature.png',
+                    content: 'OpenAI has officially launched GPT-5, bringing significant improvements in reasoning, autonomous software synthesis, and system verification. Smarter, more helpful, and more reliable — GPT-5 sets a new benchmark in artificial intelligence.'
                   })}
-                  className="md:col-span-7 bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl overflow-hidden shadow-xs hover:shadow-sm transition-all cursor-pointer flex flex-col sm:flex-row group"
+                  className="md:col-span-7 bg-[#0B1528] text-white border border-slate-800 hover:border-blue-500/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between relative overflow-hidden group min-h-[190px]"
                 >
-                  {/* Left Half: AI Chip Image with Trending Badge */}
-                  <div className="sm:w-1/2 h-44 sm:h-auto bg-slate-900 relative overflow-hidden flex-shrink-0">
+                  {/* Glowing Flower Logo on Right */}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-32 h-32 opacity-90 group-hover:scale-105 transition-transform duration-300 pointer-events-none">
                     <img
-                      src="/techpulse-ai-chip.png"
-                      alt="AI Chip"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      src="/techpulse-openai-feature.png"
+                      alt="OpenAI Glowing Emblem"
+                      className="w-full h-full object-contain"
                     />
-                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-xs flex items-center gap-1">
-                      <Star className="w-2.5 h-2.5 fill-white" />
-                      <span>Trending</span>
+                  </div>
+
+                  {/* Top Badge */}
+                  <div className="z-10">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/40 text-[10px] font-bold">
+                      <Star className="w-2.5 h-2.5 fill-purple-300" />
+                      <span>Artificial Intelligence</span>
                     </span>
                   </div>
 
-                  {/* Right Half: Headline, Snippet & Meta */}
-                  <div className="p-4 sm:w-1/2 flex flex-col justify-between gap-3">
-                    <div className="space-y-1.5">
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors">
-                        OpenAI Unveils GPT-5: A New Era of AI Reasoning
-                      </h4>
-                      <p className="text-[11px] text-slate-500 line-clamp-3 leading-relaxed">
-                        OpenAI has officially launched GPT-5, bringing significant improvements in reasoning...
-                      </p>
-                    </div>
+                  {/* Headline & Description */}
+                  <div className="z-10 max-w-[270px] space-y-1.5 my-2">
+                    <h4 className="text-base font-bold text-white leading-snug group-hover:text-blue-400 transition-colors">
+                      OpenAI Unveils GPT-5:<br />A New Era of AI Reasoning
+                    </h4>
+                    <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2">
+                      Smarter, more helpful, and more reliable — GPT-5 sets a new benchmark in AI.
+                    </p>
+                  </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        2h ago • TechCrunch
-                      </span>
-                      <div className="w-6 h-6 rounded-full bg-slate-50 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-slate-400 transition-colors shadow-2xs">
-                        <ArrowRight className="w-3 h-3" />
-                      </div>
+                  {/* Bottom Meta & Arrow */}
+                  <div className="z-10 flex items-center justify-between pt-2 border-t border-slate-800/80">
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      2h ago • TechCrunch
+                    </span>
+                    <div className="w-6 h-6 rounded-full bg-white/10 group-hover:bg-blue-600 text-white flex items-center justify-center transition-colors shadow-2xs">
+                      <ArrowRight className="w-3 h-3" />
                     </div>
                   </div>
                 </div>
 
-                {/* 2. Two Stacked Supporting Stories (Right 42% - Col 5) */}
-                <div className="md:col-span-5 flex flex-col gap-3">
+                {/* 2. Two Stacked Supporting Stories (Right 40% - Col 5) */}
+                <div className="md:col-span-5 flex flex-col justify-between gap-3">
                   
                   {/* Supporting Story 1: Google */}
                   <div
                     onClick={() => setSelectedNewsArticle({
-                      title: 'Google Expands Gemini Ecosystem',
-                      category: 'Google',
+                      title: 'Google Expands Gemini Ecosystem with New Tools',
+                      category: 'Tech Industry',
                       source: 'The Verge',
                       time: '3h ago',
-                      image: '/techpulse-google-bldg.png',
+                      image: '/techpulse-google-new.png',
                       content: 'Google announced major tooling expansions across the Gemini AI developer ecosystem, introducing high-speed multimodal context caching and subsidized Vertex AI credits for university computer science engineering students in India.'
                     })}
-                    className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3 shadow-xs hover:shadow-sm transition-all cursor-pointer flex items-center gap-3 group"
+                    className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3 shadow-xs hover:shadow-sm transition-all cursor-pointer flex items-center gap-3 group flex-1"
                   >
-                    <div className="w-18 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-15 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
                       <img
-                        src="/techpulse-google-bldg.png"
+                        src="/techpulse-google-new.png"
                         alt="Google campus"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-tight">
-                        Google Expands Gemini Ecosystem
+                      <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        Tech Industry
+                      </span>
+                      <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-tight mt-1">
+                        Google Expands Gemini Ecosystem with New Tools
                       </h5>
-                      <div className="text-[10px] text-slate-400 mt-1">
+                      <div className="text-[10px] text-slate-400 mt-0.5">
                         3h ago • The Verge
                       </div>
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-slate-50 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-slate-400 transition-colors flex-shrink-0">
-                      <ArrowRight className="w-3 h-3" />
                     </div>
                   </div>
 
@@ -541,28 +558,28 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                       category: 'Microsoft',
                       source: 'Business Insider',
                       time: '5h ago',
-                      image: '/techpulse-msft-bldg.png',
+                      image: '/techpulse-msft-new.png',
                       content: 'Microsoft reported an acceleration in campus hiring for cloud infrastructure, security, and AI Copilot engineering teams across its Hyderabad and Bengaluru R&D campuses.'
                     })}
-                    className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3 shadow-xs hover:shadow-sm transition-all cursor-pointer flex items-center gap-3 group"
+                    className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3 shadow-xs hover:shadow-sm transition-all cursor-pointer flex items-center gap-3 group flex-1"
                   >
-                    <div className="w-18 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-15 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
                       <img
-                        src="/techpulse-msft-bldg.png"
+                        src="/techpulse-msft-new.png"
                         alt="Microsoft campus"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-tight">
+                      <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        Microsoft
+                      </span>
+                      <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors leading-tight mt-1">
                         Microsoft Boosts AI Hiring in 2025
                       </h5>
-                      <div className="text-[10px] text-slate-400 mt-1">
+                      <div className="text-[10px] text-slate-400 mt-0.5">
                         5h ago • Business Insider
                       </div>
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-slate-50 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-slate-400 transition-colors flex-shrink-0">
-                      <ArrowRight className="w-3 h-3" />
                     </div>
                   </div>
 
@@ -571,13 +588,16 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
             </div>
 
             {/* SECTION B: Verified Tech Jobs & Off-Campus Drives (Compact Data Rows) */}
-            <div className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-4 pt-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-5 bg-blue-600 rounded-full" />
-                  <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                     <span>Verified Tech Jobs & Off-Campus Drives</span>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      1.2k+ Live Opportunities
+                    </span>
                   </h3>
                 </div>
                 <button
@@ -597,7 +617,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                     <div
                       key={job.id}
                       onClick={() => setSelectedJobDetail(job)}
-                      className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3.5 md:px-5 shadow-xs hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer group"
+                      className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3 md:px-4.5 shadow-xs hover:shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer group"
                     >
                       {/* Left: Logo + Role + Location + Badges */}
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -634,14 +654,8 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                               <Check className="w-2.5 h-2.5 text-emerald-600" />
                               <span>Verified</span>
                             </span>
-                            {job.tag && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                {job.tag}
-                              </span>
-                            )}
                           </div>
                           <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">
-                            <MapPin className="w-3 h-3 text-slate-400" />
                             <span className="truncate">{job.location}</span>
                           </div>
                         </div>
@@ -703,8 +717,18 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
           {/* ======================================================= */}
           <div className="lg:col-span-4 flex flex-col gap-6">
 
-            {/* CARD 1: Your Tech Career Score */}
-            <div className="bg-[#0B1528] text-white border border-slate-800 rounded-3xl p-6 shadow-md flex flex-col justify-between">
+            {/* CARD 1: Your Tech Career Score (with Recommendations & Rocket) */}
+            <div className="bg-[#0B1528] text-white border border-slate-800 rounded-3xl p-5 shadow-md flex flex-col justify-between relative overflow-hidden">
+              
+              {/* Rocket graphic on bottom right */}
+              <div className="absolute -bottom-2 -right-2 w-28 h-28 pointer-events-none opacity-85">
+                <img
+                  src="/techpulse-career-rocket.png"
+                  alt="Rocket Launch"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
               <div>
                 {/* Header */}
                 <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
@@ -713,24 +737,24 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                 </div>
 
                 {/* Score & Circular Gauge Layout */}
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center justify-between mt-3">
                   <div>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-4xl font-black text-white tracking-tight">
+                      <span className="text-3.5xl font-black text-white tracking-tight">
                         92
                       </span>
-                      <span className="text-slate-400 text-lg font-bold">/100</span>
-                      <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-slate-400 text-base font-bold">/100</span>
+                      <span className="ml-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                         ↑ +5%
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1 max-w-[170px] leading-snug">
+                    <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
                       You're in the top 10% of placement-ready students!
                     </p>
                   </div>
 
                   {/* Circular Radial Gauge with Star */}
-                  <div className="relative w-18 h-18 flex items-center justify-center">
+                  <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                       <path
                         className="text-slate-800"
@@ -750,24 +774,45 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Star className="w-5 h-5 text-amber-400 fill-amber-400 drop-shadow-sm" />
+                      <Star className="w-4 h-4 text-amber-400 fill-amber-400 drop-shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* View Full Report Button */}
+                <button
+                  onClick={() => setShowCareerScoreModal(true)}
+                  className="mt-3.5 w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <span>View Full Report</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+
+                {/* Personalized Recommendations Section */}
+                <div className="mt-4 pt-3 border-t border-slate-800/80 z-10 relative">
+                  <div className="text-[11px] font-bold text-slate-300 mb-2">
+                    Personalized Recommendations
+                  </div>
+                  <div className="space-y-1.5 max-w-[210px]">
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-300">
+                      <Check className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <span className="truncate">Apply for Google Summer Internship</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-300">
+                      <Check className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <span className="truncate">Boost your DSA skills</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-300">
+                      <Check className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <span className="truncate">Explore AI & ML roles</span>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* View Full Report Button */}
-              <button
-                onClick={() => setShowCareerScoreModal(true)}
-                className="mt-5 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <span>View Full Report</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
             </div>
 
-            {/* CARD 2: Trending Technologies (4x2 Grid) */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs flex flex-col gap-4">
+            {/* CARD 2: Trending Technologies (4x2 Grid matching reference) */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs flex flex-col gap-3.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-5 bg-blue-600 rounded-full" />
@@ -787,12 +832,12 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
               {/* 8 Tech Badges Grid (4 x 2) */}
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { name: 'GenAI', icon: Sparkles, color: 'text-purple-600' },
+                  { name: 'Generative AI', icon: Sparkles, color: 'text-purple-600' },
                   { name: 'Python', icon: Terminal, color: 'text-amber-600' },
                   { name: 'React', icon: Atom, color: 'text-cyan-600' },
                   { name: 'AWS', icon: Globe, color: 'text-amber-500' },
                   { name: 'Data Science', icon: BarChart2, color: 'text-blue-600' },
-                  { name: 'Cloud', icon: Cpu, color: 'text-sky-600' },
+                  { name: 'Cloud Computing', icon: Cpu, color: 'text-sky-600' },
                   { name: 'Blockchain', icon: Layers, color: 'text-emerald-600' },
                   { name: 'Cybersecurity', icon: Shield, color: 'text-rose-600' }
                 ].map((tech, i) => {
@@ -806,7 +851,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                         setActiveView('jobs');
                         addToast({ message: `Filtered verified jobs matching "${tech.name}"`, type: 'info' });
                       }}
-                      className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
                         isFiltered
                           ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-500/20'
                           : 'bg-slate-50/70 hover:bg-slate-100/80 border-slate-100 hover:border-slate-200'
@@ -814,7 +859,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
                       title={`Filter by ${tech.name}`}
                     >
                       <Icon className={`w-4 h-4 ${tech.color}`} />
-                      <span className="text-[10px] font-bold text-slate-700 tracking-tight text-center truncate w-full">
+                      <span className="text-[9px] font-bold text-slate-700 tracking-tight text-center truncate w-full">
                         {tech.name}
                       </span>
                     </button>
@@ -823,38 +868,48 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
               </div>
             </div>
 
-            {/* CARD 3: Stay Ahead with TechPulse Promo Banner */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1528] to-[#122244] border border-slate-800 p-5 text-white shadow-md flex items-center justify-between">
-              <div className="max-w-[210px] z-10 flex flex-col gap-1">
-                <h4 className="text-xs font-bold text-white tracking-tight leading-snug">
-                  Stay Ahead with TechPulse
-                </h4>
-                <p className="text-[10px] text-slate-400 leading-snug">
-                  Get personalized insights and career recommendations.
-                </p>
-                <div className="pt-2">
-                  <button
-                    onClick={handleToggleAlerts}
-                    className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-[11px] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Bell className="w-3 h-3 text-blue-600" />
-                    <span>{alertsEnabled ? 'Alerts Active ✓' : 'Enable Alerts →'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Graphic: Stylized Rocket / Paper Plane */}
-              <div className="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0">
-                <Send className="w-7 h-7 transform -rotate-45 text-blue-400" />
-              </div>
-            </div>
-
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 4. EXPANDED VIEW: ALL JOB DRIVES DIRECTORY                 */}
+      {/* 4. FULL-WIDTH BOTTOM BANNER: STAY AHEAD IN TECH            */}
+      {/* ========================================================= */}
+      {activeView === 'overview' && (
+        <div className="w-full rounded-2xl bg-gradient-to-r from-[#0B1528] via-[#0E2044] to-[#0B1528] border border-slate-800 p-4 md:px-6 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
+          {/* Left Text */}
+          <div className="flex items-center gap-3.5 z-10">
+            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white tracking-tight">
+                Stay Ahead in Tech
+              </h4>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                Get personalized insights, salary benchmarks and hiring trends.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Action */}
+          <div className="flex items-center gap-3 z-10 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => {
+                setActiveView('salary');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="px-5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs whitespace-nowrap"
+            >
+              <span>Explore Insights</span>
+              <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. EXPANDED VIEW: ALL JOB DRIVES DIRECTORY                 */}
       {/* ========================================================= */}
       {activeView === 'jobs' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1004,7 +1059,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 5. EXPANDED VIEW: ALL TECH NEWS FEED                       */}
+      {/* 6. EXPANDED VIEW: ALL TECH NEWS FEED                       */}
       {/* ========================================================= */}
       {activeView === 'news' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1057,7 +1112,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 6. EXPANDED VIEW: SALARY INSIGHTS & BENCHMARKS             */}
+      {/* 7. EXPANDED VIEW: SALARY INSIGHTS & BENCHMARKS             */}
       {/* ========================================================= */}
       {activeView === 'salary' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1097,7 +1152,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 7. EXPANDED VIEW: TRENDING STACKS & SKILL DEMAND           */}
+      {/* 8. EXPANDED VIEW: TRENDING STACKS & SKILL DEMAND           */}
       {/* ========================================================= */}
       {activeView === 'stacks' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1137,7 +1192,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 8. EXPANDED VIEW: HIRING TRENDS & CAMPUS METRICS           */}
+      {/* 9. EXPANDED VIEW: HIRING TRENDS & CAMPUS METRICS           */}
       {/* ========================================================= */}
       {activeView === 'trends' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1182,7 +1237,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 9. EXPANDED VIEW: COMPANY INSIGHTS                         */}
+      {/* 10. EXPANDED VIEW: COMPANY INSIGHTS                        */}
       {/* ========================================================= */}
       {activeView === 'companies' && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col gap-6">
@@ -1255,7 +1310,7 @@ export default function TechPulsePortal({ user, setActiveTab, onNavigate }) {
               <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg text-white mb-3">
                 <Play className="w-6 h-6 fill-white ml-0.5" />
               </div>
-              <h4 className="text-sm font-bold">Interactive Opportunity Observatory</h4>
+              <h4 className="text-sm font-bold">Technology Opportunity Observatory</h4>
               <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
                 Real-time tracking of 1,120+ verified hiring drives, compensation intelligence, and skill demand matrices.
               </p>
