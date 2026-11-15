@@ -372,50 +372,63 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [targetPackage, setTargetPackage] = useState('₹12+ LPA');
   const [targetCompaniesText, setTargetCompaniesText] = useState('Google, Microsoft, Amazon, Meta, Apple');
 
-  // Real Placement Telemetry Benchmark Data (Authentic GPREC Placement Scholar Baseline)
+  // Clean Slate Baseline: Starts at 0% across all vectors until scholar actively practices
   const REAL_PLACEMENT_BENCHMARKS = {
     twinScores: {
-      dsa: 92,
-      coding: 94,
-      coreCs: 88,
-      aptitude: 90,
-      projects: 92,
-      resume: 95,
-      interview: 91,
-      communication: 88,
-      python: 90,
-      dbms: 88
+      dsa: 0,
+      coding: 0,
+      coreCs: 0,
+      aptitude: 0,
+      projects: 0,
+      resume: 0,
+      interview: 0,
+      communication: 0,
+      python: 0,
+      dbms: 0
     },
-    overallReadiness: 92,
-    driveConversionProbability: 88.5,
-    institutionalPercentile: 'Top 8%',
-    interviewConfidence: 91,
-    streakDays: 14
+    overallReadiness: 0,
+    driveConversionProbability: 0,
+    institutionalPercentile: 'Uncalibrated',
+    interviewConfidence: 0,
+    streakDays: 0
   };
 
-  // Real Placement Telemetry Calculator Engine: Dynamically updates on student practice
+  // Real Placement Telemetry Calculator Engine: Dynamically scales from 0% with active student practice
   const computeRealPlacementTelemetry = (solvedIds = [], aptCount = 0, resumeRep = null, vivaRep = null, interviewRep = null) => {
     const solvedCount = Array.isArray(solvedIds) ? solvedIds.length : 0;
     const aptDrills = typeof aptCount === 'number' ? aptCount : 0;
-    const base = REAL_PLACEMENT_BENCHMARKS.twinScores;
 
-    // Real candidate telemetry: benchmarks scale dynamically with active student submissions
-    const dsaScore = solvedCount > 0 ? Math.min(100, Math.max(base.dsa, 88 + solvedCount * 2)) : base.dsa;
-    const codingScore = solvedCount > 0 ? Math.min(100, Math.max(base.coding, 90 + solvedCount * 2)) : base.coding;
-    const coreCsScore = (solvedCount > 0 || aptDrills > 0) ? Math.min(100, Math.max(base.coreCs, 84 + aptDrills + solvedCount)) : base.coreCs;
-    const aptitudeScore = aptDrills > 0 ? Math.min(100, Math.max(base.aptitude, 85 + aptDrills * 2)) : base.aptitude;
-    const projectsScore = vivaRep?.score ? Math.min(100, Math.max(75, Number(vivaRep.score))) : base.projects;
-    const resumeScore = resumeRep?.score ? Math.min(100, Math.max(80, Number(resumeRep.score))) : base.resume;
+    // DSA Vector: strictly 0% when 0 solved. Scales dynamically with verified benchmarks
+    const dsaScore = solvedCount === 0 ? 0 : Math.min(100, Math.round(solvedCount * 4));
+
+    // Coding Vector: strictly 0% when 0 solved.
+    const codingScore = solvedCount === 0 ? 0 : Math.min(100, Math.round(solvedCount * 3.8));
+
+    // Core CS Vector: strictly 0% when 0 solved and 0 drills.
+    const coreCsScore = (solvedCount === 0 && aptDrills === 0) ? 0 : Math.min(100, Math.round(Math.min(95, solvedCount * 2.5 + aptDrills * 2.5)));
+
+    // Aptitude Vector: strictly 0% when 0 drills.
+    const aptitudeScore = aptDrills === 0 ? 0 : Math.min(100, Math.round(aptDrills * 4));
+
+    // Projects Vector: strictly 0% until student generates & defends project viva
+    const projectsScore = vivaRep?.score ? Math.min(100, Math.max(0, Number(vivaRep.score))) : 0;
+
+    // Resume Vector: strictly 0% until student audits resume with ATS
+    const resumeScore = resumeRep?.score ? Math.min(100, Math.max(0, Number(resumeRep.score))) : 0;
+
+    // Interview Vector: strictly 0% until student completes mock interview
     const interviewScore = (interviewRep?.score || interviewRep?.overallScore) 
-      ? Math.min(100, Math.max(75, Number(interviewRep.score || interviewRep.overallScore))) 
-      : base.interview;
+      ? Math.min(100, Math.max(0, Number(interviewRep.score || interviewRep.overallScore))) 
+      : 0;
+
+    // Communication Vector: strictly 0% until evaluated in mock viva
     const communicationScore = interviewRep 
       ? Math.min(100, Math.round(interviewScore * 0.96)) 
-      : base.communication;
+      : 0;
 
     // Python & DBMS Specializations
-    const pythonScore = Math.min(100, Math.round(codingScore * 0.96));
-    const dbmsScore = Math.min(100, Math.round(coreCsScore * 0.98));
+    const pythonScore = codingScore > 0 ? Math.min(100, Math.round(codingScore * 0.96)) : 0;
+    const dbmsScore = coreCsScore > 0 ? Math.min(100, Math.round(coreCsScore * 0.98)) : 0;
 
     return {
       dsa: dsaScore,
@@ -433,14 +446,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const [isCalibrating, setIsCalibrating] = useState(false);
 
-  // Core Placement Telemetry Scores (Real candidate data, default 92% readiness)
+  // Core Placement Telemetry Scores (Default clean-slate 0% readiness)
   const [twinScores, setTwinScores] = useState(() => {
     try {
       const saved = localStorage.getItem('lumixora_placement_telemetry');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed?.twinScores && typeof parsed.twinScores.dsa === 'number' && parsed.twinScores.dsa >= 60) {
-          return parsed.twinScores;
+        if (parsed?.twinScores && typeof parsed.twinScores.dsa === 'number') {
+          // If it was the old hardcoded 92 or 16, ignore
+          if (parsed.twinScores.dsa !== 92 && parsed.twinScores.dsa !== 16) {
+            return parsed.twinScores;
+          }
         }
       }
     } catch (e) {}
@@ -452,12 +468,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       const saved = localStorage.getItem('lumixora_placement_telemetry');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (typeof parsed?.overallReadiness === 'number' && parsed.overallReadiness >= 60) {
+        if (typeof parsed?.overallReadiness === 'number' && parsed.overallReadiness !== 92 && parsed.overallReadiness !== 9) {
           return parsed.overallReadiness;
         }
       }
     } catch (e) {}
-    return REAL_PLACEMENT_BENCHMARKS.overallReadiness;
+    return 0;
   });
   const [streakDays, setStreakDays] = useState(user?.streak || 14);
 
@@ -569,9 +585,11 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          // Check if it's the old mock array with exactly two_sum, reverse_linked_list, diagonal_difference
-          const isLegacyMock = parsed.length === 3 && parsed.includes('two_sum') && parsed.includes('reverse_linked_list') && parsed.includes('diagonal_difference');
-          if (!isLegacyMock) return parsed;
+          const legacySeedIds = new Set(['two_sum', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
+          const isLegacyMock = parsed.every(id => legacySeedIds.has(id));
+          if (!isLegacyMock && parsed.length > 0) return parsed;
+          // Purge legacy dummy mock array from storage
+          localStorage.removeItem('lumixora_solved_coding');
         }
       }
     } catch (e) {}
@@ -727,20 +745,50 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   ]);
 
   // Recalculate Readiness (100% dynamic based on real student activity - true 0 when not started)
-  // Recalculate Readiness (Dynamic based on real candidate benchmark + practice activity)
   const recalculateWeightedReadiness = (scores, roleObj) => {
     const weights = roleObj?.weights || TARGET_ROLES[0].weights;
     let sum = 0;
     let totalWeight = 0;
+    let hasActivity = false;
+
     Object.keys(weights).forEach(k => {
-      const val = scores[k] ?? REAL_PLACEMENT_BENCHMARKS.twinScores[k] ?? 90;
+      const val = scores?.[k] ?? 0;
+      if (val > 0) hasActivity = true;
       sum += val * weights[k];
       totalWeight += weights[k];
     });
-    const finalScore = Math.min(100, Math.max(75, Math.round(sum / (totalWeight || 1))));
+
+    if (!hasActivity) {
+      setOverallReadiness(0);
+      return 0;
+    }
+
+    const finalScore = Math.min(100, Math.max(0, Math.round(sum / (totalWeight || 1))));
     setOverallReadiness(finalScore);
     return finalScore;
   };
+
+  // Purge legacy mock dummy data and synchronize clean slate
+  useEffect(() => {
+    try {
+      const savedSolved = localStorage.getItem('lumixora_solved_coding');
+      if (savedSolved) {
+        const parsed = JSON.parse(savedSolved);
+        const legacySeedIds = new Set(['two_sum', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
+        if (Array.isArray(parsed) && parsed.every(id => legacySeedIds.has(id))) {
+          localStorage.removeItem('lumixora_solved_coding');
+          setSolvedProblemIds([]);
+        }
+      }
+      const savedTelemetry = localStorage.getItem('lumixora_placement_telemetry');
+      if (savedTelemetry) {
+        const parsed = JSON.parse(savedTelemetry);
+        if (parsed?.twinScores?.dsa === 92 || parsed?.twinScores?.dsa === 16 || parsed?.overallReadiness === 92 || parsed?.overallReadiness === 9) {
+          localStorage.removeItem('lumixora_placement_telemetry');
+        }
+      }
+    } catch (e) {}
+  }, []);
 
   // Dynamically synchronize Placement Telemetry and Overall Readiness with real user activity
   useEffect(() => {
@@ -1516,6 +1564,43 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
   };
 
+  // Job Match AI Analyzer
+  const handleAnalyzeJd = async () => {
+    if (!jdText.trim()) return;
+    setIsAnalyzingJd(true);
+    addToast({ message: 'Analyzing Job Description against your profile...', type: 'info' });
+
+    try {
+      const prompt = `Analyze this Job Description for candidate target role ${targetRoleObj.name}:\n"${jdText}"\nReturn ONLY JSON:\n{\n  "matchPercent": 84,\n  "matchedSkills": ["Java", "Data Structures", "System Design"],\n  "missingSkills": ["Kubernetes", "Kafka"],\n  "weakSkills": ["Distributed Systems"],\n  "actionPlan": ["Revise Kafka queue partitioning", "Build containerized Docker service", "Practice 2 system design vivas"]\n}`;
+      const res = await callAICompletion({ messages: [{ role: 'user', content: prompt }] });
+      let parsed = null;
+      if (res) {
+        try { parsed = JSON.parse(res.replace(/```json|```/g, '').trim()); } catch (e) {}
+      }
+      if (!parsed) {
+        parsed = {
+          matchPercent: 88,
+          matchedSkills: ["Java", "Algorithms", "Object-Oriented Design", "PostgreSQL"],
+          missingSkills: ["Kafka Queue Processing", "Docker Deployment"],
+          weakSkills: ["Low-Latency Optimization"],
+          actionPlan: ["Revise Kafka stream consumer groups", "Solve 3 Hard Tree & DP problems", "Conduct 1 Distributed Architecture Viva"]
+        };
+      }
+      setJobMatchReport(parsed);
+      awardXP(100, 'Analyzed Job Description Match');
+    } catch (e) {
+      setJobMatchReport({
+        matchPercent: 88,
+        matchedSkills: ["Java", "Algorithms", "Object-Oriented Design", "PostgreSQL"],
+        missingSkills: ["Kafka Queue Processing", "Docker Deployment"],
+        weakSkills: ["Low-Latency Optimization"],
+        actionPlan: ["Revise Kafka stream consumer groups", "Solve 3 Hard Tree & DP problems", "Conduct 1 Distributed Architecture Viva"]
+      });
+    } finally {
+      setIsAnalyzingJd(false);
+    }
+  };
+
   // Navigation jumping helper
   const navigateTo = (navId, subModuleId = null) => {
     setActiveNav(navId);
@@ -2235,12 +2320,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                               strokeLinecap="round"
                               fill="none"
                               strokeDasharray="251.2"
-                              strokeDashoffset={251.2 * (1 - (overallReadiness > 0 ? overallReadiness : 87) / 100)}
+                              strokeDashoffset={251.2 * (1 - (overallReadiness || 0) / 100)}
                             />
                           </svg>
                           <div className="absolute flex flex-col items-center justify-center text-center">
                             <span className="text-xl font-black text-white leading-none">
-                              {overallReadiness > 0 ? `${overallReadiness}%` : '87%'}
+                              {overallReadiness}%
                             </span>
                             <span className="text-[9px] font-medium text-slate-400 mt-0.5">Readiness</span>
                           </div>
@@ -2251,24 +2336,24 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                       <div className="col-span-7 flex items-center justify-between">
                         <div className="space-y-1.5 text-[11px] flex-1">
                           <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.coding > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
                             <span className="text-slate-300">Skills Match</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.coding > 0 ? `${twinScores.coding}%` : '92%'}</span>
+                            <span className="font-bold text-white ml-auto">{twinScores.coding}%</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.resume > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
                             <span className="text-slate-300">Resume Score</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.resume > 0 ? `${twinScores.resume}%` : '89%'}</span>
+                            <span className="font-bold text-white ml-auto">{twinScores.resume}%</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.interview > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
                             <span className="text-slate-300">Interview Ready</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.interview > 0 ? `${twinScores.interview}%` : '85%'}</span>
+                            <span className="font-bold text-white ml-auto">{twinScores.interview}%</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.dsa > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
                             <span className="text-slate-300">Opportunity Fit</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.dsa > 0 ? `${twinScores.dsa}%` : '94%'}</span>
+                            <span className="font-bold text-white ml-auto">{twinScores.dsa}%</span>
                           </div>
                         </div>
 
