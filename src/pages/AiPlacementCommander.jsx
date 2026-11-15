@@ -585,9 +585,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          const legacySeedIds = new Set(['two_sum', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
-          const isLegacyMock = parsed.every(id => legacySeedIds.has(id));
-          if (!isLegacyMock && parsed.length > 0) return parsed;
+          const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
+          const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
+          const isLegacy = parsed.length <= 4 || parsed.every(id => legacyMockIds.has(id));
+          if (!isLegacy && hasRealSubmission && parsed.length > 0) return parsed;
           // Purge legacy dummy mock array from storage
           localStorage.removeItem('lumixora_solved_coding');
         }
@@ -774,8 +775,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       const savedSolved = localStorage.getItem('lumixora_solved_coding');
       if (savedSolved) {
         const parsed = JSON.parse(savedSolved);
-        const legacySeedIds = new Set(['two_sum', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
-        if (Array.isArray(parsed) && parsed.every(id => legacySeedIds.has(id))) {
+        const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
+        const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
+        if (Array.isArray(parsed) && (parsed.length <= 4 || parsed.some(id => legacyMockIds.has(id)) || !hasRealSubmission)) {
           localStorage.removeItem('lumixora_solved_coding');
           setSolvedProblemIds([]);
         }
@@ -959,7 +961,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     const unsub = onSnapshot(userDocRef, (snap) => {
       if (snap.exists()) {
         const uData = snap.data();
-        if (uData.careerDna && uData.careerDna.dsa !== 92 && uData.careerDna.dsa !== 86 && uData.careerDna.dsa !== 76) {
+        if (uData.careerDna && uData.careerDna.dsa !== 92 && uData.careerDna.dsa !== 86 && uData.careerDna.dsa !== 76 && uData.careerDna.dsa !== 16) {
           setTwinScores(prev => ({ ...prev, ...uData.careerDna }));
         }
         if (uData.targetRole) {
@@ -1541,9 +1543,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     }
   };
 
-  // Reset Telemetry to clean slate 0 (Settings)
+  // Reset Telemetry to clean slate 0 (Settings & Calibration Card)
   const handleResetAllTelemetry = async () => {
-    if (!window.confirm('Reset skill breakdown metrics to fresh 0%?')) return;
     const baseDna = { dsa: 0, coding: 0, coreCs: 0, aptitude: 0, projects: 0, resume: 0, interview: 0, communication: 0, python: 0, dbms: 0 };
     setTwinScores(baseDna);
     setOverallReadiness(0);
@@ -1556,11 +1557,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       localStorage.removeItem('lumixora_solved_coding');
       localStorage.removeItem('lumixora_aptitude_scores_count');
       localStorage.removeItem('lumixora_placement_telemetry');
+      localStorage.removeItem('lumixora_verified_submissions');
       if (user?.id) {
         const userDocRef = doc(db, 'users', user.id);
-        await updateDoc(userDocRef, { careerDna: baseDna, overallReadiness: 0 });
+        await updateDoc(userDocRef, { careerDna: baseDna, overallReadiness: 0, placementReadinessScore: 0 });
       }
-      addToast({ message: 'Telemetry reset to fresh 0%. All vectors cleared.', type: 'info' });
+      addToast({ message: 'Telemetry reset to fresh 0%. All skill vectors cleared.', type: 'info' });
     } catch (e) {}
   };
 
@@ -2598,15 +2600,25 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                         <h3 className="text-base font-bold text-slate-900">Vector Calibration & Skill Telemetry</h3>
                         <p className="text-xs text-slate-500">Real-time weighted competency vectors for {targetRoleObj.name}</p>
                       </div>
-                      <button
-                        onClick={handleCalibrateTelemetry}
-                        disabled={isCalibrating}
-                        className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all"
-                        title="Recalculate vectors from active coding problems, aptitude tests, and audited documents"
-                      >
-                        <RefreshCw className={`w-3 h-3 text-slate-500 ${isCalibrating ? 'animate-spin text-blue-600' : ''}`} />
-                        <span>{isCalibrating ? 'Calibrating...' : 'Calibrate'}</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleResetAllTelemetry}
+                          className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-xs font-semibold text-slate-500 flex items-center gap-1.5 cursor-pointer transition-all"
+                          title="Reset skill vectors to fresh 0% baseline"
+                        >
+                          <RotateCcw className="w-3 h-3 text-slate-400" />
+                          <span>Reset 0%</span>
+                        </button>
+                        <button
+                          onClick={handleCalibrateTelemetry}
+                          disabled={isCalibrating}
+                          className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 flex items-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all"
+                          title="Recalculate vectors from active coding problems, aptitude tests, and audited documents"
+                        >
+                          <RefreshCw className={`w-3 h-3 text-slate-500 ${isCalibrating ? 'animate-spin text-blue-600' : ''}`} />
+                          <span>{isCalibrating ? 'Calibrating...' : 'Calibrate'}</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

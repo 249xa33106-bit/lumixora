@@ -31,7 +31,8 @@ import {
   Briefcase,
   Trophy,
   CreditCard,
-  IndianRupee
+  IndianRupee,
+  Clock
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -96,6 +97,7 @@ import FounderFacultyApprovals from '../components/FounderFacultyApprovals';
 import FounderCollegesManager from '../components/FounderCollegesManager';
 import FounderClubsManager from '../components/FounderClubsManager';
 import FounderFeedbackManager from '../components/FounderFeedbackManager';
+import FounderLoginAuditManager from '../components/FounderLoginAuditManager';
 import { DEFAULT_COLLEGES, mergeCollegesWithDefaults, fetchCollegesFromSupabase, getStoredCustomColleges, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment } from '../data/collegesData';
 
 // --- Mentor Connect & Doubt Manager ---
@@ -2554,7 +2556,13 @@ export default function FounderPortal({ user, setActiveTab }) {
       </div>{/* close header row div */}
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar w-full border-b border-[var(--border-color)]">
-            <button
+                        <button
+              onClick={() => setActiveView('logins')}
+              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'logins' ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 shadow-md' : 'bg-amber-400/10 text-amber-400 border-amber-400/30 hover:bg-amber-400/20'}`}
+            >
+              <Clock className="w-4 h-4 text-amber-400" /> 🔐 Login & Time Logs (All Users, TPO, Faculty)
+            </button>
+<button
               onClick={() => setActiveView('scholars')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'scholars' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
             >

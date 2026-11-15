@@ -31,6 +31,7 @@ export default function GprecPlacementLoginModal({
   const isGprecOnly = isGprecOnlySubdomain() || hideOfficerTab;
 
   // Tabs: 'student' | 'officer' (Enforced 'student' on gprec.lumixora.in only)
+  const [showFounderModal, setShowFounderModal] = useState(false);
   const [authRole, setAuthRole] = useState(isGprecOnly ? 'student' : (defaultRole || 'student'));
 
   // Scholar State
@@ -125,6 +126,7 @@ export default function GprecPlacementLoginModal({
       if (res?.success || verifiedUser) {
         setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
         setTimeout(() => {
+          recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {});
           if (onLoginSuccess) {
             onLoginSuccess(verifiedUser);
           }
@@ -190,6 +192,7 @@ export default function GprecPlacementLoginModal({
       if (res.success || userObj.isOfficer || userObj.isDean) {
         setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
         setTimeout(() => {
+          recordUserLogin(userObj, 'TPO Operations Suite').catch(() => {});
           if (onLoginSuccess) {
             onLoginSuccess(userObj);
           }
@@ -665,12 +668,26 @@ export default function GprecPlacementLoginModal({
 
         {/* Modal Footer */}
         <div className="pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
-          <span>GPREC Training & Placement Cell</span>
+          <button 
+            type="button" 
+            onClick={() => setShowFounderModal(true)} 
+            className="hover:text-amber-600 text-slate-500 font-semibold cursor-pointer transition-colors flex items-center gap-1"
+          >
+            🔐 Founder Console
+          </button>
           <span className="flex items-center gap-1 font-mono text-[#0B132B] font-semibold">
             <Lock className="w-3 h-3 text-[#C5A059]" /> Verified Encryption
           </span>
         </div>
       </div>
+      <FounderLoginModal 
+        isOpen={showFounderModal} 
+        onClose={() => setShowFounderModal(false)} 
+        onLoginSuccess={(founderUser) => {
+          if (onLoginSuccess) onLoginSuccess(founderUser);
+          onClose();
+        }} 
+      />
     </div>
   );
 }

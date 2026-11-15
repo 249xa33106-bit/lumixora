@@ -33,6 +33,8 @@ import StudyWithMe from './pages/StudyWithMe';
 import ReportBug from './pages/ReportBug';
 import LifeReplay from './pages/LifeReplay';
 import FounderPortal from './pages/FounderPortal';
+import FounderLoginModal from './components/FounderLoginModal';
+import { recordSessionHeartbeat } from './services/userActivityLogService';
 import TestPortal from './pages/TestPortal';
 import AssignedTasksPortal from './pages/AssignedTasksPortal';
 import AttendancePortal from './pages/AttendancePortal';
@@ -1128,6 +1130,15 @@ function App() {
     };
   }, []);
 
+  // Heartbeat Telemetry for active sessions and Founder Audit tracking
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    recordSessionHeartbeat(user);
+    const interval = setInterval(() => {
+      recordSessionHeartbeat(user);
+    }, 120000); // 2 minutes
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
   const handleLogin = (userData) => {
     if (!userData) return;
 
@@ -1180,7 +1191,10 @@ function App() {
       }).catch(() => {});
     }
 
-    if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in' || finalizedUser?.email === 'srikanth.csm@gprec.ac.in') {
+    if (isF) {
+      setActiveTab('founder-portal');
+      window.location.hash = 'founder-portal';
+    } else if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in' || finalizedUser?.email === 'srikanth.csm@gprec.ac.in') {
       setActiveTab('tpo-dashboard');
       window.location.hash = 'tpo-dashboard';
     } else if (isGprecPlacementSubdomain()) {
@@ -1547,6 +1561,25 @@ function App() {
 
   if (!isAuthenticated) {
     const lowerHash = currentHash;
+    // Direct standalone access to Founder Executive Console (#founder-login, #founder-portal, #founder)
+    if (lowerHash.includes('founder-login') || lowerHash.includes('founder-portal') || lowerHash.includes('founder')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <FounderLoginModal 
+              isOpen={true} 
+              onClose={() => { window.location.hash = ''; }} 
+              onLoginSuccess={(founderUser) => {
+                handleLogin(founderUser);
+                setActiveTab('founder-portal');
+              }} 
+            />
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     
     // Public Lumixora Credential Verification URL (lumixora.in/verify, #verify, #verify-cert/...)
     const isVerifyPath = typeof window !== 'undefined' && (

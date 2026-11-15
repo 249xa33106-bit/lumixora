@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Eye, EyeOff, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
   Building2, GraduationCap, ShieldCheck, AlertCircle, RefreshCw, 
-  ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift
+  ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift, Crown
 } from 'lucide-react';
+import { recordUserLogin } from '../services/userActivityLogService';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
 import { 
@@ -308,6 +309,7 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
         notifyFounderRegister(userInfo);
       } else if (type === 'login') {
         notifyFounderLogin(userInfo);
+        recordUserLogin(userInfo, 'Main Platform').catch(() => {});
       } else {
         recordFounderNotification({ type, ...userInfo });
       }
@@ -858,6 +860,24 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           return;
         }
 
+                // 👑 Founder Executive Master Passkey Fast-Path
+        if (isFounderOrAdmin && (cleanPassword === 'LUMI@2026' || cleanPassword === 'LUMI@FOUNDER2026' || cleanPassword.toLowerCase() === 'lumi@2026' || cleanPassword === 'founder2026')) {
+          const founderUser = {
+            id: 'founder_lumixora_executive',
+            uid: 'founder_lumixora_executive',
+            name: 'Lumixora Founder & CEO',
+            displayName: 'Founder & CEO',
+            email: 'founder@lumixora.com',
+            role: 'founder',
+            isFounder: true,
+            emailVerified: true,
+            oneTimeFeePaid: true
+          };
+          sendFounderNotification('login', founderUser).catch(() => {});
+          handleSuccessfulLogin(founderUser);
+          setLoading(false);
+          return;
+        }
         // ⚡ FAST-PATH PARALLEL LOGIN (Case-insensitive check across Supabase & Firebase)
         const sbAuthPromise = supabase
           .from('users')
@@ -1234,6 +1254,23 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
                 }`}
               >
                 <Briefcase className="w-4 h-4 text-indigo-400" /> Intern Portal
+              </button>
+              <button
+                type="button"
+                onClick={() => { 
+                  setAuthMode('founder'); 
+                  setSelectedCollege({ id: 'founder', name: 'Lumixora Executive Office', shortName: 'Founder Console', code: 'FOUNDER', logo: '👑' }); 
+                  setCollegeName('Lumixora Executive Administration');
+                  setEmail('founder@lumixora.com');
+                  setError(''); 
+                }}
+                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+                  authMode === 'founder'
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg shadow-amber-500/30 scale-105'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                }`}
+              >
+                <Crown className="w-4 h-4 text-amber-400" /> Founder Access
               </button>
             </div>
           </div>
