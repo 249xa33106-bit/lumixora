@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Cpu, Mic, Code, Award, Target, FileText, Briefcase, 
   CheckCircle2, ArrowRight, ShieldCheck, ChevronRight,
@@ -9,6 +9,33 @@ import {
 
 export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }) {
   const [activeFilter, setActiveFilter] = useState('all');
+
+  // Triple-click detector on GPREC crest for Founder Login
+  const logoClicksRef = useRef(0);
+  const logoTimerRef = useRef(null);
+
+  const handleLogoTripleClick = (e) => {
+    // 1. Browser native consecutive click count (mouse)
+    if (e.detail === 3) {
+      if (onLoginClick) onLoginClick('founder');
+      else if (onEnterPlacement) onEnterPlacement('founder-login');
+      return;
+    }
+
+    // 2. High-precision rapid tap counter (works seamlessly on mobile touch & desktop)
+    logoClicksRef.current += 1;
+    if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
+
+    if (logoClicksRef.current >= 3) {
+      logoClicksRef.current = 0;
+      if (onLoginClick) onLoginClick('founder');
+      else if (onEnterPlacement) onEnterPlacement('founder-login');
+    } else {
+      logoTimerRef.current = setTimeout(() => {
+        logoClicksRef.current = 0;
+      }, 700);
+    }
+  };
 
   // Real data verified from official GPREC Training & Placement Cell records (gprec.ac.in/placement-record/ & NIRF)
   const INSTITUTIONAL_METRICS = [
@@ -247,7 +274,9 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
             <img 
               src="/gprec_logo.png" 
               alt="G. Pulla Reddy Engineering College Official Crest" 
-              className="w-12 h-12 object-contain rounded-lg p-1 bg-white border border-[#E2E8F0] shadow-xs shrink-0" 
+              onClick={handleLogoTripleClick}
+              className="w-12 h-12 object-contain rounded-lg p-1 bg-white border border-[#E2E8F0] shadow-xs shrink-0 cursor-pointer select-none active:scale-95 transition-transform" 
+              title="G. Pulla Reddy Engineering College"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -267,13 +296,6 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
           {/* Action CTAs */}
           <div className="flex items-center gap-2.5 shrink-0">
             
-            <button
-              onClick={() => onLoginClick ? onLoginClick('founder') : onEnterPlacement('founder-login')}
-              className="px-3.5 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Founder & Executive Administration Login"
-            >
-              <span>👑 Founder Login</span>
-            </button>
             <button
               onClick={() => onLoginClick ? onLoginClick('student') : onEnterPlacement('ai-commander')}
               className="px-4 py-2 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
@@ -715,7 +737,8 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
                 <img 
                   src="/gprec_logo.png" 
                   alt="G. Pulla Reddy Engineering College Crest" 
-                  className="w-10 h-10 object-contain rounded p-0.5 bg-white border border-[#E2E8F0]" 
+                  onClick={handleLogoTripleClick}
+                  className="w-10 h-10 object-contain rounded p-0.5 bg-white border border-[#E2E8F0] cursor-pointer select-none active:scale-95 transition-transform" 
                 />
                 <div>
                   <p className="font-bold text-[#0B132B] text-sm">

@@ -1867,11 +1867,19 @@ function App() {
             <CursorGlow />
             <GprecPlacementLanding 
               onEnterPlacement={(portalId) => {
+                if (portalId === 'founder-login') {
+                  setShowFounderLogin(true);
+                  return;
+                }
                 setActiveTab(portalId || 'ai-commander');
                 setGprecLoginRole(portalId === 'tpo-dashboard' ? 'officer' : 'student');
                 setShowGprecLogin(true);
               }}
               onLoginClick={(role) => {
+                if (role === 'founder') {
+                  setShowFounderLogin(true);
+                  return;
+                }
                 setGprecLoginRole(role || 'student');
                 setShowGprecLogin(true);
               }}
@@ -1884,6 +1892,14 @@ function App() {
               onLoginSuccess={(verifiedUser) => {
                 handleLogin(verifiedUser);
               }}
+            />
+            <FounderLoginModal 
+              isOpen={showFounderLogin} 
+              onClose={() => setShowFounderLogin(false)} 
+              onLoginSuccess={(founderUser) => {
+                handleLogin(founderUser);
+                setActiveTab('ai-commander');
+              }} 
             />
             {renderUpdateModal()}
           </ToastProvider>
