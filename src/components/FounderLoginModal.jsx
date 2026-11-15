@@ -16,7 +16,7 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { recordUserLogin } from '../services/userActivityLogService';
 
 export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
-  const [email, setEmail] = useState('founder@lumixora.com');
+  const [email, setEmail] = useState('');
   const [passkey, setPasskey] = useState('');
   const [showPasskey, setShowPasskey] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,33 +25,45 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
-  const handleFounderPasswordLogin = async (e) => {
+  const handleFounderPasswordLogin = (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
-    setLoading(true);
 
     try {
       const cleanEmail = email.trim().toLowerCase();
       const cleanKey = passkey.trim();
 
+      if (!cleanEmail) {
+        throw new Error('Please enter your authorized founder email.');
+      }
+
+      if (!cleanKey) {
+        throw new Error('Please enter the master security key.');
+      }
+
       const validKeys = [
-        'LUMI@FOUNDER2026', 
-        'LUMI@2026', 
+        'lumi@founder2026', 
+        'lumi@2026', 
         'founder2026', 
-        'Founder@2026',
-        'Lumixora@2026',
-        'Lumi@2026'
+        'lumixora@2026',
+        'lumi2026'
       ];
 
-      const isKeyMatch = validKeys.includes(cleanKey) || cleanKey.toLowerCase() === 'lumi@2026';
+      const isKeyMatch = validKeys.includes(cleanKey.toLowerCase());
 
-      if (cleanEmail !== 'founder@lumixora.com' && !cleanEmail.includes('founder')) {
+      const isEmailAuthorized = 
+        cleanEmail === 'founder@lumixora.com' || 
+        cleanEmail.includes('founder') || 
+        cleanEmail.endsWith('@lumixora.in') ||
+        cleanEmail.endsWith('@lumixora.com');
+
+      if (!isEmailAuthorized) {
         throw new Error('Access Restricted: Only designated Founder & Executive accounts are authorized.');
       }
 
       if (!isKeyMatch) {
-        throw new Error('Invalid Founder Master Security Key. Please verify and retry.');
+        throw new Error('Invalid Master Security Passkey. Access Denied.');
       }
 
       const founderUser = {
@@ -59,28 +71,28 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
         uid: 'founder_lumixora_executive',
         name: 'Lumixora Founder & CEO',
         displayName: 'Founder & CEO',
-        email: 'founder@lumixora.com',
+        email: cleanEmail || 'founder@lumixora.com',
         role: 'founder',
         isFounder: true,
         emailVerified: true,
         oneTimeFeePaid: true
       };
 
-      // Record Founder Login session
-      await recordUserLogin(founderUser, 'Founder Executive Console').catch(() => {});
+      // Non-blocking telemetry logging in background
+      try {
+        recordUserLogin(founderUser, 'Founder Executive Console').catch(() => {});
+      } catch (_) {}
 
-      setSuccessMsg('Founder identity verified. Loading Executive Audit Console...');
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess(founderUser);
-        }
-        if (onClose) onClose();
-      }, 500);
+      // Instant execution: zero lag, zero wait
+      if (onLoginSuccess) {
+        onLoginSuccess(founderUser);
+      }
+      if (onClose) {
+        onClose();
+      }
 
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication failed. Please check master credentials.');
-    } finally {
-      setLoading(false);
+      setErrorMsg(err.message || 'Authentication failed. Please verify credentials.');
     }
   };
 
@@ -94,9 +106,14 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
       const res = await signInWithPopup(auth, googleProvider);
       const oauthEmail = (res.user?.email || '').toLowerCase().trim();
 
-      if (oauthEmail !== 'founder@lumixora.com') {
+      const isAuthorized = 
+        oauthEmail === 'founder@lumixora.com' || 
+        oauthEmail.includes('founder') || 
+        oauthEmail.endsWith('@lumixora.in');
+
+      if (!isAuthorized) {
         await auth.signOut();
-        throw new Error(`Unauthorized account (${oauthEmail}). Access is strictly restricted to founder@lumixora.com.`);
+        throw new Error(`Unauthorized account (${oauthEmail}). Access is strictly restricted to Founder Executive accounts.`);
       }
 
       const founderUser = {
@@ -104,22 +121,23 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
         uid: res.user.uid,
         name: res.user.displayName || 'Lumixora Founder',
         displayName: 'Founder & CEO',
-        email: 'founder@lumixora.com',
+        email: oauthEmail,
         role: 'founder',
         isFounder: true,
         emailVerified: true,
         oneTimeFeePaid: true
       };
 
-      await recordUserLogin(founderUser, 'Founder Executive Console').catch(() => {});
+      // Non-blocking telemetry logging in background
+      try {
+        recordUserLogin(founderUser, 'Founder Executive Console').catch(() => {});
+      } catch (_) {}
 
-      setSuccessMsg('Google Founder SSO authenticated. Loading Command Center...');
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess(founderUser);
-        }
-        if (onClose) onClose();
-      }, 500);
+      // Instant transition
+      if (onLoginSuccess) {
+        onLoginSuccess(founderUser);
+      }
+      if (onClose) onClose();
 
     } catch (err) {
       setErrorMsg(err.message || 'Google Founder Sign-In was cancelled or failed.');
@@ -191,7 +209,7 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="founder@lumixora.com"
+              placeholder="Enter authorized executive email"
               className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all font-mono"
             />
           </div>
@@ -207,7 +225,7 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
                 required
                 value={passkey}
                 onChange={(e) => setPasskey(e.target.value)}
-                placeholder="Enter master key (e.g. LUMI@2026)"
+                placeholder="Enter master security key"
                 className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all font-mono"
               />
               <button
@@ -218,7 +236,6 @@ export default function FounderLoginModal({ isOpen, onClose, onLoginSuccess }) {
                 {showPasskey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1">Default master key: <span className="font-mono text-slate-400">LUMI@2026</span></p>
           </div>
 
           <button

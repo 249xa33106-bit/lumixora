@@ -1898,7 +1898,7 @@ function App() {
               onClose={() => setShowFounderLogin(false)} 
               onLoginSuccess={(founderUser) => {
                 handleLogin(founderUser);
-                setActiveTab('ai-commander');
+                setActiveTab('founder-portal');
               }} 
             />
             {renderUpdateModal()}

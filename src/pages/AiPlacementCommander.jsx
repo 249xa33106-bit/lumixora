@@ -334,6 +334,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const resolveNav = (nav) => {
     if (!nav) return 'dashboard';
     const clean = String(nav).toLowerCase().replace(/[-_]/g, '');
+    if (clean.includes('founderaudit') || clean.includes('founder') || clean.includes('timelog') || clean.includes('audit')) return 'founder_audit';
     if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
     if (clean.includes('mock') || clean.includes('interview')) return 'mock_interviews';
     if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
