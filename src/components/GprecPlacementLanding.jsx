@@ -268,6 +268,13 @@ export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }
           <div className="flex items-center gap-2.5 shrink-0">
             
             <button
+              onClick={() => onLoginClick ? onLoginClick('founder') : onEnterPlacement('founder-login')}
+              className="px-3.5 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+              title="Founder & Executive Administration Login"
+            >
+              <span>👑 Founder Login</span>
+            </button>
+            <button
               onClick={() => onLoginClick ? onLoginClick('student') : onEnterPlacement('ai-commander')}
               className="px-4 py-2 rounded-lg bg-[#0B132B] hover:bg-[#152042] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
             >

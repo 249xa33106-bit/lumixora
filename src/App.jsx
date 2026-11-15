@@ -178,6 +178,7 @@ function App() {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(null); // null, 'student', or 'faculty'
   const [showGprecLogin, setShowGprecLogin] = useState(false);
+  const [showFounderLogin, setShowFounderLogin] = useState(false);
   const [gprecLoginRole, setGprecLoginRole] = useState(isTpoSubdomain() ? 'officer' : 'student');
 
   const [showExitModal, setShowExitModal] = useState(false);
@@ -1215,6 +1216,11 @@ function App() {
   };
 
   const renderContent = () => {
+    const isF = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
+    if (isF && (activeTab === 'founder-portal' || activeTab === 'founder-audit' || activeTab === 'logins')) {
+      return <FounderPortal user={user} setActiveTab={handleTabChange} />;
+    }
+
     if (isGprecPlacementSubdomain() && !isAllowedGprecPlacementTab(activeTab)) {
       return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
     }
@@ -1562,7 +1568,7 @@ function App() {
   if (!isAuthenticated) {
     const lowerHash = currentHash;
     // Direct standalone access to Founder Executive Console (#founder-login, #founder-portal, #founder)
-    if (lowerHash.includes('founder-login') || lowerHash.includes('founder-portal') || lowerHash.includes('founder')) {
+    if (isGprecPlacementSubdomain() && (lowerHash.includes('founder-login') || lowerHash.includes('founder-portal') || lowerHash.includes('founder'))) {
       return (
         <ThemeProvider>
           <ToastProvider>

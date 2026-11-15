@@ -209,6 +209,7 @@ export function isAllowedGprecPlacementTab(tab) {
     'alumni', 'alumni-referrals', 'alumni-bridge', 'referrals',
     'career-roadmap', 'career-roles',
     'internships', 'internship',
+    'founder-portal', 'founder', 'founder-audit', 'logins',
     'contact', 'report-bug'
   ];
   return allowed.includes(t);

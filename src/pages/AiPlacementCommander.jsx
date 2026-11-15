@@ -39,6 +39,7 @@ import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
 import { cloudSync } from '../services/cloudSyncService';
 import TechPulsePortal from './TechPulsePortal';
+import FounderLoginAuditManager from '../components/FounderLoginAuditManager';
 import { CODING_PROBLEMS_10K, getProblemFullDetails, STATS_10K } from '../data/codingProblemBank10k';
 import { downloadPlacementResource } from '../utils/placementResourcePdfs';
 import { COMPANY_PRESETS, ROLE_TRACKS } from '../services/interviewService';
@@ -475,6 +476,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
     return 0;
   });
+  const isFounder = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
   const [streakDays, setStreakDays] = useState(user?.streak || 14);
 
   // Adaptive Dynamic Daily Mission Generator (2 completed streak, 2 in-progress)
@@ -1649,6 +1651,26 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
           {/* Sidebar Navigation Items (15 Core Capabilities - Matching Screenshot Perfectly) */}
           <nav className="flex flex-col gap-1">
+            {isFounder && (
+              <button
+                onClick={() => {
+                  navigateTo('founder_audit');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all text-left cursor-pointer border ${
+                  activeNav === 'founder_audit'
+                    ? 'bg-amber-400 text-slate-950 shadow-md border-amber-400'
+                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="truncate">Founder Audit & Time Logs</span>
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400 text-slate-950 uppercase">Live</span>
+              </button>
+            )}
+
             {[
               { id: 'dashboard', label: 'Home', icon: Home, nav: 'dashboard', sub: null },
               { id: 'placement', label: 'My Placement', icon: Briefcase, nav: 'placement', sub: 'overview' },
@@ -1880,6 +1902,15 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
               )}
             </div>
 
+                        {isFounder && (
+              <button
+                onClick={() => navigateTo('founder_audit')}
+                className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                title="Open Live Founder Audit Console & Time Logs"
+              >
+                <span>👑 Founder Console</span>
+              </button>
+            )}
             {/* Student Initials Avatar (Matches screenshot: SS circle) */}
             <div 
               onClick={() => setShowSettingsModal(true)}
@@ -1956,6 +1987,15 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           {/* ========================================================= */}
           {/* VIEW: 1. APPLE-INSPIRED MAIN DASHBOARD                    */}
           {/* ========================================================= */}
+          {/* ========================================================= */}
+          {/* VIEW: FOUNDER AUDIT & TIME LOGS CENTER (GPREC EXCLUSIVE)  */}
+          {/* ========================================================= */}
+          {activeNav === 'founder_audit' && isFounder && (
+            <div className="flex flex-col gap-6">
+              <FounderLoginAuditManager />
+            </div>
+          )}
+
           {activeNav === 'dashboard' && (
             <div className="flex flex-col gap-6">
               
