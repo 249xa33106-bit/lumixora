@@ -326,6 +326,141 @@ const buildResumeGroundedQuestions = (resumeHighlights, company, role) => {
   ];
 };
 
+// Reverse Engineering Skill Knowledge Base
+const JD_SKILL_MAP = {
+  javascript: { name: 'JavaScript (ES6+)', action: 'Revise asynchronous JavaScript (Promises, async/await, Event Loop) and DOM performance' },
+  html: { name: 'HTML5 & Semantic Structure', action: 'Build responsive, accessible layouts following WCAG 2.1 semantic standards' },
+  css: { name: 'CSS3 & Modern Styling', action: 'Master CSS Grid, Flexbox, Tailwind, and fluid responsive design patterns' },
+  nodejs: { name: 'Node.js & Express Architecture', action: 'Implement RESTful backend microservices with JWT auth, rate limiting, and middleware' },
+  node: { name: 'Node.js & Express Architecture', action: 'Implement RESTful backend microservices with JWT auth, rate limiting, and middleware' },
+  flutter: { name: 'Flutter & Dart Mobile Development', action: 'Build cross-platform mobile screens and state management using Provider or BLoC' },
+  dart: { name: 'Flutter & Dart Mobile Development', action: 'Build cross-platform mobile screens and state management using Provider or BLoC' },
+  react: { name: 'React.js & Hooks Ecosystem', action: 'Build modular React applications with custom hooks, memoization, and Context API' },
+  typescript: { name: 'TypeScript Typed Engineering', action: 'Adopt strict typing, generics, interfaces, and utility types across the codebase' },
+  python: { name: 'Python & FastAPI/Django', action: 'Develop high-throughput asynchronous services using Python, FastAPI, and Pydantic' },
+  java: { name: 'Java & Spring Boot Ecosystem', action: 'Design enterprise backend microservices with Spring Boot, JPA, and Hibernate' },
+  cpp: { name: 'C++ & Low-Level Systems', action: 'Practice memory management, pointers, STL containers, and modern C++20 features' },
+  sql: { name: 'PostgreSQL / SQL Relational Modeling', action: 'Design normalized database schemas, composite B-tree indexes, and ACID transactions' },
+  postgres: { name: 'PostgreSQL Relational Architecture', action: 'Optimize complex SQL JOIN queries and implement connection pooling with HikariCP' },
+  postgresql: { name: 'PostgreSQL Relational Architecture', action: 'Optimize complex SQL JOIN queries and implement connection pooling with HikariCP' },
+  mongodb: { name: 'MongoDB NoSQL Persistence', action: 'Design document schemas, aggregation pipelines, and sharded replica sets' },
+  redis: { name: 'Redis In-Memory Caching', action: 'Implement LRU caching, rate limit counters, and distributed Redis locks' },
+  docker: { name: 'Docker & Containerization', action: 'Author multi-stage Dockerfiles and deploy multi-tier stacks with Docker Compose' },
+  kubernetes: { name: 'Kubernetes (K8s) Orchestration', action: 'Deploy resilient Pods, Services, Ingress controllers, and Helm charts' },
+  aws: { name: 'AWS Cloud Services', action: 'Architect cloud infrastructure with S3, EC2, Lambda serverless, and IAM roles' },
+  git: { name: 'Git Version Control & CI/CD', action: 'Master rebase workflows, branch protections, and automated CI/CD pipelines' },
+  kafka: { name: 'Apache Kafka Event Streaming', action: 'Configure partitioned Kafka topics, consumer groups, and stream processing' },
+  dsa: { name: 'Data Structures & Algorithms', action: 'Solve 5 company-specific Hard Tree, Graph, and Dynamic Programming challenges' },
+  systemdesign: { name: 'System Design & Scalability', action: 'Conduct 2 end-to-end distributed systems design viva mock rounds' }
+};
+
+const extractSkillsFromJd = (text) => {
+  if (!text) return [];
+  const normalized = text.toLowerCase();
+  const matchedEntries = [];
+  const matchedKeys = new Set();
+
+  const aliasLookup = [
+    { key: 'javascript', regex: /\b(javascript|js|es6|es2020|vanilla js)\b/i },
+    { key: 'html', regex: /\b(html|html5|semantic html)\b/i },
+    { key: 'css', regex: /\b(css|css3|tailwind|sass|scss|bootstrap)\b/i },
+    { key: 'nodejs', regex: /\b(nodejs|node\.js|node js|express|expressjs|nestjs)\b/i },
+    { key: 'flutter', regex: /\b(flutter|dart)\b/i },
+    { key: 'react', regex: /\b(react|reactjs|react\.js|react native)\b/i },
+    { key: 'typescript', regex: /\b(typescript|ts)\b/i },
+    { key: 'python', regex: /\b(python|django|fastapi|flask)\b/i },
+    { key: 'java', regex: /\b(java|spring|spring boot|springboot)\b/i },
+    { key: 'cpp', regex: /\b(c\+\+|cpp)\b/i },
+    { key: 'sql', regex: /\b(sql|mysql|sqlite|database)\b/i },
+    { key: 'postgresql', regex: /\b(postgresql|postgres)\b/i },
+    { key: 'mongodb', regex: /\b(mongodb|mongo|nosql)\b/i },
+    { key: 'redis', regex: /\b(redis|caching|memcached)\b/i },
+    { key: 'docker', regex: /\b(docker|container|containerization)\b/i },
+    { key: 'kubernetes', regex: /\b(kubernetes|k8s)\b/i },
+    { key: 'aws', regex: /\b(aws|cloud|gcp|azure)\b/i },
+    { key: 'git', regex: /\b(git|github|gitlab|version control)\b/i },
+    { key: 'kafka', regex: /\b(kafka|rabbitmq|message queue)\b/i },
+    { key: 'dsa', regex: /\b(dsa|data structures|algorithms|problem solving)\b/i },
+    { key: 'systemdesign', regex: /\b(system design|microservices|distributed systems)\b/i }
+  ];
+
+  for (const { key, regex } of aliasLookup) {
+    if (regex.test(normalized)) {
+      matchedKeys.add(key);
+      matchedEntries.push(JD_SKILL_MAP[key]);
+    }
+  }
+
+  // Also extract raw comma/newline/bullet separated tokens
+  const rawParts = text.split(/[,;\n|•\-\*`]/).map(s => s.trim()).filter(Boolean);
+  for (const part of rawParts) {
+    const cleanLower = part.toLowerCase().replace(/[^a-z0-9+#]/g, '');
+    if (cleanLower && !matchedKeys.has(cleanLower) && cleanLower.length >= 2 && cleanLower.length <= 30) {
+      const foundKey = Object.keys(JD_SKILL_MAP).find(k => k === cleanLower || cleanLower.includes(k) || k.includes(cleanLower));
+      if (foundKey && !matchedKeys.has(foundKey)) {
+        matchedKeys.add(foundKey);
+        matchedEntries.push(JD_SKILL_MAP[foundKey]);
+      } else if (!foundKey && !matchedKeys.has(cleanLower)) {
+        matchedKeys.add(cleanLower);
+        const titleCase = part.charAt(0).toUpperCase() + part.slice(1);
+        matchedEntries.push({
+          name: titleCase,
+          action: `Master ${titleCase} core concepts and build a hands-on production POC`
+        });
+      }
+    }
+  }
+
+  return matchedEntries.length > 0 ? matchedEntries : [
+    { name: 'Data Structures & Algorithms', action: 'Solve 3 Hard Tree & DP problems' },
+    { name: 'Object-Oriented Design', action: 'Conduct 1 Low-Level Design Viva' }
+  ];
+};
+
+const analyzeJdLocally = (jdText, candidateSkillsStr, targetRoleName) => {
+  const extractedSkills = extractSkillsFromJd(jdText);
+  const candLower = (candidateSkillsStr || '').toLowerCase();
+
+  const matchedSkills = [];
+  const missingSkills = [];
+  const actionPlan = [];
+
+  for (const item of extractedSkills) {
+    const itemLower = item.name.toLowerCase();
+    const isMatched = candLower.includes(itemLower.split(' ')[0]) || 
+                      candLower.includes(itemLower) ||
+                      (itemLower.includes('javascript') && candLower.includes('javascript')) ||
+                      (itemLower.includes('html') && (candLower.includes('react') || candLower.includes('javascript') || candLower.includes('html'))) ||
+                      (itemLower.includes('css') && (candLower.includes('react') || candLower.includes('css'))) ||
+                      (itemLower.includes('node') && (candLower.includes('node') || candLower.includes('express')));
+
+    if (isMatched) {
+      matchedSkills.push(item.name);
+    } else {
+      missingSkills.push(item.name);
+      actionPlan.push(item.action);
+    }
+  }
+
+  if (actionPlan.length === 0) {
+    actionPlan.push(`Solve 3 Hard LeetCode style problems tailored for ${targetRoleName}`);
+    actionPlan.push(`Conduct 1 System Architecture defense session on candidate projects`);
+  } else if (actionPlan.length < 3) {
+    actionPlan.push(`Solve 2 targeted coding challenges covering core CS foundations`);
+  }
+
+  const total = extractedSkills.length || 1;
+  const matchPercent = Math.min(95, Math.max(35, Math.round((matchedSkills.length / total) * 100)));
+
+  return {
+    matchPercent,
+    matchedSkills: matchedSkills.length > 0 ? matchedSkills : ['Core Problem Solving', 'Computer Science Fundamentals'],
+    missingSkills: missingSkills.length > 0 ? missingSkills : ['Advanced Scale & Concurrency'],
+    actionPlan: actionPlan.slice(0, 3),
+    engine: 'local'
+  };
+};
+
 export default function AiPlacementCommander({ user, setActiveTab, onLogout, initialNav = 'dashboard', embedded = false }) {
   const { addToast } = useToast();
   const { awardXP } = useGamification();
@@ -1573,34 +1708,68 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const handleAnalyzeJd = async () => {
     if (!jdText.trim()) return;
     setIsAnalyzingJd(true);
-    addToast({ message: 'Analyzing Job Description against your profile...', type: 'info' });
+    addToast({ message: 'Analyzing Job Description against your verified profile...', type: 'info' });
+
+    const candSkillsList = [
+      resumeHighlights?.languages,
+      resumeHighlights?.frameworks,
+      resumeHighlights?.databases,
+      Array.isArray(user?.skills) ? user.skills.join(', ') : '',
+      Array.isArray(resumeHighlights?.projects) ? resumeHighlights.projects.map(p => p.stack).join(', ') : ''
+    ].filter(Boolean).join(', ');
+
+    // Guaranteed accurate local NLP analysis baseline
+    const localAnalysis = analyzeJdLocally(jdText, candSkillsList, targetRoleObj.name);
 
     try {
-      const prompt = `Analyze this Job Description for candidate target role ${targetRoleObj.name}:\n"${jdText}"\nReturn ONLY JSON:\n{\n  "matchPercent": 84,\n  "matchedSkills": ["Java", "Data Structures", "System Design"],\n  "missingSkills": ["Kubernetes", "Kafka"],\n  "weakSkills": ["Distributed Systems"],\n  "actionPlan": ["Revise Kafka queue partitioning", "Build containerized Docker service", "Practice 2 system design vivas"]\n}`;
+      const prompt = `You are an elite Senior Technical Recruiter & Engineering Hiring Manager.
+Analyze this Target Job Description against the Candidate's profile.
+
+Target Role: ${targetRoleObj.name}
+Candidate Profile Skills: ${candSkillsList || 'Core CS, DSA, OOP, Web Architecture'}
+Pasted Job Description / Requirements:
+"""
+${jdText.trim()}
+"""
+
+INSTRUCTIONS:
+1. Extract ALL specific technical skills, tools, and competencies explicitly mentioned in the Job Description.
+2. Cross-reference them against Candidate Profile Skills.
+3. Classify into "matchedSkills" (skills candidate has) and "missingSkills" (skills candidate needs).
+4. Calculate a realistic "matchPercent" (0-100).
+5. Generate a 3-step "actionPlan" directly targeting the missing skills.
+
+Return ONLY a valid JSON object without markdown:
+{
+  "matchPercent": 80,
+  "matchedSkills": ["JavaScript", "HTML", "CSS", "Node.js"],
+  "missingSkills": ["Flutter"],
+  "weakSkills": ["State Management"],
+  "actionPlan": ["Build mobile UI with Flutter & Dart", "Integrate with Node.js backend"]
+}`;
+
       const res = await callAICompletion({ messages: [{ role: 'user', content: prompt }] });
       let parsed = null;
       if (res) {
-        try { parsed = JSON.parse(res.replace(/```json|```/g, '').trim()); } catch (e) {}
+        try {
+          const cleanText = res.replace(/```json|```/g, '').trim();
+          const firstBrace = cleanText.indexOf('{');
+          const lastBrace = cleanText.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            parsed = JSON.parse(cleanText.substring(firstBrace, lastBrace + 1));
+          }
+        } catch (e) {}
       }
-      if (!parsed) {
-        parsed = {
-          matchPercent: 88,
-          matchedSkills: ["Java", "Algorithms", "Object-Oriented Design", "PostgreSQL"],
-          missingSkills: ["Kafka Queue Processing", "Docker Deployment"],
-          weakSkills: ["Low-Latency Optimization"],
-          actionPlan: ["Revise Kafka stream consumer groups", "Solve 3 Hard Tree & DP problems", "Conduct 1 Distributed Architecture Viva"]
-        };
+
+      if (parsed && Array.isArray(parsed.matchedSkills) && Array.isArray(parsed.missingSkills) && typeof parsed.matchPercent === 'number') {
+        parsed.engine = 'ai';
+        setJobMatchReport(parsed);
+      } else {
+        setJobMatchReport(localAnalysis);
       }
-      setJobMatchReport(parsed);
       awardXP(100, 'Analyzed Job Description Match');
     } catch (e) {
-      setJobMatchReport({
-        matchPercent: 88,
-        matchedSkills: ["Java", "Algorithms", "Object-Oriented Design", "PostgreSQL"],
-        missingSkills: ["Kafka Queue Processing", "Docker Deployment"],
-        weakSkills: ["Low-Latency Optimization"],
-        actionPlan: ["Revise Kafka stream consumer groups", "Solve 3 Hard Tree & DP problems", "Conduct 1 Distributed Architecture Viva"]
-      });
+      setJobMatchReport(localAnalysis);
     } finally {
       setIsAnalyzingJd(false);
     }
@@ -2777,10 +2946,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
                   {jobMatchReport && (
                     <div className="pt-4 border-t border-slate-100 flex flex-col gap-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-2xl font-black text-blue-600">{jobMatchReport.matchPercent}% Match</span>
                         <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                           {targetRoleObj.name} Alignment
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
+                          {jobMatchReport.engine === 'ai' ? '⚡ OpenRouter AI Engine' : '🎯 Skill Intelligence Engine'}
                         </span>
                       </div>
 

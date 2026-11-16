@@ -37,9 +37,9 @@ export const callAICompletion = async (params) => {
     messages = [{ role: 'user', content: params.prompt }];
   }
 
-  const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const groqKey = (typeof import.meta !== "undefined" && import.meta.env?.VITE_GROQ_API_KEY) || (typeof process !== "undefined" && process.env?.VITE_GROQ_API_KEY) || "";
+  const openRouterKey = (typeof import.meta !== "undefined" && import.meta.env?.VITE_OPENROUTER_API_KEY) || (typeof process !== "undefined" && process.env?.VITE_OPENROUTER_API_KEY) || "";
+  const geminiKey = (typeof import.meta !== "undefined" && import.meta.env?.VITE_GEMINI_API_KEY) || (typeof process !== "undefined" && process.env?.VITE_GEMINI_API_KEY) || "";
 
   // Sanitize messages so content is always a clean string for text models
   const sanitizedMessages = messages.map(m => {
@@ -51,10 +51,61 @@ export const callAICompletion = async (params) => {
     return m;
   });
 
-  // 1. Primary High-Speed Engine: Groq API (llama-3.3-70b-versatile, llama-3.1-8b-instant, llama3-70b-8192)
+  // 1. Primary High-Availability Engine: Verified OpenRouter Free Intelligence Models
+  if (openRouterKey) {
+    const openRouterModels = [
+      "cohere/north-mini-code:free",
+      "baidu/ernie-5.5-flash-preview:free",
+      "particle-ai/particle-1:free",
+      "nvidia/nemotron-3.5-lightning:free",
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "inclusionai/ling-3.2-flash:free"
+    ];
+
+    for (const model of openRouterModels) {
+      try {
+        const body = {
+          model,
+          messages: sanitizedMessages,
+          temperature,
+          max_tokens: Math.min(maxTokens, 2048)
+        };
+        if (responseFormat) body.response_format = responseFormat;
+
+        const res = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : 'https://lumixora.in',
+            "X-Title": "Lumixora AI"
+          },
+          body: JSON.stringify(body)
+        }, 8000);
+
+        if (res.ok) {
+          const data = await res.json();
+          const choice = data.choices && data.choices[0];
+          if (choice && choice.message) {
+            const rawContent = (choice.message.content || choice.message.reasoning || '').trim();
+            if (rawContent && rawContent.length > 5 && !rawContent.toLowerCase().startsWith("i'm sorry, but i can't help")) {
+              return rawContent;
+            }
+          }
+        } else if (res.status === 401 || res.status === 403) {
+          // OpenRouter key revoked/invalid — exit OpenRouter loop immediately
+          break;
+        }
+      } catch (orErr) {
+        console.warn(`OpenRouter (${model}) request note:`, orErr);
+      }
+    }
+  }
+
+  // 2. Secondary Engine: Groq API with fail-fast credential detection
   if (groqKey) {
     const hasImage = messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'image_url'));
-    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+    const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192'];
 
     for (const model of groqModels) {
       try {
@@ -74,17 +125,19 @@ export const callAICompletion = async (params) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify(body)
-        });
+        }, 5000);
 
         if (res.ok) {
           const data = await res.json();
           if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
             const rawContent = data.choices[0].message.content.trim();
-            // Reject empty or safety false-positive refusal responses
             if (rawContent && !rawContent.toLowerCase().startsWith("i'm sorry, but i can't help with that") && rawContent.length > 5) {
               return rawContent;
             }
           }
+        } else if (res.status === 401 || res.status === 403) {
+          // Groq key invalid/expired — break immediately to avoid 35-second stall
+          break;
         }
       } catch (groqErr) {
         console.warn(`Groq (${model}) request error:`, groqErr);
@@ -92,11 +145,11 @@ export const callAICompletion = async (params) => {
     }
   }
 
-  // 2. Secondary High-Speed Engine: Gemini 3.8 Flash API
-  if (geminiKey && geminiKey.length > 15) {
+  // 3. Fallback Engine: Gemini Flash API with fail-fast error handling
+  if (geminiKey && geminiKey.length > 20 && geminiKey.startsWith('AIzaSy')) {
     try {
       const promptText = sanitizedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-      const gRes = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`, {
+      const gRes = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +159,7 @@ export const callAICompletion = async (params) => {
             maxOutputTokens: Math.min(maxTokens, 2048)
           }
         })
-      });
+      }, 5000);
 
       if (gRes.ok) {
         const gData = await gRes.json();
@@ -117,52 +170,6 @@ export const callAICompletion = async (params) => {
       }
     } catch (gErr) {
       console.warn("Gemini request fallback note:", gErr);
-    }
-  }
-
-  // 3. Fallback: OpenRouter High-Availability Models (including verified free models)
-  if (openRouterKey) {
-    const openRouterModels = [
-      "nvidia/nemotron-3.5-lightning:free",
-      "liquid/lfm-2.5-2.6b:free",
-      "nvidia/nemotron-3.5-super-vl:free",
-      "google/gemma-4-26b-a4b-it:free",
-      "meta-llama/llama-3.3-70b-instruct"
-    ];
-
-    for (const model of openRouterModels) {
-      try {
-        const body = {
-          model,
-          messages: sanitizedMessages,
-          temperature,
-          max_tokens: Math.min(maxTokens, 1500)
-        };
-        if (responseFormat) body.response_format = responseFormat;
-
-        const res = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : 'https://lumixora.in',
-            "X-Title": "Lumixora AI"
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-            const content = data.choices[0].message.content.trim();
-            if (content.length > 5) {
-              return content;
-            }
-          }
-        }
-      } catch (orErr) {
-        console.warn(`OpenRouter (${model}) request note:`, orErr);
-      }
     }
   }
 
