@@ -276,15 +276,8 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
   }, [allAvailableColleges, searchQuery]);
 
   const displayedColleges = useMemo(() => {
-    if (searchQuery?.trim()) {
-      return filteredColleges;
-    }
-    if (showAllCampuses) {
-      return filteredColleges;
-    }
-    // Return the top 3 featured campuses matching reference image
-    return filteredColleges.slice(0, 3);
-  }, [filteredColleges, searchQuery, showAllCampuses]);
+    return filteredColleges;
+  }, [filteredColleges]);
 
   // AI & Domain Auto-Detection Intelligence with exact GPREC rules
   const detectedProfile = useMemo(() => {
@@ -1310,39 +1303,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
           </div>
         </div>
 
-        {/* Center: Floating Spotlight Search Bar */}
-        <div className="relative w-full max-w-xs sm:max-w-md hidden md:block">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search anything...  (Ctrl + K)"
-            className="w-full pl-9 pr-8 py-2 rounded-full bg-white/95 border border-slate-200/90 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 transition-all"
-          />
-          {searchQuery && (
-            <button 
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Right: Theme Toggle (Sun/Moon in floating circular glass button) */}
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setIsDarkMode(prev => !prev)}
-            className="w-10 h-10 rounded-full bg-white border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all cursor-pointer"
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            <Sun className={`w-4 h-4 ${isDarkMode ? 'text-amber-500' : 'text-slate-600'}`} />
-          </button>
-        </div>
-      </header>
+        </header>
 
       {/* Main Content Area */}
       <main className="relative z-10 flex-1 flex flex-col justify-center">
@@ -1545,24 +1506,16 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
             {/* "Our Campuses" Section matching 3D liquid glass pods */}
             <div id="campuses-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-2">
               
-              {/* Section Header: Our Campuses (Left) | Explore All Campuses (Right) */}
+              {/* Section Header: Our Campuses */}
               <div className="flex items-center justify-between mb-6">
-                <div>
+                <div className="flex items-center gap-3">
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                     Our Campuses
                   </h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+                    {displayedColleges.length} Active Campuses
+                  </span>
                 </div>
-
-                <button 
-                  type="button" 
-                  onClick={() => setShowAllCampuses(prev => !prev)}
-                  className="text-xs sm:text-sm font-bold text-slate-800 hover:text-[#4F46E5] flex items-center gap-1.5 transition-colors cursor-pointer group"
-                >
-                  <span>{showAllCampuses ? '← Show Featured Campuses' : 'Explore All Campuses'}</span>
-                  <div className="w-6 h-6 rounded-full bg-white/70 border border-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
-                    <ArrowRight className={`w-3.5 h-3.5 text-slate-700 group-hover:text-[#4F46E5] transition-transform ${showAllCampuses ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
               </div>
 
               {/* Campus Liquid Glass Pods Grid */}
@@ -1667,59 +1620,110 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center">
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedCollege(null);
                       setError('');
                     }}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 transition-colors bg-white/70 hover:bg-white px-2.5 py-1.5 rounded-full border border-slate-200/80 shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors bg-white/80 hover:bg-white px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-xs cursor-pointer"
                     title="Change Selected Portal"
                   >
-                    <ArrowLeft className="w-3 h-3 text-slate-500" />
+                    <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
                     <span>Change Portal</span>
                   </button>
-
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 border border-slate-200/90 text-xs font-bold text-slate-800 shadow-xs">
-                    {(() => {
-                      const sLogo = resolveCollegeLogo(selectedCollege?.logo, selectedCollege);
-                      return sLogo && (sLogo.startsWith('/') || sLogo.startsWith('http') || sLogo.includes('.png')) ? (
-                        <img src={sLogo} alt="" className="w-4 h-4 object-contain rounded-full" />
-                      ) : (
-                        <span className="text-xs">{sLogo || '🏛️'}</span>
-                      );
-                    })()}
-                    <span className="max-w-[100px] truncate">{selectedCollege.shortName || selectedCollege.code}</span>
-                    <ChevronDown className="w-3 h-3 text-slate-400" />
-                  </div>
                 </div>
               </div>
 
-              {/* Title with Floating 3D Graduation Cap & Sparkles */}
+              {/* Title with Floating 3D Cap/Crown & Sparkles */}
               <div className="relative flex flex-col items-center text-center my-3">
-                <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
+                {authMode === 'founder' ? (
+                  <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
+                    <Crown className="w-5 h-5 text-amber-950" />
+                  </div>
+                ) : (
+                  <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                )}
                 <div className="absolute -right-1 top-0 text-violet-500 animate-pulse pointer-events-none hidden sm:block">
                   <Sparkles className="w-4 h-4" />
                 </div>
 
                 <h2 className="text-2xl sm:text-[28px] font-black text-slate-900 tracking-tight leading-tight">
                   {isLogin ? 'Sign In ' : 'Create Account '}
-                  <span className="text-violet-600">
-                    ({authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student')})
+                  <span className={authMode === 'founder' ? "text-amber-600" : "text-violet-600"}>
+                    ({authMode === 'founder' ? 'Founder Console' : (authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student'))})
                   </span>
                 </h2>
                 <p className="text-slate-500 text-xs font-medium mt-1 max-w-sm">
-                  {selectedCollege.name}
+                  {authMode === 'founder' ? 'Lumixora Executive Office // Root Administration' : selectedCollege.name}
                 </p>
               </div>
 
-              {/* Institutional Shield & Fee Status Card with Campus Building Photo */}
+              {/* Institutional Shield & Fee Status Card / Founder Executive Access Card */}
               {(() => {
                 const primaryDomain = selectedCollege?.domains?.[0] || 'gprec.ac.in';
                 const campusPhoto = getCampusCardImage(selectedCollege, 0);
+
+                if (authMode === 'founder') {
+                  return (
+                    <div className="rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-yellow-50/90 p-3.5 mb-5 flex items-center justify-between gap-3 shadow-xs relative overflow-hidden">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                          <Crown className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <strong className="block font-bold text-amber-950 text-xs leading-tight">
+                              Lumixora Executive Office // Root Access
+                            </strong>
+                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 border border-amber-500/30 text-[10px] font-bold">
+                              👑 Root Clearance (Owner)
+                            </span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-amber-900/80">
+                            Welcome back, Shaik Sowban. Sign in with your registered founder email and root master passcode to access the Executive Administration Console.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="hidden sm:block shrink-0">
+                        <img 
+                          src="/images/founder_hero.png?v=4" 
+                          alt="Founder" 
+                          className="w-14 h-14 object-cover rounded-full shadow-md border-2 border-white ring-2 ring-amber-300/60"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (authMode === 'intern') {
+                  return (
+                    <div className="rounded-2xl border border-emerald-300/60 bg-gradient-to-r from-emerald-50/85 via-teal-50/80 to-cyan-50/85 p-3.5 mb-5 flex items-center justify-between gap-3 shadow-xs relative overflow-hidden">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <strong className="block font-bold text-slate-800 text-xs leading-tight">
+                              Lumixora Engineering Internship Track
+                            </strong>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 text-[10px] font-bold">
+                              ⚡ Verified Intern Track (₹0 Fee)
+                            </span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-slate-600">
+                            Sign in with your assigned <strong className="text-emerald-700 font-mono">Intern Ref ID</strong> or registered email, and secure access passcode.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div className="rounded-2xl border border-emerald-300/60 bg-gradient-to-r from-emerald-50/85 via-teal-50/80 to-cyan-50/85 p-3.5 mb-5 flex items-center justify-between gap-3 shadow-xs relative overflow-hidden">
                     <div className="flex items-start gap-2.5 flex-1 min-w-0">
@@ -1731,22 +1735,12 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                           <strong className="block font-bold text-slate-800 text-xs leading-tight">
                             {selectedCollege.shortName || selectedCollege.code || 'Official'} Verified Campus Access
                           </strong>
-                          {authMode === 'intern' ? (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 text-[10px] font-bold">
-                              ⚡ Verified Intern Track (₹0 Fee)
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold inline-flex items-center gap-1">
-                              <span>⚡</span> One-Time Access Fee
-                            </span>
-                          )}
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold inline-flex items-center gap-1">
+                            <span>⚡</span> One-Time Access Fee
+                          </span>
                         </div>
                         <p className="text-[11px] leading-relaxed text-slate-600">
-                          {authMode === 'intern' ? (
-                            <>Sign in with your assigned <strong className="text-emerald-700 font-mono">Intern Ref ID</strong> or registered email, and secure passcode.</>
-                          ) : (
-                            <>Students of <strong className="text-slate-800 font-bold">{selectedCollege.name || selectedCollege.shortName}</strong> receive full access with a one-time <strong className="text-emerald-700 font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-emerald-700 underline">@{primaryDomain}</strong> email.</>
-                          )}
+                          Students of <strong className="text-slate-800 font-bold">{selectedCollege.name || selectedCollege.shortName}</strong> receive full access with a one-time <strong className="text-emerald-700 font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-emerald-700 underline">@{primaryDomain}</strong> email.
                         </p>
                       </div>
                     </div>
@@ -1906,9 +1900,12 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                   <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
                     <User className="w-3.5 h-3.5 text-slate-500" />
                     <span>
-                      {authMode === 'intern' 
-                        ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
-                        : `${selectedCollege?.shortName || selectedCollege?.code || 'Campus'} Official Email`
+                      {authMode === 'founder'
+                        ? 'Founder Official Email'
+                        : (authMode === 'intern' 
+                            ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
+                            : `${selectedCollege?.shortName || selectedCollege?.code || 'Campus'} Official Email`
+                          )
                       }
                     </span>
                   </label>
@@ -1942,7 +1939,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                 <div>
                   <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
                     <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    <span>{authMode === 'intern' ? 'Access Passcode / PIN' : 'Password'}</span>
+                    <span>{authMode === 'founder' ? 'Founder Root Passcode' : (authMode === 'intern' ? 'Access Passcode / PIN' : 'Password')}</span>
                   </label>
                   <div className="relative flex items-center bg-white/70 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20 rounded-2xl shadow-xs transition-all">
                     <Lock className="w-4 h-4 text-slate-400 ml-4 shrink-0" />
@@ -2066,9 +2063,11 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                   ) : (
                     <>
                       <span className="tracking-wide">
-                        {isLogin 
-                          ? 'Sign In to Workspace' 
-                          : (isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account')}
+                        {authMode === 'founder'
+                          ? 'Sign In to Executive Console'
+                          : (isLogin 
+                              ? 'Sign In to Workspace' 
+                              : (isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account'))}
                       </span>
                       <span className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                         <ArrowRight className="w-4 h-4 text-white" />
