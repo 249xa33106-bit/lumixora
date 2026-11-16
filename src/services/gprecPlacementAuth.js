@@ -11,7 +11,8 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '249xa33106',
   '249xa33112',
   '249xa33096',
-  '249xa33091'
+  '249xa33091',
+  '259xa05013'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
@@ -132,6 +133,7 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
 
   const rollUpper = normalized.toUpperCase();
   const scholarName = `GPREC Scholar (${rollUpper})`;
+  const department = normalized.includes('05') ? 'CSE' : (normalized.includes('33') ? 'CSM' : (normalized.includes('04') ? 'ECE' : 'CSE'));
 
   // Construct verified user object (zero fee check, fully unlocked)
   const userProfile = {
@@ -144,7 +146,7 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
     role: 'student',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
     collegeCode: 'GPREC',
-    department: 'CSM',
+    department,
     emailVerified: true,
     is_approved: true,
     isApproved: true,

@@ -45,7 +45,8 @@ const PILOT_WHITELIST_ROLLS = [
   '249xa33106',
   '249xa33112',
   '249xa33096',
-  '249xa33091'
+  '249xa33091',
+  '259xa05013'
 ];
 
 // 10 Official GPREC Placement Cell Administration Modules
@@ -420,8 +421,8 @@ export default function GprecTpoPortal({ user, setActiveTab, initialTab }) {
             rollNumber: upper,
             rollLower: roll,
             email: `${roll}@gprec.ac.in`,
-            department: 'CSM',
-            year: '3rd Year',
+            department: roll.includes('05') ? 'CSE' : 'CSM',
+            year: roll.startsWith('259') ? '2nd Year' : '3rd Year',
             cgpa: 8.5,
             attendancePct: 88,
             activeBacklogs: 0,
