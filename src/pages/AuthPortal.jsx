@@ -224,7 +224,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
 
   const getCampusCardImage = (col, idx) => {
     if (col.id === 'gprec' || col.code === 'GPREC') {
-      return '/images/campuses/campus_gprec.jpg';
+      return '/images/campuses/campus_gprec.jpg?v=2';
     }
     if (col.id === 'ashoka' || col.code === 'ASHOKA') {
       return '/images/campuses/campus_ashoka.jpg';
@@ -251,7 +251,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
       return '/images/campuses/campus_mits.jpg';
     }
     const localFallbacks = [
-      '/images/campuses/campus_gprec.jpg',
+      '/images/campuses/campus_gprec.jpg?v=2',
       '/images/campuses/campus_ashoka.jpg',
       '/images/campuses/campus_annama.jpg',
       '/images/campuses/campus_bheema.jpg',
@@ -1733,14 +1733,14 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <strong className="block font-bold text-slate-800 text-xs leading-tight">
-                            {selectedCollege.shortName || selectedCollege.code || 'Official'} Verified Campus Access
+                            Verified Campus Access
                           </strong>
                           <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold inline-flex items-center gap-1">
                             <span>⚡</span> One-Time Access Fee
                           </span>
                         </div>
                         <p className="text-[11px] leading-relaxed text-slate-600">
-                          Students of <strong className="text-slate-800 font-bold">{selectedCollege.name || selectedCollege.shortName}</strong> receive full access with a one-time <strong className="text-emerald-700 font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-emerald-700 underline">@{primaryDomain}</strong> email.
+                          Full institutional platform access with a one-time <strong className="text-emerald-700 font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-emerald-700 underline font-mono">@{primaryDomain}</strong> email.
                         </p>
                       </div>
                     </div>
@@ -1751,7 +1751,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                         <img 
                           src={campusPhoto} 
                           alt="" 
-                          className="w-24 h-18 object-cover rounded-xl shadow-md border-2 border-white"
+                          className="w-24 sm:w-28 h-18 sm:h-20 object-cover object-center rounded-xl shadow-md border-2 border-white"
                         />
                       </div>
                     )}
@@ -1904,7 +1904,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                         ? 'Founder Official Email'
                         : (authMode === 'intern' 
                             ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
-                            : `${selectedCollege?.shortName || selectedCollege?.code || 'Campus'} Official Email`
+                            : 'Official Campus Email'
                           )
                       }
                     </span>
