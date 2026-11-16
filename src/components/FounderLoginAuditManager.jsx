@@ -188,21 +188,21 @@ export default function FounderLoginAuditManager() {
   return (
     <div className="space-y-6 animate-fade-in text-white pb-12">
       {/* Top Header Card */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-white/10 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0B132B] via-[#111C44] to-[#0B132B] border border-[#C5A059]/40 shadow-xl shadow-black/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="p-2.5 rounded-xl bg-[#C5A059]/15 border border-[#C5A059]/35 text-[#C5A059] shadow-inner">
+              <ShieldCheck className="w-5 h-5 text-[#C5A059]" />
             </div>
-            <h2 className="text-xl font-black text-white font-sora">
+            <h2 className="text-xl font-black text-white font-sora tracking-tight">
               Login Activity & Time Log Audit Center
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 shadow-2xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
               Live Tracking
             </span>
           </div>
-          <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-200 max-w-2xl leading-relaxed font-normal">
             Real-time multi-tenant telemetry tracking logins, session durations, and timestamps for all Scholars, TPO Placement Officers, and Faculty across GPREC & Lumixora.
           </p>
         </div>
@@ -212,15 +212,15 @@ export default function FounderLoginAuditManager() {
           <button
             onClick={() => loadLogs(true)}
             disabled={isRefreshing}
-            className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-semibold text-slate-100 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
             title="Refresh live activity feed"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#C5A059]' : 'text-slate-300'}`} />
             <span>{isRefreshing ? 'Syncing...' : 'Sync Live'}</span>
           </button>
           <button
             onClick={handleExportExcel}
-            className="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-bold text-emerald-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-bold text-emerald-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
             title="Export all logs to Excel spreadsheet"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -228,7 +228,7 @@ export default function FounderLoginAuditManager() {
           </button>
           <button
             onClick={handleExportCSV}
-            className="px-3.5 py-2 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-xs font-bold text-blue-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-[#C5A059]/20 hover:bg-[#C5A059]/30 border border-[#C5A059]/40 text-xs font-bold text-[#E5C158] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
             title="Export to CSV"
           >
             <Download className="w-3.5 h-3.5" />
@@ -239,49 +239,49 @@ export default function FounderLoginAuditManager() {
 
       {/* Real-time Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-[#0B132B] border border-white/10 hover:border-[#C5A059]/40 transition-all flex flex-col justify-between shadow-md">
           <div className="flex items-center justify-between text-slate-400 mb-2">
             <span className="text-xs font-semibold">Total Logins</span>
             <Activity className="w-4 h-4 text-slate-400" />
           </div>
           <div className="text-2xl font-black text-white">{metrics.total}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Recorded audit events</div>
+          <div className="text-[11px] text-slate-400 mt-1">Recorded audit events</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/20 hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-[#0B132B] border border-emerald-500/30 hover:border-emerald-500/50 transition-all flex flex-col justify-between shadow-md">
           <div className="flex items-center justify-between text-emerald-400 mb-2">
             <span className="text-xs font-semibold">Active Right Now</span>
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
           </div>
           <div className="text-2xl font-black text-emerald-400">{metrics.active}</div>
-          <div className="text-[11px] text-emerald-500/80 mt-1">Live active sessions</div>
+          <div className="text-[11px] text-emerald-400/80 mt-1">Live active sessions</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-blue-500/[0.05] border border-blue-500/20 hover:border-blue-500/40 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-[#0B132B] border border-blue-500/30 hover:border-blue-500/50 transition-all flex flex-col justify-between shadow-md">
           <div className="flex items-center justify-between text-blue-400 mb-2">
             <span className="text-xs font-semibold">TPO Officers</span>
             <Building2 className="w-4 h-4 text-blue-400" />
           </div>
           <div className="text-2xl font-black text-blue-300">{metrics.tpo}</div>
-          <div className="text-[11px] text-blue-500/80 mt-1">Dean & Coordinators</div>
+          <div className="text-[11px] text-blue-400/80 mt-1">Dean & Coordinators</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-purple-500/[0.05] border border-purple-500/20 hover:border-purple-500/40 transition-all flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-[#0B132B] border border-purple-500/30 hover:border-purple-500/50 transition-all flex flex-col justify-between shadow-md">
           <div className="flex items-center justify-between text-purple-400 mb-2">
             <span className="text-xs font-semibold">Faculty & Mentors</span>
             <Award className="w-4 h-4 text-purple-400" />
           </div>
           <div className="text-2xl font-black text-purple-300">{metrics.faculty}</div>
-          <div className="text-[11px] text-purple-500/80 mt-1">Faculty & Mentorship</div>
+          <div className="text-[11px] text-purple-400/80 mt-1">Faculty & Mentorship</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-amber-500/[0.05] border border-amber-500/20 hover:border-amber-500/40 transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-400 mb-2">
+        <div className="p-4 rounded-xl bg-[#0B132B] border border-[#C5A059]/35 hover:border-[#C5A059]/60 transition-all flex flex-col justify-between shadow-md">
+          <div className="flex items-center justify-between text-[#C5A059] mb-2">
             <span className="text-xs font-semibold">Avg Session Time</span>
-            <Clock className="w-4 h-4 text-amber-400" />
+            <Clock className="w-4 h-4 text-[#C5A059]" />
           </div>
-          <div className="text-2xl font-black text-amber-300">{formatDuration(metrics.avgSec)}</div>
-          <div className="text-[11px] text-amber-500/80 mt-1">Per active session</div>
+          <div className="text-2xl font-black text-[#E5C158]">{formatDuration(metrics.avgSec)}</div>
+          <div className="text-[11px] text-[#C5A059]/80 mt-1">Per active session</div>
         </div>
       </div>
 
@@ -292,13 +292,13 @@ export default function FounderLoginAuditManager() {
             onClick={() => setActiveCategory('all')}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeCategory === 'all'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                ? 'bg-[#C5A059] text-[#0B132B] shadow-md shadow-[#C5A059]/20'
+                : 'bg-[#0B132B] text-slate-300 hover:bg-[#111C44] border border-white/10'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
             <span>All Sessions</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'all' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-white/10 text-slate-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'all' ? 'bg-[#0B132B]/20 text-[#0B132B] font-black' : 'bg-white/10 text-slate-300'}`}>
               {metrics.total}
             </span>
           </button>
@@ -308,12 +308,12 @@ export default function FounderLoginAuditManager() {
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeCategory === 'student'
                 ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                : 'bg-[#0B132B] text-slate-300 hover:bg-[#111C44] border border-white/10'
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5" />
             <span>Scholars / Students</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'student' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-white/10 text-slate-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'student' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-white/10 text-slate-300'}`}>
               {metrics.students}
             </span>
           </button>
@@ -323,12 +323,12 @@ export default function FounderLoginAuditManager() {
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeCategory === 'tpo'
                 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                : 'bg-[#0B132B] text-slate-300 hover:bg-[#111C44] border border-white/10'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
             <span>TPO Officers</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'tpo' ? 'bg-black/20 text-white font-black' : 'bg-white/10 text-slate-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'tpo' ? 'bg-black/20 text-white font-black' : 'bg-white/10 text-slate-300'}`}>
               {metrics.tpo}
             </span>
           </button>
@@ -338,12 +338,12 @@ export default function FounderLoginAuditManager() {
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeCategory === 'faculty'
                 ? 'bg-purple-500 text-white shadow-md shadow-purple-500/20'
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                : 'bg-[#0B132B] text-slate-300 hover:bg-[#111C44] border border-white/10'
             }`}
           >
             <Award className="w-3.5 h-3.5" />
             <span>Faculty & Mentors</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'faculty' ? 'bg-black/20 text-white font-black' : 'bg-white/10 text-slate-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'faculty' ? 'bg-black/20 text-white font-black' : 'bg-white/10 text-slate-300'}`}>
               {metrics.faculty}
             </span>
           </button>
@@ -353,12 +353,12 @@ export default function FounderLoginAuditManager() {
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeCategory === 'active'
                 ? 'bg-emerald-400 text-slate-950 shadow-md shadow-emerald-400/20'
-                : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                : 'bg-[#0B132B] text-slate-300 hover:bg-[#111C44] border border-white/10'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             <span>Active Now</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'active' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-white/10 text-slate-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'active' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-white/10 text-slate-300'}`}>
               {metrics.active}
             </span>
           </button>
@@ -369,7 +369,7 @@ export default function FounderLoginAuditManager() {
           <select
             value={selectedPortal}
             onChange={(e) => setSelectedPortal(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-300 focus:outline-none focus:border-amber-400"
+            className="px-3 py-1.5 rounded-xl bg-[#0B132B] border border-white/15 text-xs text-slate-200 focus:outline-none focus:border-[#C5A059]"
           >
             <option value="all">All Portals</option>
             <option value="Placement Suite">Placement Suite (gprec.lumixora.in)</option>
@@ -383,7 +383,7 @@ export default function FounderLoginAuditManager() {
           <select
             value={timeFilter}
             onChange={(e) => setTimeFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-300 focus:outline-none focus:border-amber-400"
+            className="px-3 py-1.5 rounded-xl bg-[#0B132B] border border-white/15 text-xs text-slate-200 focus:outline-none focus:border-[#C5A059]"
           >
             <option value="all">All Time</option>
             <option value="today">Today Only</option>
@@ -394,13 +394,13 @@ export default function FounderLoginAuditManager() {
 
       {/* Search Bar */}
       <div className="relative">
-        <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by student name, roll number, officer email (e.g. dean.placements@gprec.ac.in), branch..."
-          className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all"
+          className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#0B132B] border border-white/15 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#C5A059] transition-all shadow-sm"
         />
         {searchQuery && (
           <button 
@@ -413,10 +413,10 @@ export default function FounderLoginAuditManager() {
       </div>
 
       {/* Login History & Time Logs Table */}
-      <div className="rounded-2xl border border-white/10 bg-slate-900/60 overflow-hidden shadow-2xl">
+      <div className="rounded-2xl border border-white/10 bg-[#0B132B] overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-white/[0.03] text-slate-400 uppercase tracking-wider text-[10px] font-bold border-b border-white/10">
+            <thead className="bg-[#111C44] text-slate-200 uppercase tracking-wider text-[10px] font-bold border-b border-white/10">
               <tr>
                 <th className="px-5 py-3.5">User Profile & Identity</th>
                 <th className="px-5 py-3.5">Role / Institutional Scope</th>
