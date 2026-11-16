@@ -587,14 +587,21 @@ function App() {
     }
   };
 
-  // Save pending join link intent for unauthenticated users
-    useEffect(() => {
+  // Save pending join link intent or handle direct #login / #portal for unauthenticated users
+  useEffect(() => {
     if (!isAuthenticated) {
-      const hash = window.location.hash.substring(1);
-      if (hash.startsWith('join-group/')) {
-        sessionStorage.setItem('lumixora_pending_join', hash);
-        setShowLogin('student'); // Auto-open login if they followed a join link
-      }
+      const checkHash = () => {
+        const hash = window.location.hash.substring(1);
+        if (hash.startsWith('join-group/')) {
+          sessionStorage.setItem('lumixora_pending_join', hash);
+          setShowLogin('student');
+        } else if (hash === 'login' || hash === 'portal' || hash === 'select-portal' || hash === 'auth') {
+          setShowLogin('student');
+        }
+      };
+      checkHash();
+      window.addEventListener('hashchange', checkHash);
+      return () => window.removeEventListener('hashchange', checkHash);
     }
   }, [isAuthenticated]);
 
@@ -1823,13 +1830,13 @@ function App() {
             <CursorGlow />
             <button 
               onClick={() => setShowLogin(null)} 
-              className="fixed top-6 left-6 z-[99999] group px-4 py-2 bg-zinc-950/70 hover:bg-zinc-900/90 text-zinc-400 hover:text-white text-xs font-mono font-semibold tracking-wider uppercase rounded-full backdrop-blur-2xl transition-all duration-300 border border-white/[0.08] hover:border-white/20 flex items-center gap-2 shadow-2xl hover:scale-105 active:scale-95 cursor-pointer"
+              className="fixed bottom-6 right-6 z-[99999] group px-4 py-2 bg-zinc-950/70 hover:bg-zinc-900/90 text-zinc-400 hover:text-white text-xs font-mono font-semibold tracking-wider uppercase rounded-full backdrop-blur-2xl transition-all duration-300 border border-white/[0.08] hover:border-white/20 flex items-center gap-2 shadow-2xl hover:scale-105 active:scale-95 cursor-pointer"
               title="Return to Lumixora Home"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:-translate-x-0.5 transition-all" />
               <span>Back to Home</span>
             </button>
-            <AuthPortal onLogin={handleLogin} mode={showLogin} />
+            <AuthPortal onLogin={handleLogin} mode={showLogin} onBackHome={() => setShowLogin(null)} />
             {renderUpdateModal()}
           </ToastProvider>
         </ThemeProvider>

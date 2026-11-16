@@ -3,7 +3,7 @@ import {
   Eye, EyeOff, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
   Building2, GraduationCap, ShieldCheck, AlertCircle, RefreshCw, 
   ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift, Crown
-} from 'lucide-react';
+, Search, Sun, Moon, Megaphone, MapPin, Users } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
 import { 
@@ -24,8 +24,12 @@ import { checkUserAccessStatus } from '../utils/authSecurity';
 import { validateInternLogin } from '../services/internDbService';
 import { internshipDb } from '../services/internshipDb';
 import CollegeAccessFeeModal from '../components/CollegeAccessFeeModal';
+import Realistic3DLogo from '../components/Realistic3DLogo';
 
-export default function AuthPortal({ onLogin, mode = 'student' }) {
+export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showAllCampuses, setShowAllCampuses] = useState(false);
   const [feeModalUser, setFeeModalUser] = useState(null);
   const [feeModalMode, setFeeModalMode] = useState('login'); // 'login' | 'registration'
   const [selectedCollege, setSelectedCollege] = useState(() => {
@@ -117,6 +121,42 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
     }
   }, []);
 
+  // Triple-click handler on founder picture to trigger secret Founder Access
+  const founderClicksRef = React.useRef(0);
+  const founderClickTimeoutRef = React.useRef(null);
+
+  const triggerFounderMode = () => {
+    setAuthMode('founder');
+    setSelectedCollege({ 
+      id: 'founder', 
+      name: 'Lumixora Executive Office', 
+      shortName: 'Founder Console', 
+      code: 'FOUNDER', 
+      logo: '👑' 
+    }); 
+    setCollegeName('Lumixora Executive Administration');
+    setEmail('founder@lumixora.com');
+    setError('');
+  };
+
+  const handleFounderPictureClick = (e) => {
+    if (e?.detail === 3) {
+      triggerFounderMode();
+      return;
+    }
+    founderClicksRef.current += 1;
+    if (founderClicksRef.current >= 3) {
+      triggerFounderMode();
+      founderClicksRef.current = 0;
+      if (founderClickTimeoutRef.current) clearTimeout(founderClickTimeoutRef.current);
+      return;
+    }
+    if (founderClickTimeoutRef.current) clearTimeout(founderClickTimeoutRef.current);
+    founderClickTimeoutRef.current = setTimeout(() => {
+      founderClicksRef.current = 0;
+    }, 1500);
+  };
+
   useEffect(() => {
     if (mode) {
       setAuthMode(mode);
@@ -181,6 +221,70 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   const allAvailableColleges = useMemo(() => {
     return mergeCollegesWithDefaults(customColleges);
   }, [customColleges]);
+
+  const getCampusCardImage = (col, idx) => {
+    if (col.id === 'gprec' || col.code === 'GPREC') {
+      return '/images/campuses/campus_gprec.jpg';
+    }
+    if (col.id === 'ashoka' || col.code === 'ASHOKA') {
+      return '/images/campuses/campus_ashoka.jpg';
+    }
+    if (col.id === 'annamacharya' || col.code === 'AU' || col.code === 'AITS') {
+      return '/images/campuses/campus_annama.jpg';
+    }
+    if (col.id === 'bits' || col.code === 'BITS') {
+      return '/images/campuses/campus_bheema.jpg';
+    }
+    if (col.id === 'svce' || col.code === 'SVCE') {
+      return '/images/campuses/campus_svce.jpg';
+    }
+    if (col.id === 'narayana' || col.code === 'NEC') {
+      return '/images/campuses/campus_narayana.jpg';
+    }
+    if (col.id === 'rgukt' || col.code === 'RGUKT') {
+      return '/images/campuses/campus_rgukt.jpg';
+    }
+    if (col.id === 'vitap' || col.code === 'VIT-AP') {
+      return '/images/campuses/campus_vitap.jpg';
+    }
+    if (col.id === 'mits' || col.code === 'MITS') {
+      return '/images/campuses/campus_mits.jpg';
+    }
+    const localFallbacks = [
+      '/images/campuses/campus_gprec.jpg',
+      '/images/campuses/campus_ashoka.jpg',
+      '/images/campuses/campus_annama.jpg',
+      '/images/campuses/campus_bheema.jpg',
+      '/images/campuses/campus_svce.jpg',
+      '/images/campuses/campus_narayana.jpg',
+      '/images/campuses/campus_rgukt.jpg',
+      '/images/campuses/campus_vitap.jpg',
+      '/images/campuses/campus_mits.jpg'
+    ];
+    return localFallbacks[idx % localFallbacks.length];
+  };
+
+  const filteredColleges = useMemo(() => {
+    if (!searchQuery?.trim()) return allAvailableColleges;
+    const q = searchQuery.toLowerCase().trim();
+    return allAvailableColleges.filter(col => 
+      col.name?.toLowerCase().includes(q) ||
+      col.shortName?.toLowerCase().includes(q) ||
+      col.code?.toLowerCase().includes(q) ||
+      col.location?.toLowerCase().includes(q)
+    );
+  }, [allAvailableColleges, searchQuery]);
+
+  const displayedColleges = useMemo(() => {
+    if (searchQuery?.trim()) {
+      return filteredColleges;
+    }
+    if (showAllCampuses) {
+      return filteredColleges;
+    }
+    // Return the top 3 featured campuses matching reference image
+    return filteredColleges.slice(0, 3);
+  }, [filteredColleges, searchQuery, showAllCampuses]);
 
   // AI & Domain Auto-Detection Intelligence with exact GPREC rules
   const detectedProfile = useMemo(() => {
@@ -1174,220 +1278,329 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#06070A] text-slate-100 flex items-center justify-center relative overflow-hidden py-12 px-4 selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-gradient-to-b from-[#F2F5FB] via-[#EAF0F9] to-[#DFE7F3] text-slate-900 flex flex-col justify-between relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 font-sans transition-colors duration-300">
       
-      {/* Tesla Cyber Grid & Subtle Atmospheric Horizon */}
-      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] opacity-25 pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-cyan-500/[0.04] via-blue-600/[0.015] to-transparent pointer-events-none" />
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-cyan-400/[0.04] rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-10 w-[500px] h-[300px] bg-purple-600/[0.03] rounded-full blur-[150px] pointer-events-none" />
+      {/* Background Ambience: Subtle grid + Soft curved lavender gradient glow on top-right */}
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(99,102,241,0.04)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[55vw] h-[650px] bg-gradient-to-bl from-indigo-100/70 via-purple-100/35 to-transparent rounded-bl-[200px] pointer-events-none -z-0" />
 
-      {/* Step 1: Institutional Portal Selection Screen (Tesla UI/UX) */}
-      {!selectedCollege ? (
-        <div className="z-10 w-full max-w-5xl p-4 sm:p-8 animate-fade-in-up">
-          <div className="text-center mb-10 space-y-3.5">
-            {/* Status Beacon Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-zinc-300 text-[11px] font-mono tracking-widest uppercase shadow-2xl backdrop-blur-xl">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-              <span>Lumixora Multi-Campus Network // Active Fleet</span>
-            </div>
+      {/* Top Navigation Bar (Tesla / Apple Grade Modern Header) */}
+      <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        {/* Brand Left: Sparkle Logo + Lumixora | A Product of VYOMRA */}
+        <div 
+          onClick={() => {
+            if (selectedCollege) {
+              setSelectedCollege(null);
+              setError('');
+            }
+          }}
+          className={`flex items-center gap-3 select-none ${selectedCollege ? 'cursor-pointer group' : ''}`}
+        >
+          {/* Authentic Lumixora 3D Brand Logo */}
+          <Realistic3DLogo size="sm" showGlow={true} interactive={true} />
 
-            {/* Precision Headline */}
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-white">Portal</span>
-            </h1>
-
-            {/* Architectural Subtext */}
-            <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto font-normal leading-relaxed">
-              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : (authMode === 'intern' ? 'Engineering Internship Terminal' : (authMode === 'founder' ? 'Executive Administration Console' : 'Student AI Placement Commander & Learning Engine'))}.
-            </p>
-
-            {/* Tesla Monolithic Recessed Segmented Role Track */}
-            <div className="pt-2 flex justify-center">
-              <div className="p-1.5 rounded-2xl bg-zinc-950/80 border border-white/[0.08] backdrop-blur-2xl inline-flex flex-wrap items-center justify-center gap-1 shadow-2xl">
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
-                    authMode === 'student'
-                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <GraduationCap className={`w-3.5 h-3.5 ${authMode === 'student' ? 'text-cyan-400' : 'text-zinc-500'}`} />
-                  <span>Student Portal</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
-                    authMode === 'faculty'
-                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <Award className={`w-3.5 h-3.5 ${authMode === 'faculty' ? 'text-indigo-400' : 'text-zinc-500'}`} />
-                  <span>Faculty Portal</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { 
-                    setAuthMode('intern'); 
-                    setSelectedCollege({ id: 'intern', name: 'Lumixora Autonomous Engineering Internship Program', shortName: 'Lumixora Interns', code: 'INTERN', logo: '🚀' }); 
-                    setCollegeName('Lumixora Autonomous Systems');
-                    setError(''); 
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
-                    authMode === 'intern'
-                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <Briefcase className={`w-3.5 h-3.5 ${authMode === 'intern' ? 'text-violet-400' : 'text-zinc-500'}`} />
-                  <span>Intern Portal</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { 
-                    setAuthMode('founder'); 
-                    setSelectedCollege({ id: 'founder', name: 'Lumixora Executive Office', shortName: 'Founder Console', code: 'FOUNDER', logo: '👑' }); 
-                    setCollegeName('Lumixora Executive Administration');
-                    setEmail('founder@lumixora.com');
-                    setError(''); 
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
-                    authMode === 'founder'
-                      ? 'bg-amber-400/15 text-amber-200 shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-amber-400/30 backdrop-blur-md'
-                      : 'text-zinc-400 hover:text-amber-300 hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <Crown className={`w-3.5 h-3.5 ${authMode === 'founder' ? 'text-amber-400' : 'text-amber-500/60'}`} />
-                  <span>Founder Access</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Campus Grid (Automotive Glass HUD Consoles) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allAvailableColleges.map((col, idx) => {
-              const displayLogo = resolveCollegeLogo(col.logo, col);
-              const nodeNum = String(idx + 1).padStart(2, '0');
-              return (
-                <div
-                  key={col.id}
-                  onClick={() => {
-                    setSelectedCollege({ ...col, logo: displayLogo });
-                    setCollegeName(col.shortName || col.name || col.code);
-                    setError('');
-                    if (email && col.domains && !col.domains.some(d => email.toLowerCase().includes(d.toLowerCase()))) {
-                      setEmail('');
-                    }
-                  }}
-                  className="group relative rounded-3xl p-6 sm:p-7 bg-gradient-to-b from-white/[0.035] via-zinc-950/60 to-black/80 border border-white/[0.08] hover:border-cyan-400/50 hover:bg-white/[0.05] transition-all duration-500 flex flex-col justify-between shadow-2xl hover:shadow-[0_0_35px_rgba(6,182,212,0.14)] cursor-pointer backdrop-blur-2xl overflow-hidden hover:-translate-y-1.5"
-                >
-                  {/* Tesla Laser-Edge Highlight */}
-                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
-                  {/* Subtle Internal Glow Sphere */}
-                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-400/20 transition-all duration-500 pointer-events-none" />
-
-                  <div>
-                    {/* Top Status & Emblem Bar */}
-                    <div className="flex items-start justify-between gap-4 mb-5">
-                      <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/10 p-2.5 flex items-center justify-center shadow-inner group-hover:scale-105 group-hover:border-cyan-400/30 transition-all duration-300">
-                        {displayLogo && (displayLogo.startsWith('/') || displayLogo.startsWith('http') || displayLogo.includes('.png')) ? (
-                          <img src={displayLogo} alt={col.shortName || col.name} className="w-full h-full object-contain filter drop-shadow-md" />
-                        ) : (
-                          <span className="text-2xl">{displayLogo || '🏛️'}</span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="font-mono text-[10px] font-bold tracking-widest text-zinc-400 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                          {col.code || 'NODE'} // {nodeNum}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          ONLINE
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Institutional Title */}
-                    <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug mb-1.5 tracking-tight">
-                      {col.name}
-                    </h3>
-                    
-                    {/* Minimalist Lead Description */}
-                    <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed mb-5">
-                      {col.description || 'Premier autonomous technical institution accredited for engineering and placement excellence.'}
-                    </p>
-                  </div>
-
-                  {/* Telemetry Specs Strip & Action Trigger */}
-                  <div className="space-y-4 pt-4 border-t border-white/[0.06]">
-                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                      <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">Region</span>
-                        <span className="text-zinc-300 font-bold truncate block">{col.location || 'Andhra Pradesh'}</span>
-                      </div>
-                      <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">Pass Tariff</span>
-                        <span className="text-cyan-400 font-bold block">₹10 Lifetime</span>
-                      </div>
-                    </div>
-
-                    {/* Tesla Launch Bar Trigger */}
-                    <div className="w-full py-3 px-4 rounded-xl bg-white/[0.03] group-hover:bg-cyan-500/10 border border-white/[0.08] group-hover:border-cyan-400/40 text-xs font-semibold tracking-wider uppercase text-zinc-300 group-hover:text-cyan-300 flex items-center justify-between transition-all duration-300 shadow-sm">
-                      <span className="text-[11px] tracking-widest font-mono">
-                        INITIALIZE {authMode === 'faculty' ? 'FACULTY' : 'STUDENT'} TERMINAL
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Institutional Expansion Request Console (Tesla Fleet Expansion Style) */}
-          <div className="mt-10 rounded-3xl bg-zinc-950/60 border border-white/[0.08] p-6 sm:p-8 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/[0.03] rounded-full blur-3xl pointer-events-none" />
-
-            <div className="flex items-center gap-4 text-center sm:text-left">
-              <div className="w-13 h-13 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-cyan-400 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                <Building2 className="w-6 h-6 text-cyan-400" />
-              </div>
-              <div>
-                <div className="inline-flex items-center gap-1.5 font-mono text-[10px] text-zinc-400 tracking-widest uppercase mb-1">
-                  <span>NETWORK EXPANSION</span>
-                  <span>•</span>
-                  <span className="text-cyan-400">PARTNER ONBOARDING</span>
-                </div>
-                <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  Your Institution Not Listed in the Active Fleet?
-                </h4>
-                <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
-                  Request institutional onboarding to deploy Lumixora’s autonomous syllabus mapping, AI placement suites, and verified student credentials on your university campus.
-                </p>
-              </div>
-            </div>
-
-            <a
-              href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20to%20Lumixora%20Student%20Login&body=Hi%20Lumixora%20Team%2C%0A%0AWe%20would%20like%20to%20add%20our%20college%20to%20the%20Lumixora%20Student%20Login%20portal.%0A%0ACollege%20Name%3A%20%0ALocation%20(City%2C%20State)%3A%20%0AOfficial%20Website%20%2F%20Domain%3A%20%0AContact%20Person%20%2F%20Phone%3A%20%0A%0AThank%20you!"
-              className="shrink-0 px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white text-zinc-200 hover:text-black font-semibold text-xs tracking-wider uppercase flex items-center gap-2 border border-white/10 hover:border-white shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer font-mono"
-            >
-              <Mail className="w-4 h-4" />
-              <span>Request Onboarding</span>
-            </a>
+          <div className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+              Lumixora
+            </span>
+            <span className="text-slate-300 font-light text-lg">|</span>
+            <span className="text-[11px] sm:text-xs font-bold text-slate-800 tracking-wider uppercase">
+              A Product of VYOMRA
+            </span>
           </div>
         </div>
-      ) : (
-        /* Step 2: Advanced Auth Card */
+
+        {/* Center: Floating Spotlight Search Bar */}
+        <div className="relative w-full max-w-xs sm:max-w-md hidden md:block">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search anything...  (Ctrl + K)"
+            className="w-full pl-9 pr-8 py-2 rounded-full bg-white/95 border border-slate-200/90 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 transition-all"
+          />
+          {searchQuery && (
+            <button 
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Right: Theme Toggle (Sun/Moon in floating circular glass button) */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsDarkMode(prev => !prev)}
+            className="w-10 h-10 rounded-full bg-white border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-sm transition-all cursor-pointer"
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            <Sun className={`w-4 h-4 ${isDarkMode ? 'text-amber-500' : 'text-slate-600'}`} />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="relative z-10 flex-1 flex flex-col justify-center">
+        {!selectedCollege ? (
+          /* Step 1: 3D Futuristic Liquid Glass Portal Selection (Tesla / Apple Vision Grade) */
+          <div className="w-full animate-fade-in-up relative pb-16">
+            
+            {/* Soft ambient atmosphere */}
+            <div className="absolute top-0 right-0 w-[50vw] h-[480px] bg-gradient-to-bl from-indigo-100/60 via-purple-100/30 to-transparent rounded-bl-[160px] pointer-events-none -z-0" />
+
+            {/* Decorative Floating Crystal Orbs */}
+            <div className="absolute top-72 right-1/3 w-5 h-5 rounded-full bg-white/30 backdrop-blur-md border border-white/80 shadow-lg shadow-indigo-500/10 pointer-events-none hidden lg:block" />
+            <div className="absolute top-[480px] right-24 w-7 h-7 rounded-full bg-white/40 backdrop-blur-md border border-white/90 shadow-xl shadow-purple-500/15 pointer-events-none hidden lg:block" />
+            <div className="absolute bottom-8 left-16 w-6 h-6 rounded-full bg-white/35 backdrop-blur-md border border-white/80 shadow-md pointer-events-none hidden lg:block" />
+
+            {/* Hero Section */}
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+              
+              {/* Left Column: Welcome Tag, 2-Line Enormous Headline, Subtitle, 3D Role Switcher Capsule */}
+              <div className="lg:col-span-7 space-y-5">
+                
+                {/* Welcome Badge */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EDE9FE]/85 border border-purple-200/90 text-[#5B21B6] text-xs font-bold shadow-xs backdrop-blur-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#7C3AED]" />
+                  <span>Welcome to Lumixora</span>
+                </div>
+
+                {/* 2-Line Massive Headline matching 3D render */}
+                <h1 className="text-5xl sm:text-6xl lg:text-[74px] font-black tracking-tight leading-[0.96]">
+                  <span className="block text-slate-900">Select Your</span>
+                  <span className="block text-[#4F46E5] bg-clip-text text-transparent bg-gradient-to-r from-[#4F46E5] via-[#6366F1] to-[#7C3AED] filter drop-shadow-[0_4px_16px_rgba(79,70,229,0.22)]">
+                    Portal
+                  </span>
+                </h1>
+
+                {/* Architectural Subtitle */}
+                <p className="text-slate-600 text-sm sm:text-base font-normal max-w-md leading-relaxed">
+                  Your gateway to a smarter, connected and innovative campus experience.
+                </p>
+
+                {/* 3D Liquid Glass Continuous Role Switcher Pod */}
+                <div className="pt-3">
+                  <div className="relative inline-flex flex-wrap sm:flex-nowrap items-center p-1.5 rounded-full bg-white/50 backdrop-blur-2xl border border-white/80 shadow-[0_12px_36px_rgba(0,0,0,0.08)] ring-1 ring-white/70 gap-1">
+                    
+                    {/* Floating Neon Contour Loop on the left */}
+                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-indigo-400/50 pointer-events-none opacity-50 hidden sm:block" />
+
+                    {/* 1. Student Portal */}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
+                      className={`relative px-4 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300 cursor-pointer flex items-center gap-2.5 ${
+                        authMode === 'student'
+                          ? 'bg-gradient-to-r from-[#6366F1] via-[#4F46E5] to-[#4338CA] text-white shadow-[0_8px_25px_rgba(79,70,229,0.5)] border border-indigo-400/40 z-10 scale-[1.03]'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-white/40'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${authMode === 'student' ? 'bg-white/20' : 'bg-white/60 shadow-xs'}`}>
+                        <GraduationCap className={`w-3.5 h-3.5 ${authMode === 'student' ? 'text-white' : 'text-indigo-600'}`} />
+                      </div>
+                      <span>Student</span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${authMode === 'student' ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500'}`}>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </button>
+
+                    {/* 2. Faculty Portal */}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
+                      className={`relative px-4 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300 cursor-pointer flex items-center gap-2.5 ${
+                        authMode === 'faculty'
+                          ? 'bg-gradient-to-r from-[#6366F1] via-[#4F46E5] to-[#4338CA] text-white shadow-[0_8px_25px_rgba(79,70,229,0.5)] border border-indigo-400/40 z-10 scale-[1.03]'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-white/40'
+                      }`}
+                    >
+                      <Users className="w-4 h-4 text-slate-700" />
+                      <span>Faculty</span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${authMode === 'faculty' ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500'}`}>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </button>
+
+                    {/* 3. Intern Portal */}
+                    <button
+                      type="button"
+                      onClick={() => { 
+                        setAuthMode('intern'); 
+                        setSelectedCollege({ id: 'intern', name: 'Lumixora Autonomous Engineering Internship Program', shortName: 'Lumixora Interns', code: 'INTERN', logo: '🚀' }); 
+                        setCollegeName('Lumixora Autonomous Systems');
+                        setError(''); 
+                      }}
+                      className={`relative px-4 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300 cursor-pointer flex items-center gap-2.5 ${
+                        authMode === 'intern'
+                          ? 'bg-gradient-to-r from-[#6366F1] via-[#4F46E5] to-[#4338CA] text-white shadow-[0_8px_25px_rgba(79,70,229,0.5)] border border-indigo-400/40 z-10 scale-[1.03]'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-white/40'
+                      }`}
+                    >
+                      <Briefcase className="w-4 h-4 text-slate-700" />
+                      <span>Intern</span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${authMode === 'intern' ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500'}`}>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </button>
+
+                    
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Lumixora Founder & Chief Architect (Vibrant Colorful Aurora Glow) */}
+              <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex justify-center">
+                <div 
+                  onClick={handleFounderPictureClick}
+                  className="relative w-full rounded-[36px] overflow-hidden p-6 sm:p-7 flex flex-col items-center justify-center group cursor-pointer select-none transition-all duration-500 hover:scale-[1.01] shadow-[0_20px_50px_rgba(79,70,229,0.22),_0_10px_35px_rgba(6,182,212,0.2)] border border-white/80 ring-1 ring-white/60"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(238, 242, 255, 0.75) 0%, rgba(243, 232, 255, 0.7) 45%, rgba(224, 242, 254, 0.8) 100%)',
+                    backdropFilter: 'blur(24px)'
+                  }}
+                >
+                  {/* Dynamic Multi-Color Radiant Aurora Plasma Glows */}
+                  {/* 1. Deep Electric Violet Aurora */}
+                  <div 
+                    className="absolute -top-12 -left-12 w-72 h-72 rounded-full pointer-events-none opacity-80 group-hover:opacity-95 blur-[50px] transition-all duration-700 animate-pulse"
+                    style={{ background: 'radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, rgba(99, 102, 241, 0.3) 50%, transparent 70%)' }}
+                  />
+                  {/* 2. Vibrant Cyan Glow */}
+                  <div 
+                    className="absolute -bottom-10 -right-10 w-72 h-72 rounded-full pointer-events-none opacity-80 group-hover:opacity-95 blur-[50px] transition-all duration-700"
+                    style={{ background: 'radial-gradient(circle, rgba(6, 182, 212, 0.55) 0%, rgba(56, 189, 248, 0.3) 50%, transparent 70%)' }}
+                  />
+                  {/* 3. Center Radiant Magenta/Indigo Core */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none opacity-60 group-hover:opacity-85 blur-[45px] transition-opacity duration-700"
+                    style={{ background: 'radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.35) 0%, rgba(6, 182, 212, 0.25) 45%, transparent 75%)' }}
+                  />
+
+                  {/* Top-rim iridescent specular glass reflection */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-300 to-purple-400 opacity-80" />
+
+                  {/* Founder Holographic Portrait with Pop-Out Visual */}
+                  <div className="relative z-10 w-full flex items-center justify-center py-2">
+                    <img
+                      src="/images/founder_hero.png?v=4"
+                      alt="Shaik Sowban - Lumixora Founder"
+                      className="max-h-[340px] sm:max-h-[380px] w-auto object-contain drop-shadow-[0_22px_45px_rgba(99,102,241,0.38)] group-hover:scale-[1.04] active:scale-95 transition-all duration-300 select-none"
+                    />
+                  </div>
+
+                  {/* Tesla / Apple Style Liquid Glass Bottom Pill */}
+                  <div className="relative z-20 mt-3 px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-white/90 shadow-[0_8px_30px_rgba(99,102,241,0.18)] flex items-center gap-2.5 group-hover:bg-white group-hover:shadow-[0_10px_35px_rgba(6,182,212,0.28)] transition-all">
+                    <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_12px_rgba(6,182,212,1)]" />
+                    <span className="text-xs sm:text-sm font-bold text-slate-800 tracking-wide font-sora">
+                      Shaik Sowban
+                    </span>
+                    <span className="text-slate-300 text-xs">|</span>
+                    <span className="text-[10px] sm:text-[11px] font-black text-indigo-600 tracking-widest uppercase">
+                      Founder & Architect
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* "Our Campuses" Section matching 3D liquid glass pods */}
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-4">
+              
+              {/* Section Header: Our Campuses (Left) | Explore All Campuses (Right) */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    Our Campuses
+                  </h2>
+                </div>
+
+                <button 
+                  type="button" 
+                  onClick={() => setShowAllCampuses(prev => !prev)}
+                  className="text-xs sm:text-sm font-bold text-slate-800 hover:text-[#4F46E5] flex items-center gap-1.5 transition-colors cursor-pointer group"
+                >
+                  <span>{showAllCampuses ? '← Show Featured Campuses' : 'Explore All Campuses'}</span>
+                  <div className="w-6 h-6 rounded-full bg-white/70 border border-white flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                    <ArrowRight className={`w-3.5 h-3.5 text-slate-700 group-hover:text-[#4F46E5] transition-transform ${showAllCampuses ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+              </div>
+
+              {/* Campus Liquid Glass Pods Grid */}
+              <div id="campuses-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                {displayedColleges.map((col, idx) => {
+                  const displayLogo = resolveCollegeLogo(col.logo, col);
+                  const bgImg = getCampusCardImage(col, idx);
+                  return (
+                    <div
+                      key={col.id}
+                      onClick={() => {
+                        setSelectedCollege({ ...col, logo: displayLogo });
+                        setCollegeName(col.shortName || col.name || col.code);
+                        setError('');
+                        if (email && col.domains && !col.domains.some(d => email.toLowerCase().includes(d.toLowerCase()))) {
+                          setEmail('');
+                        }
+                      }}
+                      className="group relative rounded-[28px] p-2 bg-gradient-to-b from-white/90 via-white/40 to-white/70 backdrop-blur-2xl border border-white/90 shadow-[0_20px_50px_rgba(0,0,0,0.12)] ring-1 ring-white/90 hover:shadow-[0_25px_60px_rgba(99,102,241,0.25)] hover:-translate-y-2 transition-all duration-500 cursor-pointer"
+                    >
+                      {/* Inner Glass Display Window */}
+                      <div className="relative h-56 sm:h-60 rounded-[22px] overflow-hidden flex flex-col justify-between p-5">
+                        
+                        {/* High-Resolution 3D Render / Photography */}
+                        <img
+                          src={bgImg}
+                          alt={col.name}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+
+                        {/* Readability dark gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent pointer-events-none" />
+
+                        {/* Specular curved glass sheen highlight */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/30 opacity-70 pointer-events-none" />
+
+                        {/* Top-Left Insignia Emblem Badge */}
+                        <div className="relative z-10 w-11 h-11 rounded-xl bg-white p-1.5 shadow-xl flex items-center justify-center shrink-0 border border-white/60 group-hover:scale-105 transition-transform">
+                          {displayLogo && (displayLogo.startsWith('/') || displayLogo.startsWith('http') || displayLogo.includes('.png')) ? (
+                            <img src={displayLogo} alt={col.shortName || col.name} className="w-full h-full object-contain filter drop-shadow-sm" />
+                          ) : (
+                            <span className="text-xl">{displayLogo || '🏛️'}</span>
+                          )}
+                        </div>
+
+                        {/* Bottom Title, Location Pin & Circular Glass Launch Arrow Button */}
+                        <div className="relative z-10 flex items-end justify-between gap-4 w-full">
+                          <div className="min-w-0 pr-2">
+                            <h3 className="text-white font-bold text-base sm:text-lg leading-snug line-clamp-2 drop-shadow-md group-hover:text-indigo-200 transition-colors">
+                              {col.name}
+                            </h3>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-200 mt-1.5 font-medium drop-shadow-sm">
+                              <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                              <span className="truncate">{col.location || 'Andhra Pradesh'}</span>
+                            </div>
+                          </div>
+
+                          <div className="w-10 h-10 rounded-full bg-slate-900/50 backdrop-blur-md border border-white/40 flex items-center justify-center text-white group-hover:bg-white group-hover:text-[#4F46E5] group-hover:scale-110 transition-all duration-300 shadow-lg shrink-0">
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          <div className="w-full flex items-center justify-center py-10 px-4 min-h-[80vh]">
+            {/* Step 2: Advanced Auth Card */}
         <div className="z-10 w-full max-w-md p-6 sm:p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[92vh] overflow-y-auto custom-scrollbar border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
           
           {/* Top Bar with Back Switcher */}
@@ -1822,7 +2035,9 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
           </div>
 
         </div>
-      )}
+          </div>
+        )}
+      </main>
 
       {/* Email Verification Waiting Room Modal */}
       {unverifiedEmail && (
