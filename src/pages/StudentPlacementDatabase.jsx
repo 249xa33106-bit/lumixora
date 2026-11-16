@@ -101,7 +101,7 @@ function resolveBatchYear(email, meta, dbYear) {
   if (roll.startsWith('229')) return '2021-2025';
   if (roll.startsWith('239')) return '2021-2025';
   if (roll.startsWith('249')) return '2022-2026';
-  if (roll.startsWith('259')) return '2023-2027';
+  if (roll.startsWith('259')) return '2025-2029';
   if (roll.startsWith('269')) return '2024-2028';
   return dbYear || '2022-2026';
 }
@@ -520,7 +520,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
             rollLower: roll,
             email: `${roll}@gprec.ac.in`,
             department: roll.includes('05') ? 'CSE' : 'CSM',
-            batchYear: roll.startsWith('259') ? '2023-2027' : '2022-2026',
+            batchYear: roll.startsWith('259') ? '2025-2029' : '2022-2026',
             placementSeason: '2025-2026',
             isGraduated: false,
             cgpa: ov.cgpa !== undefined ? parseFloat(ov.cgpa) : 8.5,
@@ -1477,7 +1477,8 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
               <option value="ALL">All Batches (2021-2028)</option>
               <option value="2022-2026">2026 Batch (Current 4th/3rd Year)</option>
               <option value="2021-2025">2025 Batch (Graduated / Alumni)</option>
-              <option value="2023-2027">2027 Batch (Current 2nd Year)</option>
+              <option value="2025-2029">2029 Batch (Current 2nd Year)</option>
+              <option value="2023-2027">2027 Batch</option>
               <option value="2024-2028">2028 Batch (Current 1st Year)</option>
             </select>
 

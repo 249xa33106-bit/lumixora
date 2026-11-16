@@ -534,7 +534,7 @@ export const getCollegeByEmail = (email, customColleges = []) => {
 
 export const decodeGprecRollNumber = (rollOrEmail = '') => {
   if (!rollOrEmail || typeof rollOrEmail !== 'string') {
-    return { year: '1st Year', department: 'CSM', rollNumber: '' };
+    return { year: '1st Year', department: 'CSM', rollNumber: '', batchYear: '2025-2029', batch: '2025-2029' };
   }
   const clean = rollOrEmail.trim().toLowerCase().split('@')[0];
   const upperRoll = clean.toUpperCase();
