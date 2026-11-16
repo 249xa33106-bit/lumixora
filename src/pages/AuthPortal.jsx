@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Eye, EyeOff, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
+import {
+  Eye, EyeOff, Lock, ChevronDown, User, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
   Building2, GraduationCap, ShieldCheck, AlertCircle, RefreshCw, 
   ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift, Crown
 , Search, Sun, Moon, Megaphone, MapPin, Users } from 'lucide-react';
@@ -1359,7 +1359,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
             <div className="absolute bottom-8 left-16 w-6 h-6 rounded-full bg-white/35 backdrop-blur-md border border-white/80 shadow-md pointer-events-none hidden lg:block" />
 
             {/* Hero Section */}
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-4 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
               
               {/* Left Column: Welcome Tag, 2-Line Enormous Headline, Subtitle, 3D Role Switcher Capsule */}
               <div className="lg:col-span-7 space-y-5">
@@ -1371,7 +1371,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                 </div>
 
                 {/* 2-Line Massive Headline matching 3D render */}
-                <h1 className="text-5xl sm:text-6xl lg:text-[74px] font-black tracking-tight leading-[0.96]">
+                <h1 className="text-3xl sm:text-4xl lg:text-[50px] font-black tracking-tight leading-[1.02]">
                   <span className="block text-slate-900">Select Your</span>
                   <span className="block text-[#4F46E5] bg-clip-text text-transparent bg-gradient-to-r from-[#4F46E5] via-[#6366F1] to-[#7C3AED] filter drop-shadow-[0_4px_16px_rgba(79,70,229,0.22)]">
                     Portal
@@ -1447,9 +1447,43 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                         <ArrowRight className="w-3 h-3" />
                       </div>
                     </button>
-
-                    
                   </div>
+                </div>
+
+                {/* Instant Above-The-Fold Campus Quick Selector Pills */}
+                <div className="pt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                    <Building2 className="w-3 h-3 text-indigo-500" /> Campuses:
+                  </span>
+                  {allAvailableColleges.slice(0, 4).map((col) => {
+                    const cLogo = resolveCollegeLogo(col.logo, col);
+                    return (
+                      <button
+                        key={col.id}
+                        type="button"
+                        onClick={() => { setSelectedCollege(col); setError(''); }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-xs font-bold text-slate-800 hover:text-indigo-600 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                      >
+                        {cLogo && (cLogo.startsWith('/') || cLogo.startsWith('http') || cLogo.includes('.png')) ? (
+                          <img src={cLogo} alt="" className="w-3.5 h-3.5 object-contain rounded-full" />
+                        ) : (
+                          <span className="text-xs">{cLogo || '🏛️'}</span>
+                        )}
+                        <span>{col.shortName || col.code || col.name}</span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById('campuses-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline inline-flex items-center gap-0.5 ml-1 cursor-pointer"
+                  >
+                    <span>All Campuses</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
 
               </div>
@@ -1458,7 +1492,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
               <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex justify-center">
                 <div 
                   onClick={handleFounderPictureClick}
-                  className="relative w-full rounded-[36px] overflow-hidden p-6 sm:p-7 flex flex-col items-center justify-center group cursor-pointer select-none transition-all duration-500 hover:scale-[1.01] shadow-[0_20px_50px_rgba(79,70,229,0.22),_0_10px_35px_rgba(6,182,212,0.2)] border border-white/80 ring-1 ring-white/60"
+                  className="relative w-full rounded-[30px] overflow-hidden p-4 sm:p-5 flex flex-col items-center justify-center group cursor-pointer select-none transition-all duration-500 hover:scale-[1.01] shadow-[0_20px_50px_rgba(79,70,229,0.22),_0_10px_35px_rgba(6,182,212,0.2)] border border-white/80 ring-1 ring-white/60"
                   style={{
                     background: 'linear-gradient(135deg, rgba(238, 242, 255, 0.75) 0%, rgba(243, 232, 255, 0.7) 45%, rgba(224, 242, 254, 0.8) 100%)',
                     backdropFilter: 'blur(24px)'
@@ -1489,7 +1523,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                     <img
                       src="/images/founder_hero.png?v=4"
                       alt="Shaik Sowban - Lumixora Founder"
-                      className="max-h-[340px] sm:max-h-[380px] w-auto object-contain drop-shadow-[0_22px_45px_rgba(99,102,241,0.38)] group-hover:scale-[1.04] active:scale-95 transition-all duration-300 select-none"
+                      className="max-h-[190px] sm:max-h-[220px] lg:max-h-[230px] w-auto object-contain drop-shadow-[0_22px_45px_rgba(99,102,241,0.38)] group-hover:scale-[1.04] active:scale-95 transition-all duration-300 select-none"
                     />
                   </div>
 
@@ -1509,7 +1543,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
             </div>
 
             {/* "Our Campuses" Section matching 3D liquid glass pods */}
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-4">
+            <div id="campuses-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-2">
               
               {/* Section Header: Our Campuses (Left) | Explore All Campuses (Right) */}
               <div className="flex items-center justify-between mb-6">
@@ -1599,442 +1633,525 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
 
           </div>
         ) : (
-          <div className="w-full flex items-center justify-center py-10 px-4 min-h-[80vh]">
-            {/* Step 2: Advanced Auth Card */}
-        <div className="z-10 w-full max-w-md p-6 sm:p-8 glass-panel rounded-3xl animate-fade-in-up max-h-[92vh] overflow-y-auto custom-scrollbar border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
-          
-          {/* Top Bar with Back Switcher */}
-          <div className="flex items-center justify-between w-full mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCollege(null);
-                setError('');
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Change Portal</span>
-            </button>
-
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-[#00f5d4]">
-              {(() => {
-                const sLogo = resolveCollegeLogo(selectedCollege?.logo, selectedCollege);
-                return sLogo && (sLogo.startsWith('/') || sLogo.startsWith('http') || sLogo.includes('.png')) ? (
-                  <img src={sLogo} alt={selectedCollege?.shortName} className="w-4 h-4 object-contain rounded-full" />
-                ) : (
-                  <span>{sLogo || '🏛️'}</span>
-                );
-              })()}
-              <span>{selectedCollege.shortName || selectedCollege.code}</span>
+          <div className="w-full flex items-center justify-center py-6 px-4 min-h-[85vh] relative z-10">
+            {/* Ambient background campus photography backdrop */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+              <img 
+                src={getCampusCardImage(selectedCollege, 0)} 
+                alt="" 
+                className="w-full h-full object-cover opacity-25 blur-sm scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-indigo-50/80" />
             </div>
-          </div>
 
-          <div className="flex flex-col items-center mb-6 text-center">
-            <h2 className="text-2xl font-black text-white tracking-tight mb-1">
-              {isLogin 
-                ? `Sign In (${authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student')})` 
-                : `Create Account (${authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student')})`
-              }
-            </h2>
-            <p className="text-gray-400 text-xs">
-              {selectedCollege.name}
-            </p>
-          </div>
+            {/* Apple Vision Liquid Glassmorphic Modal Card */}
+            <div className="relative w-full max-w-[490px] rounded-[38px] p-6 sm:p-8 bg-white/80 backdrop-blur-3xl border border-white/90 shadow-[0_25px_70px_rgba(124,58,237,0.16)] ring-1 ring-white/95 overflow-hidden animate-fade-in-up">
+              
+              {/* Bottom liquid purple decorative wave glows */}
+              <div className="absolute -bottom-10 -left-10 w-44 h-24 bg-gradient-to-tr from-violet-500/25 to-indigo-400/10 rounded-full blur-xl pointer-events-none" />
+              <div className="absolute -bottom-10 -right-10 w-44 h-24 bg-gradient-to-tl from-indigo-500/25 to-purple-400/10 rounded-full blur-xl pointer-events-none" />
 
-          {/* Institutional Shield & Fee Status Badge */}
-          {(() => {
-            const primaryDomain = selectedCollege?.domains?.[0] || 'gprec.ac.in';
-            return (
-              <div className="p-3.5 rounded-2xl mb-6 text-xs flex items-start gap-2.5 shadow-lg border bg-[#00f5d4]/10 border-[#00f5d4]/30 text-teal-300">
-                <ShieldCheck className="w-5 h-5 text-[#00f5d4] flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                    <strong className="block font-bold text-white">
-                      {selectedCollege.shortName || selectedCollege.code || 'Official'} Verified Campus Access
-                    </strong>
-                    {authMode === 'intern' ? (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
-                        ⚡ Verified Intern Track (₹0 Fee)
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
-                        ⚡ ₹10 One-Time Access Fee
-                      </span>
-                    )}
+              {/* Top Bar: Brand Left | Change Portal & College Pill Right */}
+              <div className="flex items-center justify-between w-full mb-5">
+                <div className="flex items-center gap-2.5 select-none">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+                    <Realistic3DLogo size="sm" showGlow={false} interactive={false} />
                   </div>
-                  <span className="leading-relaxed text-gray-300 block">
-                    {authMode === 'intern' ? (
-                      <>Sign in with your assigned <strong className="text-[#00f5d4] underline font-mono">Intern Ref ID (e.g. LMX-B01-4783)</strong> or registered email, and your secure access passcode. No platform access fee required.</>
-                    ) : (
-                      <>Students of <strong className="text-white font-bold">{selectedCollege.name || selectedCollege.shortName}</strong> receive full platform access with a one-time <strong className="text-cyan-300 underline font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-[#00f5d4] underline">@{primaryDomain}</strong> email.</>
-                    )}
-                  </span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
+                      Lumixora
+                    </span>
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none">
+                      STUDENT OS • VYOMRA
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-2xl mb-6 text-xs text-center space-y-2">
-              <div className="flex items-center justify-center gap-1.5 font-bold">
-                <AlertCircle className="w-4 h-4" /> {error}
-              </div>
-              {(error.includes('Reset') || error.includes('password') || error.includes('Password') || error.includes('temporary')) && (
-                <div className="pt-1">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      setResetEmail(email.trim() || '');
-                      setShowForgotPassword(true);
+                      setSelectedCollege(null);
+                      setError('');
                     }}
-                    className="px-3.5 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded-xl text-xs font-black transition-all border border-amber-400/40 inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 transition-colors bg-white/70 hover:bg-white px-2.5 py-1.5 rounded-full border border-slate-200/80 shadow-xs cursor-pointer"
+                    title="Change Selected Portal"
                   >
-                    🔑 1-Click Reset / Create New Password
+                    <ArrowLeft className="w-3 h-3 text-slate-500" />
+                    <span>Change Portal</span>
                   </button>
-                </div>
-              )}
-            </div>
-          )}
 
-          {successMsg && (
-            <div className="bg-green-500/10 border border-green-500/50 text-green-400 p-4 rounded-2xl mb-6 text-xs text-center font-medium">
-              {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {!isLogin && (
-              <>
-                <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all"
-                    placeholder="e.g. Mohammed Sowban"
-                  />
-                </div>
-
-                {authMode === 'student' ? (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Roll Number</label>
-                        <input
-                          type="text"
-                          value={rollNumber}
-                          onChange={(e) => setRollNumber(e.target.value)}
-                          required
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00f5d4]/50"
-                          placeholder="249XA33106"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Branch / Dept</label>
-                        <input
-                          type="text"
-                          value={department}
-                          onChange={(e) => setDepartment(e.target.value)}
-                          required
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none"
-                          placeholder="CSE"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Year of Study</label>
-                        <select
-                          value={yearOfStudy}
-                          onChange={(e) => setYearOfStudy(e.target.value)}
-                          required
-                          className="w-full bg-[#111118] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:outline-none"
-                        >
-                          <option value="1st Year">1st Year</option>
-                          <option value="2nd Year">2nd Year</option>
-                          <option value="3rd Year">3rd Year</option>
-                          <option value="4th Year">4th Year</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-300 mb-1.5">Semester</label>
-                        <select
-                          value={semester}
-                          onChange={(e) => setSemester(e.target.value)}
-                          required
-                          className="w-full bg-[#111118] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:outline-none"
-                        >
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                            <option key={s} value={String(s)}>Sem {s}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 mb-1.5">Faculty Designation</label>
-                      <input
-                        type="text"
-                        value={designation}
-                        onChange={(e) => setDesignation(e.target.value)}
-                        required
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50"
-                        placeholder="Assistant Professor"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-300 mb-1.5">Mobile Number</label>
-                      <input
-                        type="text"
-                        value={mobileNumber}
-                        onChange={(e) => setMobileNumber(e.target.value)}
-                        required
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50"
-                        placeholder="+91 9876543210"
-                      />
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-
-            <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                {authMode === 'intern' 
-                  ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
-                  : `${selectedCollege?.shortName || selectedCollege?.code || 'Campus'} Official Email`
-                }
-              </label>
-              <input
-                type={authMode === 'intern' ? 'text' : 'email'}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all font-mono"
-                placeholder={authMode === 'intern' ? 'LMX-B01-4783 or your registered email' : `rollnumber@${selectedCollege?.domains?.[0] || 'gprec.ac.in'}`}
-              />
-
-              {/* Dynamic Auto-Detected ID Badge */}
-              {detectedProfile && detectedProfile.isInstitutional && (
-                <div className="mt-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-[11px] text-emerald-300 animate-fade-in">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{detectedProfile.college}</span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 border border-slate-200/90 text-xs font-bold text-slate-800 shadow-xs">
+                    {(() => {
+                      const sLogo = resolveCollegeLogo(selectedCollege?.logo, selectedCollege);
+                      return sLogo && (sLogo.startsWith('/') || sLogo.startsWith('http') || sLogo.includes('.png')) ? (
+                        <img src={sLogo} alt="" className="w-4 h-4 object-contain rounded-full" />
+                      ) : (
+                        <span className="text-xs">{sLogo || '🏛️'}</span>
+                      );
+                    })()}
+                    <span className="max-w-[100px] truncate">{selectedCollege.shortName || selectedCollege.code}</span>
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
                   </div>
-                  <span className="bg-emerald-500/20 px-2 py-0.5 rounded-md font-mono text-[10px] text-emerald-200">
-                    {detectedProfile.department} • {detectedProfile.year}
+                </div>
+              </div>
+
+              {/* Title with Floating 3D Graduation Cap & Sparkles */}
+              <div className="relative flex flex-col items-center text-center my-3">
+                <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <div className="absolute -right-1 top-0 text-violet-500 animate-pulse pointer-events-none hidden sm:block">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+
+                <h2 className="text-2xl sm:text-[28px] font-black text-slate-900 tracking-tight leading-tight">
+                  {isLogin ? 'Sign In ' : 'Create Account '}
+                  <span className="text-violet-600">
+                    ({authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student')})
                   </span>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                {authMode === 'intern' ? 'Access Passcode / PIN' : 'Password'}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00f5d4]/50 focus:ring-1 focus:ring-[#00f5d4]/50 transition-all pr-12 font-mono"
-                  placeholder={authMode === 'intern' ? 'LMX@4783 or custom PIN' : '••••••••'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {/* Live Password Strength Meter */}
-              {!isLogin && password && (
-                <div className="mt-2.5 space-y-1.5 animate-fade-in">
-                  <div className="flex justify-between items-center text-[10px] font-bold">
-                    <span className="text-gray-400">Security Strength:</span>
-                    <span className={passwordStrength.text}>{passwordStrength.label}</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${passwordStrength.color} transition-all duration-300`} 
-                      style={{ width: `${passwordStrength.percent}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {isLogin && (
-              <div className="flex items-center justify-between text-xs pt-1">
-                <label className="flex items-center gap-2 text-gray-400 hover:text-gray-300 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded bg-white/5 border-white/10 text-[#00f5d4] focus:ring-0 cursor-pointer"
-                  />
-                  <span>Remember me</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForgotPassword(true);
-                    setResetEmail(email);
-                    setResetError('');
-                  }}
-                  className="text-xs text-[#00f5d4] hover:underline transition-colors bg-transparent border-none cursor-pointer font-bold"
-                >
-                  Forgot password?
-                </button>
-              </div>
-            )}
-
-            {!isLogin && (
-              <div className="pt-1">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Campus Ambassador Referral Code</span>
-                  </label>
-                  <span className="text-[10px] text-gray-500 font-medium">Optional</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={referralCode}
-                    onChange={(e) => {
-                      const val = e.target.value.toUpperCase();
-                      setReferralCode(val);
-                      if (val) localStorage.setItem('lumixora_referral_code', val);
-                      else localStorage.removeItem('lumixora_referral_code');
-                    }}
-                    placeholder="e.g. LMX-CA-2026-XXXX"
-                    className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-amber-500/20 text-white text-xs placeholder:text-gray-500 outline-none focus:border-amber-400 font-mono tracking-wider transition-all"
-                  />
-                  {referralCode ? (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
-                      <span>✨ Applied</span>
-                    </span>
-                  ) : (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-mono">
-                      REF CODE
-                    </span>
-                  )}
-                </div>
-                <p className="text-[10px] text-gray-500 mt-1 pl-1">
-                  Referred by a Campus Ambassador? Enter their code for verified campus attribution.
+                </h2>
+                <p className="text-slate-500 text-xs font-medium mt-1 max-w-sm">
+                  {selectedCollege.name}
                 </p>
               </div>
-            )}
 
-            {!isLogin && !isExemptFromPayment(email) && (
-              <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300 flex items-center justify-between">
-                <span className="font-bold flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-cyan-400" /> One-Time Registration Fee:
-                </span>
-                <span className="font-black text-white bg-cyan-500/25 px-2.5 py-1 rounded-lg">₹10.00 Only</span>
-              </div>
-            )}
+              {/* Institutional Shield & Fee Status Card with Campus Building Photo */}
+              {(() => {
+                const primaryDomain = selectedCollege?.domains?.[0] || 'gprec.ac.in';
+                const campusPhoto = getCampusCardImage(selectedCollege, 0);
+                return (
+                  <div className="rounded-2xl border border-emerald-300/60 bg-gradient-to-r from-emerald-50/85 via-teal-50/80 to-cyan-50/85 p-3.5 mb-5 flex items-center justify-between gap-3 shadow-xs relative overflow-hidden">
+                    <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <strong className="block font-bold text-slate-800 text-xs leading-tight">
+                            {selectedCollege.shortName || selectedCollege.code || 'Official'} Verified Campus Access
+                          </strong>
+                          {authMode === 'intern' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 text-[10px] font-bold">
+                              ⚡ Verified Intern Track (₹0 Fee)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold inline-flex items-center gap-1">
+                              <span>⚡</span> One-Time Access Fee
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] leading-relaxed text-slate-600">
+                          {authMode === 'intern' ? (
+                            <>Sign in with your assigned <strong className="text-emerald-700 font-mono">Intern Ref ID</strong> or registered email, and secure passcode.</>
+                          ) : (
+                            <>Students of <strong className="text-slate-800 font-bold">{selectedCollege.name || selectedCollege.shortName}</strong> receive full access with a one-time <strong className="text-emerald-700 font-bold">₹10 registration/login pass</strong>. Please sign in with your official <strong className="text-emerald-700 underline">@{primaryDomain}</strong> email.</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-4 rounded-2xl font-black text-black bg-gradient-to-r from-[#00f5d4] via-[#38bdf8] to-[#00f5d4] hover:opacity-95 shadow-lg shadow-[#00f5d4]/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-sm"
-            >
-              {loading ? (
-                <span className="inline-flex items-center gap-2 font-bold animate-pulse text-black">
-                  <RefreshCw className="w-4 h-4 animate-spin" /> Authenticating...
-                </span>
-              ) : (
-                <>
-                  <span>
-                    {isLogin 
-                      ? 'Sign In to Workspace' 
-                      : (isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account')}
-                  </span>
-                  {isLogin ? <LogIn className="w-4 h-4 text-black" /> : <UserPlus className="w-4 h-4 text-black" />}
-                </>
+                    {/* Campus Building Photo */}
+                    {campusPhoto && (
+                      <div className="hidden sm:block shrink-0">
+                        <img 
+                          src={campusPhoto} 
+                          alt="" 
+                          className="w-24 h-18 object-cover rounded-xl shadow-md border-2 border-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-2xl mb-5 text-xs text-center space-y-2">
+                  <div className="flex items-center justify-center gap-1.5 font-bold">
+                    <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                  </div>
+                  {(error.includes('Reset') || error.includes('password') || error.includes('Password') || error.includes('temporary')) && (
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setResetEmail(email.trim() || '');
+                          setShowForgotPassword(true);
+                        }}
+                        className="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl text-xs font-black transition-all border border-amber-300 inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                      >
+                        🔑 1-Click Reset / Create New Password
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
-          </form>
 
-          {/* Social Auth Divider */}
-          <div className="relative flex items-center py-5">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink-0 mx-4 text-gray-500 text-xs uppercase tracking-widest font-black">Or 1-Tap Login</span>
-            <div className="flex-grow border-t border-white/10"></div>
-          </div>
+              {successMsg && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3.5 rounded-2xl mb-5 text-xs text-center font-medium">
+                  {successMsg}
+                </div>
+              )}
 
-          <div className="flex gap-3 mb-4">
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleOAuthSignIn('google')}
-              className="flex-1 py-3 px-4 rounded-2xl font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00f5d4]/40 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-xs shadow-lg"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              <span>Google</span>
-            </button>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {!isLogin && (
+                  <>
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                        <User className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Full Name</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-2xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all shadow-xs"
+                        placeholder="e.g. Mohammed Sowban"
+                      />
+                    </div>
 
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleOAuthSignIn('github')}
-              className="flex-1 py-3 px-4 rounded-2xl font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-brand-purple/40 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-xs shadow-lg"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-              <span>GitHub</span>
-            </button>
-          </div>
+                    {authMode === 'student' ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Roll Number</label>
+                            <input
+                              type="text"
+                              value={rollNumber}
+                              onChange={(e) => setRollNumber(e.target.value)}
+                              required
+                              className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-2xl px-3 py-2.5 text-sm text-slate-900 uppercase font-mono outline-none shadow-xs"
+                              placeholder="249XA33106"
+                            />
+                          </div>
 
-          <div className="mt-6 text-center text-gray-400 text-xs">
-            {isLogin ? "New to Vyomra? " : "Already have an account? "}
-            <button 
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-                setSuccessMsg('');
-              }}
-              className="text-[#00f5d4] font-black hover:underline focus:outline-none cursor-pointer ml-1"
-            >
-              {isLogin ? 'Register your roll number' : 'Sign in here'}
-            </button>
-          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Branch / Dept</label>
+                            <input
+                              type="text"
+                              value={department}
+                              onChange={(e) => setDepartment(e.target.value)}
+                              required
+                              className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 rounded-2xl px-3 py-2.5 text-sm text-slate-900 outline-none shadow-xs"
+                              placeholder="CSE"
+                            />
+                          </div>
+                        </div>
 
-          {/* Mobile APK Download Pill */}
-          <div className="mt-6 pt-5 border-t border-white/5 flex flex-col items-center">
-            <a 
-              href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Vyomra.apk" 
-              download="Vyomra.apk"
-              className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold text-[#00f5d4] border border-[#00f5d4]/30 hover:border-[#00f5d4] hover:bg-[#00f5d4]/5 transition-all flex items-center justify-center gap-2 shadow-sm"
-            >
-              <Cpu className="w-3.5 h-3.5 text-[#00f5d4]" />
-              <span>Download Official Android App (APK)</span>
-            </a>
-          </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Year of Study</label>
+                            <select
+                              value={yearOfStudy}
+                              onChange={(e) => setYearOfStudy(e.target.value)}
+                              required
+                              className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 rounded-2xl px-3 py-2.5 text-sm text-slate-900 outline-none shadow-xs"
+                            >
+                              <option value="1st Year">1st Year</option>
+                              <option value="2nd Year">2nd Year</option>
+                              <option value="3rd Year">3rd Year</option>
+                              <option value="4th Year">4th Year</option>
+                            </select>
+                          </div>
 
-        </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1.5">Semester</label>
+                            <select
+                              value={semester}
+                              onChange={(e) => setSemester(e.target.value)}
+                              required
+                              className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 rounded-2xl px-3 py-2.5 text-sm text-slate-900 outline-none shadow-xs"
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                <option key={s} value={String(s)}>Sem {s}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Faculty Designation</label>
+                          <input
+                            type="text"
+                            value={designation}
+                            onChange={(e) => setDesignation(e.target.value)}
+                            required
+                            className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 rounded-2xl px-4 py-2.5 text-sm text-slate-900 outline-none shadow-xs"
+                            placeholder="Assistant Professor"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1.5">Mobile Number</label>
+                          <input
+                            type="text"
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            required
+                            className="w-full bg-white/70 hover:bg-white focus:bg-white border border-slate-200/90 focus:border-violet-500 rounded-2xl px-4 py-2.5 text-sm text-slate-900 outline-none shadow-xs"
+                            placeholder="+91 9876543210"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* Email Input Field */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                    <User className="w-3.5 h-3.5 text-slate-500" />
+                    <span>
+                      {authMode === 'intern' 
+                        ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
+                        : `${selectedCollege?.shortName || selectedCollege?.code || 'Campus'} Official Email`
+                      }
+                    </span>
+                  </label>
+                  <div className="relative flex items-center bg-white/70 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20 rounded-2xl shadow-xs transition-all">
+                    <Mail className="w-4 h-4 text-slate-400 ml-4 shrink-0" />
+                    <input
+                      type={authMode === 'intern' ? 'text' : 'email'}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full bg-transparent px-3 py-3 text-sm text-slate-900 placeholder:text-slate-400 font-mono outline-none"
+                      placeholder={authMode === 'intern' ? 'LMX-B01-4783 or registered email' : `rollnumber@${selectedCollege?.domains?.[0] || 'gprec.ac.in'}`}
+                    />
+                  </div>
+
+                  {/* Dynamic Auto-Detected ID Badge */}
+                  {detectedProfile && detectedProfile.isInstitutional && (
+                    <div className="mt-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-[11px] text-emerald-800 animate-fade-in">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{detectedProfile.college}</span>
+                      </div>
+                      <span className="bg-emerald-500/20 px-2 py-0.5 rounded-md font-mono text-[10px] text-emerald-900 font-bold">
+                        {detectedProfile.department} • {detectedProfile.year}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Password Input Field */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{authMode === 'intern' ? 'Access Passcode / PIN' : 'Password'}</span>
+                  </label>
+                  <div className="relative flex items-center bg-white/70 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20 rounded-2xl shadow-xs transition-all">
+                    <Lock className="w-4 h-4 text-slate-400 ml-4 shrink-0" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full bg-transparent px-3 py-3 text-sm text-slate-900 placeholder:text-slate-400 font-mono outline-none pr-11"
+                      placeholder={authMode === 'intern' ? 'LMX@4783 or PIN' : '••••••••'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Live Password Strength Meter */}
+                  {!isLogin && password && (
+                    <div className="mt-2.5 space-y-1.5 animate-fade-in">
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-slate-500">Security Strength:</span>
+                        <span className={passwordStrength.text}>{passwordStrength.label}</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${passwordStrength.color} transition-all duration-300`} 
+                          style={{ width: `${passwordStrength.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {isLogin && (
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <label className="flex items-center gap-2 text-slate-600 hover:text-slate-900 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 cursor-pointer"
+                      />
+                      <span className="font-medium">Remember me</span>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setResetEmail(email);
+                        setResetError('');
+                      }}
+                      className="text-xs font-bold text-violet-600 hover:text-violet-700 hover:underline transition-colors bg-transparent border-none cursor-pointer"
+                    >
+                      Forgot password? →
+                    </button>
+                  </div>
+                )}
+
+                {!isLogin && (
+                  <div className="pt-1">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Campus Ambassador Referral Code</span>
+                      </label>
+                      <span className="text-[10px] text-slate-400 font-medium">Optional</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={referralCode}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase();
+                          setReferralCode(val);
+                          if (val) localStorage.setItem('lumixora_referral_code', val);
+                          else localStorage.removeItem('lumixora_referral_code');
+                        }}
+                        placeholder="e.g. LMX-CA-2026-XXXX"
+                        className="w-full px-4 py-2.5 rounded-2xl bg-white/70 hover:bg-white focus:bg-white border border-amber-300/60 text-slate-900 text-xs placeholder:text-slate-400 outline-none focus:border-amber-500 font-mono tracking-wider transition-all shadow-xs"
+                      />
+                      {referralCode ? (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-1">
+                          <span>✨ Applied</span>
+                        </span>
+                      ) : (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-mono">
+                          REF CODE
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1 pl-1">
+                      Referred by a Campus Ambassador? Enter their code for verified campus attribution.
+                    </p>
+                  </div>
+                )}
+
+                {!isLogin && !isExemptFromPayment(email) && (
+                  <div className="p-3 rounded-2xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-900 flex items-center justify-between shadow-xs">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-cyan-600" /> One-Time Registration Fee:
+                    </span>
+                    <span className="font-black text-cyan-900 bg-cyan-200/60 px-2.5 py-1 rounded-lg">₹10.00 Only</span>
+                  </div>
+                )}
+
+                {/* Primary Action Button (Gradient Pill with Specular Sheen & Circular Arrow) */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 px-6 rounded-full font-bold text-white bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-500 hover:from-violet-500 hover:to-blue-600 shadow-[0_12px_30px_rgba(99,102,241,0.38)] hover:shadow-[0_16px_36px_rgba(99,102,241,0.5)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer text-sm group"
+                >
+                  {loading ? (
+                    <span className="inline-flex items-center gap-2 font-bold animate-pulse text-white">
+                      <RefreshCw className="w-4 h-4 animate-spin" /> Authenticating...
+                    </span>
+                  ) : (
+                    <>
+                      <span className="tracking-wide">
+                        {isLogin 
+                          ? 'Sign In to Workspace' 
+                          : (isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account')}
+                      </span>
+                      <span className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
+                        <ArrowRight className="w-4 h-4 text-white" />
+                      </span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Social Auth Divider */}
+              <div className="relative flex items-center py-4">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink-0 mx-3 text-slate-400 text-[10px] uppercase tracking-widest font-extrabold">
+                  OR 1-TAP LOGIN
+                </span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
+
+              {/* Frosted Social Login Buttons */}
+              <div className="flex gap-3 mb-4">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => handleOAuthSignIn('google')}
+                  className="flex-1 py-2.5 px-4 rounded-2xl font-bold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/90 hover:border-violet-300 shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-xs"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  <span>Google</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => handleOAuthSignIn('github')}
+                  className="flex-1 py-2.5 px-4 rounded-2xl font-bold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/90 hover:border-violet-300 shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-xs"
+                >
+                  <svg className="w-4 h-4 shrink-0 fill-slate-800" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                  <span>GitHub</span>
+                </button>
+              </div>
+
+              {/* Toggle Login / Register */}
+              <div className="mt-5 text-center text-slate-500 text-xs">
+                {isLogin ? "New to Vyomra? " : "Already have an account? "}
+                <button 
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                    setSuccessMsg('');
+                  }}
+                  className="text-violet-600 font-bold hover:underline focus:outline-none cursor-pointer ml-1"
+                >
+                  {isLogin ? 'Register your roll number' : 'Sign in here'}
+                </button>
+              </div>
+
+              {/* Bottom Decorative Ribbon */}
+              <div className="mt-5 pt-4 border-t border-slate-200/60 flex items-center justify-center gap-3 text-[10px] font-black text-slate-400 tracking-[0.25em]">
+                <div className="h-px w-8 bg-slate-200/80"></div>
+                <span>LEARN • GROW • ACHIEVE</span>
+                <div className="h-px w-8 bg-slate-200/80"></div>
+              </div>
+
+              {/* Official Android APK Download Pill */}
+              <div className="mt-4 pt-3 flex flex-col items-center">
+                <a 
+                  href="https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/app/Vyomra.apk" 
+                  download="Vyomra.apk"
+                  className="w-full py-2 px-3 rounded-xl text-center text-[11px] font-bold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Cpu className="w-3.5 h-3.5 text-violet-600" />
+                  <span>Download Official Android App (APK)</span>
+                </a>
+              </div>
+
+            </div>
           </div>
         )}
       </main>
