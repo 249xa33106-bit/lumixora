@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Eye, EyeOff, LogIn, UserPlus, ArrowLeft, ArrowRight, Mail, X, 
   Building2, GraduationCap, ShieldCheck, AlertCircle, RefreshCw, 
-  ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift
+  ExternalLink, Key, Check, Cpu, Award, Briefcase, CreditCard, Sparkles, Gift, Crown
 } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { auth, db } from '../config/firebase';
@@ -1174,74 +1174,108 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#07070b] flex items-center justify-center relative overflow-hidden py-10 px-4">
+    <div className="min-h-screen bg-[#06070A] text-slate-100 flex items-center justify-center relative overflow-hidden py-12 px-4 selection:bg-cyan-500/30 selection:text-cyan-200">
       
-      {/* Dynamic Cyber Orbs & Grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#00f5d4]/10 rounded-full blur-[140px] mix-blend-screen pointer-events-none animate-pulse-slow" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#7209b7]/15 rounded-full blur-[140px] mix-blend-screen pointer-events-none animate-pulse-slow" />
+      {/* Tesla Cyber Grid & Subtle Atmospheric Horizon */}
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] opacity-25 pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-cyan-500/[0.04] via-blue-600/[0.015] to-transparent pointer-events-none" />
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-cyan-400/[0.04] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-10 w-[500px] h-[300px] bg-purple-600/[0.03] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* Step 1: Institutional Portal Selection Screen */}
+      {/* Step 1: Institutional Portal Selection Screen (Tesla UI/UX) */}
       {!selectedCollege ? (
-        <div className="z-10 w-full max-w-4xl p-6 md:p-8 animate-fade-in-up">
-          <div className="text-center mb-8 space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-teal/5">
-              <Building2 className="w-3.5 h-3.5" /> Vyomra Multi-Campus Network
+        <div className="z-10 w-full max-w-5xl p-4 sm:p-8 animate-fade-in-up">
+          <div className="text-center mb-10 space-y-3.5">
+            {/* Status Beacon Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-zinc-300 text-[11px] font-mono tracking-widest uppercase shadow-2xl backdrop-blur-xl">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+              <span>Lumixora Multi-Campus Network // Active Fleet</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
-              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5d4] via-[#3a86ff] to-[#7209b7]">Portal</span>
+
+            {/* Precision Headline */}
+            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
+              Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-white">Portal</span>
             </h1>
-            <p className="text-gray-400 text-sm md:text-base max-w-xl mx-auto">
-              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : 'Student AI Placement Commander & Learning Engine'}.
+
+            {/* Architectural Subtext */}
+            <p className="text-zinc-400 text-xs sm:text-sm max-w-xl mx-auto font-normal leading-relaxed">
+              Choose your role and campus to enter the high-performance {authMode === 'faculty' ? 'Faculty Workspace & Analytics' : (authMode === 'intern' ? 'Engineering Internship Terminal' : (authMode === 'founder' ? 'Executive Administration Console' : 'Student AI Placement Commander & Learning Engine'))}.
             </p>
 
-            {/* Dedicated Role Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-4 pt-2">
-              <button
-                type="button"
-                onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-                  authMode === 'student'
-                    ? 'bg-[#00f5d4] text-black shadow-lg shadow-[#00f5d4]/20 scale-105'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4" /> Student Portal
-              </button>
-              <button
-                type="button"
-                onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-                  authMode === 'faculty'
-                    ? 'bg-[#7209b7] text-white shadow-lg shadow-[#7209b7]/30 scale-105'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
-                }`}
-              >
-                <Award className="w-4 h-4" /> Faculty Portal
-              </button>
-              <button
-                type="button"
-                onClick={() => { 
-                  setAuthMode('intern'); 
-                  setSelectedCollege({ id: 'intern', name: 'Lumixora Autonomous Engineering Internship Program', shortName: 'Lumixora Interns', code: 'INTERN', logo: '🚀' }); 
-                  setCollegeName('Lumixora Autonomous Systems');
-                  setError(''); 
-                }}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
-                  authMode === 'intern'
-                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
-                }`}
-              >
-                <Briefcase className="w-4 h-4 text-indigo-400" /> Intern Portal
-              </button>
+            {/* Tesla Monolithic Recessed Segmented Role Track */}
+            <div className="pt-2 flex justify-center">
+              <div className="p-1.5 rounded-2xl bg-zinc-950/80 border border-white/[0.08] backdrop-blur-2xl inline-flex flex-wrap items-center justify-center gap-1 shadow-2xl">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('student'); setSelectedCollege(null); setError(''); }}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
+                    authMode === 'student'
+                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <GraduationCap className={`w-3.5 h-3.5 ${authMode === 'student' ? 'text-cyan-400' : 'text-zinc-500'}`} />
+                  <span>Student Portal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('faculty'); setSelectedCollege(null); setError(''); }}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
+                    authMode === 'faculty'
+                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Award className={`w-3.5 h-3.5 ${authMode === 'faculty' ? 'text-indigo-400' : 'text-zinc-500'}`} />
+                  <span>Faculty Portal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { 
+                    setAuthMode('intern'); 
+                    setSelectedCollege({ id: 'intern', name: 'Lumixora Autonomous Engineering Internship Program', shortName: 'Lumixora Interns', code: 'INTERN', logo: '🚀' }); 
+                    setCollegeName('Lumixora Autonomous Systems');
+                    setError(''); 
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
+                    authMode === 'intern'
+                      ? 'bg-white/[0.12] text-white shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-md'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Briefcase className={`w-3.5 h-3.5 ${authMode === 'intern' ? 'text-violet-400' : 'text-zinc-500'}`} />
+                  <span>Intern Portal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { 
+                    setAuthMode('founder'); 
+                    setSelectedCollege({ id: 'founder', name: 'Lumixora Executive Office', shortName: 'Founder Console', code: 'FOUNDER', logo: '👑' }); 
+                    setCollegeName('Lumixora Executive Administration');
+                    setEmail('founder@lumixora.com');
+                    setError(''); 
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center gap-2 ${
+                    authMode === 'founder'
+                      ? 'bg-amber-400/15 text-amber-200 shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-amber-400/30 backdrop-blur-md'
+                      : 'text-zinc-400 hover:text-amber-300 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Crown className={`w-3.5 h-3.5 ${authMode === 'founder' ? 'text-amber-400' : 'text-amber-500/60'}`} />
+                  <span>Founder Access</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Campus Grid */}
+          {/* Campus Grid (Automotive Glass HUD Consoles) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allAvailableColleges.map((col) => {
+            {allAvailableColleges.map((col, idx) => {
               const displayLogo = resolveCollegeLogo(col.logo, col);
+              const nodeNum = String(idx + 1).padStart(2, '0');
               return (
                 <div
                   key={col.id}
@@ -1249,59 +1283,70 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
                     setSelectedCollege({ ...col, logo: displayLogo });
                     setCollegeName(col.shortName || col.name || col.code);
                     setError('');
-                    // If previously typed email belongs to a different college, reset it so placeholder displays cleanly
                     if (email && col.domains && !col.domains.some(d => email.toLowerCase().includes(d.toLowerCase()))) {
                       setEmail('');
                     }
                   }}
-                  className="glass-panel p-6 md:p-8 rounded-3xl border border-white/10 hover:border-[#00f5d4]/50 hover:bg-white/[0.04] transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between shadow-2xl"
+                  className="group relative rounded-3xl p-6 sm:p-7 bg-gradient-to-b from-white/[0.035] via-zinc-950/60 to-black/80 border border-white/[0.08] hover:border-cyan-400/50 hover:bg-white/[0.05] transition-all duration-500 flex flex-col justify-between shadow-2xl hover:shadow-[0_0_35px_rgba(6,182,212,0.14)] cursor-pointer backdrop-blur-2xl overflow-hidden hover:-translate-y-1.5"
                 >
-                  <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl ${col.bannerColor || 'from-purple-600 to-blue-600'} opacity-15 rounded-full blur-2xl group-hover:opacity-30 transition-opacity`} />
+                  {/* Tesla Laser-Edge Highlight */}
+                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  {/* Subtle Internal Glow Sphere */}
+                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-400/20 transition-all duration-500 pointer-events-none" />
 
                   <div>
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform overflow-hidden p-2">
+                    {/* Top Status & Emblem Bar */}
+                    <div className="flex items-start justify-between gap-4 mb-5">
+                      <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/10 p-2.5 flex items-center justify-center shadow-inner group-hover:scale-105 group-hover:border-cyan-400/30 transition-all duration-300">
                         {displayLogo && (displayLogo.startsWith('/') || displayLogo.startsWith('http') || displayLogo.includes('.png')) ? (
-                          <img src={displayLogo} alt={col.shortName || col.name} className="w-full h-full object-contain" />
+                          <img src={displayLogo} alt={col.shortName || col.name} className="w-full h-full object-contain filter drop-shadow-md" />
                         ) : (
-                          displayLogo || '🏛️'
+                          <span className="text-2xl">{displayLogo || '🏛️'}</span>
                         )}
                       </div>
+
                       <div className="flex flex-col items-end gap-1.5">
-                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-black text-gray-300">
-                          {col.code || 'CAMPUS'}
+                        <span className="font-mono text-[10px] font-bold tracking-widest text-zinc-400 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                          {col.code || 'NODE'} // {nodeNum}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-[10px] font-black text-cyan-300">
-                          ⚡ ₹10 One-Time Access Fee
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          ONLINE
                         </span>
                       </div>
                     </div>
 
-                    <h3 className="text-xl md:text-2xl font-black text-white group-hover:text-[#00f5d4] transition-colors mb-2">
+                    {/* Institutional Title */}
+                    <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug mb-1.5 tracking-tight">
                       {col.name}
                     </h3>
                     
-                    <p className="text-gray-400 text-xs line-clamp-2 mb-4 leading-relaxed">
-                      {col.description || 'Premier technical institution accredited for engineering excellence.'}
+                    {/* Minimalist Lead Description */}
+                    <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed mb-5">
+                      {col.description || 'Premier autonomous technical institution accredited for engineering and placement excellence.'}
                     </p>
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-white/5">
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
-                      <span className="flex items-center gap-1 text-gray-300">
-                        📍 {col.location || 'Kurnool, AP'}
-                      </span>
-                      <span>•</span>
-                      <span className="text-cyan-400 font-bold">
-                        ₹10 Platform Access Pass
-                      </span>
+                  {/* Telemetry Specs Strip & Action Trigger */}
+                  <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                      <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">Region</span>
+                        <span className="text-zinc-300 font-bold truncate block">{col.location || 'Andhra Pradesh'}</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">Pass Tariff</span>
+                        <span className="text-cyan-400 font-bold block">₹10 Lifetime</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-bold text-white group-hover:translate-x-1 transition-transform flex items-center gap-1.5">
-                        Enter {col.shortName || col.code} {authMode === 'faculty' ? 'Faculty' : 'Student'} Workspace
-                        <ArrowRight className="w-4 h-4 text-[#00f5d4]" />
+                    {/* Tesla Launch Bar Trigger */}
+                    <div className="w-full py-3 px-4 rounded-xl bg-white/[0.03] group-hover:bg-cyan-500/10 border border-white/[0.08] group-hover:border-cyan-400/40 text-xs font-semibold tracking-wider uppercase text-zinc-300 group-hover:text-cyan-300 flex items-center justify-between transition-all duration-300 shadow-sm">
+                      <span className="text-[11px] tracking-widest font-mono">
+                        INITIALIZE {authMode === 'faculty' ? 'FACULTY' : 'STUDENT'} TERMINAL
                       </span>
+                      <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
                 </div>
@@ -1309,28 +1354,35 @@ export default function AuthPortal({ onLogin, mode = 'student' }) {
             })}
           </div>
 
-          {/* College Not Mentioned in Student Login Banner */}
-          <div className="mt-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#131525] to-cyan-500/15 border-2 border-amber-500/35 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-2xl">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-2xl shrink-0 shadow-md">
-                🏛️
+          {/* Institutional Expansion Request Console (Tesla Fleet Expansion Style) */}
+          <div className="mt-10 rounded-3xl bg-zinc-950/60 border border-white/[0.08] p-6 sm:p-8 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/[0.03] rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex items-center gap-4 text-center sm:text-left">
+              <div className="w-13 h-13 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-cyan-400 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                <Building2 className="w-6 h-6 text-cyan-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-white tracking-tight">
-                  Your college not mentioned in Student Login?
+                <div className="inline-flex items-center gap-1.5 font-mono text-[10px] text-zinc-400 tracking-widest uppercase mb-1">
+                  <span>NETWORK EXPANSION</span>
+                  <span>•</span>
+                  <span className="text-cyan-400">PARTNER ONBOARDING</span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  Your Institution Not Listed in the Active Fleet?
                 </h4>
-                <p className="text-xs text-gray-300 mt-0.5 max-w-xl leading-relaxed">
-                  Want your campus added to Lumixora? Contact us at <strong className="text-amber-300 font-mono">lumixora.team@gmail.com</strong> and our team will onboard your university with custom syllabus mapping, past papers & AI learning twin!
+                <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
+                  Request institutional onboarding to deploy Lumixora’s autonomous syllabus mapping, AI placement suites, and verified student credentials on your university campus.
                 </p>
               </div>
             </div>
 
             <a
               href="mailto:lumixora.team@gmail.com?subject=Add%20My%20College%20to%20Lumixora%20Student%20Login&body=Hi%20Lumixora%20Team%2C%0A%0AWe%20would%20like%20to%20add%20our%20college%20to%20the%20Lumixora%20Student%20Login%20portal.%0A%0ACollege%20Name%3A%20%0ALocation%20(City%2C%20State)%3A%20%0AOfficial%20Website%20%2F%20Domain%3A%20%0AContact%20Person%20%2F%20Phone%3A%20%0A%0AThank%20you!"
-              className="shrink-0 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="shrink-0 px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white text-zinc-200 hover:text-black font-semibold text-xs tracking-wider uppercase flex items-center gap-2 border border-white/10 hover:border-white shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer font-mono"
             >
-              <Mail className="w-4 h-4 text-black" />
-              <span>Contact Us</span>
+              <Mail className="w-4 h-4" />
+              <span>Request Onboarding</span>
             </a>
           </div>
         </div>

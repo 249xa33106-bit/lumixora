@@ -26,7 +26,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './config/firebase';
 import { supabase } from './config/supabase';
 import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/updateService';
-import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { checkUserAccessStatus, cleanScholarName, isFounderEmail } from './utils/authSecurity';
 import { cloudSync } from './services/cloudSyncService';
 import StudyWithMe from './pages/StudyWithMe';
@@ -1823,9 +1823,11 @@ function App() {
             <CursorGlow />
             <button 
               onClick={() => setShowLogin(null)} 
-              className="fixed top-6 left-6 z-[99999] px-4 py-2 bg-black/50 hover:bg-black/70 text-white text-sm font-bold rounded-xl backdrop-blur-md transition-all border border-white/20"
+              className="fixed top-6 left-6 z-[99999] group px-4 py-2 bg-zinc-950/70 hover:bg-zinc-900/90 text-zinc-400 hover:text-white text-xs font-mono font-semibold tracking-wider uppercase rounded-full backdrop-blur-2xl transition-all duration-300 border border-white/[0.08] hover:border-white/20 flex items-center gap-2 shadow-2xl hover:scale-105 active:scale-95 cursor-pointer"
+              title="Return to Lumixora Home"
             >
-              â† Back to Home
+              <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:-translate-x-0.5 transition-all" />
+              <span>Back to Home</span>
             </button>
             <AuthPortal onLogin={handleLogin} mode={showLogin} />
             {renderUpdateModal()}
