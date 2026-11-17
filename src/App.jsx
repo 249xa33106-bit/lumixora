@@ -1856,9 +1856,11 @@ function App() {
             />
             <GprecPlacementLoginModal
               isOpen={showGprecLogin}
-              defaultRole={gprecLoginRole || 'officer'}
+              defaultRole="student"
+              hideOfficerTab={true}
               onClose={() => setShowGprecLogin(false)}
               onLoginSuccess={(verifiedUser) => {
+                setShowGprecLogin(false);
                 handleLogin(verifiedUser);
               }}
             />

@@ -126,13 +126,9 @@ export default function GprecPlacementLoginModal({
       const verifiedUser = res?.user || (res?.id ? res : null);
       if (res?.success || verifiedUser) {
         setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
-        setTimeout(() => {
-          recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {});
-          if (onLoginSuccess) {
-            onLoginSuccess(verifiedUser);
-          }
-          onClose();
-        }, 600);
+        recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {});
+        if (onLoginSuccess) onLoginSuccess(verifiedUser);
+        if (onClose) onClose();
       } else {
         setErrorMsg(res?.error || 'Invalid or expired OTP code.');
       }
@@ -669,26 +665,13 @@ export default function GprecPlacementLoginModal({
 
         {/* Modal Footer */}
         <div className="pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
-          <button 
-            type="button" 
-            onClick={() => setShowFounderModal(true)} 
-            className="hover:text-amber-600 text-slate-500 font-semibold cursor-pointer transition-colors flex items-center gap-1"
-          >
-            🔐 Founder Console
-          </button>
+          <span className="text-slate-400 font-medium">G. Pulla Reddy Engineering College (Autonomous)</span>
           <span className="flex items-center gap-1 font-mono text-[#0B132B] font-semibold">
             <Lock className="w-3 h-3 text-[#C5A059]" /> Verified Encryption
           </span>
         </div>
       </div>
-      <FounderLoginModal 
-        isOpen={showFounderModal} 
-        onClose={() => setShowFounderModal(false)} 
-        onLoginSuccess={(founderUser) => {
-          if (onLoginSuccess) onLoginSuccess(founderUser);
-          onClose();
-        }} 
-      />
+      
     </div>
   );
 }
