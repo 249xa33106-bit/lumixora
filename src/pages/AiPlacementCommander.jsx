@@ -1792,23 +1792,22 @@ Return ONLY a valid JSON object without markdown:
   const studentInitials = studentName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'SS';
 
   return (
-    <div className={`min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col ${!embedded ? 'md:flex-row' : ''}`}>
+    <div className={`min-h-screen bg-[#F4F1FD] text-slate-900 font-sans antialiased flex flex-col ${!embedded ? 'md:flex-row' : ''}`}>
       {/* ========================================================= */}
       {/* LEFT FIXED SIDEBAR (Only rendered in standalone mode)    */}
       {/* ========================================================= */}
       {!embedded && (
-        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B132B] border-r border-slate-800/80 flex flex-col justify-between p-4 sm:p-5 transition-transform duration-200 ease-in-out md:translate-x-0 overflow-y-auto custom-scrollbar ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="flex flex-col gap-5">
-          {/* GPREC Placement Suite Brand Header */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
-              {/* Floral / Cross Brand Icon */}
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2C10.8954 2 10 2.89543 10 4V8.17157C9.46957 8.05973 8.92484 8 8.375 8C5.95875 8 4 9.95875 4 12.375C4 13.5398 4.45396 14.5985 5.19526 15.3807L2.29289 18.2831C1.90237 18.6736 1.90237 19.3068 2.29289 19.6973C2.68342 20.0878 3.31658 20.0878 3.70711 19.6973L6.60948 16.7949C7.39174 17.5362 8.45041 17.9902 9.61523 17.9902C12.0315 17.9902 13.9902 16.0315 13.9902 13.6152C13.9902 13.0654 13.9305 12.5207 13.8186 11.9902H18C19.1046 11.9902 20 11.0948 20 9.99023C20 8.88566 19.1046 7.99023 18 7.99023H13.8284C13.9305 7.46957 14 6.92484 14 6.375C14 3.95875 12.0413 2 9.625 2H12Z" />
+        <aside className={`fixed inset-y-0 left-0 z-40 w-60 lg:w-64 bg-[#0B0D21] border-r border-[#1B1F3B] flex flex-col justify-between p-3.5 sm:p-4 transition-transform duration-200 ease-in-out md:translate-x-0 overflow-y-auto custom-scrollbar ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex flex-col gap-4">
+          {/* GPREC Placement Suite Brand Header with 4-pointed Spark star */}
+          <div className="flex items-center gap-3 px-1.5 py-1">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 flex-shrink-0">
+              <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+                <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
               </svg>
             </div>
             <div>
-              <div className="font-bold text-white tracking-tight text-lg leading-tight flex items-center gap-1.5">
+              <div className="font-extrabold text-white tracking-tight text-base leading-tight flex items-center gap-1.5">
                 GPREC
               </div>
               <div className="text-[11px] font-medium text-slate-400 tracking-tight">
@@ -1817,7 +1816,7 @@ Return ONLY a valid JSON object without markdown:
             </div>
           </div>
 
-          {/* Sidebar Navigation Items (15 Core Capabilities - Matching Screenshot Perfectly) */}
+          {/* Sidebar Navigation Items (Exact 15 Items matching reference screenshot) */}
           <nav className="flex flex-col gap-1">
             {isFounder && (
               <button
@@ -1825,7 +1824,7 @@ Return ONLY a valid JSON object without markdown:
                   navigateTo('founder_audit');
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all text-left cursor-pointer border ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer border mb-1 ${
                   activeNav === 'founder_audit'
                     ? 'bg-amber-400 text-slate-950 shadow-md border-amber-400'
                     : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
@@ -1833,7 +1832,7 @@ Return ONLY a valid JSON object without markdown:
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="truncate">Founder Audit & Time Logs</span>
+                  <span className="truncate">Founder Audit</span>
                 </div>
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400 text-slate-950 uppercase">Live</span>
               </button>
@@ -1846,14 +1845,14 @@ Return ONLY a valid JSON object without markdown:
               { id: 'coding_arena', label: 'Coding Arena', icon: Code, nav: 'skill_hub', sub: 'coding_arena' },
               { id: 'aptitude_arena', label: 'Aptitude Arena', icon: CheckSquare, nav: 'skill_hub', sub: 'aptitude_arena' },
               { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
-              { id: 'resume_defense', label: 'Resume Defense', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
-              { id: 'project_defense', label: 'Project Defense', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' },
+              { id: 'resume_builder', label: 'Resume Builder', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
+              { id: 'project_platform', label: 'Project Platform', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' },
               { id: 'job_match', label: 'Job Match', icon: Target, nav: 'placement', sub: 'job_match' },
-              { id: 'company_sim', label: 'Company Simulator', icon: Building, nav: 'placement', sub: 'company_sim' },
-              { id: 'rejection_risk', label: 'Rejection Risk', icon: AlertTriangle, nav: 'placement', sub: 'rejection_risk' },
+              { id: 'company_services', label: 'Company Services', icon: Building, nav: 'placement', sub: 'company_sim' },
+              { id: 'bridge_btech', label: 'Bridge to B.Tech', icon: GraduationCap, nav: 'resources', sub: 'curriculum' },
               { id: 'applications', label: 'Application Tracker', icon: Clock, nav: 'placement', sub: 'applications' },
               { id: 'analytics', label: 'Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
-              { id: 'tech_pulse', label: 'TechPulse', icon: Activity, nav: 'tech_pulse', sub: null, badge: 'NEW' },
+              { id: 'helpdesk', label: 'HelpDesk', icon: HelpCircle, nav: 'resources', sub: 'faq', badge: 'NEW' },
               { id: 'resources', label: 'Resources', icon: BookOpen, nav: 'resources', sub: null }
             ].map((item) => {
               const Icon = item.icon;
@@ -1863,15 +1862,15 @@ Return ONLY a valid JSON object without markdown:
                                (item.id === 'coding_arena' && activeNav === 'skill_hub' && activeModule === 'coding_arena') ||
                                (item.id === 'aptitude_arena' && activeNav === 'skill_hub' && activeModule === 'aptitude_arena') ||
                                (item.id === 'mock_interviews' && activeNav === 'mock_interviews' && (!activeModule || activeModule === 'mock_interview')) ||
-                               (item.id === 'resume_defense' && activeNav === 'mock_interviews' && activeModule === 'resume_defense') ||
-                               (item.id === 'project_defense' && activeNav === 'mock_interviews' && activeModule === 'project_defense') ||
+                               (item.id === 'resume_builder' && activeNav === 'mock_interviews' && activeModule === 'resume_defense') ||
+                               (item.id === 'project_platform' && activeNav === 'mock_interviews' && activeModule === 'project_defense') ||
                                (item.id === 'job_match' && activeNav === 'placement' && activeModule === 'job_match') ||
-                               (item.id === 'company_sim' && activeNav === 'placement' && activeModule === 'company_sim') ||
-                               (item.id === 'rejection_risk' && activeNav === 'placement' && activeModule === 'rejection_risk') ||
+                               (item.id === 'company_services' && activeNav === 'placement' && activeModule === 'company_sim') ||
+                               (item.id === 'bridge_btech' && activeNav === 'resources' && activeModule === 'curriculum') ||
                                (item.id === 'applications' && activeNav === 'placement' && activeModule === 'applications') ||
                                (item.id === 'analytics' && activeNav === 'analytics') ||
-                               (item.id === 'tech_pulse' && activeNav === 'tech_pulse') ||
-                               (item.id === 'resources' && activeNav === 'resources');
+                               (item.id === 'helpdesk' && activeNav === 'resources' && activeModule === 'faq') ||
+                               (item.id === 'resources' && activeNav === 'resources' && !activeModule);
               return (
                 <button
                   key={item.id}
@@ -1879,10 +1878,10 @@ Return ONLY a valid JSON object without markdown:
                     navigateTo(item.nav, item.sub);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs md:text-sm font-medium transition-all text-left cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all text-left cursor-pointer ${
                     isActive 
-                      ? 'bg-blue-600 text-white shadow-sm font-semibold' 
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      ? 'bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] text-white shadow-lg shadow-purple-600/30 font-bold' 
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -1890,7 +1889,7 @@ Return ONLY a valid JSON object without markdown:
                     <span className="truncate">{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className="text-[9px] px-1.5 py-0.2 rounded font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xs">
                       {item.badge}
                     </span>
                   )}
@@ -1900,78 +1899,60 @@ Return ONLY a valid JSON object without markdown:
           </nav>
         </div>
 
-        {/* Sidebar Footer User Profile */}
-        <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/80">
-          {/* User Profile Pill (Matching Shaik Spark reference) */}
-          <div className="relative pt-1">
+        {/* Sidebar Footer: Aim Higher Card + User Profile */}
+        <div className="flex flex-col gap-2 pt-3 border-t border-[#1B1F3B]">
+          {/* Aim Higher Card */}
+          <div className="mx-0.5 mb-1 p-2.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md flex items-center justify-between gap-2 relative overflow-hidden group">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img 
+                src="/gprec-trophy-icon.png" 
+                alt="Aim Higher" 
+                className="w-8 h-10 object-contain flex-shrink-0"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white tracking-tight truncate">Aim Higher</div>
+                <div className="text-[9px] text-slate-400 truncate">Your Future Starts Here...</div>
+              </div>
+            </div>
             <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-800/60 transition-colors text-left cursor-pointer"
+              onClick={() => navigateTo('placement', 'overview')}
+              className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center text-white flex-shrink-0 hover:scale-105 transition-transform cursor-pointer shadow-sm shadow-purple-500/40"
             >
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* User Profile Pill (Matching Shaik reference) */}
+          <div className="relative pt-0.5">
+            <div className="w-full flex items-center justify-between p-1.5 px-2 rounded-xl hover:bg-white/[0.06] transition-colors text-left">
               <div className="flex items-center gap-2.5 min-w-0">
                 <img
-                  src="/founder.png"
+                  src="/gprec-user-avatar.png"
                   alt="Student Profile"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-700 flex-shrink-0"
+                  onError={(e) => { e.target.src = '/founder.png'; }}
+                  className="w-8 h-8 rounded-full object-cover border border-purple-500/40 flex-shrink-0"
                 />
                 <div className="min-w-0">
                   <div className="text-xs font-semibold text-white truncate">
-                    {studentName && studentName !== 'Student Officer' ? studentName : 'Shaik Spark'}
+                    {studentName && studentName !== 'Student Officer' ? studentName : 'Shaik'}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">
-                    Student
+                  <div className="text-[10px] text-slate-400 font-medium truncate">
+                    {user?.email || 'shaik@lumixora.com'}
                   </div>
                 </div>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-
-            {/* Profile Dropdown */}
-            {showProfileMenu && (
-              <div className="absolute bottom-12 left-0 right-0 bg-[#0B132B] border border-slate-700/90 rounded-xl shadow-xl p-1.5 z-50 flex flex-col gap-1">
-                {(user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || studentInitials === 'DO') && (
-                  <button
-                    onClick={() => {
-                      setShowProfileMenu(false);
-                      if (setActiveTab) {
-                        setActiveTab('tpo-dashboard');
-                        window.location.hash = 'tpo-dashboard';
-                      }
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 border border-amber-800/50 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Shield className="w-3.5 h-3.5 text-amber-400" />
-                    <span>T&P Officer Command Suite</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => { setShowProfileMenu(false); setShowSettingsModal(true); }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Placement Preferences</span>
-                </button>
-                <button
-                  onClick={() => { setShowProfileMenu(false); setShowSupportModal(true); }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                >
-                  <Building className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Placement Cell Office</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    if (onLogout) onLogout();
-                    else window.location.reload();
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-rose-400 hover:bg-rose-950/40 flex items-center gap-2 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Log Out</span>
-                </button>
-              </div>
-            )}
+              <button
+                onClick={() => {
+                  if (onLogout) onLogout();
+                  else window.location.reload();
+                }}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                title="Log Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -1991,71 +1972,80 @@ Return ONLY a valid JSON object without markdown:
       <div className={`flex-1 ${!embedded ? 'md:pl-64' : ''} flex flex-col min-w-0`}>
         {/* Sticky Top Navigation Bar (Clean Floating Modern Header Matching Screenshot) */}
         {!embedded && (
-          <header className="sticky top-0 z-30 h-16 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 flex items-center justify-between gap-4 shadow-2xs">
+          <header className="sticky top-0 z-30 h-16 bg-white/70 backdrop-blur-xl border-b border-purple-100/60 px-4 md:px-8 flex items-center justify-between gap-4 shadow-[0_4px_20px_rgb(124,58,237,0.04)]">
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+            className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-purple-50"
           >
             <Layers className="w-5 h-5" />
           </button>
 
           {/* Search Input Bar (Matching screenshot: Search jobs, skills, companies or technologies... [Ctrl + K]) */}
-          <div className="relative flex-1 max-w-lg mx-auto md:mx-0">
+          <div className="relative flex-1 max-w-xl mx-auto md:mx-0">
             <button
               onClick={() => setShowSearchModal(true)}
-              className="w-full flex items-center justify-between bg-slate-100/80 hover:bg-slate-200/70 text-slate-500 text-xs md:text-sm pl-9 pr-3 py-2 rounded-full border border-slate-200/90 transition-all cursor-pointer text-left shadow-2xs"
+              className="w-full flex items-center justify-between bg-white/90 hover:bg-white text-slate-500 text-xs md:text-sm pl-9 pr-3 py-2 rounded-full border border-purple-200/60 transition-all cursor-pointer text-left shadow-2xs"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5" />
+                <Search className="w-3.5 h-3.5 text-purple-400 absolute left-3.5" />
                 <span className="truncate">Search jobs, skills, companies or technologies...</span>
               </div>
-              <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-md shadow-2xs">
+              <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-semibold text-slate-500 bg-purple-50/80 border border-purple-200/60 rounded-md">
                 Ctrl + K
               </kbd>
             </button>
           </div>
 
-          {/* Top Right Actions: Sun Theme, Notifications & Student Profile Circle */}
+          {/* Top Right Actions: Sun/Moon Theme, Notifications & Student Initials SP */}
           <div className="flex items-center gap-3">
-            {/* Theme Toggle Sun Icon */}
-            <button
-              onClick={() => addToast({ message: 'GPREC Placement Suite is actively running in Light Modern Theme.', type: 'info' })}
-              className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors cursor-pointer"
-              title="Toggle Theme"
-            >
-              <Sun className="w-4 h-4 text-slate-600" />
-            </button>
+            {/* Theme Toggle Sun/Moon Pill */}
+            <div className="flex items-center bg-white/90 border border-purple-200/60 rounded-full p-1 shadow-2xs gap-0.5">
+              <button
+                onClick={() => addToast({ message: 'Light Theme active', type: 'info' })}
+                className="p-1 rounded-full text-amber-500 hover:bg-purple-50 transition-colors cursor-pointer"
+                title="Light Theme"
+              >
+                <Sun className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => addToast({ message: 'Night Theme', type: 'info' })}
+                className="p-1 rounded-full text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors cursor-pointer"
+                title="Night Theme"
+              >
+                <Moon className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
             {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors relative cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/90 hover:bg-purple-50 border border-purple-200/60 flex items-center justify-center text-slate-600 transition-colors relative cursor-pointer shadow-2xs"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4 text-slate-600" />
-                <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-2xs">
                   3
                 </span>
               </button>
 
               {/* Notifications Popover */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200/90 rounded-2xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-purple-100 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-purple-50">
                     <h3 className="text-xs font-bold text-slate-900 tracking-tight">Placement Notifications</h3>
                     <button
                       onClick={() => setNotificationsList(prev => prev.map(n => ({ ...n, read: true })))}
-                      className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
+                      className="text-[11px] font-semibold text-purple-600 hover:text-purple-700 cursor-pointer"
                     >
                       Mark all as read
                     </button>
                   </div>
-                  <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                  <div className="divide-y divide-purple-50 max-h-72 overflow-y-auto">
                     {notificationsList.map(n => (
-                      <div key={n.id} className="py-2.5 flex items-start gap-2.5 hover:bg-slate-50/80 rounded-lg px-1 transition-colors">
-                        <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.read ? 'bg-slate-300' : 'bg-blue-600'}`} />
+                      <div key={n.id} className="py-2.5 flex items-start gap-2.5 hover:bg-purple-50/50 rounded-lg px-1 transition-colors">
+                        <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.read ? 'bg-slate-300' : 'bg-purple-600'}`} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-semibold text-slate-900 truncate">{n.title}</h4>
@@ -2070,7 +2060,7 @@ Return ONLY a valid JSON object without markdown:
               )}
             </div>
 
-                        {isFounder && (
+            {isFounder && (
               <button
                 onClick={() => navigateTo('founder_audit')}
                 className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
@@ -2079,13 +2069,14 @@ Return ONLY a valid JSON object without markdown:
                 <span>👑 Founder Console</span>
               </button>
             )}
-            {/* Student Initials Avatar (Matches screenshot: SS circle) */}
+
+            {/* Student Initials Avatar (Matches SP in screenshot) */}
             <div 
               onClick={() => setShowSettingsModal(true)}
-              className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors"
-              title={`${studentName} - Click to customize placement target`}
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold text-xs flex items-center justify-center shadow-md shadow-purple-500/20 cursor-pointer hover:scale-105 transition-transform"
+              title={`${studentName} - SP`}
             >
-              SS
+              SP
             </div>
           </div>
         </header>
@@ -2165,132 +2156,105 @@ Return ONLY a valid JSON object without markdown:
           )}
 
           {activeNav === 'dashboard' && (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-5 p-2 sm:p-4 md:p-6 lg:p-8">
               
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                {/* Hero Banner with Campus Building Photo */}
-                <div className="lg:col-span-8 bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-white border border-blue-100/90 rounded-3xl p-6 md:p-8 shadow-xs relative overflow-hidden flex flex-col justify-between">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Hero Banner with Student Cutout & Campus Building */}
+                <div className="lg:col-span-8 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-6 md:p-8 shadow-xl shadow-purple-500/5 relative overflow-hidden flex flex-col justify-between min-h-[270px]">
+                  {/* Campus & Scholar Cutout with Glowing Purple Ring (Right Side) */}
+                  <div className="hidden sm:block absolute right-0 top-0 bottom-0 w-[45%] md:w-[48%] pointer-events-none overflow-hidden rounded-r-[28px]">
+                    <img
+                      src="/gprec-hero-student-campus.png"
+                      alt="GPREC Campus & Scholar"
+                      className="w-full h-full object-cover object-left"
+                      style={{
+                        maskImage: 'linear-gradient(to right, transparent, black 12%)',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 12%)'
+                      }}
+                    />
+                  </div>
+
+                  {/* Left Hero Content */}
                   <div className="max-w-md z-10 flex flex-col gap-3">
                     {/* Pill */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-700 border border-purple-200/80 rounded-full text-xs font-semibold w-fit">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100/80 text-purple-700 border border-purple-200/60 rounded-full text-xs font-semibold w-fit">
                       <span>Welcome to GPREC Placement Suite 🚀</span>
                     </div>
 
                     {/* Headline */}
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mt-1">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight mt-1">
                       Your Career.<br />
-                      Our <span className="text-blue-600">Commitment.</span>
+                      Our <span className="bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] bg-clip-text text-transparent">Commitment.</span>
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="text-xs md:text-sm text-slate-600 font-normal leading-relaxed">
-                      Explore opportunities, build skills and accelerate your career journey with GPREC.
+                    <p className="text-xs md:text-sm text-slate-600 font-normal leading-relaxed max-w-sm">
+                      Explore opportunities, build skills and achieve your dreams at GPREC.
                     </p>
 
                     {/* Action Buttons */}
                     <div className="flex flex-wrap items-center gap-3 pt-2">
                       <button
                         onClick={() => navigateTo('placement', 'job_match')}
-                        className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                        className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] hover:opacity-95 text-white font-semibold text-xs md:text-sm shadow-lg shadow-purple-500/25 transition-all flex items-center gap-2 cursor-pointer"
                       >
                         <span>Explore Opportunities</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setShowOverviewModal(true)}
-                        className="px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs md:text-sm border border-slate-200/90 shadow-2xs transition-colors flex items-center gap-2 cursor-pointer"
+                        className="px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-slate-700 font-semibold text-xs md:text-sm border border-purple-100 shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                       >
-                        <Play className="w-3.5 h-3.5 fill-current text-slate-600" />
+                        <Play className="w-3.5 h-3.5 fill-current text-slate-700" />
                         <span>Watch Overview</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Campus Building Photo (Right side of banner) */}
-                  <div className="mt-4 md:mt-0 md:absolute md:right-0 md:bottom-0 md:top-0 md:w-1/2 flex items-center justify-end pointer-events-none overflow-hidden md:rounded-r-3xl">
-                    <div className="relative w-full h-full flex items-center justify-end">
-                      {/* Floating script text in top right */}
-                      <div className="absolute top-4 right-8 z-10 text-slate-700/80 font-serif italic text-sm md:text-base font-semibold pointer-events-none drop-shadow-xs hidden sm:block">
-                        Build a Future<br />with GPREC
-                      </div>
-                      <img
-                        src="/gprec-campus-hero.png"
-                        alt="GPREC Campus"
-                        className="w-full h-full object-cover object-left md:object-center"
-                        style={{
-                          maskImage: 'linear-gradient(to right, transparent, black 25%)',
-                          WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)'
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Carousel Controls at Bottom */}
-                  <div className="flex items-center justify-between z-10 pt-4">
-                    <div className="flex items-center gap-1.5">
-                      {[0, 1, 2].map(idx => (
-                        <span
-                          key={idx}
-                          className={`w-2 h-2 rounded-full transition-all ${idx === 0 ? 'bg-blue-600 w-4' : 'bg-slate-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button className="w-7 h-7 rounded-full bg-white/90 hover:bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-2xs cursor-pointer">
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                      </button>
-                      <button className="w-7 h-7 rounded-full bg-white/90 hover:bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-2xs cursor-pointer">
-                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Placement Pulse Card (Right 30%) */}
-                <div className="lg:col-span-4 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+                <div className="lg:col-span-4 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-5 md:p-6 shadow-xl shadow-purple-500/5 flex flex-col justify-between">
                   <div>
-                    {/* Header */}
+                    {/* Title + Live Badge */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                          <Activity className="w-4 h-4" />
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
+                          <Activity className="w-3.5 h-3.5" />
                         </div>
                         <h3 className="text-sm font-bold text-slate-900 tracking-tight">Placement Pulse</h3>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         <span>Live</span>
                       </div>
                     </div>
 
-                    {/* Growth Stat */}
-                    <div className="mt-3">
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-xs font-medium text-slate-500">Growth in Campus Placements</span>
-                        <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#0B1528] text-white">+32%</span>
-                      </div>
+                    {/* Growth Header + 92% pill */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs font-medium text-slate-500">Growth in Placements</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0B0D21] text-white">92%</span>
                     </div>
 
-                    {/* Blue Spline Chart SVG */}
-                    <div className="relative h-24 w-full my-2">
+                    {/* Purple Spline Chart SVG */}
+                    <div className="relative h-20 w-full my-2">
                       <svg className="w-full h-full overflow-visible" viewBox="0 0 240 70">
                         <defs>
-                          <linearGradient id="pulseCurveGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.2" />
-                            <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                          <linearGradient id="purplePulseGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.0" />
                           </linearGradient>
                         </defs>
                         <path
                           d="M 10,48 Q 40,55 70,38 T 130,22 T 190,12 T 235,5 L 235,68 L 10,68 Z"
-                          fill="url(#pulseCurveGrad)"
+                          fill="url(#purplePulseGrad)"
                         />
                         <path
                           d="M 10,48 Q 40,55 70,38 T 130,22 T 190,12 T 235,5"
                           fill="none"
-                          stroke="#2563EB"
+                          stroke="#7C3AED"
                           strokeWidth="2.5"
                           strokeLinecap="round"
                         />
@@ -2298,24 +2262,27 @@ Return ONLY a valid JSON object without markdown:
                           {x: 10, y: 48}, {x: 40, y: 52}, {x: 70, y: 38}, {x: 100, y: 32},
                           {x: 130, y: 22}, {x: 160, y: 18}, {x: 190, y: 12}, {x: 235, y: 5}
                         ].map((pt, i) => (
-                          <circle key={i} cx={pt.x} cy={pt.y} r={3} fill="#2563EB" stroke="#FFFFFF" strokeWidth={1.5} />
+                          <circle key={i} cx={pt.x} cy={pt.y} r={3} fill="#7C3AED" stroke="#FFFFFF" strokeWidth={1.5} />
                         ))}
                       </svg>
                     </div>
                   </div>
 
                   {/* 3 Metrics Row */}
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center">
-                    <div>
-                      <div className="text-base font-extrabold text-slate-900 tracking-tight">1.2K+</div>
-                      <div className="text-[10px] font-medium text-slate-400">Active Drives</div>
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-purple-50 text-center">
+                    <div className="flex flex-col items-center">
+                      <User className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
+                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">1.2K+</div>
+                      <div className="text-[10px] font-medium text-slate-400">Placed Students</div>
                     </div>
-                    <div className="border-x border-slate-100">
-                      <div className="text-base font-extrabold text-slate-900 tracking-tight">₹12.5 LPA</div>
+                    <div className="flex flex-col items-center border-x border-purple-50">
+                      <Briefcase className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
+                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">₹12.5 LPA</div>
                       <div className="text-[10px] font-medium text-slate-400">Avg Package</div>
                     </div>
-                    <div>
-                      <div className="text-base font-extrabold text-slate-900 tracking-tight">92%</div>
+                    <div className="flex flex-col items-center">
+                      <Star className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
+                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">92%</div>
                       <div className="text-[10px] font-medium text-slate-400">Placement Rate</div>
                     </div>
                   </div>
@@ -2323,17 +2290,16 @@ Return ONLY a valid JSON object without markdown:
               </div>
 
               {/* ========================================================= */}
-              {/* ROW 2: FLOATING HORIZONTAL SUB-NAV PILL BAR                */}
+              {/* ROW 2: FLOATING HORIZONTAL SUB-NAV CAPSULE BAR            */}
               {/* ========================================================= */}
-              <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-2 shadow-2xs flex items-center justify-between gap-2 overflow-x-auto">
+              <div className="bg-white/80 backdrop-blur-2xl border border-white/90 rounded-2xl p-1.5 shadow-md shadow-purple-500/5 flex items-center justify-between gap-1 overflow-x-auto">
                 {[
-                  { id: 'dashboard', label: 'Placement Dashboard', icon: Home, nav: 'dashboard', sub: null },
+                  { id: 'dashboard', label: 'Placement Dashboard', icon: Briefcase, nav: 'dashboard', sub: null },
                   { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'daily_mission' },
-                  { id: 'job_opportunities', label: 'Job Opportunities', icon: Briefcase, nav: 'placement', sub: 'job_match' },
-                  { id: 'career_analytics', label: 'Career Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
-                  { id: 'tech_pulse', label: 'TechPulse', icon: Activity, nav: 'tech_pulse', sub: null },
-                  { id: 'resources', label: 'Learning Resources', icon: BookOpen, nav: 'resources', sub: null },
-                  { id: 'more', label: 'More', icon: Layers, nav: 'placement', sub: 'company_sim' }
+                  { id: 'ai_career_brain', label: 'AI Career Brain', icon: Brain, nav: 'placement', sub: 'twin_engine' },
+                  { id: 'learning_paths', label: 'Learning Paths', icon: BookOpen, nav: 'resources', sub: 'curriculum' },
+                  { id: 'career_services', label: 'Career Services', icon: ShieldCheck, nav: 'placement', sub: 'company_sim' },
+                  { id: 'more', label: 'More', icon: Layers, nav: 'analytics', sub: 'analytics' }
                 ].map(tab => {
                   const Icon = tab.icon;
                   const isActive = (tab.id === 'dashboard' && activeNav === 'dashboard');
@@ -2343,8 +2309,8 @@ Return ONLY a valid JSON object without markdown:
                       onClick={() => navigateTo(tab.nav, tab.sub)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                         isActive 
-                          ? 'bg-blue-600 text-white shadow-xs' 
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                          ? 'bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] text-white shadow-md shadow-purple-500/25' 
+                          : 'text-slate-600 hover:text-purple-600 hover:bg-purple-50/50'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -2355,19 +2321,19 @@ Return ONLY a valid JSON object without markdown:
               </div>
 
               {/* ========================================================= */}
-              {/* ROW 3: LATEST OPPORTUNITIES (65%) + CAREER INTELLIGENCE (35%) */}
+              {/* ROW 3: LATEST OPPORTUNITIES (65%) + CAREER INTELLIGENCE   */}
               {/* ========================================================= */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 {/* Latest Opportunities */}
-                <div className="lg:col-span-8 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+                <div className="lg:col-span-8 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-6 shadow-xl shadow-purple-500/5 flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-5 bg-blue-600 rounded-full" />
+                      <span className="w-1.5 h-5 bg-gradient-to-b from-[#6366f1] to-[#9333ea] rounded-full" />
                       <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Latest Opportunities</h3>
                     </div>
                     <button 
                       onClick={() => navigateTo('placement', 'job_match')}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                      className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1 cursor-pointer"
                     >
                       <span>View All</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -2375,143 +2341,139 @@ Return ONLY a valid JSON object without markdown:
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-                    {/* Featured Drive Card (Google) */}
-                    <div className="md:col-span-6 bg-gradient-to-br from-slate-900 via-slate-800 to-[#0B1528] rounded-2xl p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-xs min-h-[220px]">
-                      {/* Background Campus Photo with Google Logo */}
-                      <div className="absolute inset-0 opacity-25 pointer-events-none">
-                        <img src="/gprec-campus-hero.png" alt="Google Campus" className="w-full h-full object-cover" />
+                    {/* Featured Drive Card (Google Hiring 2025) */}
+                    <div className="md:col-span-6 bg-gradient-to-br from-slate-950 via-slate-900 to-[#0B0D21] rounded-2xl p-5 text-white flex flex-col justify-between relative overflow-hidden min-h-[220px] shadow-md">
+                      {/* Background Building Photo */}
+                      <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none opacity-40">
+                        <img src="/gprec-google-building.jpg" alt="Google Campus" className="w-full h-full object-cover" />
                       </div>
+                      
                       <div className="z-10 flex flex-col gap-2">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 w-fit">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span>Hot Drive</span>
+                          <span>Hot Hiring</span>
                         </div>
                         <h4 className="text-xl font-extrabold tracking-tight text-white mt-1">Google Hiring 2025</h4>
                         <p className="text-xs text-slate-300">Software Engineer | Bengaluru</p>
-                        <div className="text-xs font-semibold text-blue-300 flex items-center gap-1.5">
-                          <Briefcase className="w-3.5 h-3.5" />
-                          <span>₹20 - 40 LPA • 2025 Batch</span>
+                        <div className="text-xs font-semibold text-purple-200 flex items-center gap-3">
+                          <span>₹ 20 - 40 LPA</span>
+                          <span>•</span>
+                          <span>On-site</span>
                         </div>
                       </div>
 
-                      <div className="z-10 flex items-center justify-between pt-5">
+                      <div className="z-10 flex items-center justify-between pt-4">
                         <button
                           onClick={() => navigateTo('placement', 'job_match')}
-                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          className="px-5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <span>Apply Now</span>
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <span>1/4</span>
-                          <div className="flex items-center gap-1">
-                            <button className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer">
-                              <ChevronLeft className="w-3 h-3" />
-                            </button>
-                            <button className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer">
-                              <ChevronRight className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </div>
 
-                    {/* 3 Opportunity Rows */}
-                    <div className="md:col-span-6 flex flex-col justify-between gap-3">
+                    {/* 3 Opportunity Rows (Microsoft, Amazon SDE, TCS) */}
+                    <div className="md:col-span-6 flex flex-col justify-between gap-2.5">
                       {/* Microsoft */}
                       <div 
                         onClick={() => navigateTo('placement', 'job_match')}
-                        className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-slate-200 hover:shadow-xs transition-all flex items-center justify-between cursor-pointer group"
+                        className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-2xs">
                             <div className="grid grid-cols-2 gap-0.5 w-4 h-4">
-                              <div className="bg-[#F25022] rounded-2xs" />
-                              <div className="bg-[#7FBA00] rounded-2xs" />
-                              <div className="bg-[#00A4EF] rounded-2xs" />
-                              <div className="bg-[#FFB900] rounded-2xs" />
+                              <span className="bg-[#F25022] rounded-xs" />
+                              <span className="bg-[#7FBA00] rounded-xs" />
+                              <span className="bg-[#00A4EF] rounded-xs" />
+                              <span className="bg-[#FFB900] rounded-xs" />
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Microsoft</div>
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Microsoft</div>
                             <div className="text-[11px] text-slate-500 font-medium">Product Intern</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">₹1.2 LPA • 2026 Batch</div>
+                            <div className="text-[10px] text-slate-400">• 2 days ago</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200/80">3d left</span>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
+                        >
+                          Apply
+                        </button>
                       </div>
 
-                      {/* Amazon */}
+                      {/* Amazon SDE */}
                       <div 
                         onClick={() => navigateTo('placement', 'job_match')}
-                        className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-slate-200 hover:shadow-xs transition-all flex items-center justify-between cursor-pointer group"
+                        className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-2xs">
-                            <span className="text-xs font-black text-slate-800">a</span>
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-2xs">
+                            <span className="text-sm font-black text-slate-900">a</span>
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Amazon SDE</div>
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Amazon SDE</div>
                             <div className="text-[11px] text-slate-500 font-medium">Intern</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">₹1.1 LPA • 2026 Batch</div>
+                            <div className="text-[10px] text-slate-400">• 3 days ago</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200/80">5d left</span>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
+                        >
+                          Apply
+                        </button>
                       </div>
 
-                      {/* TCS */}
+                      {/* TCS NQT 2025 */}
                       <div 
                         onClick={() => navigateTo('placement', 'job_match')}
-                        className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-slate-200 hover:shadow-xs transition-all flex items-center justify-between cursor-pointer group"
+                        className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-2xs">
-                            <span className="text-[10px] font-black text-purple-700">tcs</span>
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-2xs">
+                            <span className="text-[11px] font-black text-purple-700">tcs</span>
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">TCS NQT 2025</div>
-                            <div className="text-[11px] text-slate-500 font-medium">Digital & Ninja Track</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">₹3.5 LPA • 2025 Batch</div>
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">TCS NQT 2025</div>
+                            <div className="text-[11px] text-slate-400">• 1 week ago</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200/80">7d left</span>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
+                        >
+                          Apply
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Your Career Intelligence (Cyber Dark Card) */}
-                <div className="lg:col-span-4 bg-gradient-to-br from-[#0B1736] via-[#08122B] to-[#040A1A] border border-blue-900/60 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
+                {/* Your Career Intelligence (lg:col-span-4 - Cyber Executive Dark Card) */}
+                <div className="lg:col-span-4 bg-gradient-to-br from-[#0B0F2A] via-[#090C22] to-[#050714] border border-purple-900/40 rounded-[28px] p-6 text-white shadow-xl shadow-purple-950/20 flex flex-col justify-between relative overflow-hidden">
                   <div>
                     {/* Header */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-blue-300" />
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-600/30 border border-blue-500/40 text-blue-400 flex items-center justify-center">
+                          <Brain className="w-3.5 h-3.5 text-blue-300" />
                         </div>
                         <h3 className="text-sm font-bold text-white tracking-tight">Your Career Intelligence</h3>
                       </div>
                       <button
-                        onClick={() => navigateTo('placement', 'overview')}
-                        className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-0.5 cursor-pointer"
+                        onClick={() => navigateTo('placement', 'twin_engine')}
+                        className="text-[11px] font-semibold text-purple-300 hover:text-white flex items-center gap-0.5 cursor-pointer"
                       >
                         <span>View Details</span>
                         <ChevronRight className="w-3 h-3" />
                       </button>
                     </div>
 
-                    {/* Ring Gauge + Vectors + 3D Trophy on Pedestal */}
+                    {/* Donut Gauge + 4 Skill Progress Bars */}
                     <div className="grid grid-cols-12 gap-3 items-center my-4">
-                      {/* Donut Gauge */}
+                      {/* Left: Donut Gauge (78%) */}
                       <div className="col-span-5 flex flex-col items-center justify-center">
                         <div className="relative w-24 h-24 flex items-center justify-center">
                           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -2530,231 +2492,117 @@ Return ONLY a valid JSON object without markdown:
                               strokeLinecap="round"
                               fill="none"
                               strokeDasharray="251.2"
-                              strokeDashoffset={251.2 * (1 - (overallReadiness || 0) / 100)}
+                              strokeDashoffset={251.2 * (1 - 78 / 100)}
                             />
                           </svg>
                           <div className="absolute flex flex-col items-center justify-center text-center">
-                            <span className="text-xl font-black text-white leading-none">
-                              {overallReadiness}%
+                            <span className="text-2xl font-black text-white leading-none">
+                              78%
                             </span>
-                            <span className="text-[9px] font-medium text-slate-400 mt-0.5">Readiness</span>
+                            <span className="text-[9px] font-medium text-slate-400 mt-0.5">Overall Readiness</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Vectors & Trophy */}
-                      <div className="col-span-7 flex items-center justify-between">
-                        <div className="space-y-1.5 text-[11px] flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.coding > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
-                            <span className="text-slate-300">Skills Match</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.coding}%</span>
+                      {/* Right: 4 Skill Progress Bars */}
+                      <div className="col-span-7 flex flex-col gap-2">
+                        {[
+                          { label: 'Technical Skills', pct: 92 },
+                          { label: 'Communication', pct: 85 },
+                          { label: 'Aptitude', pct: 80 },
+                          { label: 'Soft Skills', pct: 76 }
+                        ].map(skill => (
+                          <div key={skill.label} className="flex flex-col gap-0.5">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <div className="flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                                <span className="text-slate-300">{skill.label}</span>
+                              </div>
+                              <span className="text-xs font-bold text-white">{skill.pct}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" 
+                                style={{ width: `${skill.pct}%` }} 
+                              />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.resume > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
-                            <span className="text-slate-300">Resume Score</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.resume}%</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.interview > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
-                            <span className="text-slate-300">Interview Ready</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.interview}%</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${twinScores.dsa > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
-                            <span className="text-slate-300">Opportunity Fit</span>
-                            <span className="font-bold text-white ml-auto">{twinScores.dsa}%</span>
-                          </div>
-                        </div>
-
-                        {/* 3D Golden Trophy on Pedestal */}
-                        <div className="flex flex-col items-center justify-end pl-2">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                            <Trophy className="w-5 h-5 text-amber-950 fill-amber-900/30" />
-                          </div>
-                          <div className="w-10 h-2 bg-blue-500/20 border-t border-blue-400/40 rounded-t-sm mt-1" />
-                          <div className="w-12 h-1.5 bg-blue-500/30 rounded-t-sm" />
-                        </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Bottom Notification Bar */}
-                  <div className="mt-2 p-2.5 rounded-xl bg-blue-950/60 border border-blue-800/50 flex items-center gap-2 text-xs text-blue-200">
-                    <span className="text-amber-400">💡</span>
-                    <span className="text-[11px] leading-snug">
-                      {overallReadiness > 0 
-                        ? `Live telemetry calibrated: ${solvedProblemIds.length} solved problems (${overallReadiness}% readiness).`
-                        : "You're in the top 10% of placement-ready students!"}
-                    </span>
+                  {/* Bottom Motivation Banner with 3D Target Graphic */}
+                  <div className="mt-2 p-3 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md flex items-center justify-between gap-2 relative overflow-hidden">
+                    <div className="min-w-0 pr-2">
+                      <div className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                        <span>⭐</span>
+                        <span>You're on the right track!</span>
+                      </div>
+                      <p className="text-[10px] text-slate-300 mt-0.5 leading-snug">
+                        Keep up the great work to unlock more opportunities.
+                      </p>
+                    </div>
+                    <img 
+                      src="/gprec-target-icon.png" 
+                      alt="Target" 
+                      className="w-12 h-14 object-contain flex-shrink-0" 
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* ========================================================= */}
-              {/* ROW 4: 3 BOTTOM CARDS (TRENDS, TECHPULSE, QUICK TOOLS)   */}
+              {/* ROW 4: QUICK ACCESS CAPSULE BAR + MOTIVATIONAL QUOTE CARD */}
               {/* ========================================================= */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Panel 1: Tech & Hiring Trends */}
-                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-slate-900 tracking-tight">Tech & Hiring Trends</h3>
-                      <button 
-                        onClick={() => navigateTo('analytics')}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 cursor-pointer"
-                      >
-                        <span>View Analytics</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Quick Access Capsule Bar (lg:col-span-8) */}
+                <div className="lg:col-span-8 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-2xl p-2.5 px-4 shadow-md shadow-purple-500/5 flex items-center justify-between gap-3 overflow-x-auto">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                      <Zap className="w-3.5 h-3.5" />
                     </div>
-
-                    {/* Legend */}
-                    <div className="flex items-center gap-3 mt-3 text-[10px] font-semibold">
-                      <span className="flex items-center gap-1 text-blue-600"><span className="w-1.5 h-1.5 rounded-full bg-blue-600" /> AI</span>
-                      <span className="flex items-center gap-1 text-amber-600"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Data Science</span>
-                      <span className="flex items-center gap-1 text-cyan-600"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500" /> Cloud</span>
-                    </div>
-
-                    {/* Multi-line wave SVG */}
-                    <div className="relative h-20 w-full my-2">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 200 60">
-                        <path d="M 5,45 Q 35,40 65,48 T 130,25 T 195,12" fill="none" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" />
-                        <path d="M 5,50 Q 40,30 75,35 T 140,40 T 195,28" fill="none" stroke="#F59E0B" strokeWidth="2.2" strokeLinecap="round" />
-                        <path d="M 5,35 Q 35,52 80,45 T 145,20 T 195,38" fill="none" stroke="#06B6D4" strokeWidth="2.2" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 font-medium px-1">
-                      <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                    </div>
+                    <span className="text-xs font-bold text-slate-800 whitespace-nowrap">Quick Access</span>
                   </div>
 
-                  {/* Top Hiring Technologies */}
-                  <div className="pt-3 border-t border-slate-100">
-                    <div className="text-[11px] font-bold text-slate-800 mb-2">Top Hiring Technologies</div>
-                    <div className="flex items-center gap-2">
-                      {['Python', 'React', 'AWS', 'Java'].map(tech => (
-                        <span key={tech} className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-[10px] font-semibold text-slate-700 shadow-2xs">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    {[
+                      { label: 'Resume Builder', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
+                      { label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
+                      { label: 'Coding Arena', icon: Code, nav: 'skill_hub', sub: 'coding_arena' },
+                      { label: 'Project Platform', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' }
+                    ].map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.label}
+                          onClick={() => navigateTo(item.nav, item.sub)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 text-xs font-semibold border border-slate-200/80 flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer shadow-2xs"
+                        >
+                          <Icon className="w-3.5 h-3.5 text-purple-500" />
+                          <span>{item.label}</span>
+                          <ArrowRight className="w-3 h-3 text-slate-400" />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Panel 2: TechPulse™ */}
-                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Activity className="w-4 h-4 text-blue-600" />
-                        <h3 className="text-sm font-bold text-slate-900 tracking-tight">TechPulse™</h3>
-                      </div>
-                      <button 
-                        onClick={() => navigateTo('tech_pulse')}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-0.5 cursor-pointer"
-                      >
-                        <span>View More</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Stay Updated. Stay Ahead.</p>
-
-                    {/* News Card */}
-                    <div 
-                      onClick={() => navigateTo('tech_pulse')}
-                      className="mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all flex items-center gap-3 cursor-pointer group"
-                    >
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-900 flex items-center justify-center flex-shrink-0 text-white overflow-hidden shadow-2xs">
-                        <Cpu className="w-7 h-7 text-blue-200" />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                          AI Agents to Transform Workplace by 2026
-                        </h4>
-                        <span className="text-[10px] text-slate-400 mt-1 block">2h ago • TechCrunch</span>
-                      </div>
-                    </div>
+                {/* Daily Motivational Quote Card (lg:col-span-4) */}
+                <div className="lg:col-span-4 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-2xl p-3 px-5 shadow-md shadow-purple-500/5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl font-black text-purple-600 leading-none select-none">“</span>
+                    <p className="text-[11px] text-slate-600 font-medium italic leading-tight">
+                      Success is the sum of small efforts, repeated day in and day out.
+                    </p>
                   </div>
-
-                  {/* Carousel dots */}
-                  <div className="flex items-center justify-center gap-1 pt-3">
-                    {[0, 1, 2].map(idx => (
-                      <span key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-blue-600 w-3' : 'bg-slate-300'}`} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Panel 3: Quick Tools */}
-                <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs flex flex-col justify-between relative overflow-hidden">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-slate-900 tracking-tight">Quick Tools</h3>
-                      {/* Floating Rocket in top right */}
-                      <div className="w-7 h-7 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                        <Rocket className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Access all essential tools at one place.</p>
-
-                    {/* 5 Tools Icons Row */}
-                    <div className="grid grid-cols-5 gap-2 mt-4 text-center">
-                      {/* Mock Interview */}
-                      <button
-                        onClick={() => navigateTo('mock_interviews', 'mock_interview')}
-                        className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/80 group-hover:scale-105 transition-transform">
-                          <Video className="w-4 h-4" />
-                        </div>
-                        <span className="text-[9px] font-semibold text-slate-700 leading-tight">Mock Interview</span>
-                      </button>
-
-                      {/* Resume Analyzer */}
-                      <button
-                        onClick={() => navigateTo('mock_interviews', 'resume_defense')}
-                        className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 group-hover:scale-105 transition-transform">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <span className="text-[9px] font-semibold text-slate-700 leading-tight">Resume Analyzer</span>
-                      </button>
-
-                      {/* Skill Assessment */}
-                      <button
-                        onClick={() => navigateTo('skill_hub', 'aptitude_arena')}
-                        className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100/80 group-hover:scale-105 transition-transform">
-                          <Award className="w-4 h-4" />
-                        </div>
-                        <span className="text-[9px] font-semibold text-slate-700 leading-tight">Skill Assessment</span>
-                      </button>
-
-                      {/* Company Simulator */}
-                      <button
-                        onClick={() => navigateTo('placement', 'company_sim')}
-                        className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100/80 group-hover:scale-105 transition-transform">
-                          <Building className="w-4 h-4" />
-                        </div>
-                        <span className="text-[9px] font-semibold text-slate-700 leading-tight">Company Simulator</span>
-                      </button>
-
-                      {/* More Tools */}
-                      <button
-                        onClick={() => navigateTo('resources')}
-                        className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200/80 group-hover:scale-105 transition-transform">
-                          <Layers className="w-4 h-4" />
-                        </div>
-                        <span className="text-[9px] font-semibold text-slate-700 leading-tight">More Tools</span>
-                      </button>
-                    </div>
-                  </div>
+                  <button 
+                    onClick={() => addToast({ message: 'Stay persistent! Daily practice leads to placement success.', type: 'info' })}
+                    className="w-7 h-7 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 flex items-center justify-center cursor-pointer transition-all flex-shrink-0"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
