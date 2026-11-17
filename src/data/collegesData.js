@@ -278,20 +278,66 @@ export const resolveCollegeLogo = (logo, idOrObject) => {
  */
 export const mergeCollegesWithDefaults = (customList = []) => {
   const map = new Map();
-  DEFAULT_COLLEGES.forEach(c => map.set(c.id, { ...c, logo: resolveCollegeLogo(c.logo, c) }));
+
+  // Helper to normalize strings for robust deduplication
+  const norm = (s) => (s || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+
+  DEFAULT_COLLEGES.forEach(c => {
+    map.set(c.id, { ...c, logo: resolveCollegeLogo(c.logo, c) });
+  });
+
   if (Array.isArray(customList)) {
     customList.forEach(c => {
       if (c && c.id && c.id !== 'init' && !c.is_deleted && !c.isDeleted) {
-        const base = map.get(c.id) || {};
+        const normName = norm(c.name);
+        const normShort = norm(c.shortName);
+        const normCode = norm(c.code);
+
+        // Find if this college matches an existing default college by ID, Name, ShortName, or Code
+        let matchedId = c.id;
+        for (const [defId, defCol] of map.entries()) {
+          const defNormName = norm(defCol.name);
+          const defNormShort = norm(defCol.shortName);
+          const defNormCode = norm(defCol.code);
+
+          const nameMatch = normName && defNormName && (normName === defNormName || normName.includes(defNormName) || defNormName.includes(normName));
+          const codeMatch = normCode && defNormCode && normCode === defNormCode;
+
+          if (defId === c.id || nameMatch || codeMatch) {
+            matchedId = defId;
+            break;
+          }
+        }
+
+        const base = map.get(matchedId) || {};
         const logo = resolveCollegeLogo(c.logo || base.logo, c.id || base.id);
-        map.set(c.id, { ...base, ...c, logo });
+        map.set(matchedId, { ...base, ...c, id: matchedId, logo });
       }
     });
   }
-  return Array.from(map.values()).map(c => ({
-    ...c,
-    logo: resolveCollegeLogo(c.logo, c)
-  }));
+
+  // Strict deduplication pass: Guarantee zero duplicate college names or codes
+  const uniqueList = [];
+  const seenNormNames = new Set();
+  const seenNormCodes = new Set();
+
+  for (const c of map.values()) {
+    const normName = norm(c.name);
+    const normCode = norm(c.code);
+
+    if (normName && seenNormNames.has(normName)) continue;
+    if (normCode && seenNormCodes.has(normCode)) continue;
+
+    if (normName) seenNormNames.add(normName);
+    if (normCode) seenNormCodes.add(normCode);
+
+    uniqueList.push({
+      ...c,
+      logo: resolveCollegeLogo(c.logo, c)
+    });
+  }
+
+  return uniqueList;
 };
 
 export const getStoredCustomColleges = () => {
