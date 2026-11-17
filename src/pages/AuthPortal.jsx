@@ -230,7 +230,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
       return '/images/campuses/campus_ashoka.jpg?v=2';
     }
     if (col.id === 'annamacharya' || col.code === 'AU' || col.code === 'AITS') {
-      return '/images/campuses/campus_annama.jpg';
+      return '/images/campuses/campus_annama.jpg?v=2';
     }
     if (col.id === 'bits' || col.code === 'BITS') {
       return '/images/campuses/campus_bheema.jpg';
@@ -253,7 +253,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     const localFallbacks = [
       '/images/campuses/campus_gprec.jpg?v=2',
       '/images/campuses/campus_ashoka.jpg?v=2',
-      '/images/campuses/campus_annama.jpg',
+      '/images/campuses/campus_annama.jpg?v=2',
       '/images/campuses/campus_bheema.jpg',
       '/images/campuses/campus_svce.jpg',
       '/images/campuses/campus_narayana.jpg',

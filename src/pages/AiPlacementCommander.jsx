@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
+import {Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Search, Bell, CheckCircle2, AlertTriangle, ArrowRight, Check, X,
   Code, Layers, Trophy, TrendingUp, Download, Sliders, Play, RotateCcw,
   RefreshCw, Shield, ShieldAlert, ShieldCheck, ExternalLink, Plus, Trash2,
@@ -8,8 +7,7 @@ import {
   Mic, MicOff, Volume2, VolumeX, FileText, Calendar, Filter, Sparkles,
   Compass, AlertCircle, Cpu, Brain, CheckSquare, Target, User, LogOut,
   Send, HelpCircle, MessageSquare, Activity, Radio, GraduationCap,
-  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info
-} from 'lucide-react';
+  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info, Moon, Star } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
