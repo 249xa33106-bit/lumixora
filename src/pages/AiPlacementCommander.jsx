@@ -2163,29 +2163,25 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 {/* Hero Banner with Student Cutout & Campus Building */}
-                <div className="lg:col-span-8 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-6 md:p-8 shadow-xl shadow-purple-500/5 relative overflow-hidden flex flex-col justify-between min-h-[270px]">
-                  {/* Campus & Scholar Cutout with Glowing Purple Ring (Right Side) */}
-                  <div className="hidden sm:block absolute right-0 top-0 bottom-0 w-[45%] md:w-[48%] pointer-events-none overflow-hidden rounded-r-[28px]">
+                <div className="lg:col-span-8 bg-gradient-to-r from-white via-[#FAF7FE] to-[#F1ECFD] border border-white/90 rounded-[28px] p-6 md:p-8 shadow-xl shadow-purple-500/5 relative overflow-hidden flex flex-col justify-between min-h-[270px]">
+                  {/* Seamlessly Blended Campus & Scholar Graphic (Right Side) */}
+                  <div className="hidden sm:block absolute right-0 top-0 bottom-0 w-[55%] md:w-[50%] pointer-events-none overflow-hidden">
                     <img
-                      src="/gprec-hero-student-campus.png"
+                      src="/gprec-hero-student-blend.png"
                       alt="GPREC Campus & Scholar"
-                      className="w-full h-full object-cover object-left"
-                      style={{
-                        maskImage: 'linear-gradient(to right, transparent, black 12%)',
-                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 12%)'
-                      }}
+                      className="w-full h-full object-cover object-right"
                     />
                   </div>
 
                   {/* Left Hero Content */}
-                  <div className="max-w-md z-10 flex flex-col gap-3">
+                  <div className="max-w-xs sm:max-w-sm md:max-w-[50%] z-10 flex flex-col gap-3 relative">
                     {/* Pill */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100/80 text-purple-700 border border-purple-200/60 rounded-full text-xs font-semibold w-fit">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100/80 text-purple-700 border border-purple-200/60 rounded-full text-xs font-semibold w-fit shadow-xs">
                       <span>Welcome to GPREC Placement Suite 🚀</span>
                     </div>
 
                     {/* Headline */}
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight mt-1">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight mt-1">
                       Your Career.<br />
                       Our <span className="bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] bg-clip-text text-transparent">Commitment.</span>
                     </h1>
@@ -2199,14 +2195,14 @@ Return ONLY a valid JSON object without markdown:
                     <div className="flex flex-wrap items-center gap-3 pt-2">
                       <button
                         onClick={() => navigateTo('placement', 'job_match')}
-                        className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] hover:opacity-95 text-white font-semibold text-xs md:text-sm shadow-lg shadow-purple-500/25 transition-all flex items-center gap-2 cursor-pointer"
+                        className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] hover:opacity-95 text-white font-semibold text-xs md:text-sm shadow-lg shadow-purple-500/25 transition-all flex items-center gap-2 cursor-pointer flex-shrink-0"
                       >
                         <span>Explore Opportunities</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setShowOverviewModal(true)}
-                        className="px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-slate-700 font-semibold text-xs md:text-sm border border-purple-100 shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                        className="px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-slate-700 font-semibold text-xs md:text-sm border border-purple-100 shadow-sm transition-all flex items-center gap-2 cursor-pointer flex-shrink-0"
                       >
                         <Play className="w-3.5 h-3.5 fill-current text-slate-700" />
                         <span>Watch Overview</span>
