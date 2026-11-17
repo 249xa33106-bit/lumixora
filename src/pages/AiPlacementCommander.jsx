@@ -2454,9 +2454,9 @@ Return ONLY a valid JSON object without markdown:
                       </button>
                     </div>
 
-                    {/* Donut Gauge + 4 Skill Progress Bars */}
+                    {/* Donut Gauge + 4 Skill Progress Bars - Dynamic Real Placement Telemetry */}
                     <div className="grid grid-cols-12 gap-3 items-center my-4">
-                      {/* Left: Donut Gauge (78%) */}
+                      {/* Left: Donut Gauge (Dynamic Real Overall Readiness) */}
                       <div className="col-span-5 flex flex-col items-center justify-center">
                         <div className="relative w-24 h-24 flex items-center justify-center">
                           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -2475,38 +2475,38 @@ Return ONLY a valid JSON object without markdown:
                               strokeLinecap="round"
                               fill="none"
                               strokeDasharray="251.2"
-                              strokeDashoffset={251.2 * (1 - 78 / 100)}
+                              strokeDashoffset={251.2 * (1 - (overallReadiness || 0) / 100)}
                             />
                           </svg>
                           <div className="absolute flex flex-col items-center justify-center text-center">
                             <span className="text-2xl font-black text-white leading-none">
-                              78%
+                              {overallReadiness || 0}%
                             </span>
                             <span className="text-[9px] font-medium text-slate-400 mt-0.5">Overall Readiness</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Right: 4 Skill Progress Bars */}
+                      {/* Right: 4 Skill Progress Bars - Dynamic Real Telemetry */}
                       <div className="col-span-7 flex flex-col gap-2">
                         {[
-                          { label: 'Technical Skills', pct: 92 },
-                          { label: 'Communication', pct: 85 },
-                          { label: 'Aptitude', pct: 80 },
-                          { label: 'Soft Skills', pct: 76 }
+                          { label: 'Technical Skills', pct: twinScores?.coding || twinScores?.dsa || 0 },
+                          { label: 'Communication', pct: twinScores?.communication || 0 },
+                          { label: 'Aptitude', pct: twinScores?.aptitude || 0 },
+                          { label: 'Soft Skills', pct: twinScores?.interview || twinScores?.resume || 0 }
                         ].map(skill => (
                           <div key={skill.label} className="flex flex-col gap-0.5">
                             <div className="flex items-center justify-between text-[11px]">
-                              <div className="flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                                <span className="text-slate-300">{skill.label}</span>
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <CheckCircle2 className={`w-3 h-3 flex-shrink-0 ${skill.pct > 0 ? 'text-emerald-400' : 'text-slate-600'}`} />
+                                <span className="text-slate-300 truncate">{skill.label}</span>
                               </div>
-                              <span className="text-xs font-bold text-white">{skill.pct}%</span>
+                              <span className="text-xs font-bold text-white ml-auto">{skill.pct}%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                               <div 
-                                className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" 
-                                style={{ width: `${skill.pct}%` }} 
+                                className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transition-all duration-500" 
+                                style={{ width: `${Math.min(100, Math.max(0, skill.pct))}%` }} 
                               />
                             </div>
                           </div>
@@ -2515,15 +2515,25 @@ Return ONLY a valid JSON object without markdown:
                     </div>
                   </div>
 
-                  {/* Bottom Motivation Banner with 3D Target Graphic */}
+                  {/* Bottom Motivation Banner with 3D Target Graphic - Dynamic Real Feedback */}
                   <div className="mt-2 p-3 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md flex items-center justify-between gap-2 relative overflow-hidden">
                     <div className="min-w-0 pr-2">
                       <div className="text-xs font-bold text-amber-300 flex items-center gap-1">
-                        <span>⭐</span>
-                        <span>You're on the right track!</span>
+                        <span>{overallReadiness >= 75 ? '⭐' : overallReadiness > 0 ? '🚀' : '🎯'}</span>
+                        <span>
+                          {overallReadiness >= 75
+                            ? "You're on the right track!"
+                            : overallReadiness > 0
+                            ? 'Live Telemetry Calibrated'
+                            : 'Ready for Skill Calibration'}
+                        </span>
                       </div>
                       <p className="text-[10px] text-slate-300 mt-0.5 leading-snug">
-                        Keep up the great work to unlock more opportunities.
+                        {solvedProblemIds.length > 0
+                          ? `${solvedProblemIds.length} verified coding problems solved. Complete drills to reach top tier.`
+                          : overallReadiness > 0
+                          ? `Readiness calibrated at ${overallReadiness}%. Solve problems in Coding Arena to boost.`
+                          : 'Solve coding problems or complete aptitude drills to calibrate your live readiness score.'}
                       </p>
                     </div>
                     <img 
