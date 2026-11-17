@@ -15,6 +15,7 @@ import {
 } from '../services/gprecPlacementAuth';
 import { isGprecOnlySubdomain } from '../utils/placementSubdomain';
 import FounderLoginModal from './FounderLoginModal';
+import { recordUserLogin } from '../services/userActivityLogService';
 import { 
   authenticatePlacementOfficer, 
   sendOfficerPasswordResetCode, 
@@ -126,7 +127,7 @@ export default function GprecPlacementLoginModal({
       const verifiedUser = res?.user || (res?.id ? res : null);
       if (res?.success || verifiedUser) {
         setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
-        recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {});
+        try { recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {}); } catch (_) {}
         if (onLoginSuccess) onLoginSuccess(verifiedUser);
         if (onClose) onClose();
       } else {
@@ -188,13 +189,9 @@ export default function GprecPlacementLoginModal({
       const userObj = res.user || res;
       if (res.success || userObj.isOfficer || userObj.isDean) {
         setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
-        setTimeout(() => {
-          recordUserLogin(userObj, 'TPO Operations Suite').catch(() => {});
-          if (onLoginSuccess) {
-            onLoginSuccess(userObj);
-          }
-          onClose();
-        }, 500);
+        try { recordUserLogin(userObj, 'TPO Operations Suite').catch(() => {}); } catch (_) {}
+        if (onLoginSuccess) onLoginSuccess(userObj);
+        if (onClose) onClose();
       } else {
         setErrorMsg(res.error || 'Incorrect official password.');
       }
