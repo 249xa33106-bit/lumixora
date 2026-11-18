@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import {Flame, Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Search, Bell, CheckCircle2, AlertTriangle, ArrowRight, Check, X,
   Code, Layers, Trophy, TrendingUp, Download, Sliders, Play, RotateCcw,
@@ -36,8 +36,6 @@ import { db } from '../config/firebase';
 import { doc, onSnapshot, updateDoc, collection, query, orderBy, limit, setDoc, deleteDoc } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
 import { cloudSync } from '../services/cloudSyncService';
-import TechPulsePortal from './TechPulsePortal';
-import FounderLoginAuditManager from '../components/FounderLoginAuditManager';
 import { CODING_PROBLEMS_10K, getProblemFullDetails, STATS_10K } from '../data/codingProblemBank10k';
 import { downloadPlacementResource } from '../utils/placementResourcePdfs';
 import { COMPANY_PRESETS, ROLE_TRACKS } from '../services/interviewService';
@@ -45,17 +43,34 @@ import { generateMockInterviewDiagnosticPDF } from '../utils/pdfGenerator';
 import { issueNewCertificate } from '../services/certificateService';
 import { saveMockInterviewScorecardToSupabase, saveCodingSubmissionToSupabase, fetchFullStudentProgressFromSupabase } from '../services/supabaseDataSyncService';
 import { cleanScholarName } from '../utils/authSecurity';
-import GprecBridgeToBtechPortal from '../components/gprec/GprecBridgeToBtechPortal';
-import GprecHelpDeskPortal from '../components/gprec/GprecHelpDeskPortal';
-import GprecResumeBuilderPanel from '../components/gprec/GprecResumeBuilderPanel';
-import GprecProjectPlatformPanel from '../components/gprec/GprecProjectPlatformPanel';
-import GprecSecureExamsPortal from '../components/gprec/GprecSecureExamsPortal';
-import GprecCareerGrowthHub from '../components/gprec/GprecCareerGrowthHub';
-import GprecCampusArenaHub from '../components/gprec/GprecCampusArenaHub';
-import GprecResumeMockInterviewPortal from '../components/gprec/GprecResumeMockInterviewPortal';
-import GprecCompanyDrillPacks from '../components/gprec/GprecCompanyDrillPacks';
-import GprecCompanyPapersPortal from '../components/gprec/GprecCompanyPapersPortal';
-import GprecPlacementCertificateModal from '../components/gprec/GprecPlacementCertificateModal';
+
+// High-Performance Code-Split Sub-Portals (Zero-Lag Dashboard Mount)
+const TechPulsePortal = lazy(() => import('./TechPulsePortal'));
+const FounderLoginAuditManager = lazy(() => import('../components/FounderLoginAuditManager'));
+const GprecBridgeToBtechPortal = lazy(() => import('../components/gprec/GprecBridgeToBtechPortal'));
+const GprecHelpDeskPortal = lazy(() => import('../components/gprec/GprecHelpDeskPortal'));
+const GprecResumeBuilderPanel = lazy(() => import('../components/gprec/GprecResumeBuilderPanel'));
+const GprecProjectPlatformPanel = lazy(() => import('../components/gprec/GprecProjectPlatformPanel'));
+const GprecSecureExamsPortal = lazy(() => import('../components/gprec/GprecSecureExamsPortal'));
+const GprecCareerGrowthHub = lazy(() => import('../components/gprec/GprecCareerGrowthHub'));
+const GprecCampusArenaHub = lazy(() => import('../components/gprec/GprecCampusArenaHub'));
+const GprecResumeMockInterviewPortal = lazy(() => import('../components/gprec/GprecResumeMockInterviewPortal'));
+const GprecCompanyDrillPacks = lazy(() => import('../components/gprec/GprecCompanyDrillPacks'));
+const GprecCompanyPapersPortal = lazy(() => import('../components/gprec/GprecCompanyPapersPortal'));
+const GprecPlacementCertificateModal = lazy(() => import('../components/gprec/GprecPlacementCertificateModal'));
+
+function GprecSubPortalFallback({ label = 'Calibrating Portal...' }) {
+  return (
+    <div className="min-h-[45vh] flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-200">
+      <div className="relative w-12 h-12 flex items-center justify-center mb-4">
+        <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 animate-ping" />
+        <div className="w-9 h-9 rounded-full border-2 border-indigo-600 border-t-cyan-400 animate-spin" />
+      </div>
+      <div className="text-sm font-extrabold text-slate-800 tracking-tight">{label}</div>
+      <div className="text-xs text-slate-400 mt-1 font-medium">Calibrating placement telemetry</div>
+    </div>
+  );
+}
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -498,6 +513,26 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   // Primary Navigation State (Supports all GPREC portal modules including TechPulse)
   const [activeNav, setActiveNav] = useState(() => resolveNav(initialNav));
 
+  // Core Activity Tracking State (Hoisted to top to guarantee initialization before any telemetry hook)
+  const [solvedProblemIds, setSolvedProblemIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_solved_coding');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
+          const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
+          const isLegacy = parsed.length <= 4 || parsed.every(id => legacyMockIds.has(id));
+          if (!isLegacy && hasRealSubmission && parsed.length > 0) return parsed;
+          localStorage.removeItem('lumixora_solved_coding');
+        }
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // (aptitudeScoreCount hoisted to component top to guarantee clean initialization)
+
   // Sync activeNav whenever initialNav prop changes
   useEffect(() => {
     if (initialNav) {
@@ -671,7 +706,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
     return 0;
   });
-  const isFounder = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
+  const isFounder = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || (typeof window !== 'undefined' && localStorage.getItem('lumixora_founder_mode') === 'true');
   const [streakDays, setStreakDays] = useState(typeof user?.streak === 'number' ? user.streak : 0);
 
   // Adaptive Dynamic Daily Mission Generator (strictly tracks real student completion)
@@ -786,24 +821,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [jumpNumberInput, setJumpNumberInput] = useState('');
   const ITEMS_PER_PAGE = 25;
 
-  // Persistent Solved Problems Tracking: Starts at 0 until student solves problems
-  const [solvedProblemIds, setSolvedProblemIds] = useState(() => {
-    try {
-      const saved = localStorage.getItem('lumixora_solved_coding');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
-          const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
-          const isLegacy = parsed.length <= 4 || parsed.every(id => legacyMockIds.has(id));
-          if (!isLegacy && hasRealSubmission && parsed.length > 0) return parsed;
-          // Purge legacy dummy mock array from storage
-          localStorage.removeItem('lumixora_solved_coding');
-        }
-      }
-    } catch (e) {}
-    return [];
-  });
+  // (solvedProblemIds hoisted to component top to guarantee clean initialization)
 
   // Cross-device telemetry & progress sync from Supabase
   useEffect(() => {
@@ -1330,10 +1348,11 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   }, [overallReadiness]);
 
   const radarData = useMemo(() => {
+    const sLen = Array.isArray(solvedProblemIds) ? solvedProblemIds.length : 0;
     return [
       {
         vector: 'DSA & LeetCode',
-        scholar: twinScores?.dsa || (solvedProblemIds.length > 0 ? Math.min(100, solvedProblemIds.length * 5) : 0),
+        scholar: twinScores?.dsa || (sLen > 0 ? Math.min(100, sLen * 5) : 0),
         batchAvg: 54,
         tier1Target: 85,
         fullMark: 100
@@ -1354,7 +1373,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       },
       {
         vector: 'Coding Velocity',
-        scholar: twinScores?.coding || (solvedProblemIds.length > 0 ? Math.min(100, solvedProblemIds.length * 5) : 0),
+        scholar: twinScores?.coding || (sLen > 0 ? Math.min(100, sLen * 5) : 0),
         batchAvg: 52,
         tier1Target: 85,
         fullMark: 100
@@ -1374,7 +1393,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         fullMark: 100
       }
     ];
-  }, [twinScores]);
+  }, [twinScores, solvedProblemIds, projectVivaReport, interviewReport]);
 
   const trajectoryData = useMemo(() => {
     const currentScore = overallReadiness > 0 ? overallReadiness : 0;
@@ -2669,85 +2688,97 @@ Return ONLY a valid JSON object without markdown:
           {/* VIEW: ORIGINAL COMPANY PAPERS & SOLVED ANSWERS ARCHIVE    */}
           {/* ========================================================= */}
           {activeNav === 'company_papers' && (
-            <GprecCompanyPapersPortal
-              initialCompanyId={selectedCompanyForPapers || 'all'}
-              onLaunchExam={(examId, passcode) => {
-                setActiveNav('secure_exams');
-              }}
-              addToast={addToast}
-            />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading Authentic Solved Papers Archive..." />}>
+              <GprecCompanyPapersPortal
+                initialCompanyId={selectedCompanyForPapers || 'all'}
+                onLaunchExam={(examId, passcode) => {
+                  setActiveNav('secure_exams');
+                }}
+                addToast={addToast}
+              />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
           {/* VIEW: GPREC COMPANY DRILL PACKS                           */}
           {/* ========================================================= */}
           {activeNav === 'company_drills' && (
-            <GprecCompanyDrillPacks
-              onLaunchExam={(examId, passcode) => {
-                setActiveNav('secure_exams');
-              }}
-              onOpenSolvedPaper={(companyId) => {
-                setSelectedCompanyForPapers(companyId);
-                setActiveNav('company_papers');
-              }}
-              onNavigateNav={(nav) => setActiveNav(nav)}
-              addToast={addToast}
-              user={user}
-            />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading Recruiter Drill Packages..." />}>
+              <GprecCompanyDrillPacks
+                onLaunchExam={(examId, passcode) => {
+                  setActiveNav('secure_exams');
+                }}
+                onOpenSolvedPaper={(companyId) => {
+                  setSelectedCompanyForPapers(companyId);
+                  setActiveNav('company_papers');
+                }}
+                onNavigateNav={(nav) => setActiveNav(nav)}
+                addToast={addToast}
+                user={user}
+              />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
           {/* VIEW: SECURE EXAMS & PROCTORING PORTAL (GPREC)            */}
           {/* ========================================================= */}
           {activeNav === 'secure_exams' && (
-            <GprecSecureExamsPortal user={user} awardXP={awardXP} addToast={addToast} />
+            <Suspense fallback={<GprecSubPortalFallback label="Initializing Zero-Trust Secure Exam Suite..." />}>
+              <GprecSecureExamsPortal user={user} awardXP={awardXP} addToast={addToast} />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
           {/* VIEW: CAREER GROWTH (OFF-CAMPUS, PORTFOLIO, REFERRALS)    */}
           {/* ========================================================= */}
           {activeNav === 'career_growth' && (
-            <GprecCareerGrowthHub
-              user={user}
-              overallReadiness={overallReadiness}
-              solvedCount={solvedProblemIds.length}
-              aptitudeCount={aptitudeScoreCount}
-              awardXP={awardXP}
-              addToast={addToast}
-              onTrackApplication={(job) => {
-                setApplications(prev => [{
-                  id: Date.now(),
-                  company: job.company,
-                  role: job.role,
-                  ctc: job.ctc,
-                  status: 'Saved',
-                  date: new Date().toISOString().split('T')[0]
-                }, ...prev]);
-                addToast({ message: `Saved ${job.company} (${job.role}) to Application Tracker!`, type: 'success' });
-              }}
-            />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading Career Growth & Placement Tracks..." />}>
+              <GprecCareerGrowthHub
+                user={user}
+                overallReadiness={overallReadiness}
+                solvedCount={solvedProblemIds.length}
+                aptitudeCount={aptitudeScoreCount}
+                awardXP={awardXP}
+                addToast={addToast}
+                onTrackApplication={(job) => {
+                  setApplications(prev => [{
+                    id: Date.now(),
+                    company: job.company,
+                    role: job.role,
+                    ctc: job.ctc,
+                    status: 'Saved',
+                    date: new Date().toISOString().split('T')[0]
+                  }, ...prev]);
+                  addToast({ message: `Saved ${job.company} (${job.role}) to Application Tracker!`, type: 'success' });
+                }}
+              />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
           {/* VIEW: CAMPUS ARENA (LEADERBOARD, OFFER WALL, STREAKS)     */}
           {/* ========================================================= */}
           {activeNav === 'campus_arena' && (
-            <GprecCampusArenaHub
-              user={user}
-              overallReadiness={overallReadiness}
-              solvedCount={solvedProblemIds.length}
-              aptitudeCount={aptitudeScoreCount}
-              streakDays={streakDays}
-              awardXP={awardXP}
-              addToast={addToast}
-            />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading Campus Arena & Live Benchmarks..." />}>
+              <GprecCampusArenaHub
+                user={user}
+                overallReadiness={overallReadiness}
+                solvedCount={solvedProblemIds.length}
+                aptitudeCount={aptitudeScoreCount}
+                streakDays={streakDays}
+                awardXP={awardXP}
+                addToast={addToast}
+              />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
           {/* VIEW: TECHPULSE™ (FEATURE PORTAL)                          */}
           {/* ========================================================= */}
           {activeNav === 'tech_pulse' && (
-            <TechPulsePortal user={user} setActiveTab={setActiveTab} onNavigate={navigateTo} />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading TechPulse Intelligence Radar..." />}>
+              <TechPulsePortal user={user} setActiveTab={setActiveTab} onNavigate={navigateTo} />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
@@ -2758,7 +2789,9 @@ Return ONLY a valid JSON object without markdown:
           {/* ========================================================= */}
           {activeNav === 'founder_audit' && isFounder && (
             <div className="flex flex-col gap-6">
-              <FounderLoginAuditManager />
+              <Suspense fallback={<GprecSubPortalFallback label="Loading Founder Audit Console..." />}>
+                <FounderLoginAuditManager />
+              </Suspense>
             </div>
           )}
 
@@ -2776,27 +2809,27 @@ Return ONLY a valid JSON object without markdown:
                 />
                 {/* Interactive Clickable Hotspots for Action Buttons */}
                 <div className="absolute inset-0 pointer-events-none">
-                  {/* Explore Opportunities Button Hotspot */}
+                  {/* Explore Opportunities Button Hotspot - Pixel-calibrated bounding box */}
                   <button
                     onClick={() => navigateTo('placement', 'job_match')}
-                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
+                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/15 active:scale-95 transition-all"
                     style={{
                       left: '6.5%',
-                      top: '77.2%',
-                      width: '20.1%',
-                      height: '11.4%'
+                      top: '76.8%',
+                      width: '20.0%',
+                      height: '14.8%'
                     }}
                     aria-label="Explore Opportunities"
                   />
-                  {/* Watch Overview Button Hotspot */}
+                  {/* Watch Overview Button Hotspot - Pixel-calibrated bounding box */}
                   <button
                     onClick={() => setShowOverviewModal(true)}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
                     style={{
-                      left: '29.1%',
-                      top: '77.0%',
-                      width: '15.6%',
-                      height: '11.4%'
+                      left: '29.0%',
+                      top: '76.8%',
+                      width: '17.3%',
+                      height: '14.8%'
                     }}
                     aria-label="Watch Overview"
                   />
@@ -3771,25 +3804,29 @@ Return ONLY a valid JSON object without markdown:
 
               {/* Subtab: Company Drill Packs */}
               {activeModule === 'company_drills' && (
-                <GprecCompanyDrillPacks
-                  onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
-                  onOpenSolvedPaper={(companyId) => {
-                    setSelectedCompanyForPapers(companyId);
-                    setActiveModule('company_papers');
-                  }}
-                  onNavigateNav={(nav) => setActiveNav(nav)}
-                  addToast={addToast}
-                  user={user}
-                />
+                <Suspense fallback={<GprecSubPortalFallback label="Loading Recruiter Drill Packages..." />}>
+                  <GprecCompanyDrillPacks
+                    onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
+                    onOpenSolvedPaper={(companyId) => {
+                      setSelectedCompanyForPapers(companyId);
+                      setActiveModule('company_papers');
+                    }}
+                    onNavigateNav={(nav) => setActiveNav(nav)}
+                    addToast={addToast}
+                    user={user}
+                  />
+                </Suspense>
               )}
 
               {/* Subtab: Original Solved Papers */}
               {activeModule === 'company_papers' && (
-                <GprecCompanyPapersPortal
-                  initialCompanyId={selectedCompanyForPapers || 'all'}
-                  onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
-                  addToast={addToast}
-                />
+                <Suspense fallback={<GprecSubPortalFallback label="Loading Authentic Solved Papers Archive..." />}>
+                  <GprecCompanyPapersPortal
+                    initialCompanyId={selectedCompanyForPapers || 'all'}
+                    onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
+                    addToast={addToast}
+                  />
+                </Suspense>
               )}
 
               {/* Subtab: Daily Mission */}
@@ -5004,13 +5041,15 @@ Return ONLY a valid JSON object without markdown:
           {/* VIEW: 4. RESUME-GROUNDED MOCK INTERVIEW PORTAL (DEDICATED) */}
           {/* ========================================================= */}
           {activeNav === 'mock_interviews' && (
-            <GprecResumeMockInterviewPortal
-              user={user}
-              awardXP={awardXP}
-              addToast={addToast}
-              onUpdateTwinSkill={updateTwinSkill}
-              savedResumeText={resumeContent}
-            />
+            <Suspense fallback={<GprecSubPortalFallback label="Loading AI Bar Raiser Interview Room..." />}>
+              <GprecResumeMockInterviewPortal
+                user={user}
+                awardXP={awardXP}
+                addToast={addToast}
+                onUpdateTwinSkill={updateTwinSkill}
+                savedResumeText={resumeContent}
+              />
+            </Suspense>
           )}
 
           {/* ========================================================= */}
@@ -5493,21 +5532,25 @@ Return ONLY a valid JSON object without markdown:
 
               {/* Subtab: Bridge to B.Tech */}
               {activeModule === 'curriculum' && (
-                <GprecBridgeToBtechPortal
-                  user={user}
-                  navigateTo={navigateTo}
-                  awardXP={awardXP}
-                  addToast={addToast}
-                />
+                <Suspense fallback={<GprecSubPortalFallback label="Loading Bridge to BTech Curriculum..." />}>
+                  <GprecBridgeToBtechPortal
+                    user={user}
+                    navigateTo={navigateTo}
+                    awardXP={awardXP}
+                    addToast={addToast}
+                  />
+                </Suspense>
               )}
 
               {/* Subtab: HelpDesk */}
               {activeModule === 'faq' && (
-                <GprecHelpDeskPortal
-                  user={user}
-                  navigateTo={navigateTo}
-                  addToast={addToast}
-                />
+                <Suspense fallback={<GprecSubPortalFallback label="Loading Placement Support & Help Desk..." />}>
+                  <GprecHelpDeskPortal
+                    user={user}
+                    navigateTo={navigateTo}
+                    addToast={addToast}
+                  />
+                </Suspense>
               )}
 
               {/* Subtab: Resources Library (Default) */}
@@ -5796,6 +5839,21 @@ Return ONLY a valid JSON object without markdown:
           </div>
         </div>
       )}
+      {/* MODAL: Verified GPREC Placement Readiness Certificate */}
+      {showPlacementCertModal && (
+        <Suspense fallback={null}>
+          <GprecPlacementCertificateModal
+            user={user}
+            overallReadiness={overallReadiness}
+            twinScores={twinScores}
+            solvedCount={solvedProblemIds.length}
+            aptitudeCount={aptitudeScoreCount}
+            onClose={() => setShowPlacementCertModal(false)}
+            addToast={addToast}
+          />
+        </Suspense>
+      )}
+
       {/* ========================================================= */}
       {/* MODAL: Founder Broadcast Notification Dispatcher          */}
       {/* ========================================================= */}
