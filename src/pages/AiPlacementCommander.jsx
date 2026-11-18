@@ -2197,10 +2197,10 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[2472/636] group">
+              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[1854/636] group">
                 <img
-                  src="/gprec-hero-row1-master.png"
-                  alt="GPREC Placement Suite - Your Career. Our Commitment. Placement Pulse"
+                  src="/gprec-hero-banner-no-pulse.png"
+                  alt="GPREC Placement Suite - Your Career. Our Commitment."
                   className="w-full h-full object-fill rounded-[28px] select-none block"
                 />
                 {/* Interactive Clickable Hotspots for Action Buttons */}
@@ -2210,9 +2210,9 @@ Return ONLY a valid JSON object without markdown:
                     onClick={() => navigateTo('placement', 'job_match')}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                     style={{
-                      left: '2.4%',
+                      left: '3.2%',
                       bottom: '5.2%',
-                      width: '15.2%',
+                      width: '20.2%',
                       height: '13.2%'
                     }}
                     title="Explore Opportunities"
@@ -2222,24 +2222,12 @@ Return ONLY a valid JSON object without markdown:
                     onClick={() => setShowOverviewModal(true)}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
                     style={{
-                      left: '18.8%',
+                      left: '25.1%',
                       bottom: '5.2%',
-                      width: '12.2%',
+                      width: '16.2%',
                       height: '13.2%'
                     }}
                     title="Watch Overview"
-                  />
-                  {/* Placement Pulse Live Telemetry Hotspot */}
-                  <button
-                    onClick={() => navigateTo('analytics', 'analytics')}
-                    className="absolute pointer-events-auto rounded-[24px] cursor-pointer hover:bg-white/10 active:scale-98 transition-all"
-                    style={{
-                      right: '0%',
-                      top: '0%',
-                      width: '24.5%',
-                      height: '100%'
-                    }}
-                    title="View Placement Pulse Details"
                   />
                 </div>
               </div>
