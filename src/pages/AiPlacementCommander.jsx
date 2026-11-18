@@ -48,6 +48,7 @@ import GprecBridgeToBtechPortal from '../components/gprec/GprecBridgeToBtechPort
 import GprecHelpDeskPortal from '../components/gprec/GprecHelpDeskPortal';
 import GprecResumeBuilderPanel from '../components/gprec/GprecResumeBuilderPanel';
 import GprecProjectPlatformPanel from '../components/gprec/GprecProjectPlatformPanel';
+import GprecSecureExamsPortal from '../components/gprec/GprecSecureExamsPortal';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -473,6 +474,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     const clean = String(nav).toLowerCase().replace(/[-_]/g, '');
     if (clean.includes('founderaudit') || clean.includes('founder') || clean.includes('timelog') || clean.includes('audit')) return 'founder_audit';
     if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
+    if (clean.includes('secureexam') || clean.includes('exam') || clean.includes('proctor') || clean.includes('assessment')) return 'secure_exams';
     if (clean.includes('mock') || clean.includes('interview') || clean.includes('resume') || clean.includes('project')) return 'mock_interviews';
     if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
     if (clean.includes('analytic') || clean.includes('metric')) return 'analytics';
@@ -1793,6 +1795,7 @@ Return ONLY a valid JSON object without markdown:
     skill_hub: 'daily_mission',
     mock_interviews: 'mock_interview',
     analytics: 'analytics',
+    secure_exams: 'hall',
     resources: 'library',
     tech_pulse: null,
     founder_audit: null
@@ -1880,6 +1883,7 @@ Return ONLY a valid JSON object without markdown:
               { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'daily_mission' },
               { id: 'coding_arena', label: 'Coding Arena', icon: Code, nav: 'skill_hub', sub: 'coding_arena' },
               { id: 'aptitude_arena', label: 'Aptitude Arena', icon: CheckSquare, nav: 'skill_hub', sub: 'aptitude_arena' },
+              { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall', badge: 'SECURE' },
               { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
               { id: 'resume_builder', label: 'Resume Builder', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
               { id: 'project_platform', label: 'Project Platform', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' },
@@ -1897,6 +1901,7 @@ Return ONLY a valid JSON object without markdown:
                                (item.id === 'skill_hub' && activeNav === 'skill_hub' && (!activeModule || activeModule === 'daily_mission' || activeModule === 'skill_gap' || activeModule === 'skill_graph')) ||
                                (item.id === 'coding_arena' && activeNav === 'skill_hub' && activeModule === 'coding_arena') ||
                                (item.id === 'aptitude_arena' && activeNav === 'skill_hub' && activeModule === 'aptitude_arena') ||
+                               (item.id === 'secure_exams' && activeNav === 'secure_exams') ||
                                (item.id === 'mock_interviews' && activeNav === 'mock_interviews' && (!activeModule || activeModule === 'mock_interview' || activeModule === 'scorecard_report')) ||
                                (item.id === 'resume_builder' && activeNav === 'mock_interviews' && activeModule === 'resume_defense') ||
                                (item.id === 'project_platform' && activeNav === 'mock_interviews' && activeModule === 'project_defense') ||
@@ -2139,6 +2144,7 @@ Return ONLY a valid JSON object without markdown:
                   { id: 'tech_pulse', label: 'TechPulse', icon: Activity, badge: 'LIVE' },
                   { id: 'placement', label: 'My Placement', icon: Briefcase },
                   { id: 'skill_hub', label: 'Skill Hub', icon: Zap },
+                  { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, badge: 'SECURE' },
                   { id: 'mock_interviews', label: 'Mock Interviews', icon: Video },
                   { id: 'analytics', label: 'Analytics', icon: BarChart2 }
                 ].map(tab => {
@@ -2171,6 +2177,13 @@ Return ONLY a valid JSON object without markdown:
 
         {/* Scrollable Dashboard Body */}
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+
+          {/* ========================================================= */}
+          {/* VIEW: SECURE EXAMS & PROCTORING PORTAL (GPREC)            */}
+          {/* ========================================================= */}
+          {activeNav === 'secure_exams' && (
+            <GprecSecureExamsPortal user={user} awardXP={awardXP} addToast={addToast} />
+          )}
 
           {/* ========================================================= */}
           {/* VIEW: TECHPULSE™ (FEATURE PORTAL)                          */}
@@ -2524,6 +2537,7 @@ Return ONLY a valid JSON object without markdown:
                       { label: 'Resume Builder', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
                       { label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
                       { label: 'Coding Arena', icon: Code, nav: 'skill_hub', sub: 'coding_arena' },
+                      { label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall' },
                       { label: 'Project Platform', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' }
                     ].map(item => {
                       const Icon = item.icon;
@@ -5537,6 +5551,7 @@ Return ONLY a valid JSON object without markdown:
                 { title: 'Skill Hub & Daily Missions', category: 'Skill Hub', action: () => navigateTo('skill_hub', 'daily_mission') },
                 { title: 'Coding Arena (10,000+ Problems)', category: 'Coding Arena', action: () => navigateTo('skill_hub', 'coding_arena') },
                 { title: 'Aptitude Arena (Quant, Logical, Verbal)', category: 'Aptitude Arena', action: () => navigateTo('skill_hub', 'aptitude_arena') },
+                { title: 'Secure Exams & Live AI Proctoring Suite', category: 'Secure Exams', action: () => navigateTo('secure_exams', 'hall') },
                 { title: 'Technical Mock Interviews & Voice Viva', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'mock_interview') },
                 { title: 'Resume Builder & AI ATS Defense', category: 'Resume Builder', action: () => navigateTo('mock_interviews', 'resume_defense') },
                 { title: 'Project Platform & Architecture Viva', category: 'Project Platform', action: () => navigateTo('mock_interviews', 'project_defense') },
@@ -5669,6 +5684,7 @@ Return ONLY a valid JSON object without markdown:
                   { label: 'Skill Hub', desc: 'Daily Missions & Benchmarks', nav: 'skill_hub', sub: 'daily_mission' },
                   { label: 'Coding Arena', desc: '10,000+ DSA Problems', nav: 'skill_hub', sub: 'coding_arena' },
                   { label: 'Aptitude Arena', desc: 'Quant, Logic & Verbal', nav: 'skill_hub', sub: 'aptitude_arena' },
+                  { label: 'Secure Exams', desc: 'Proctored MCQ & Coding OA', nav: 'secure_exams', sub: 'hall' },
                   { label: 'Mock Interviews', desc: 'AI Voice & Tech Viva', nav: 'mock_interviews', sub: 'mock_interview' },
                   { label: 'Resume Builder', desc: 'ATS Builder & Audit', nav: 'mock_interviews', sub: 'resume_defense' },
                   { label: 'Project Platform', desc: 'Portfolio & Viva Defense', nav: 'mock_interviews', sub: 'project_defense' },
