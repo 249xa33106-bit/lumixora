@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
+import {Flame, Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Search, Bell, CheckCircle2, AlertTriangle, ArrowRight, Check, X,
   Code, Layers, Trophy, TrendingUp, Download, Sliders, Play, RotateCcw,
   RefreshCw, Shield, ShieldAlert, ShieldCheck, ExternalLink, Plus, Trash2,
@@ -53,6 +53,9 @@ import GprecSecureExamsPortal from '../components/gprec/GprecSecureExamsPortal';
 import GprecCareerGrowthHub from '../components/gprec/GprecCareerGrowthHub';
 import GprecCampusArenaHub from '../components/gprec/GprecCampusArenaHub';
 import GprecResumeMockInterviewPortal from '../components/gprec/GprecResumeMockInterviewPortal';
+import GprecCompanyDrillPacks from '../components/gprec/GprecCompanyDrillPacks';
+import GprecCompanyPapersPortal from '../components/gprec/GprecCompanyPapersPortal';
+import GprecPlacementCertificateModal from '../components/gprec/GprecPlacementCertificateModal';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -484,7 +487,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     if (clean.includes('mock') || clean.includes('interview') || clean.includes('resume') || clean.includes('project')) return 'mock_interviews';
     if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
     if (clean.includes('analytic') || clean.includes('metric')) return 'analytics';
-    if (clean.includes('resource') || clean.includes('paper') || clean.includes('bridge') || clean.includes('btech') || clean.includes('curriculum') || clean.includes('helpdesk') || clean.includes('faq')) return 'resources';
+    if (clean.includes('companypaper') || clean.includes('solvedpaper') || clean === 'companypapers' || clean === 'papers') return 'company_papers';
+    if (clean.includes('drillpack') || clean.includes('companydrill') || clean === 'companydrills' || clean === 'drills') return 'company_drills';
+    if (clean.includes('resource') || clean.includes('bridge') || clean.includes('btech') || clean.includes('curriculum') || clean.includes('helpdesk') || clean.includes('faq')) return 'resources';
     if (clean.includes('setting')) return 'settings';
     if (clean === 'placement' || clean.includes('twin') || clean.includes('jobmatch') || clean.includes('companysim')) return 'placement';
     return 'dashboard';
@@ -513,6 +518,39 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOverviewModal, setShowOverviewModal] = useState(false);
+  const [selectedCompanyForPapers, setSelectedCompanyForPapers] = useState('all');
+  const [showPlacementCertModal, setShowPlacementCertModal] = useState(false);
+  const [dismissedUrgentBanner, setDismissedUrgentBanner] = useState(false);
+
+  const playBroadcastChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(739.99, now);
+      gain1.gain.setValueAtTime(0.12, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.4);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1108.73, now + 0.12);
+      gain2.gain.setValueAtTime(0.15, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.65);
+    } catch (e) {}
+  };
 
   // Target Settings
   const [targetRoleObj, setTargetRoleObj] = useState(TARGET_ROLES[0]);
@@ -1053,6 +1091,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return () => unsub();
   }, [user?.id]);
 
+  const urgentBroadcast = useMemo(() => {
+    return notificationsList.find(n => n.urgent && !n.read) || null;
+  }, [notificationsList]);
+
   const unreadNotificationsCount = useMemo(() => {
     return notificationsList.filter(n => !n.read).length;
   }, [notificationsList]);
@@ -1134,6 +1176,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         ...prev.filter(n => n.id !== newNotifId)
       ]);
 
+      playBroadcastChime();
       addToast({
         message: `🚀 Live Broadcast Sent: "${newAnn.title}" is now visible to all GPREC scholars!`,
         type: 'success'
@@ -2199,6 +2242,8 @@ Return ONLY a valid JSON object without markdown:
 
             {[
               { id: 'dashboard', label: 'Home', icon: Home, nav: 'dashboard', sub: null },
+              { id: 'company_papers', label: 'Company Papers', icon: BookOpen, nav: 'company_papers', sub: null, badge: 'ANSWERS' },
+              { id: 'company_drills', label: 'Company Drill Packs', icon: Target, nav: 'company_drills', sub: null, badge: 'MOCK OA' },
               { id: 'placement', label: 'My Placement', icon: Briefcase, nav: 'placement', sub: 'overview' },
               { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'coding_arena' },
               { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall', badge: 'SECURE' },
@@ -2370,6 +2415,16 @@ Return ONLY a valid JSON object without markdown:
                 <Moon className="w-3.5 h-3.5" />
               </button>
             </div>
+
+            {/* Claim Placement Certificate Quick Action */}
+            <button
+              onClick={() => setShowPlacementCertModal(true)}
+              className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
+              title="Claim your Verified GPREC Placement Readiness Certificate"
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Claim Certificate</span>
+            </button>
 
             {/* Notification Bell */}
             <div className="relative">
@@ -2570,6 +2625,76 @@ Return ONLY a valid JSON object without markdown:
 
         {/* Scrollable Dashboard Body */}
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+
+          {/* URGENT FOUNDER BROADCAST ALERT BANNER */}
+          {urgentBroadcast && !dismissedUrgentBanner && (
+            <div className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 rounded-2xl p-3 px-4 text-white shadow-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Flame className="w-5 h-5 text-amber-300 flex-shrink-0 animate-bounce" />
+                <div className="min-w-0">
+                  <div className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5 text-amber-200">
+                    <span>Urgent Placement Broadcast</span>
+                    <span>•</span>
+                    <span>{urgentBroadcast.date || 'Today'}</span>
+                  </div>
+                  <div className="text-xs font-bold truncate">
+                    {urgentBroadcast.title}: <span className="font-normal opacity-90">{urgentBroadcast.desc || urgentBroadcast.body}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playBroadcastChime();
+                    setShowNotifications(true);
+                  }}
+                  className="px-3 py-1 rounded-xl bg-white text-slate-950 text-xs font-extrabold hover:bg-amber-100 cursor-pointer shadow-xs transition-colors"
+                >
+                  View Broadcast
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDismissedUrgentBanner(true)}
+                  className="p-1 rounded-lg bg-black/20 hover:bg-black/30 text-white cursor-pointer"
+                  title="Dismiss alert"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* VIEW: ORIGINAL COMPANY PAPERS & SOLVED ANSWERS ARCHIVE    */}
+          {/* ========================================================= */}
+          {activeNav === 'company_papers' && (
+            <GprecCompanyPapersPortal
+              initialCompanyId={selectedCompanyForPapers || 'all'}
+              onLaunchExam={(examId, passcode) => {
+                setActiveNav('secure_exams');
+              }}
+              addToast={addToast}
+            />
+          )}
+
+          {/* ========================================================= */}
+          {/* VIEW: GPREC COMPANY DRILL PACKS                           */}
+          {/* ========================================================= */}
+          {activeNav === 'company_drills' && (
+            <GprecCompanyDrillPacks
+              onLaunchExam={(examId, passcode) => {
+                setActiveNav('secure_exams');
+              }}
+              onOpenSolvedPaper={(companyId) => {
+                setSelectedCompanyForPapers(companyId);
+                setActiveNav('company_papers');
+              }}
+              onNavigateNav={(nav) => setActiveNav(nav)}
+              addToast={addToast}
+              user={user}
+            />
+          )}
 
           {/* ========================================================= */}
           {/* VIEW: SECURE EXAMS & PROCTORING PORTAL (GPREC)            */}
@@ -3643,6 +3768,29 @@ Return ONLY a valid JSON object without markdown:
                   ))}
                 </div>
               </div>
+
+              {/* Subtab: Company Drill Packs */}
+              {activeModule === 'company_drills' && (
+                <GprecCompanyDrillPacks
+                  onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
+                  onOpenSolvedPaper={(companyId) => {
+                    setSelectedCompanyForPapers(companyId);
+                    setActiveModule('company_papers');
+                  }}
+                  onNavigateNav={(nav) => setActiveNav(nav)}
+                  addToast={addToast}
+                  user={user}
+                />
+              )}
+
+              {/* Subtab: Original Solved Papers */}
+              {activeModule === 'company_papers' && (
+                <GprecCompanyPapersPortal
+                  initialCompanyId={selectedCompanyForPapers || 'all'}
+                  onLaunchExam={(examId, passcode) => setActiveNav('secure_exams')}
+                  addToast={addToast}
+                />
+              )}
 
               {/* Subtab: Daily Mission */}
               {activeModule === 'daily_mission' && (

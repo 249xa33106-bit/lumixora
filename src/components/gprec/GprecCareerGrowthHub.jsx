@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { loadExamAttempts } from './gprecSecureExamBank';
 import { cleanScholarName } from '../../utils/authSecurity';
+import GprecPlacementCertificateModal from './GprecPlacementCertificateModal';
 
 const OFF_CAMPUS_JOBS = [
   {
@@ -219,6 +220,7 @@ export default function GprecCareerGrowthHub({
   addToast
 }) {
   const [activeTab, setActiveTab] = useState('jobs'); // 'jobs' | 'portfolio' | 'referrals'
+  const [showCertModal, setShowCertModal] = useState(false);
 
   // Tab 1: Off-Campus Jobs Filter
   const [jobSearch, setJobSearch] = useState('');
@@ -673,6 +675,13 @@ export default function GprecCareerGrowthHub({
                   </button>
                   <button
                     type="button"
+                    onClick={() => setShowCertModal(true)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                  >
+                    <Award className="w-3.5 h-3.5" /> Claim Certificate
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleExportPortfolioPdf}
                     className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer"
                   >
@@ -838,6 +847,19 @@ export default function GprecCareerGrowthHub({
           </div>
         </div>
       )}
+      {/* Verified Placement Readiness Certificate Modal */}
+      <GprecPlacementCertificateModal
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        studentName={studentName}
+        rollNo={rollNo}
+        branch={branch}
+        overallReadiness={overallReadiness}
+        solvedCount={solvedCount}
+        aptitudeCount={aptitudeCount}
+        trustScore={bestTrustScore !== null ? bestTrustScore : 100}
+        addToast={addToast}
+      />
     </div>
   );
 }
