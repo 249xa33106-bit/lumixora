@@ -2210,7 +2210,7 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[1024/576] group">
+              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[1024/445] group">
                 <img
                   src="/gprec-hero-banner-pullareddy.png"
                   alt="GPREC Placement Suite - G. Pulla Reddy Memorial - Your Career. Our Commitment."
@@ -2224,9 +2224,9 @@ Return ONLY a valid JSON object without markdown:
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                     style={{
                       left: '6.25%',
-                      bottom: '25.7%',
+                      bottom: '3.8%',
                       width: '21.1%',
-                      height: '8.3%'
+                      height: '10.8%'
                     }}
                     title="Explore Opportunities"
                   />
@@ -2236,9 +2236,9 @@ Return ONLY a valid JSON object without markdown:
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
                     style={{
                       left: '28.9%',
-                      bottom: '25.7%',
+                      bottom: '3.8%',
                       width: '15.8%',
-                      height: '8.3%'
+                      height: '10.8%'
                     }}
                     title="Watch Overview"
                   />
