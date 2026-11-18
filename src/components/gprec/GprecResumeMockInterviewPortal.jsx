@@ -97,10 +97,16 @@ export default function GprecResumeMockInterviewPortal({
       maxScore += weight;
 
       // Extract search tokens from keyword name (e.g., 'AWS / Cloud Services' -> ['aws', 'cloud'])
-      const tokens = kw.name.toLowerCase().split(/[/,s]+/).filter(t => t.length > 2 && !['and', 'for', 'the', 'services', 'core', 'implementation'].includes(t));
+      const tokens = kw.name.toLowerCase().split(/[\/,\s]+/).filter(t => t.length > 2 && !['and', 'for', 'the', 'services', 'core', 'implementation'].includes(t));
       const foundInText = tokens.some(t => {
-        const regex = new RegExp(`\\b${t}`, 'i');
-        return regex.test(lower);
+        if (t === 'c++') return lower.includes('c++') || lower.includes('cpp');
+        try {
+          const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`\\b${escaped}`, 'i');
+          return regex.test(lower);
+        } catch (e) {
+          return lower.includes(t);
+        }
       });
 
       if (foundInText) {
@@ -532,115 +538,169 @@ export default function GprecResumeMockInterviewPortal({
 
     setStage('analyzing');
 
+    // Run quickly with instant microtask (100ms) and complete try-catch so it NEVER hangs
     setTimeout(() => {
-      const raw = resumeText;
+      try {
+        const raw = resumeText;
+        const lower = raw.toLowerCase();
 
-      // Extract skills
-      const techKeywords = [
-        'React', 'JavaScript', 'TypeScript', 'Node.js', 'Express', 'Python', 'Java', 'C++', 'C',
-        'Spring Boot', 'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Kafka', 'Docker',
-        'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git', 'Linux', 'REST', 'GraphQL', 'DSA', 'OOP'
-      ];
-      const matchedSkills = techKeywords.filter(k => new RegExp(`\\b${k}\\b`, 'i').test(raw));
+        // Extract skills with safe escaping (handles C++, C#, etc. without throwing RegExp SyntaxError)
+        const techKeywords = [
+          'React', 'JavaScript', 'TypeScript', 'Node.js', 'Express', 'Python', 'Java', 'C++', 'C',
+          'Spring Boot', 'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Kafka', 'Docker',
+          'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git', 'Linux', 'REST', 'GraphQL', 'DSA', 'OOP'
+        ];
+        const matchedSkills = techKeywords.filter(k => {
+          if (k === 'C++') return raw.includes('C++') || lower.includes('cpp');
+          if (k === 'C') return /\bC\b/.test(raw) || lower.includes(' c language') || lower.includes('c programming');
+          try {
+            const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return new RegExp(`\\b${escaped}\\b`, 'i').test(raw);
+          } catch (e) {
+            return lower.includes(k.toLowerCase());
+          }
+        });
 
-      // Extract metric claims (numbers with %, x, ms, users, req/sec, scale)
-      const metricRegex = /([a-zA-Z\s]{0,35}\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa))\b[a-zA-Z\s]{0,45})/gi;
-      const metricMatches = [];
-      let m;
-      while ((m = metricRegex.exec(raw)) !== null && metricMatches.length < 5) {
-        const cleanStr = m[0].trim().replace(/\s+/g, ' ');
-        if (cleanStr.length > 8 && !metricMatches.includes(cleanStr)) {
-          metricMatches.push(cleanStr);
-        }
-      }
-
-      // Extract projects
-      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-      const detectedProjects = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (
-          (line.toLowerCase().includes('project') || line.includes(':') || line.includes('|') || line.includes('–') || line.includes('-')) &&
-          line.length > 5 && line.length < 80 &&
-          !line.toLowerCase().includes('education') && !line.toLowerCase().includes('skills') && !line.toLowerCase().includes('certifications')
-        ) {
-          const title = line.replace(/^(project\s*\d*:?|-|\*)\s*/i, '').trim();
-          if (title.length > 5 && !detectedProjects.some(p => p.title === title) && detectedProjects.length < 3) {
-            detectedProjects.push({
-              title,
-              stack: matchedSkills.slice(0, 4).join(', ') || 'Full-Stack Architecture'
-            });
+        // Fast linear metric claim extractor (no catastrophic regex backtracking)
+        const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const metricMatches = [];
+        const metricTest = /\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb))\b/i;
+        for (const line of lines) {
+          if (metricTest.test(line) && line.length > 12 && line.length < 180) {
+            if (!metricMatches.includes(line)) {
+              metricMatches.push(line);
+              if (metricMatches.length >= 4) break;
+            }
           }
         }
-      }
 
-      const primaryProject = detectedProjects[0]?.title || 'Full-Stack Engineering Capstone Project';
-      const secondaryProject = detectedProjects[1]?.title || 'Distributed Scalable Web Application';
-      const topClaim = metricMatches[0] || 'Optimized application latency and query throughput by 35%';
-      const primaryStack = matchedSkills.slice(0, 3).join(', ') || 'Java, Spring Boot, and PostgreSQL';
-
-      const analysis = {
-        candidateName: studentName,
-        skillsCount: matchedSkills.length,
-        skills: matchedSkills.length > 0 ? matchedSkills : ['Java', 'React', 'SQL', 'Data Structures', 'Git'],
-        projects: detectedProjects.length > 0 ? detectedProjects : [
-          { title: primaryProject, stack: primaryStack }
-        ],
-        claims: metricMatches.length > 0 ? metricMatches : [
-          topClaim,
-          'Engineered end-to-end data pipeline with 99.8% uptime'
-        ],
-        persona: selectedPersona
-      };
-
-      // 5. Generate Strictly Resume-Grounded Questions
-      const questions = [
-        {
-          id: 'q1',
-          type: 'Project Architecture & Data Flow',
-          claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
-          question: `In your resume, you listed "${primaryProject}". Walk me through your low-level data flow, how your services communicate, and defend why you chose ${primaryStack} over its primary industry alternatives.`,
-          hint: 'Explain client-to-server request lifecycle, API gateway/controllers, database connection pooling, and why this stack fit your latency/scale requirements.',
-          modelAnswer: `In "${primaryProject}", client requests hit an authenticated gateway validating JWT tokens. The stateless backend uses connection pooling with PostgreSQL to minimize handshake overhead. We chose ${primaryStack} because of strong type safety, mature ORM transactions (ACID guarantees), and built-in concurrency support, avoiding overhead compared to heavier monolithic frameworks.`
-        },
-        {
-          id: 'q2',
-          type: 'Quantified Claim & Metric Defense',
-          claimCitation: `Grounded in Resume Metric Claim: "${topClaim}"`,
-          question: `On your resume, you claim: "${topClaim}". Exactly how did you measure this baseline, what specific profiling tools or APM metrics did you monitor, and what technical change produced this improvement?`,
-          hint: 'Specify your benchmarking tool (JMeter/wrk/Chrome DevTools/EXPLAIN ANALYZE), baseline numbers before vs after, and whether index optimization or caching resolved the root bottleneck.',
-          modelAnswer: `We established baseline latency using Apache JMeter and PostgreSQL EXPLAIN ANALYZE, observing that sequential scans caused queries to spike past 420ms under 50 concurrent requests. By introducing a composite index on frequently filtered foreign keys and implementing Redis caching with a 60-second TTL, we eliminated the disk I/O bottleneck and dropped latency to under 80ms.`
-        },
-        {
-          id: 'q3',
-          type: 'System Failure & Fault Tolerance',
-          claimCitation: `Grounded in Tech Stack: ${analysis.skills.slice(0, 4).join(', ')}`,
-          question: `In "${primaryProject}", what happens when your primary database or downstream API experiences a network partition or heavy lock contention? How does your code prevent cascading thread exhaustion?`,
-          hint: 'Discuss retry policies with exponential backoff and jitter, circuit breaker patterns (Resilience4j/Hystrix), database timeouts, and graceful client fallback.',
-          modelAnswer: `To prevent thread pool exhaustion, we set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in a circuit breaker with exponential backoff and jitter. If failure rate exceeds 40% in a 10-second sliding window, the breaker trips to fallback responses, protecting the core server threads.`
-        },
-        {
-          id: 'q4',
-          type: 'Secondary Project & Scaling Viva',
-          claimCitation: `Grounded in Project: "${secondaryProject}"`,
-          question: `Looking at your work on "${secondaryProject}", suppose your daily active user count surges by 50x overnight. Where is the first architectural bottleneck that will break, and how would you refactor it?`,
-          hint: 'Identify database write locks, session state memory exhaustion, or synchronous long-running operations. Propose message queues (Kafka/RabbitMQ) and read replicas.',
-          modelAnswer: `The first point of failure would be synchronous database writes and transactional lock contention. I would introduce an asynchronous message broker (Kafka or Redis Streams) to ingest requests into a durable queue, allowing worker consumers to process batches asynchronously while offloading heavy reads to read-replicas.`
-        },
-        {
-          id: 'q5',
-          type: 'STAR Behavioral Technical Ownership',
-          claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
-          question: `Tell me about the single most frustrating bug or performance regression you personally debugged in "${primaryProject}". Walk me through your hypothesis, reproduction steps, and root-cause fix.`,
-          hint: 'Use the STAR format (Situation, Task, Action, Result). State the symptom, how you isolated the issue using logs/debuggers, and the permanent architectural patch.',
-          modelAnswer: `While stress-testing "${primaryProject}", we noticed CPU usage spiking to 99% during concurrent sessions. My hypothesis was an unindexed query, but profiling thread dumps revealed an N+1 query problem inside a nested loop. I refactored the ORM query to use eager fetching with explicit JOIN FETCH, reducing 45 individual roundtrips to a single query and dropping CPU utilization back to 22%.`
+        // Extract projects
+        const detectedProjects = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (
+            (line.toLowerCase().includes('project') || line.includes(':') || line.includes('|') || line.includes('–') || line.includes('-')) &&
+            line.length > 5 && line.length < 80 &&
+            !line.toLowerCase().includes('education') && !line.toLowerCase().includes('skills') && !line.toLowerCase().includes('certifications')
+          ) {
+            const title = line.replace(/^(project\s*\d*:?|-|\*)\s*/i, '').trim();
+            if (title.length > 5 && !detectedProjects.some(p => p.title === title) && detectedProjects.length < 3) {
+              detectedProjects.push({
+                title,
+                stack: matchedSkills.slice(0, 4).join(', ') || 'Full-Stack Architecture'
+              });
+            }
+          }
         }
-      ];
 
-      setResumeAnalysis(analysis);
-      setInterviewQuestions(questions.slice(0, questionCount));
-      setStage('review_plan');
-    }, 900);
+        const primaryProject = detectedProjects[0]?.title || 'Full-Stack Engineering Capstone Project';
+        const secondaryProject = detectedProjects[1]?.title || 'Distributed Scalable Web Application';
+        const topClaim = metricMatches[0] || 'Optimized application latency and query throughput by 35%';
+        const primaryStack = matchedSkills.slice(0, 3).join(', ') || 'Java, Spring Boot, and PostgreSQL';
+
+        const analysis = {
+          candidateName: studentName || 'GPREC Scholar',
+          skillsCount: matchedSkills.length > 0 ? matchedSkills.length : 5,
+          skills: matchedSkills.length > 0 ? matchedSkills : ['Java', 'React', 'SQL', 'Data Structures', 'Git'],
+          projects: detectedProjects.length > 0 ? detectedProjects : [
+            { title: primaryProject, stack: primaryStack }
+          ],
+          claims: metricMatches.length > 0 ? metricMatches : [
+            topClaim,
+            'Engineered end-to-end data pipeline with 99.8% uptime'
+          ],
+          persona: selectedPersona
+        };
+
+        // 5. Generate Strictly Resume-Grounded Questions
+        const questions = [
+          {
+            id: 'q1',
+            type: 'Project Architecture & Data Flow',
+            claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
+            question: `In your resume, you listed "${primaryProject}". Walk me through your low-level data flow, how your services communicate, and defend why you chose ${primaryStack} over its primary industry alternatives.`,
+            hint: 'Explain client-to-server request lifecycle, API gateway/controllers, database connection pooling, and why this stack fit your latency/scale requirements.',
+            modelAnswer: `In "${primaryProject}", client requests hit an authenticated gateway validating JWT tokens. The stateless backend uses connection pooling with PostgreSQL to minimize handshake overhead. We chose ${primaryStack} because of strong type safety, mature ORM transactions (ACID guarantees), and built-in concurrency support, avoiding overhead compared to heavier monolithic frameworks.`
+          },
+          {
+            id: 'q2',
+            type: 'Quantified Claim & Metric Defense',
+            claimCitation: `Grounded in Resume Metric Claim: "${topClaim}"`,
+            question: `On your resume, you claim: "${topClaim}". Exactly how did you measure this baseline, what specific profiling tools or APM metrics did you monitor, and what technical change produced this improvement?`,
+            hint: 'Specify your benchmarking tool (JMeter/wrk/Chrome DevTools/EXPLAIN ANALYZE), baseline numbers before vs after, and whether index optimization or caching resolved the root bottleneck.',
+            modelAnswer: `We established baseline latency using Apache JMeter and PostgreSQL EXPLAIN ANALYZE, observing that sequential scans caused queries to spike past 420ms under 50 concurrent requests. By introducing a composite index on frequently filtered foreign keys and implementing Redis caching with a 60-second TTL, we eliminated the disk I/O bottleneck and dropped latency to under 80ms.`
+          },
+          {
+            id: 'q3',
+            type: 'System Failure & Fault Tolerance',
+            claimCitation: `Grounded in Tech Stack: ${analysis.skills.slice(0, 4).join(', ')}`,
+            question: `In "${primaryProject}", what happens when your primary database or downstream API experiences a network partition or heavy lock contention? How does your code prevent cascading thread exhaustion?`,
+            hint: 'Discuss retry policies with exponential backoff and jitter, circuit breaker patterns (Resilience4j/Hystrix), database timeouts, and graceful client fallback.',
+            modelAnswer: `To prevent thread pool exhaustion, we set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in a circuit breaker with exponential backoff and jitter. If failure rate exceeds 40% in a 10-second sliding window, the breaker trips to fallback responses, protecting the core server threads.`
+          },
+          {
+            id: 'q4',
+            type: 'Secondary Project & Scaling Viva',
+            claimCitation: `Grounded in Project: "${secondaryProject}"`,
+            question: `Looking at your work on "${secondaryProject}", suppose your daily active user count surges by 50x overnight. Where is the first architectural bottleneck that will break, and how would you refactor it?`,
+            hint: 'Identify database write locks, session state memory exhaustion, or synchronous long-running operations. Propose message queues (Kafka/RabbitMQ) and read replicas.',
+            modelAnswer: `The first point of failure would be synchronous database writes and transactional lock contention. I would introduce an asynchronous message broker (Kafka or Redis Streams) to ingest requests into a durable queue, allowing worker consumers to process batches asynchronously while offloading heavy reads to read-replicas.`
+          },
+          {
+            id: 'q5',
+            type: 'STAR Behavioral Technical Ownership',
+            claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
+            question: `Tell me about the single most frustrating bug or performance regression you personally debugged in "${primaryProject}". Walk me through your hypothesis, reproduction steps, and root-cause fix.`,
+            hint: 'Use the STAR format (Situation, Task, Action, Result). State the symptom, how you isolated the issue using logs/debuggers, and the permanent architectural patch.',
+            modelAnswer: `While stress-testing "${primaryProject}", we noticed CPU usage spiking to 99% during concurrent sessions. My hypothesis was an unindexed query, but profiling thread dumps revealed an N+1 query problem inside a nested loop. I refactored the ORM query to use eager fetching with explicit JOIN FETCH, reducing 45 individual roundtrips to a single query and dropping CPU utilization back to 22%.`
+          }
+        ];
+
+        setResumeAnalysis(analysis);
+        setInterviewQuestions(questions.slice(0, questionCount));
+        setStage('review_plan');
+      } catch (err) {
+        console.error('Error analyzing resume claims:', err);
+        // Fallback analysis ensures the UI never hangs
+        const fallbackAnalysis = {
+          candidateName: studentName || 'GPREC Scholar',
+          skillsCount: 5,
+          skills: ['Java', 'React', 'SQL', 'Data Structures', 'Git'],
+          projects: [{ title: 'Full-Stack Engineering Capstone Project', stack: 'Java, Spring Boot, React, SQL' }],
+          claims: ['Optimized application latency and query throughput by 35%'],
+          persona: selectedPersona
+        };
+        const fallbackQuestions = [
+          {
+            id: 'q1',
+            type: 'Project Architecture & Data Flow',
+            claimCitation: 'Grounded in Primary Project Architecture',
+            question: 'Walk me through your low-level data flow, how your services communicate, and defend why you chose your tech stack over industry alternatives.',
+            hint: 'Explain request lifecycles, API controllers, and database connection pooling.',
+            modelAnswer: 'Client requests hit an authenticated gateway. The backend utilizes connection pooling to minimize handshake overhead and ACID transactions to guarantee data consistency.'
+          },
+          {
+            id: 'q2',
+            type: 'Quantified Claim & Metric Defense',
+            claimCitation: 'Grounded in Performance & Optimization Claims',
+            question: 'How did you measure baseline performance, what profiling tools did you monitor, and what technical change produced your optimizations?',
+            hint: 'Specify benchmarking tools, baseline numbers before vs after, and indexing/caching techniques.',
+            modelAnswer: 'We benchmarked latency using profiling tools, identifying sequential table scan bottlenecks, which were resolved by composite indexing and caching.'
+          },
+          {
+            id: 'q3',
+            type: 'System Failure & Fault Tolerance',
+            claimCitation: 'Grounded in System Reliability & Error Handling',
+            question: 'What happens when your primary database experiences high latency or connection timeouts? How does your code prevent cascading thread exhaustion?',
+            hint: 'Discuss circuit breakers, timeout thresholds, and graceful degradation.',
+            modelAnswer: 'We set strict connection checkout timeouts and wrapped external calls in circuit breakers to avoid exhausting worker threads.'
+          }
+        ];
+        setResumeAnalysis(fallbackAnalysis);
+        setInterviewQuestions(fallbackQuestions.slice(0, questionCount));
+        setStage('review_plan');
+      }
+    }, 100);
   };
 
   // Start Interview Round
@@ -716,7 +776,15 @@ export default function GprecResumeMockInterviewPortal({
     setTimeout(() => {
       // Dynamic rubric score based on answer depth, tech keywords, and metric rigor
       const wordCount = answer.split(/\s+/).length;
-      const hasKeywords = (resumeAnalysis?.skills || []).some(s => new RegExp(`\\b${s}\\b`, 'i').test(answer));
+      const hasKeywords = (resumeAnalysis?.skills || []).some(s => {
+        if (s === 'C++') return answer.includes('C++') || answer.toLowerCase().includes('cpp');
+        try {
+          const escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return new RegExp(`\\b${escaped}\\b`, 'i').test(answer);
+        } catch (e) {
+          return answer.toLowerCase().includes(s.toLowerCase());
+        }
+      });
       const hasMetrics = /\b\d+(%|ms|users|queries|x|kb|mb)?\b/i.test(answer);
       const hasTradeoffs = /\b(trade-off|bottleneck|because|instead of|alternative|latency|scale)\b/i.test(answer);
 
@@ -1639,6 +1707,21 @@ export default function GprecResumeMockInterviewPortal({
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             <span>Formulating {questionCount} strictly grounded questions</span>
+          </div>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (!resumeAnalysis) {
+                  analyzeResumeAndGenerateQuestions();
+                } else {
+                  setStage('review_plan');
+                }
+              }}
+              className="text-xs text-purple-600 hover:text-purple-800 font-bold hover:underline cursor-pointer"
+            >
+              Skip to Review Plan →
+            </button>
           </div>
         </div>
       )}
