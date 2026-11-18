@@ -665,10 +665,467 @@ Answer: 40.`
         ]
       }
     ]
+  },
+  // =========================================================================
+  // 7. WIPRO — ELITE NLTH & TURBO TRACK
+  // =========================================================================
+  {
+    id: 'wipro-nlth-turbo-2025',
+    companyId: 'wipro',
+    companyName: 'Wipro Limited',
+    paperTitle: 'Wipro Elite NLTH & Turbo Original Placement Paper (2024-2025)',
+    batch: '2025 - 2026 Batch',
+    shift: 'National Level Talent Hunt (NLTH) Slot',
+    roles: 'Wipro Turbo (₹6.5 LPA) • Project Engineer (₹3.5 LPA)',
+    durationMinutes: 70,
+    difficulty: 'Medium',
+    passcode: 'WIPRO2026',
+    linkedExamId: 'gprec-wipro-nlth-2026',
+    overview: 'Original National Level Talent Hunt placement paper testing Numerical Ability, Logical Deductions, OOPs fundamentals, and Two-Pointer / Frequency Coding challenges.',
+    sections: [
+      {
+        id: 'sec_wipro_quant',
+        title: 'Section A: Quantitative Aptitude & Data Interpretation',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'wp_q1',
+            prompt: 'The ratio of the ages of two persons is 4:7 and the age of one exceeds that of the other by 30 years. What is the sum of their ages in years?',
+            options: ['110 years', '105 years', '115 years', '120 years'],
+            correctIndex: 0,
+            topic: 'Ages & Ratios',
+            explanation: `Step 1: Let their ages be 4x and 7x.
+Step 2: Difference = 7x - 4x = 3x = 30 years.
+x = 30 / 3 = 10.
+Step 3: Sum of their ages = 4x + 7x = 11x = 11 * 10 = 110 years.
+Answer: 110 years.`
+          },
+          {
+            id: 'wp_q2',
+            prompt: 'A sum of money doubles itself at compound interest in 5 years. In how many years will it become 8 times of itself at the same rate of interest?',
+            options: ['15 years', '20 years', '25 years', '10 years'],
+            correctIndex: 0,
+            topic: 'Compound Interest',
+            explanation: `Step 1: Under compound interest, if P becomes 2P in 5 years:
+(1 + r/100)^5 = 2.
+Step 2: We want the sum to become 8P = 2^3 P.
+(1 + r/100)^T = 8 = 2^3 = [(1 + r/100)^5]^3 = (1 + r/100)^15.
+Step 3: Total time T = 5 * 3 = 15 years.
+Answer: 15 years.`
+          }
+        ]
+      },
+      {
+        id: 'sec_wipro_tech',
+        title: 'Section B: OOPs & Computer Science MCQs',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'wp_t1',
+            prompt: 'Which OOPs principle allows a child class to provide a specific implementation of a method that is already provided by its parent class?',
+            options: ['Method Overloading', 'Method Overriding (Runtime Polymorphism)', 'Data Abstraction', 'Encapsulation'],
+            correctIndex: 1,
+            topic: 'Object Oriented Programming',
+            explanation: `Explanation: Method Overriding occurs when a subclass redefines a method with the exact same signature as defined in its superclass, enabling dynamic dispatch and runtime polymorphism.`
+          },
+          {
+            id: 'wp_t2',
+            prompt: 'In C++, what happens when a base class destructor is NOT declared as `virtual` and a derived object is deleted through a base class pointer?',
+            options: [
+              'Both base and derived destructors execute normally.',
+              'Only the base class destructor is called, causing derived resources to leak.',
+              'A compilation error is thrown.',
+              'The derived destructor is called first, then base.'
+            ],
+            correctIndex: 1,
+            topic: 'C++ Virtual Destructors',
+            explanation: `Explanation: Deleting a derived class object through a pointer to a base class without a virtual destructor results in undefined behavior (typically only the base destructor is invoked), resulting in resource leaks.`
+          }
+        ]
+      },
+      {
+        id: 'sec_wipro_coding',
+        title: 'Section C: NLTH Hands-on Coding Round with Answers',
+        type: 'coding',
+        problems: [
+          {
+            id: 'wp_code1',
+            title: 'First Non-Repeating Character in a String',
+            difficulty: 'Easy-Medium',
+            marks: 15,
+            statement: 'Given a string s consisting of lowercase English letters, find the first non-repeating character and return it. If no such character exists, return "-1".',
+            sampleInput: 's = "loveleetcode"',
+            sampleOutput: '"v"',
+            complexityAnalysis: 'Time: O(N) • Space: O(1) [26 characters]',
+            solutions: {
+              javascript: `function solve(s) {\n  const count = {};\n  for (const ch of s) count[ch] = (count[ch] || 0) + 1;\n  for (let i = 0; i < s.length; i++) {\n    if (count[s[i]] === 1) return s[i];\n  }\n  return "-1";\n}`,
+              python: `def solve(s):\n    count = {}\n    for ch in s:\n        count[ch] = count.get(ch, 0) + 1\n    for ch in s:\n        if count[ch] == 1:\n            return ch\n    return "-1"`,
+              java: `import java.util.*;\nclass Solution {\n    public String solve(String s) {\n        int[] count = new int[26];\n        for (char c : s.toCharArray()) count[c - 'a']++;\n        for (char c : s.toCharArray()) {\n            if (count[c - 'a'] == 1) return String.valueOf(c);\n        }\n        return "-1";\n    }\n}`,
+              cpp: `#include <string>\n#include <vector>\nusing namespace std;\nstring solve(string s) {\n    vector<int> count(26, 0);\n    for (char c : s) count[c - 'a']++;\n    for (char c : s) {\n        if (count[c - 'a'] == 1) return string(1, c);\n    }\n    return "-1";\n}`
+            }
+          },
+          {
+            id: 'wp_code2',
+            title: 'Continuous Subarray with Given Sum (Two-Pointer)',
+            difficulty: 'Medium',
+            marks: 15,
+            statement: 'Given an unsorted array arr of non-negative integers and an integer target, find a continuous subarray that adds to the target sum and return its 0-based start and end indices [start, end]. If no such subarray exists, return [-1, -1].',
+            sampleInput: 'arr = [1, 2, 3, 7, 5], target = 12',
+            sampleOutput: '[1, 3] (Subarray [2, 3, 7] = 12)',
+            complexityAnalysis: 'Time: O(N) • Space: O(1)',
+            solutions: {
+              javascript: `function solve(arr, target) {\n  let cur = 0, start = 0;\n  for (let end = 0; end < arr.length; end++) {\n    cur += arr[end];\n    while (cur > target && start < end) {\n      cur -= arr[start];\n      start++;\n    }\n    if (cur === target) return [start, end];\n  }\n  return [-1, -1];\n}`,
+              python: `def solve(arr, target):\n    cur = 0\n    start = 0\n    for end in range(len(arr)):\n        cur += arr[end]\n        while cur > target and start < end:\n            cur -= arr[start]\n            start += 1\n        if cur == target:\n            return [start, end]\n    return [-1, -1]`,
+              java: `class Solution {\n    public int[] solve(int[] arr, int target) {\n        int cur = 0, start = 0;\n        for (int end = 0; end < arr.length; end++) {\n            cur += arr[end];\n            while (cur > target && start < end) {\n                cur -= arr[start];\n                start++;\n            }\n            if (cur == target) return new int[]{start, end};\n        }\n        return new int[]{-1, -1};\n    }\n}`,
+              cpp: `#include <vector>\nusing namespace std;\nvector<int> solve(vector<int>& arr, int target) {\n    int cur = 0, start = 0;\n    for (int end = 0; end < (int)arr.size(); end++) {\n        cur += arr[end];\n        while (cur > target && start < end) {\n            cur -= arr[start];\n            start++;\n        }\n        if (cur == target) return {start, end};\n    }\n    return {-1, -1};\n}`
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // 8. DELOITTE USI — NATIONAL LEADERSHIP & TECHNICAL ASSESSMENT
+  // =========================================================================
+  {
+    id: 'deloitte-usi-2025',
+    companyId: 'deloitte',
+    companyName: 'Deloitte USI',
+    paperTitle: 'Deloitte USI Consulting & Technology Original Paper (2024-2025)',
+    batch: '2025 - 2026 Batch',
+    shift: 'National Campus Selection Drive',
+    roles: 'Technology Analyst (₹7.6 LPA) • Associate Analyst (₹5.0 LPA)',
+    durationMinutes: 75,
+    difficulty: 'Medium',
+    passcode: 'DELOITTE2026',
+    linkedExamId: 'gprec-deloitte-usi-2026',
+    overview: 'Original Deloitte USI placement paper featuring Data Interpretation, Business Logic, Cloud Fundamentals, and high-frequency array/string interview algorithms.',
+    sections: [
+      {
+        id: 'sec_deloitte_quant',
+        title: 'Section A: Quantitative Analysis & Data Interpretation',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'del_q1',
+            prompt: 'A person invested ₹20,000 in two schemes A and B at 8% and 10% simple interest per annum respectively. If the total annual interest received was ₹1,840, how much was invested in Scheme A?',
+            options: ['₹8,000', '₹12,000', '₹10,000', '₹6,000'],
+            correctIndex: 0,
+            topic: 'Simple Interest & Alligation',
+            explanation: `Step 1: Let investment in Scheme A = x.
+Then investment in Scheme B = 20,000 - x.
+Step 2: Total Interest = (x * 8 * 1) / 100 + ((20,000 - x) * 10 * 1) / 100 = 1,840.
+0.08x + 2,000 - 0.10x = 1,840.
+-0.02x = 1,840 - 2,000 = -160.
+x = 160 / 0.02 = ₹8,000.
+Answer: ₹8,000.`
+          },
+          {
+            id: 'del_q2',
+            prompt: 'In a competitive coding test, candidate A scores 30% marks and fails by 15 marks. Candidate B scores 40% marks and secures 35 marks more than the pass mark. What is the passing percentage?',
+            options: ['33%', '35%', '36%', '32%'],
+            correctIndex: 0,
+            topic: 'Percentages & Pass Criteria',
+            explanation: `Step 1: Difference in percentage = 40% - 30% = 10%.
+Difference in absolute marks = 35 - (-15) = 50 marks.
+Step 2: Total maximum marks = (50 / 10) * 100 = 500 marks.
+Step 3: Candidate A marks = 30% of 500 = 150 marks.
+Passing marks = 150 + 15 = 165 marks.
+Passing percentage = (165 / 500) * 100 = 33%.
+Answer: 33%.`
+          }
+        ]
+      },
+      {
+        id: 'sec_deloitte_coding',
+        title: 'Section B: Technical Problem Solving Round with Answers',
+        type: 'coding',
+        problems: [
+          {
+            id: 'del_code1',
+            title: 'Longest Common Prefix',
+            difficulty: 'Easy-Medium',
+            marks: 15,
+            statement: 'Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string "".',
+            sampleInput: 'strs = ["flower", "flow", "flight"]',
+            sampleOutput: '"fl"',
+            complexityAnalysis: 'Time: O(S) where S is sum of all characters • Space: O(1)',
+            solutions: {
+              javascript: `function solve(strs) {\n  if (!strs.length) return "";\n  let prefix = strs[0];\n  for (let i = 1; i < strs.length; i++) {\n    while (strs[i].indexOf(prefix) !== 0) {\n      prefix = prefix.substring(0, prefix.length - 1);\n      if (!prefix) return "";\n    }\n  }\n  return prefix;\n}`,
+              python: `def solve(strs):\n    if not strs:\n        return ""\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ""\n    return prefix`,
+              java: `class Solution {\n    public String solve(String[] strs) {\n        if (strs.length == 0) return "";\n        String prefix = strs[0];\n        for (int i = 1; i < strs.length; i++) {\n            while (strs[i].indexOf(prefix) != 0) {\n                prefix = prefix.substring(0, prefix.length() - 1);\n                if (prefix.isEmpty()) return "";\n            }\n        }\n        return prefix;\n    }\n}`,
+              cpp: `#include <string>\n#include <vector>\nusing namespace std;\nstring solve(vector<string>& strs) {\n    if (strs.empty()) return "";\n    string prefix = strs[0];\n    for (size_t i = 1; i < strs.size(); i++) {\n        while (strs[i].find(prefix) != 0) {\n            prefix = prefix.substr(0, prefix.length() - 1);\n            if (prefix.empty()) return "";\n        }\n    }\n    return prefix;\n}`
+            }
+          },
+          {
+            id: 'del_code2',
+            title: 'Best Time to Buy and Sell Stock (One Transaction)',
+            difficulty: 'Easy-Medium',
+            marks: 15,
+            statement: 'You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell. Return the maximum profit. If no profit is possible, return 0.',
+            sampleInput: 'prices = [7, 1, 5, 3, 6, 4]',
+            sampleOutput: '5 (Buy on day 2 @ 1, sell on day 5 @ 6)',
+            complexityAnalysis: 'Time: O(N) • Space: O(1)',
+            solutions: {
+              javascript: `function solve(prices) {\n  let minPrice = Infinity, maxProfit = 0;\n  for (const p of prices) {\n    if (p < minPrice) minPrice = p;\n    else if (p - minPrice > maxProfit) maxProfit = p - minPrice;\n  }\n  return maxProfit;\n}`,
+              python: `def solve(prices):\n    min_price = float('inf')\n    max_profit = 0\n    for p in prices:\n        if p < min_price:\n            min_price = p\n        elif p - min_price > max_profit:\n            max_profit = p - min_price\n    return max_profit`,
+              java: `class Solution {\n    public int solve(int[] prices) {\n        int minPrice = Integer.MAX_VALUE, maxProfit = 0;\n        for (int p : prices) {\n            if (p < minPrice) minPrice = p;\n            else if (p - minPrice > maxProfit) maxProfit = p - minPrice;\n        }\n        return maxProfit;\n    }\n}`,
+              cpp: `#include <vector>\n#include <algorithm>\n#include <climits>\nusing namespace std;\nint solve(vector<int>& prices) {\n    int minPrice = INT_MAX, maxProfit = 0;\n    for (int p : prices) {\n        if (p < minPrice) minPrice = p;\n        else if (p - minPrice > maxProfit) maxProfit = p - minPrice;\n    }\n    return maxProfit;\n}`
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // 9. CAPGEMINI — EXCELLER RECRUITMENT PROGRAM
+  // =========================================================================
+  {
+    id: 'capgemini-exceller-2025',
+    companyId: 'capgemini',
+    companyName: 'Capgemini',
+    paperTitle: 'Capgemini Exceller Placement Paper (2024-2025 Slot 1)',
+    batch: '2025 - 2026 Batch',
+    shift: 'National Exceller Assessment Slot',
+    roles: 'Senior Analyst (₹7.5 LPA) • Analyst (₹4.25 LPA)',
+    durationMinutes: 75,
+    difficulty: 'Medium',
+    passcode: 'CAPG2026',
+    linkedExamId: 'gprec-capgemini-exceller-2026',
+    overview: 'Original Capgemini Exceller recruitment paper testing Pseudocode execution, Data Structures, and linear array/string transformation algorithms.',
+    sections: [
+      {
+        id: 'sec_capg_pseudo',
+        title: 'Section A: Pseudocode Execution & Bitwise Shifts',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'cpg_q1',
+            prompt: 'What will be the output of the following pseudocode?\n```\nInteger a = 8, b = 3\na = a >> 1\nb = b << 2\nPrint a + b\n```',
+            options: ['14', '16', '12', '18'],
+            correctIndex: 1,
+            topic: 'Bitwise Shift Operators',
+            explanation: `Step 1: a >> 1 means divide by 2: 8 >> 1 = 4.
+Step 2: b << 2 means multiply by 4: 3 << 2 = 12.
+Step 3: a + b = 4 + 12 = 16.
+Answer: 16.`
+          },
+          {
+            id: 'cpg_q2',
+            prompt: 'In a singly linked list with N nodes, what is the worst-case time complexity to delete the last node when only the head pointer is given?',
+            options: ['O(1)', 'O(N)', 'O(log N)', 'O(N^2)'],
+            correctIndex: 1,
+            topic: 'Linked Lists',
+            explanation: `Explanation: To delete the last node in a singly linked list, one must traverse from head to the second-to-last node (N-1 traversals) to update its \`next\` pointer to null. Hence, time complexity is O(N).`
+          }
+        ]
+      },
+      {
+        id: 'sec_capg_coding',
+        title: 'Section B: Hands-on Array & String Transformations with Answers',
+        type: 'coding',
+        problems: [
+          {
+            id: 'cpg_code1',
+            title: 'Valid Anagram Verification',
+            difficulty: 'Easy',
+            marks: 15,
+            statement: 'Given two strings s and t, return true if t is an anagram of s, and false otherwise. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase.',
+            sampleInput: 's = "anagram", t = "nagaram"',
+            sampleOutput: 'true',
+            complexityAnalysis: 'Time: O(N) • Space: O(1) [26 English lowercase chars]',
+            solutions: {
+              javascript: `function solve(s, t) {\n  if (s.length !== t.length) return false;\n  const count = {};\n  for (const ch of s) count[ch] = (count[ch] || 0) + 1;\n  for (const ch of t) {\n    if (!count[ch]) return false;\n    count[ch]--;\n  }\n  return true;\n}`,
+              python: `def solve(s, t):\n    if len(s) != len(t):\n        return False\n    count = {}\n    for ch in s:\n        count[ch] = count.get(ch, 0) + 1\n    for ch in t:\n        if not count.get(ch, 0):\n            return False\n        count[ch] -= 1\n    return True`,
+              java: `class Solution {\n    public boolean solve(String s, String t) {\n        if (s.length() != t.length()) return false;\n        int[] count = new int[26];\n        for (char c : s.toCharArray()) count[c - 'a']++;\n        for (char c : t.toCharArray()) {\n            if (--count[c - 'a'] < 0) return false;\n        }\n        return true;\n    }\n}`,
+              cpp: `#include <string>\n#include <vector>\nusing namespace std;\nbool solve(string s, string t) {\n    if (s.length() != t.length()) return false;\n    vector<int> count(26, 0);\n    for (char c : s) count[c - 'a']++;\n    for (char c : t) {\n        if (--count[c - 'a'] < 0) return false;\n    }\n    return true;\n}`
+            }
+          },
+          {
+            id: 'cpg_code2',
+            title: 'Rotate Array to the Right by K Steps (In-Place Reversal)',
+            difficulty: 'Medium',
+            marks: 15,
+            statement: 'Given an integer array nums, rotate the array to the right by k steps, where k is non-negative. Implement in O(1) extra memory.',
+            sampleInput: 'nums = [1, 2, 3, 4, 5, 6, 7], k = 3',
+            sampleOutput: '[5, 6, 7, 1, 2, 3, 4]',
+            complexityAnalysis: 'Time: O(N) • Space: O(1)',
+            solutions: {
+              javascript: `function solve(nums, k) {\n  k = k % nums.length;\n  const reverse = (arr, l, r) => {\n    while (l < r) {\n      const tmp = arr[l];\n      arr[l] = arr[r];\n      arr[r] = tmp;\n      l++;\n      r--;\n    }\n  };\n  reverse(nums, 0, nums.length - 1);\n  reverse(nums, 0, k - 1);\n  reverse(nums, k, nums.length - 1);\n  return nums;\n}`,
+              python: `def solve(nums, k):\n    k %= len(nums)\n    def rev(l, r):\n        while l < r:\n            nums[l], nums[r] = nums[r], nums[l]\n            l += 1\n            r -= 1\n    rev(0, len(nums) - 1)\n    rev(0, k - 1)\n    rev(k, len(nums) - 1)\n    return nums`,
+              java: `class Solution {\n    public int[] solve(int[] nums, int k) {\n        k %= nums.length;\n        reverse(nums, 0, nums.length - 1);\n        reverse(nums, 0, k - 1);\n        reverse(nums, k, nums.length - 1);\n        return nums;\n    }\n    private void reverse(int[] nums, int l, int r) {\n        while (l < r) {\n            int tmp = nums[l];\n            nums[l] = nums[r];\n            nums[r] = tmp;\n            l++; r--;\n        }\n    }\n}`,
+              cpp: `#include <vector>\n#include <algorithm>\nusing namespace std;\nvector<int> solve(vector<int>& nums, int k) {\n    k %= nums.size();\n    reverse(nums.begin(), nums.end());\n    reverse(nums.begin(), nums.begin() + k);\n    reverse(nums.begin() + k, nums.end());\n    return nums;\n}`
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // 10. MICROSOFT — IDC SDE-1 CAMPUS OA
+  // =========================================================================
+  {
+    id: 'microsoft-sde1-2025',
+    companyId: 'microsoft',
+    companyName: 'Microsoft India Development Center (IDC)',
+    paperTitle: 'Microsoft IDC SDE-1 University Graduate OA (2024-2025)',
+    batch: '2025 - 2026 Batch',
+    shift: 'University On-Campus Proctored Round',
+    roles: 'Software Development Engineer 1 (₹16.0 - ₹45.0 LPA)',
+    durationMinutes: 90,
+    difficulty: 'Elite',
+    passcode: 'MSFT2026',
+    linkedExamId: 'gprec-microsoft-sde-2026',
+    overview: 'Tier-1 product engineering evaluation from Microsoft IDC testing string palindromic centers, binary tree traversals, and low-level system memory limits.',
+    sections: [
+      {
+        id: 'sec_msft_core',
+        title: 'Section A: System Internals & Algorithmic Bounds',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'ms_q1',
+            prompt: 'In modern OS virtual memory, what hardware component translates virtual page addresses into physical RAM frame addresses using an on-chip hardware cache?',
+            options: ['Translation Lookaside Buffer (TLB)', 'DMA Controller', 'Interrupt Vector Table', 'Arithmetic Logic Unit (ALU)'],
+            correctIndex: 0,
+            topic: 'OS Virtual Memory',
+            explanation: `Explanation: The Translation Lookaside Buffer (TLB) is an ultra-fast hardware associative cache in the Memory Management Unit (MMU) that stores recent virtual-to-physical address translations.`
+          },
+          {
+            id: 'ms_q2',
+            prompt: 'What is the minimum height of a binary tree having N nodes?',
+            options: ['floor(log2(N)) + 1', 'N', 'log2(N) - 1', 'N / 2'],
+            correctIndex: 0,
+            topic: 'Binary Trees',
+            explanation: `Explanation: For a complete or full binary tree, maximum nodes at height H is 2^H - 1 = N. Thus, minimum height H = floor(log2(N)) + 1.`
+          }
+        ]
+      },
+      {
+        id: 'sec_msft_coding',
+        title: 'Section B: Advanced Algorithmic Coding with Answers',
+        type: 'coding',
+        problems: [
+          {
+            id: 'ms_code1',
+            title: 'Longest Palindromic Substring (Expand Around Center)',
+            difficulty: 'Medium-Hard',
+            marks: 25,
+            statement: 'Given a string s, return the longest palindromic substring in s. Can you solve in O(N^2) time and O(1) auxiliary space without DP table memory overhead?',
+            sampleInput: 's = "babad"',
+            sampleOutput: '"aba" or "bab"',
+            complexityAnalysis: 'Time: O(N^2) • Space: O(1)',
+            solutions: {
+              javascript: `function solve(s) {\n  if (!s || s.length < 1) return "";\n  let start = 0, end = 0;\n  const expand = (l, r) => {\n    while (l >= 0 && r < s.length && s[l] === s[r]) {\n      l--;\n      r++;\n    }\n    return r - l - 1;\n  };\n  for (let i = 0; i < s.length; i++) {\n    const len1 = expand(i, i);\n    const len2 = expand(i, i + 1);\n    const len = Math.max(len1, len2);\n    if (len > end - start) {\n      start = i - Math.floor((len - 1) / 2);\n      end = i + Math.floor(len / 2);\n    }\n  }\n  return s.substring(start, end + 1);\n}`,
+              python: `def solve(s):\n    if not s:\n        return ""\n    start = end = 0\n    def expand(l, r):\n        while l >= 0 and r < len(s) and s[l] == s[r]:\n            l -= 1\n            r += 1\n        return r - l - 1\n    for i in range(len(s)):\n        len1 = expand(i, i)\n        len2 = expand(i, i + 1)\n        length = max(len1, len2)\n        if length > end - start:\n            start = i - (length - 1) // 2\n            end = i + length // 2\n    return s[start:end + 1]`,
+              java: `class Solution {\n    public String solve(String s) {\n        if (s == null || s.length() < 1) return "";\n        int start = 0, end = 0;\n        for (int i = 0; i < s.length(); i++) {\n            int len1 = expand(s, i, i);\n            int len2 = expand(s, i, i + 1);\n            int len = Math.max(len1, len2);\n            if (len > end - start) {\n                start = i - (len - 1) / 2;\n                end = i + len / 2;\n            }\n        }\n        return s.substring(start, end + 1);\n    }\n    private int expand(String s, int l, int r) {\n        while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) {\n            l--; r++;\n        }\n        return r - l - 1;\n    }\n}`,
+              cpp: `#include <string>\n#include <algorithm>\nusing namespace std;\nstring solve(string s) {\n    if (s.empty()) return "";\n    int start = 0, end = 0;\n    auto expand = [&](int l, int r) {\n        while (l >= 0 && r < (int)s.length() && s[l] == s[r]) { l--; r++; }\n        return r - l - 1;\n    };\n    for (int i = 0; i < (int)s.length(); i++) {\n        int len1 = expand(i, i);\n        int len2 = expand(i, i + 1);\n        int len = max(len1, len2);\n        if (len > end - start) {\n            start = i - (len - 1) / 2;\n            end = i + len / 2;\n        }\n    }\n    return s.substr(start, end - start + 1);\n}`
+            }
+          },
+          {
+            id: 'ms_code2',
+            title: 'Product of Array Except Self (Prefix & Suffix Without Division)',
+            difficulty: 'Medium-Hard',
+            marks: 25,
+            statement: 'Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i]. You must solve it without using the division operation and in O(n) time.',
+            sampleInput: 'nums = [1, 2, 3, 4]',
+            sampleOutput: '[24, 12, 8, 6]',
+            complexityAnalysis: 'Time: O(N) • Space: O(1) auxiliary',
+            solutions: {
+              javascript: `function solve(nums) {\n  const n = nums.length;\n  const res = new Array(n).fill(1);\n  let left = 1;\n  for (let i = 0; i < n; i++) {\n    res[i] = left;\n    left *= nums[i];\n  }\n  let right = 1;\n  for (let i = n - 1; i >= 0; i--) {\n    res[i] *= right;\n    right *= nums[i];\n  }\n  return res;\n}`,
+              python: `def solve(nums):\n    n = len(nums)\n    res = [1] * n\n    left = 1\n    for i in range(n):\n        res[i] = left\n        left *= nums[i]\n    right = 1\n    for i in range(n - 1, -1, -1):\n        res[i] *= right\n        right *= nums[i]\n    return res`,
+              java: `class Solution {\n    public int[] solve(int[] nums) {\n        int n = nums.length;\n        int[] res = new int[n];\n        int left = 1;\n        for (int i = 0; i < n; i++) {\n            res[i] = left;\n            left *= nums[i];\n        }\n        int right = 1;\n        for (int i = n - 1; i >= 0; i--) {\n            res[i] *= right;\n            right *= nums[i];\n        }\n        return res;\n    }\n}`,
+              cpp: `#include <vector>\nusing namespace std;\nvector<int> solve(vector<int>& nums) {\n    int n = nums.size();\n    vector<int> res(n, 1);\n    int left = 1;\n    for (int i = 0; i < n; i++) {\n        res[i] = left;\n        left *= nums[i];\n    }\n    int right = 1;\n    for (int i = n - 1; i >= 0; i--) {\n        res[i] *= right;\n        right *= nums[i];\n    }\n    return res;\n}`
+            }
+          }
+        ]
+      }
+    ]
+  },
+
+  // =========================================================================
+  // 11. TCS NQT PRIME — SLOT 2 (AFTERNOON SHIFT)
+  // =========================================================================
+  {
+    id: 'tcs-nqt-prime-2025-slot2',
+    companyId: 'tcs',
+    companyName: 'Tata Consultancy Services (TCS)',
+    paperTitle: 'TCS NQT Prime Slot 2 Original Paper (2024-2025 Afternoon)',
+    batch: '2025 - 2026 Batch',
+    shift: 'National Placement Slot 2 (Afternoon Shift)',
+    roles: 'Prime Developer (₹9.0 LPA) • Digital Engineer (₹7.0 LPA)',
+    durationMinutes: 75,
+    difficulty: 'Hard',
+    passcode: 'TCS2026',
+    linkedExamId: 'gprec-tcs-prime-2026',
+    overview: 'High-difficulty slot paper from the TCS NQT Prime nationwide drive featuring dynamic programming steps, permutation combinations, and optimal arrays.',
+    sections: [
+      {
+        id: 'sec_tcs2_quant',
+        title: 'Section A: Advanced Quant & Permutations',
+        type: 'mcq',
+        questions: [
+          {
+            id: 'tcs2_q1',
+            prompt: 'In how many ways can 5 boys and 4 girls sit in a circle such that no two girls sit together?',
+            options: ['2,880', '1,440', '576', '720'],
+            correctIndex: 0,
+            topic: 'Circular Permutations',
+            explanation: `Step 1: First arrange the 5 boys in a circle. Number of ways = (5 - 1)! = 4! = 24 ways.
+Step 2: Sitting 5 boys in a circle creates 5 distinct spaces between them.
+Step 3: To ensure no two girls sit together, choose 4 spaces out of the 5 for the 4 girls:
+Number of ways to choose and arrange girls = P(5, 4) = 5 * 4 * 3 * 2 = 120 ways.
+Step 4: Total arrangements = 24 * 120 = 2,880 ways.
+Answer: 2,880.`
+          },
+          {
+            id: 'tcs2_q2',
+            prompt: 'A box contains 5 red balls, 4 blue balls, and 3 green balls. Three balls are drawn at random without replacement. What is the probability that all three are of different colors?',
+            options: ['3/11', '4/11', '5/22', '6/11'],
+            correctIndex: 0,
+            topic: 'Combinatorial Probability',
+            explanation: `Step 1: Total balls = 5 + 4 + 3 = 12.
+Total ways to pick 3 balls out of 12 = C(12, 3) = (12 * 11 * 10) / (3 * 2 * 1) = 220 ways.
+Step 2: Number of ways to pick 1 red, 1 blue, and 1 green:
+C(5, 1) * C(4, 1) * C(3, 1) = 5 * 4 * 3 = 60 ways.
+Step 3: Probability = 60 / 220 = 6 / 22 = 3 / 11.
+Answer: 3/11.`
+          }
+        ]
+      },
+      {
+        id: 'sec_tcs2_coding',
+        title: 'Section B: Prime Coding Challenge with Answers',
+        type: 'coding',
+        problems: [
+          {
+            id: 'tcs2_code1',
+            title: 'Climbing Stairs Minimum Path (Fibonacci DP)',
+            difficulty: 'Easy-Medium',
+            marks: 15,
+            statement: 'You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?',
+            sampleInput: 'n = 5',
+            sampleOutput: '8 (1+1+1+1+1, 1+1+1+2, etc.)',
+            complexityAnalysis: 'Time: O(N) • Space: O(1)',
+            solutions: {
+              javascript: `function solve(n) {\n  if (n <= 2) return n;\n  let first = 1, second = 2;\n  for (let i = 3; i <= n; i++) {\n    const third = first + second;\n    first = second;\n    second = third;\n  }\n  return second;\n}`,
+              python: `def solve(n):\n    if n <= 2:\n        return n\n    first, second = 1, 2\n    for _ in range(3, n + 1):\n        first, second = second, first + second\n    return second`,
+              java: `class Solution {\n    public int solve(int n) {\n        if (n <= 2) return n;\n        int first = 1, second = 2;\n        for (int i = 3; i <= n; i++) {\n            int third = first + second;\n            first = second;\n            second = third;\n        }\n        return second;\n    }\n}`,
+              cpp: `#include <vector>\nusing namespace std;\nint solve(int n) {\n    if (n <= 2) return n;\n    int first = 1, second = 2;\n    for (int i = 3; i <= n; i++) {\n        int third = first + second;\n        first = second;\n        second = third;\n    }\n    return second;\n}`
+            }
+          }
+        ]
+      }
+    ]
   }
 ];
 
+
 export function getCompanyPaperById(paperId) {
+
   return GPREC_ORIGINAL_COMPANY_PAPERS.find(p => p.id === paperId) || null;
 }
 

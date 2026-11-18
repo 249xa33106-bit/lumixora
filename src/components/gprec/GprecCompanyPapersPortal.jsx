@@ -33,13 +33,17 @@ export default function GprecCompanyPapersPortal({
 
   const companyList = useMemo(() => {
     return [
-      { id: 'all', name: 'All Companies' },
-      { id: 'tcs', name: 'TCS NQT' },
+      { id: 'all', name: 'All Companies (11)' },
+      { id: 'tcs', name: 'TCS NQT (2)' },
       { id: 'cognizant', name: 'Cognizant' },
       { id: 'infosys', name: 'Infosys SP' },
       { id: 'accenture', name: 'Accenture' },
       { id: 'amazon', name: 'Amazon SDE' },
-      { id: 'zoho', name: 'Zoho' }
+      { id: 'microsoft', name: 'Microsoft IDC' },
+      { id: 'zoho', name: 'Zoho' },
+      { id: 'wipro', name: 'Wipro NLTH' },
+      { id: 'deloitte', name: 'Deloitte USI' },
+      { id: 'capgemini', name: 'Capgemini' }
     ];
   }, []);
 

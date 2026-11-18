@@ -196,6 +196,112 @@ export const GPREC_COMPANY_DRILL_METADATA = [
     ],
     description: 'Zoho Corporation’s legendary technical benchmark emphasizing raw coding mastery, matrix simulations, and clean algorithmic thinking.'
   }
+,
+  {
+    id: 'wipro-turbo',
+    examId: 'gprec-wipro-nlth-2026',
+    name: 'Wipro Elite NLTH & Turbo',
+    shortName: 'Wipro',
+    role: 'Project Engineer / Turbo Developer',
+    ctc: '₹3.5 - ₹6.5 LPA',
+    category: 'Mass & Digital',
+    tier: 'Tier 2',
+    accent: 'from-orange-500 via-amber-600 to-yellow-500',
+    borderAccent: 'border-orange-500/40',
+    bgGlow: 'bg-orange-500/10',
+    badgeColor: 'bg-orange-500/20 text-orange-300 border-orange-400/30',
+    passcode: 'WIPRO2026',
+    difficulty: 'Medium',
+    durationMinutes: 45,
+    eligibility: 'All Engineering Streams • 60% Throughout • Max 1 Active Backlog',
+    hiringStats: '140+ GPREC Scholars Placed in 2025',
+    selectionStages: [
+      'NLTH Online Assessment (Aptitude + CS + Coding)',
+      'Technical Interview (Hands-on Java/C++/Python)',
+      'HR Discussion'
+    ],
+    keyTopics: ['Ages & Ratios', 'Compound Interest', 'OOPs Polymorphism', 'First Non-Repeating Char', 'Subarray with Given Sum'],
+    description: 'National Level Talent Hunt assessment testing numerical agility, OOPs concepts, and linear data structures.'
+  },
+  {
+    id: 'deloitte-usi',
+    examId: 'gprec-deloitte-usi-2026',
+    name: 'Deloitte USI Technology Analyst',
+    shortName: 'Deloitte',
+    role: 'Technology Analyst / Solution Engineering',
+    ctc: '₹7.6 - ₹9.0 LPA',
+    category: 'Dream Track',
+    tier: 'Tier 1',
+    accent: 'from-emerald-600 via-green-700 to-teal-800',
+    borderAccent: 'border-emerald-500/40',
+    bgGlow: 'bg-emerald-500/10',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
+    passcode: 'DELOITTE2026',
+    difficulty: 'Medium-Hard',
+    durationMinutes: 45,
+    eligibility: 'B.Tech CSE / CSM / CSD / ECE • 65% / 6.5 CGPA • 0 Backlogs',
+    hiringStats: '35+ GPREC Scholars Placed in 2025',
+    selectionStages: [
+      'Online Aptitude & Technical Assessment',
+      'Technical Interview (Architecture & Cloud)',
+      'Partner / Leadership Round'
+    ],
+    keyTopics: ['Data Interpretation', 'Profit Percentages', 'REST APIs & Cloud', 'Longest Common Prefix', 'Stock Buy & Sell'],
+    description: 'Consulting & technology evaluation focusing on analytical rigor, cloud fundamentals, and greedy optimization.'
+  },
+  {
+    id: 'capgemini-exceller',
+    examId: 'gprec-capgemini-exceller-2026',
+    name: 'Capgemini Exceller Senior Analyst',
+    shortName: 'Capgemini',
+    role: 'Senior Analyst / Analyst',
+    ctc: '₹4.25 - ₹7.5 LPA',
+    category: 'Dream Track',
+    tier: 'Tier 2',
+    accent: 'from-blue-500 via-cyan-600 to-indigo-600',
+    borderAccent: 'border-blue-500/40',
+    bgGlow: 'bg-blue-500/10',
+    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
+    passcode: 'CAPG2026',
+    difficulty: 'Medium',
+    durationMinutes: 45,
+    eligibility: 'All Engineering Streams • 60% / 6.0 CGPA • Max 1 Active Backlog',
+    hiringStats: '85+ GPREC Scholars Placed in 2025',
+    selectionStages: [
+      'Pseudocode & Technical MCQ Assessment',
+      'English Communication & Game Test',
+      'Technical & HR Interview'
+    ],
+    keyTopics: ['Bitwise Shifts', 'Linked List Operations', 'Valid Anagrams', 'Array Rotation (In-Place)'],
+    description: 'Capgemini Exceller placement benchmark testing pseudocode dry-runs and array transformation algorithms.'
+  },
+  {
+    id: 'microsoft-idc',
+    examId: 'gprec-microsoft-sde-2026',
+    name: 'Microsoft IDC SDE-1',
+    shortName: 'Microsoft',
+    role: 'Software Development Engineer 1',
+    ctc: '₹16.0 - ₹45.0 LPA',
+    category: 'Super-Dream',
+    tier: 'Super-Dream Tier 1',
+    accent: 'from-blue-600 via-sky-600 to-cyan-500',
+    borderAccent: 'border-sky-500/40',
+    bgGlow: 'bg-sky-500/10',
+    badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-400/30',
+    passcode: 'MSFT2026',
+    difficulty: 'Elite',
+    durationMinutes: 50,
+    eligibility: 'B.Tech CSE / CSM / CSD / ECE • 7.5+ CGPA • 0 Backlogs',
+    hiringStats: 'Elite MNC Placement Track',
+    selectionStages: [
+      'Codility / MSFT Online Assessment (2 Algorithmic Tasks)',
+      'Technical Round 1 (Data Structures & Trees)',
+      'Technical Round 2 (Algorithms & Memory Bounds)',
+      'AA Round (As Appropriate / Leadership)'
+    ],
+    keyTopics: ['Virtual Memory & TLB', 'Binary Trees', 'Longest Palindromic Substring', 'Product of Array Except Self'],
+    description: 'Elite Tier-1 product engineering evaluation focusing on algorithmic bounds and O(1) space optimizations.'
+  }
 ];
 
 export function getCompanyDrillById(id) {

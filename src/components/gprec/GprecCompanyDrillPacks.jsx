@@ -177,7 +177,7 @@ export default function GprecCompanyDrillPacks({
           <div className="grid grid-cols-3 gap-2.5 min-w-[280px]">
             <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-center">
               <div className="text-[10px] font-bold text-slate-300 uppercase">Active Packs</div>
-              <div className="text-2xl font-black text-cyan-300 mt-0.5">6</div>
+              <div className="text-2xl font-black text-cyan-300 mt-0.5">{GPREC_COMPANY_DRILL_METADATA.length}</div>
             </div>
             <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-center">
               <div className="text-[10px] font-bold text-slate-300 uppercase">Max CTC</div>
@@ -196,7 +196,7 @@ export default function GprecCompanyDrillPacks({
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
           {[
-            { id: 'All', label: 'All Recruiters (6)' },
+            { id: 'All', label: `All Recruiters (${GPREC_COMPANY_DRILL_METADATA.length})` },
             { id: 'Super-Dream', label: 'Super-Dream (₹10+ LPA)' },
             { id: 'Dream', label: 'Dream Track (₹4.5 - ₹10 LPA)' },
             { id: 'Product', label: 'Product Engineering' },
