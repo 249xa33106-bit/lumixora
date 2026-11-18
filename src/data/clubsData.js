@@ -17,7 +17,6 @@ export const DEFAULT_CLUB_CATEGORIES = [
 ];
 
 export const DEFAULT_COLLEGE_CLUBS = [
-  /* Temporarily hidden CAD & English Club
   {
     id: 'club-cad-english',
     name: 'CAD & ENGLISH CLUB (#ExpressEngageEmpower)',
@@ -53,7 +52,6 @@ export const DEFAULT_COLLEGE_CLUBS = [
       'Digital Member Passes & QR Verification badges now active.'
     ]
   },
-  */
   {
     id: 'club-code-craft',
     name: 'CodeCraft - Algorithmic & Open Source Society',

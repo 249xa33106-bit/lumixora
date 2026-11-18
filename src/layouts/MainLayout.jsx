@@ -7,7 +7,7 @@ import { ALL_PORTALS, GPREC_PORTALS } from '../utils/portalMapping';
 import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, isAllowedGprecPlacementTab } from '../utils/placementSubdomain';
 import { 
   Search, Bell, Sparkles, AlertCircle, Menu, Camera, Save, X, Flame, 
-  Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power,
+  Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power, ShoppingCart,
   Bot, Award, HelpCircle, BookOpen, CheckSquare, UserCheck, Rocket, FileText,
   Building2, Check, Plus, Layers, Trophy, CheckCircle2, TrendingUp, Download, 
   FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders
@@ -38,6 +38,8 @@ const QUICK_FEATURES = [
   { id: 'resume', label: 'AI Resume PDF', icon: FileText },
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
   { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle },
+  { id: 'marketplace', label: 'Marketplace', icon: ShoppingCart },
+  { id: 'clubs', label: 'Clubs & CAD', icon: Users },
   { id: 'attendance', label: 'Attendance', icon: UserCheck },
 ];
 

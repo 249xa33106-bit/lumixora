@@ -34,7 +34,9 @@ export default defineConfig({
             if (id.includes('pdfjs-dist')) return 'pdf-worker';
             if (id.includes('monaco-editor')) return 'monaco-editor';
             if (id.includes('mermaid')) return 'mermaid';
+            if (id.includes('katex')) return 'katex';
             if (id.includes('firebase')) return 'firebase';
+            if (id.includes('@supabase')) return 'supabase';
             if (id.includes('lucide-react')) return 'icons';
             if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
           }

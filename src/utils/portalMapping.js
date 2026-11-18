@@ -27,6 +27,9 @@ export const ALL_PORTALS = [
   { id: 'career-roadmap', label: 'Career Roadmap', category: 'career', tags: ['career', 'guidance', 'roadmap'] },
 
   // Campus & Opportunities
+  { id: 'marketplace', label: 'Campus P2P Marketplace', category: 'social', tags: ['marketplace', 'store', 'buy', 'sell', 'drafter', 'calculator', 'books', 'p2p', 'campus', 'stationery', 'used'] },
+  { id: 'clubs', label: 'Student Clubs & Societies', category: 'social', tags: ['clubs', 'cad', 'societies', 'student-body', 'events', 'activities', 'membership'] },
+  { id: 'projects', label: 'Community Project Showcase', category: 'social', tags: ['projects', 'showcase', 'portfolio', 'build', 'github', 'community', 'web3', 'ai'] },
   { id: 'hackathons', label: 'Hackathons & Internships', category: 'social', tags: ['projects', 'coding', 'internship', 'competition'] },
   { id: 'community', label: 'Class Community & Squads', category: 'social', tags: ['community', 'college', 'networking', 'all'] },
   { id: 'assigned-tasks', label: 'Assigned Curriculum Tasks', category: 'social', tags: ['academics', 'tasks', 'curriculum'] },

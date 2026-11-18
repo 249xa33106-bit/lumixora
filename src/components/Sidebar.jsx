@@ -155,6 +155,9 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       key: 'social',
       title: '🌐 Campus & Opportunities',
       items: [
+        { id: 'marketplace', label: 'Campus Marketplace', icon: ShoppingCart, badge: 'P2P 🛒' },
+        { id: 'clubs', label: 'Student Clubs & Societies', icon: Users, badge: 'Clubs ⚡' },
+        { id: 'projects', label: 'Project Showcase', icon: Rocket, badge: 'Community 🚀' },
         { id: 'hackathons', label: 'Hackathons & Internships', icon: Trophy, badge: 'HOT 🏆' },
         { id: 'community', label: 'Class Community & Squads', icon: MessageCircle },
         { id: 'assigned-tasks', label: 'Assigned Curriculum Tasks', icon: ClipboardList },

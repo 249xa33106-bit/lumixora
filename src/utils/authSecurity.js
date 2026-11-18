@@ -8,10 +8,26 @@ export const isFounderEmail = (email) => {
 };
 
 export const cleanScholarName = (str, fallback = 'Scholar') => {
-  if (!str || typeof str !== 'string') return fallback;
-  let cleaned = str;
-  if (cleaned.includes('{')) cleaned = cleaned.split('{')[0].trim();
-  cleaned = cleaned.replace(/[{}":;]/g, '').trim();
+  if (!str) return fallback;
+  if (typeof str !== 'string') {
+    if (typeof str === 'object' && str !== null) {
+      return cleanScholarName(str.name || str.fullName || str.displayName || str.full_name || fallback, fallback);
+    }
+    return fallback;
+  }
+  let cleaned = str.trim();
+  if (cleaned.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(cleaned);
+      if (parsed.name || parsed.fullName || parsed.displayName || parsed.full_name) {
+        return cleanScholarName(parsed.name || parsed.fullName || parsed.displayName || parsed.full_name, fallback);
+      }
+    } catch (e) {}
+  }
+  if (cleaned.includes('{')) {
+    cleaned = cleaned.split('{')[0].trim();
+  }
+  cleaned = cleaned.replace(/[{}":;\\]/g, '').replace(/\s+/g, ' ').trim();
   return cleaned || fallback;
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { cleanScholarName } from '../../utils/authSecurity';
 
 const shuffleArray = (arr) => {
   const copy = [...arr];
@@ -35,7 +36,7 @@ export default function GprecSecureExamRunner({
   onExit,
   addToast
 }) {
-  const studentName = user?.name || user?.displayName || 'GPREC Scholar';
+  const studentName = cleanScholarName(user?.name || user?.displayName, 'GPREC Scholar');
   const studentEmail = user?.email || 'scholar@gprec.ac.in';
   const rollNumber = user?.rollNumber || user?.roll || 'GPREC-STUDENT';
   const department = user?.branch || user?.department || 'CSE';

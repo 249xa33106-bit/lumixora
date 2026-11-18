@@ -51,6 +51,28 @@ export const callAICompletion = async (params) => {
     return m;
   });
 
+  // 0. Zero-Leak Edge AI Gateway: Cloudflare Pages /api/ai-proxy (Protects API keys from client extraction)
+  try {
+    const proxyRes = await fetchWithTimeout("/api/ai-proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: sanitizedMessages,
+        temperature,
+        maxTokens
+      })
+    }, 5500);
+
+    if (proxyRes.ok) {
+      const pData = await proxyRes.json();
+      if (pData.ok && pData.content && pData.content.length > 5) {
+        return pData.content;
+      }
+    }
+  } catch (proxyErr) {
+    // Graceful fallback to client engines in local dev or offline mode
+  }
+
   // 1. Primary High-Availability Engine: Verified OpenRouter Free Intelligence Models
   if (openRouterKey) {
     const openRouterModels = [

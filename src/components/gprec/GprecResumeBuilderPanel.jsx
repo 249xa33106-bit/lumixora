@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cleanScholarName } from '../../utils/authSecurity';
 import {
   FileText, Download, Plus, Trash2, Sparkles, CheckCircle2, ShieldCheck,
   User, GraduationCap, Code, Briefcase, Award, ArrowRight
@@ -8,7 +9,7 @@ export default function GprecResumeBuilderPanel({ user, onSendToAudit, addToast 
   const storageKey = `gprec_ats_resume_draft_${user?.id || user?.email || 'guest'}`;
 
   const defaultDraft = {
-    fullName: user?.name || user?.displayName || 'GPREC Student',
+    fullName: cleanScholarName(user?.name || user?.displayName, 'GPREC Student'),
     email: user?.email || 'student@gprec.ac.in',
     phone: '+91 98765 43210',
     location: 'Kurnool, Andhra Pradesh',

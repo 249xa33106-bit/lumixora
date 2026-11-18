@@ -33,7 +33,7 @@ import Editor from '@monaco-editor/react';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
 import { db } from '../config/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, query, orderBy, limit, setDoc, deleteDoc } from 'firebase/firestore';
 import { callAICompletion } from '../services/aiService';
 import { cloudSync } from '../services/cloudSyncService';
 import TechPulsePortal from './TechPulsePortal';
@@ -43,12 +43,16 @@ import { downloadPlacementResource } from '../utils/placementResourcePdfs';
 import { COMPANY_PRESETS, ROLE_TRACKS } from '../services/interviewService';
 import { generateMockInterviewDiagnosticPDF } from '../utils/pdfGenerator';
 import { issueNewCertificate } from '../services/certificateService';
-import { saveMockInterviewScorecardToSupabase } from '../services/supabaseDataSyncService';
+import { saveMockInterviewScorecardToSupabase, saveCodingSubmissionToSupabase, fetchFullStudentProgressFromSupabase } from '../services/supabaseDataSyncService';
+import { cleanScholarName } from '../utils/authSecurity';
 import GprecBridgeToBtechPortal from '../components/gprec/GprecBridgeToBtechPortal';
 import GprecHelpDeskPortal from '../components/gprec/GprecHelpDeskPortal';
 import GprecResumeBuilderPanel from '../components/gprec/GprecResumeBuilderPanel';
 import GprecProjectPlatformPanel from '../components/gprec/GprecProjectPlatformPanel';
 import GprecSecureExamsPortal from '../components/gprec/GprecSecureExamsPortal';
+import GprecCareerGrowthHub from '../components/gprec/GprecCareerGrowthHub';
+import GprecCampusArenaHub from '../components/gprec/GprecCampusArenaHub';
+import GprecResumeMockInterviewPortal from '../components/gprec/GprecResumeMockInterviewPortal';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -251,7 +255,7 @@ const getCandidateResumeHighlights = (user) => {
         const dbs = parsed.skills?.databases || 'PostgreSQL, MongoDB, Redis, MySQL';
         return {
           hasResume: true,
-          name: parsed.personalInfo?.fullName || user?.name || 'Scholar',
+          name: cleanScholarName(parsed.personalInfo?.fullName || user?.name, 'Scholar'),
           headline: parsed.personalInfo?.headline || 'Software Engineering Scholar',
           languages: langs,
           frameworks: frameworks,
@@ -269,7 +273,7 @@ const getCandidateResumeHighlights = (user) => {
   } catch (e) {}
   return {
     hasResume: false,
-    name: user?.name || 'Scholar',
+    name: cleanScholarName(user?.name, 'Scholar'),
     headline: 'Software Engineering Scholar',
     languages: 'Java, Python, JavaScript, C++',
     frameworks: 'React, Spring Boot, Node.js, FastAPI',
@@ -475,6 +479,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     if (clean.includes('founderaudit') || clean.includes('founder') || clean.includes('timelog') || clean.includes('audit')) return 'founder_audit';
     if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
     if (clean.includes('secureexam') || clean.includes('exam') || clean.includes('proctor') || clean.includes('assessment')) return 'secure_exams';
+    if (clean.includes('careergrowth') || clean.includes('offcampus') || clean.includes('referral') || clean.includes('portfolio')) return 'career_growth';
+    if (clean.includes('campusarena') || clean.includes('leaderboard') || clean.includes('offerwall') || clean.includes('streak')) return 'campus_arena';
     if (clean.includes('mock') || clean.includes('interview') || clean.includes('resume') || clean.includes('project')) return 'mock_interviews';
     if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
     if (clean.includes('analytic') || clean.includes('metric')) return 'analytics';
@@ -590,12 +596,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   // Core Placement Telemetry Scores (Default clean-slate 0% readiness)
   const [twinScores, setTwinScores] = useState(() => {
     try {
+      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
+      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const hasRealActivity = (Array.isArray(savedSolved) && savedSolved.length > 0) || savedApt > 0;
+      if (!hasRealActivity) {
+        return REAL_PLACEMENT_BENCHMARKS.twinScores;
+      }
       const saved = localStorage.getItem('lumixora_placement_telemetry');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed?.twinScores && typeof parsed.twinScores.dsa === 'number') {
-          // If it was the old hardcoded 92 or 16, ignore
-          if (parsed.twinScores.dsa !== 92 && parsed.twinScores.dsa !== 16) {
+          if (parsed.twinScores.dsa !== 92 && parsed.twinScores.dsa !== 16 && parsed.twinScores.coding !== 92 && parsed.twinScores.communication !== 85) {
             return parsed.twinScores;
           }
         }
@@ -606,10 +617,16 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const [overallReadiness, setOverallReadiness] = useState(() => {
     try {
+      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
+      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const hasRealActivity = (Array.isArray(savedSolved) && savedSolved.length > 0) || savedApt > 0;
+      if (!hasRealActivity) {
+        return 0;
+      }
       const saved = localStorage.getItem('lumixora_placement_telemetry');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (typeof parsed?.overallReadiness === 'number' && parsed.overallReadiness !== 92 && parsed.overallReadiness !== 9) {
+        if (typeof parsed?.overallReadiness === 'number' && parsed.overallReadiness !== 92 && parsed.overallReadiness !== 78 && parsed.overallReadiness !== 9) {
           return parsed.overallReadiness;
         }
       }
@@ -617,17 +634,26 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return 0;
   });
   const isFounder = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
-  const [streakDays, setStreakDays] = useState(user?.streak || 14);
+  const [streakDays, setStreakDays] = useState(typeof user?.streak === 'number' ? user.streak : 0);
 
-  // Adaptive Dynamic Daily Mission Generator (2 completed streak, 2 in-progress)
-  const getAdaptiveDailyMissions = (score) => [
-    { id: 1, text: '2 Medium LeetCode Dynamic Programming & Tree Problems', duration: '25 min', completed: true, gain: 0.3, targetSkill: 'dsa', levelName: 'Intermediate' },
-    { id: 2, text: '10 Speed Quantitative Aptitude & Profit/Loss Drills', duration: '15 min', completed: true, gain: 0.3, targetSkill: 'aptitude', levelName: 'Intermediate' },
+  // Adaptive Dynamic Daily Mission Generator (strictly tracks real student completion)
+  const getAdaptiveDailyMissions = (solvedCount = 0, aptCount = 0) => [
+    { id: 1, text: '2 Medium LeetCode Dynamic Programming & Tree Problems', duration: '25 min', completed: solvedCount >= 2, gain: 0.3, targetSkill: 'dsa', levelName: 'Intermediate' },
+    { id: 2, text: '10 Speed Quantitative Aptitude & Profit/Loss Drills', duration: '15 min', completed: aptCount >= 10, gain: 0.3, targetSkill: 'aptitude', levelName: 'Intermediate' },
     { id: 3, text: 'Revise Database B+ Tree Indexing & Transaction Isolation', duration: '15 min', completed: false, gain: 0.3, targetSkill: 'dbms', levelName: 'Intermediate' },
     { id: 4, text: 'Complete 1 System Architecture Mock Viva with AI Bar Raiser', duration: '20 min', completed: false, gain: 0.4, targetSkill: 'interview', levelName: 'Intermediate' }
   ];
 
-  const [dailyMissions, setDailyMissions] = useState(() => getAdaptiveDailyMissions(92));
+  const [dailyMissions, setDailyMissions] = useState(() => {
+    try {
+      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
+      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const sCount = Array.isArray(savedSolved) ? savedSolved.length : 0;
+      return getAdaptiveDailyMissions(sCount, savedApt);
+    } catch (e) {
+      return getAdaptiveDailyMissions(0, 0);
+    }
+  });
 
   // Module States
   const [jdText, setJdText] = useState('');
@@ -741,10 +767,40 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return [];
   });
 
+  // Cross-device telemetry & progress sync from Supabase
+  useEffect(() => {
+    let isMounted = true;
+    async function syncCloudProgress() {
+      if (!user || (!user.id && !user.email)) return;
+      try {
+        const cloudProgress = await fetchFullStudentProgressFromSupabase(user);
+        if (isMounted && cloudProgress && Array.isArray(cloudProgress.solvedProblems) && cloudProgress.solvedProblems.length > 0) {
+          setSolvedProblemIds(prev => {
+            const merged = Array.from(new Set([...prev, ...cloudProgress.solvedProblems]));
+            try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(merged)); } catch (e) {}
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Cross-device telemetry sync notice:', err);
+      }
+    }
+    syncCloudProgress();
+    return () => { isMounted = false; };
+  }, [user]);
+
   const toggleProblemSolved = (id) => {
     setSolvedProblemIds(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
       try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(next)); } catch (e) {}
+      if (user && !prev.includes(id)) {
+        saveCodingSubmissionToSupabase(user, {
+          problemId: id,
+          status: 'Accepted',
+          language: 'javascript',
+          timestamp: new Date().toISOString()
+        }).catch(() => {});
+      }
       return next;
     });
   };
@@ -861,6 +917,11 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return 0;
   });
 
+  // Synchronize daily missions completion dynamically with solved coding problems and aptitude drills
+  useEffect(() => {
+    setDailyMissions(getAdaptiveDailyMissions(solvedProblemIds.length, aptitudeScoreCount));
+  }, [solvedProblemIds.length, aptitudeScoreCount]);
+
   const [selectedCompanySim, setSelectedCompanySim] = useState(TARGET_COMPANIES[0]);
   const [isSimulatingCompany, setIsSimulatingCompany] = useState(false);
   const [simVerdict, setSimVerdict] = useState(null);
@@ -889,12 +950,243 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
   }, [applications, user?.id]);
 
-  // Notifications
-  const [notificationsList, setNotificationsList] = useState([
-    { id: 1, title: 'Amazon OA Scheduled', time: '2 hours ago', read: false, desc: 'Your Online Assessment for SDE-1 starts tomorrow at 10:00 AM IST.' },
-    { id: 2, title: 'Mock Test Score +4%', time: 'Yesterday', read: false, desc: 'Great job! Your readiness score climbed to 92% after the DSA evaluation.' },
-    { id: 3, title: 'Google Campus Drive', time: '2 days ago', read: false, desc: 'Google University Hiring portal is now accepting applications for 2027 batch.' }
-  ]);
+  // Placement Notifications & Founder Live Broadcast Engine
+  const DEFAULT_PLACEMENT_NOTIFICATIONS = [
+    { id: 'notif_def_1', title: 'Amazon OA Scheduled', time: '2 hours ago', read: false, desc: 'Your Online Assessment for SDE-1 starts tomorrow at 10:00 AM IST.', category: 'OA & Exam', target: 'All Registered Scholars', author: 'Placement Cell', urgent: false },
+    { id: 'notif_def_2', title: 'Live Placement Readiness Calibrated', time: 'Yesterday', read: false, desc: 'Your live placement readiness score calibrates automatically as you solve coding and aptitude drills.', category: 'Placement Milestone', target: 'All Registered Scholars', author: 'AI Twin Engine', urgent: false },
+    { id: 'notif_def_3', title: 'Google University Hiring 2027', time: '2 days ago', read: false, desc: 'Google University Hiring portal is now accepting applications for 2027 batch.', category: 'Drive Alert', target: 'All Registered Scholars', author: 'Corporate Relations', urgent: false }
+  ];
+
+  const readNotifsStorageKey = `gprec_read_notifs_${user?.id || 'guest'}`;
+
+  const getReadNotifIdsSet = () => {
+    try {
+      const saved = localStorage.getItem(readNotifsStorageKey);
+      return new Set(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      return new Set();
+    }
+  };
+
+  const [notificationsList, setNotificationsList] = useState(() => {
+    try {
+      const readSet = getReadNotifIdsSet();
+      const saved = localStorage.getItem('lumixora_gprec_announcements');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(a => ({
+            id: a.id || `notif_${Date.now()}_${Math.random()}`,
+            title: a.title,
+            desc: a.body || a.desc || '',
+            category: a.category || 'Drive Alert',
+            target: a.target || 'All Registered Scholars',
+            time: a.time || (a.date ? new Date(a.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Recent'),
+            read: readSet.has(a.id),
+            author: a.author || 'Founder (Placement Directorate)',
+            link: a.link || '',
+            urgent: !!a.urgent,
+            isBroadcast: true
+          }));
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_PLACEMENT_NOTIFICATIONS;
+  });
+
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastForm, setBroadcastForm] = useState({
+    title: '',
+    category: 'Drive Alert',
+    target: 'All Registered Scholars',
+    desc: '',
+    link: '',
+    urgent: false
+  });
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+
+  // Synchronize Placement Notifications & Announcements in Real-Time via Firestore
+  useEffect(() => {
+    let unsub = () => {};
+    try {
+      const q = query(collection(db, 'placement_announcements'), orderBy('createdAt', 'desc'), limit(30));
+      unsub = onSnapshot(q, (snapshot) => {
+        const readSet = getReadNotifIdsSet();
+        if (!snapshot.empty) {
+          const remoteDocs = snapshot.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              title: data.title || 'Placement Circular',
+              desc: data.body || data.desc || '',
+              category: data.category || 'Drive Alert',
+              target: data.target || 'All Registered Scholars',
+              time: data.time || (data.date ? new Date(data.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) : 'Recent'),
+              read: readSet.has(d.id),
+              author: data.author || 'Founder (Placement Directorate)',
+              link: data.link || '',
+              urgent: !!data.urgent,
+              isBroadcast: true
+            };
+          });
+
+          // Merge with defaults if few remote announcements
+          const merged = [...remoteDocs];
+          DEFAULT_PLACEMENT_NOTIFICATIONS.forEach(def => {
+            if (!merged.some(m => m.title === def.title)) {
+              merged.push({ ...def, read: readSet.has(def.id) });
+            }
+          });
+
+          setNotificationsList(merged);
+          try {
+            localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(remoteDocs));
+          } catch (e) {}
+        }
+      }, (err) => {
+        console.warn('Placement announcements sync fallback:', err);
+      });
+    } catch (e) {
+      console.warn('Firestore announcements listener setup:', e);
+    }
+
+    return () => unsub();
+  }, [user?.id]);
+
+  const unreadNotificationsCount = useMemo(() => {
+    return notificationsList.filter(n => !n.read).length;
+  }, [notificationsList]);
+
+  const handleMarkAllNotificationsRead = () => {
+    const allIds = notificationsList.map(n => n.id);
+    try {
+      localStorage.setItem(readNotifsStorageKey, JSON.stringify(allIds));
+    } catch (e) {}
+    setNotificationsList(prev => prev.map(n => ({ ...n, read: true })));
+    addToast({ message: 'All notifications marked as read.', type: 'info' });
+  };
+
+  const handleMarkSingleNotificationRead = (notif, e) => {
+    e?.stopPropagation();
+    try {
+      const saved = localStorage.getItem(readNotifsStorageKey);
+      const readSet = new Set(saved ? JSON.parse(saved) : []);
+      readSet.add(notif.id);
+      localStorage.setItem(readNotifsStorageKey, JSON.stringify(Array.from(readSet)));
+    } catch (e) {}
+
+    setNotificationsList(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
+
+    if (notif.link) {
+      if (notif.link.startsWith('http://') || notif.link.startsWith('https://')) {
+        window.open(notif.link, '_blank', 'noopener,noreferrer');
+      } else if (notif.link.startsWith('#')) {
+        const targetNav = notif.link.replace('#', '');
+        navigateTo(targetNav);
+        setShowNotifications(false);
+      }
+    }
+  };
+
+  // Founder: Send Broadcast Notification to all scholars
+  const handleSendFounderNotification = async (e) => {
+    e?.preventDefault();
+    if (!broadcastForm.title.trim() || !broadcastForm.desc.trim()) {
+      addToast({ message: 'Please provide both announcement title and description.', type: 'error' });
+      return;
+    }
+
+    setIsBroadcasting(true);
+    const newNotifId = `broadcast_${Date.now()}`;
+    const newAnn = {
+      id: newNotifId,
+      title: broadcastForm.title.trim(),
+      body: broadcastForm.desc.trim(),
+      desc: broadcastForm.desc.trim(),
+      category: broadcastForm.category,
+      target: broadcastForm.target,
+      link: broadcastForm.link.trim(),
+      urgent: broadcastForm.urgent,
+      author: 'Founder (Placement Directorate)',
+      authorEmail: user?.email || 'founder@lumixora.com',
+      date: new Date().toISOString().split('T')[0],
+      time: 'Just now',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      // 1. Save to Firestore
+      await setDoc(doc(db, 'placement_announcements', newNotifId), newAnn, { merge: true });
+
+      // 2. Save to localStorage
+      const existingLocal = (() => {
+        try {
+          const s = localStorage.getItem('lumixora_gprec_announcements');
+          return s ? JSON.parse(s) : [];
+        } catch (e) { return []; }
+      })();
+      const updatedLocal = [newAnn, ...existingLocal.filter(x => x.id !== newNotifId)];
+      localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(updatedLocal));
+
+      // 3. Prepend to state
+      setNotificationsList(prev => [
+        { ...newAnn, read: false, isBroadcast: true },
+        ...prev.filter(n => n.id !== newNotifId)
+      ]);
+
+      addToast({
+        message: `🚀 Live Broadcast Sent: "${newAnn.title}" is now visible to all GPREC scholars!`,
+        type: 'success'
+      });
+
+      setBroadcastForm({
+        title: '',
+        category: 'Drive Alert',
+        target: 'All Registered Scholars',
+        desc: '',
+        link: '',
+        urgent: false
+      });
+      setShowBroadcastModal(false);
+    } catch (err) {
+      console.error('Broadcast save error:', err);
+      // Local resilience fallback
+      const existingLocal = (() => {
+        try {
+          const s = localStorage.getItem('lumixora_gprec_announcements');
+          return s ? JSON.parse(s) : [];
+        } catch (e) { return []; }
+      })();
+      const updatedLocal = [newAnn, ...existingLocal];
+      localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(updatedLocal));
+      setNotificationsList(prev => [{ ...newAnn, read: false, isBroadcast: true }, ...prev]);
+      addToast({ message: 'Broadcast dispatched (offline resilient mode).', type: 'info' });
+      setShowBroadcastModal(false);
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
+  // Founder: Delete/Retract Broadcast Notification
+  const handleDeleteBroadcastNotification = async (notifId, e) => {
+    e?.stopPropagation();
+    if (!isFounder) return;
+    if (!window.confirm('Delete this broadcast notification from all student screens?')) return;
+
+    setNotificationsList(prev => prev.filter(n => n.id !== notifId));
+    try {
+      await deleteDoc(doc(db, 'placement_announcements', notifId));
+    } catch (e) {}
+    try {
+      const saved = localStorage.getItem('lumixora_gprec_announcements');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const filtered = parsed.filter(n => n.id !== notifId);
+        localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(filtered));
+      }
+    } catch (e) {}
+    addToast({ message: 'Broadcast notification deleted.', type: 'info' });
+  };
 
   // Recalculate Readiness (100% dynamic based on real student activity - true 0 when not started)
   const recalculateWeightedReadiness = (scores, roleObj) => {
@@ -936,8 +1228,18 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       const savedTelemetry = localStorage.getItem('lumixora_placement_telemetry');
       if (savedTelemetry) {
         const parsed = JSON.parse(savedTelemetry);
-        if (parsed?.twinScores?.dsa === 92 || parsed?.twinScores?.dsa === 16 || parsed?.overallReadiness === 92 || parsed?.overallReadiness === 9) {
+        if (
+          parsed?.twinScores?.dsa === 92 || 
+          parsed?.twinScores?.dsa === 16 || 
+          parsed?.twinScores?.coding === 92 || 
+          parsed?.twinScores?.communication === 85 ||
+          parsed?.overallReadiness === 92 || 
+          parsed?.overallReadiness === 78 || 
+          parsed?.overallReadiness === 9
+        ) {
           localStorage.removeItem('lumixora_placement_telemetry');
+          setOverallReadiness(0);
+          setTwinScores(REAL_PLACEMENT_BENCHMARKS.twinScores);
         }
       }
     } catch (e) {}
@@ -964,13 +1266,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     const mean = 54;
     const std = 16;
     const totalCandidates = 1420;
-    const scholarScore = overallReadiness >= 60 ? overallReadiness : REAL_PLACEMENT_BENCHMARKS.overallReadiness;
+    const scholarScore = overallReadiness > 0 ? overallReadiness : 0;
 
     for (let score = 10; score <= 100; score += 5) {
       const exponent = -Math.pow(score - mean, 2) / (2 * Math.pow(std, 2));
       const density = (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
       const studentCount = Math.max(1, Math.round(totalCandidates * density * 5));
-      const isScholarBin = Math.abs(score - scholarScore) < 3 || (scholarScore >= 93 && score === 95);
+      const isScholarBin = scholarScore > 0 && (Math.abs(score - scholarScore) < 3 || (scholarScore >= 93 && score === 95));
 
       points.push({
         score,
@@ -988,42 +1290,42 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return [
       {
         vector: 'DSA & LeetCode',
-        scholar: twinScores?.dsa >= 60 ? twinScores.dsa : 92,
+        scholar: twinScores?.dsa || (solvedProblemIds.length > 0 ? Math.min(100, solvedProblemIds.length * 5) : 0),
         batchAvg: 54,
         tier1Target: 85,
         fullMark: 100
       },
       {
         vector: 'System Arch & LLD',
-        scholar: twinScores?.coreCs >= 60 ? Math.round(twinScores.coreCs * 0.92) : 88,
+        scholar: twinScores?.projects || (projectVivaReport?.score || 0),
         batchAvg: 40,
         tier1Target: 75,
         fullMark: 100
       },
       {
         vector: 'Core CS (OS/DBMS/CN)',
-        scholar: twinScores?.coreCs >= 60 ? twinScores.coreCs : 88,
+        scholar: twinScores?.coreCs || 0,
         batchAvg: 58,
         tier1Target: 80,
         fullMark: 100
       },
       {
         vector: 'Coding Velocity',
-        scholar: twinScores?.coding >= 60 ? twinScores.coding : 94,
+        scholar: twinScores?.coding || (solvedProblemIds.length > 0 ? Math.min(100, solvedProblemIds.length * 5) : 0),
         batchAvg: 52,
         tier1Target: 85,
         fullMark: 100
       },
       {
         vector: 'AI Mock Tech Viva',
-        scholar: twinScores?.interview >= 60 ? twinScores.interview : 91,
+        scholar: twinScores?.interview || (interviewReport?.overallScore || 0),
         batchAvg: 46,
         tier1Target: 85,
         fullMark: 100
       },
       {
         vector: 'Behavioral & HR STAR',
-        scholar: twinScores?.communication >= 60 ? twinScores.communication : 88,
+        scholar: twinScores?.communication || 0,
         batchAvg: 56,
         tier1Target: 80,
         fullMark: 100
@@ -1032,28 +1334,29 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   }, [twinScores]);
 
   const trajectoryData = useMemo(() => {
-    const currentScore = overallReadiness >= 60 ? overallReadiness : 92;
+    const currentScore = overallReadiness > 0 ? overallReadiness : 0;
     return [
-      { week: 'W1', scholar: 42, batch: 35, tier1Cutoff: 80, milestone: 'Diagnostic Baseline' },
-      { week: 'W2', scholar: 52, batch: 39, tier1Cutoff: 80, milestone: 'Quant Fast Drills' },
-      { week: 'W3', scholar: 64, batch: 44, tier1Cutoff: 80, milestone: 'LeetCode 50 Streak' },
-      { week: 'W4', scholar: 73, batch: 49, tier1Cutoff: 80, milestone: 'DBMS & OS Revision' },
-      { week: 'W5', scholar: 80, batch: 53, tier1Cutoff: 80, milestone: 'Tier-1 Cutoff Cleared' },
-      { week: 'W6', scholar: 85, batch: 57, tier1Cutoff: 80, milestone: 'System Architecture' },
-      { week: 'W7 (Now)', scholar: currentScore, batch: 61, tier1Cutoff: 80, milestone: 'AI Bar Raiser A+' },
-      { week: 'W8 (Proj)', scholar: Math.min(97, Math.round(currentScore + 4)), batch: 64, tier1Cutoff: 80, milestone: 'Drive Conversion Proj.' },
-      { week: 'W9 (Proj)', scholar: Math.min(99, Math.round(currentScore + 7)), batch: 67, tier1Cutoff: 80, milestone: 'Premier Marquee Zone' }
+      { week: 'W1', scholar: currentScore > 0 ? Math.max(0, currentScore - 25) : 0, batch: 35, tier1Cutoff: 80, milestone: 'Diagnostic Baseline' },
+      { week: 'W2', scholar: currentScore > 0 ? Math.max(0, currentScore - 20) : 0, batch: 39, tier1Cutoff: 80, milestone: 'Quant Fast Drills' },
+      { week: 'W3', scholar: currentScore > 0 ? Math.max(0, currentScore - 15) : 0, batch: 44, tier1Cutoff: 80, milestone: 'LeetCode 50 Streak' },
+      { week: 'W4', scholar: currentScore > 0 ? Math.max(0, currentScore - 10) : 0, batch: 49, tier1Cutoff: 80, milestone: 'DBMS & OS Revision' },
+      { week: 'W5', scholar: currentScore > 0 ? Math.max(0, currentScore - 5) : 0, batch: 53, tier1Cutoff: 80, milestone: 'Tier-1 Cutoff Progress' },
+      { week: 'W6', scholar: currentScore > 0 ? Math.max(0, currentScore - 2) : 0, batch: 57, tier1Cutoff: 80, milestone: 'System Architecture' },
+      { week: 'W7 (Now)', scholar: currentScore, batch: 61, tier1Cutoff: 80, milestone: currentScore > 0 ? 'Live Telemetry' : 'Uncalibrated' },
+      { week: 'W8 (Proj)', scholar: currentScore > 0 ? Math.min(97, Math.round(currentScore + 4)) : 0, batch: 64, tier1Cutoff: 80, milestone: 'Drive Conversion Proj.' },
+      { week: 'W9 (Proj)', scholar: currentScore > 0 ? Math.min(99, Math.round(currentScore + 7)) : 0, batch: 67, tier1Cutoff: 80, milestone: 'Premier Marquee Zone' }
     ];
   }, [overallReadiness]);
 
   const companyProbabilities = useMemo(() => {
+    const base = overallReadiness > 0 ? overallReadiness : 0;
     return [
       {
         company: 'TCS Digital / Prime',
         package: '7.5 – 9.0 LPA',
         tier: 'Premier Digital',
-        probability: 94.2,
-        status: 'Cleared Qualifier Threshold',
+        probability: base > 0 ? Math.min(98, Math.round(base * 1.1)) : 0,
+        status: base >= 60 ? 'Cleared Qualifier Threshold' : 'Practice to Qualify',
         color: '#2563EB',
         metric: 'Advanced Coding + Quant Verified'
       },
@@ -1061,8 +1364,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         company: 'Cognizant GenC Next',
         package: '6.75 – 9.0 LPA',
         tier: 'Product Engineering',
-        probability: 96.0,
-        status: 'Top 5% Cohort Clearance',
+        probability: base > 0 ? Math.min(96, Math.round(base * 1.05)) : 0,
+        status: base >= 60 ? 'Top 5% Cohort Clearance' : 'Practice to Qualify',
         color: '#059669',
         metric: 'DSA Pattern Mastery & Speed'
       },
@@ -1070,8 +1373,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         company: 'Infosys Specialist Prog. (SP)',
         package: '9.5 LPA',
         tier: 'Specialist Cadre',
-        probability: 91.5,
-        status: 'Interview Ready',
+        probability: base > 0 ? Math.min(95, Math.round(base * 0.95)) : 0,
+        status: base >= 70 ? 'Interview Ready' : 'Practice to Qualify',
         color: '#7C3AED',
         metric: 'Graph Algorithms & Concurrency'
       },
@@ -1079,8 +1382,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         company: 'Zoho Software Craftsman',
         package: '8.4 LPA',
         tier: 'Core Product',
-        probability: 88.0,
-        status: 'Design Round Fit',
+        probability: base > 0 ? Math.min(92, Math.round(base * 0.9)) : 0,
+        status: base >= 75 ? 'Design Round Fit' : 'Practice to Qualify',
         color: '#D97706',
         metric: 'Low-Level Design & Object Models'
       },
@@ -1088,8 +1391,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         company: 'Amazon SDE-1',
         package: '28.0 – 44.0 LPA',
         tier: 'Super Dream',
-        probability: 84.5,
-        status: 'High Confidence Match',
+        probability: base > 0 ? Math.min(90, Math.round(base * 0.75)) : 0,
+        status: base >= 80 ? 'High Confidence Match' : 'High-Bar Preparation',
         color: '#EA580C',
         metric: '14 Leadership Principles + Trees/DP'
       },
@@ -1097,13 +1400,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         company: 'Microsoft / Google SWE',
         package: '32.0 – 52.0 LPA',
         tier: 'Marquee Product',
-        probability: 78.0,
-        status: 'Bar Raiser Match',
+        probability: base > 0 ? Math.min(88, Math.round(base * 0.7)) : 0,
+        status: base >= 85 ? 'Bar Raiser Match' : 'Marquee Preparation',
         color: '#0284C7',
         metric: 'Large-scale Distributed Systems'
       }
     ];
-  }, []);
+  }, [overallReadiness]);
 
   // Sync with Firestore
   useEffect(() => {
@@ -1112,8 +1415,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     const unsub = onSnapshot(userDocRef, (snap) => {
       if (snap.exists()) {
         const uData = snap.data();
-        if (uData.careerDna && uData.careerDna.dsa !== 92 && uData.careerDna.dsa !== 86 && uData.careerDna.dsa !== 76 && uData.careerDna.dsa !== 16) {
-          setTwinScores(prev => ({ ...prev, ...uData.careerDna }));
+        if (uData.careerDna && typeof uData.careerDna === 'object') {
+          const cd = uData.careerDna;
+          const isMockDna = (cd.dsa === 92 || cd.coding === 92) && (cd.communication === 85 || cd.aptitude === 80);
+          if (!isMockDna && (cd.dsa > 0 || cd.coding > 0 || cd.aptitude > 0 || cd.projects > 0 || cd.interview > 0)) {
+            setTwinScores(prev => ({ ...prev, ...cd }));
+          }
         }
         if (uData.targetRole) {
           const found = TARGET_ROLES.find(r => r.name === uData.targetRole || r.id === uData.targetRole);
@@ -1371,7 +1678,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
             modelAnswer: q.modelAnswer || q.hint
           }))
         },
-        candidateName: user?.name || user?.displayName || 'Scholar',
+        candidateName: cleanScholarName(user?.name || user?.displayName, 'Scholar'),
         company: selectedInterviewCompany || { name: 'Microsoft' },
         role: targetRoleObj || { name: 'Software Engineer' },
         experienceLevel: 'Fresher (0-1 yrs)',
@@ -1567,6 +1874,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
             if (!prev.includes(activeCodeProblem.id)) {
               const next = [...prev, activeCodeProblem.id];
               try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(next)); } catch (e) {}
+              if (user) {
+                saveCodingSubmissionToSupabase(user, {
+                  problemId: activeCodeProblem.id,
+                  problemTitle: activeCodeProblem.title,
+                  language: activeCodeLang,
+                  status: 'Accepted',
+                  runtime: results[0]?.duration || '12 ms',
+                  memory: '14.2 MB',
+                  timestamp: new Date().toISOString()
+                }).catch(() => {});
+              }
               return next;
             }
             return prev;
@@ -1792,11 +2110,13 @@ Return ONLY a valid JSON object without markdown:
   const DEFAULT_SUBMODULE_BY_NAV = {
     dashboard: null,
     placement: 'overview',
-    skill_hub: 'daily_mission',
+    skill_hub: 'coding_arena',
     mock_interviews: 'mock_interview',
     analytics: 'analytics',
     secure_exams: 'hall',
-    resources: 'library',
+    career_growth: 'jobs',
+    campus_arena: 'leaderboard',
+    resources: 'curriculum',
     tech_pulse: null,
     founder_audit: null
   };
@@ -1827,7 +2147,7 @@ Return ONLY a valid JSON object without markdown:
   const currentAptQuestion = filteredAptitude[aptitudeIndex % filteredAptitude.length] || APTITUDE_BANK[0];
 
   // User display info
-  const studentName = user?.name || user?.displayName || 'Shaik Spark';
+  const studentName = cleanScholarName(user?.name || user?.displayName, 'GPREC Scholar');
   const studentInitials = studentName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'SS';
 
   return (
@@ -1880,38 +2200,26 @@ Return ONLY a valid JSON object without markdown:
             {[
               { id: 'dashboard', label: 'Home', icon: Home, nav: 'dashboard', sub: null },
               { id: 'placement', label: 'My Placement', icon: Briefcase, nav: 'placement', sub: 'overview' },
-              { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'daily_mission' },
-              { id: 'coding_arena', label: 'Coding Arena', icon: Code, nav: 'skill_hub', sub: 'coding_arena' },
-              { id: 'aptitude_arena', label: 'Aptitude Arena', icon: CheckSquare, nav: 'skill_hub', sub: 'aptitude_arena' },
+              { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'coding_arena' },
               { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall', badge: 'SECURE' },
               { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
-              { id: 'resume_builder', label: 'Resume Builder', icon: FileText, nav: 'mock_interviews', sub: 'resume_defense' },
-              { id: 'project_platform', label: 'Project Platform', icon: Cpu, nav: 'mock_interviews', sub: 'project_defense' },
-              { id: 'job_match', label: 'Job Match', icon: Target, nav: 'placement', sub: 'job_match' },
-              { id: 'company_services', label: 'Company Services', icon: Building, nav: 'placement', sub: 'company_sim' },
-              { id: 'bridge_btech', label: 'Bridge to B.Tech', icon: GraduationCap, nav: 'resources', sub: 'curriculum' },
-              { id: 'applications', label: 'Application Tracker', icon: Clock, nav: 'placement', sub: 'applications' },
+              { id: 'career_growth', label: 'Career Growth', icon: Rocket, nav: 'career_growth', sub: 'jobs', badge: 'LIVE' },
+              { id: 'campus_arena', label: 'Campus Arena', icon: Trophy, nav: 'campus_arena', sub: 'leaderboard', badge: 'HOT' },
               { id: 'analytics', label: 'Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
-              { id: 'helpdesk', label: 'HelpDesk', icon: HelpCircle, nav: 'resources', sub: 'faq', badge: 'NEW' },
-              { id: 'resources', label: 'Resources', icon: BookOpen, nav: 'resources', sub: 'library' }
+              { id: 'bridge_btech', label: 'Bridge to B.Tech', icon: GraduationCap, nav: 'resources', sub: 'curriculum' },
+              { id: 'resources', label: 'HelpDesk & Resources', icon: HelpCircle, nav: 'resources', sub: 'faq' }
             ].map((item) => {
               const Icon = item.icon;
               const isActive = (item.id === 'dashboard' && activeNav === 'dashboard') ||
-                               (item.id === 'placement' && activeNav === 'placement' && (!activeModule || activeModule === 'overview' || activeModule === 'twin_engine' || activeModule === 'rejection_risk')) ||
-                               (item.id === 'skill_hub' && activeNav === 'skill_hub' && (!activeModule || activeModule === 'daily_mission' || activeModule === 'skill_gap' || activeModule === 'skill_graph')) ||
-                               (item.id === 'coding_arena' && activeNav === 'skill_hub' && activeModule === 'coding_arena') ||
-                               (item.id === 'aptitude_arena' && activeNav === 'skill_hub' && activeModule === 'aptitude_arena') ||
+                               (item.id === 'placement' && activeNav === 'placement') ||
+                               (item.id === 'skill_hub' && activeNav === 'skill_hub') ||
                                (item.id === 'secure_exams' && activeNav === 'secure_exams') ||
-                               (item.id === 'mock_interviews' && activeNav === 'mock_interviews' && (!activeModule || activeModule === 'mock_interview' || activeModule === 'scorecard_report')) ||
-                               (item.id === 'resume_builder' && activeNav === 'mock_interviews' && activeModule === 'resume_defense') ||
-                               (item.id === 'project_platform' && activeNav === 'mock_interviews' && activeModule === 'project_defense') ||
-                               (item.id === 'job_match' && activeNav === 'placement' && activeModule === 'job_match') ||
-                               (item.id === 'company_services' && activeNav === 'placement' && activeModule === 'company_sim') ||
-                               (item.id === 'bridge_btech' && activeNav === 'resources' && activeModule === 'curriculum') ||
-                               (item.id === 'applications' && activeNav === 'placement' && activeModule === 'applications') ||
+                               (item.id === 'mock_interviews' && activeNav === 'mock_interviews') ||
+                               (item.id === 'career_growth' && activeNav === 'career_growth') ||
+                               (item.id === 'campus_arena' && activeNav === 'campus_arena') ||
                                (item.id === 'analytics' && activeNav === 'analytics') ||
-                               (item.id === 'helpdesk' && activeNav === 'resources' && activeModule === 'faq') ||
-                               (item.id === 'resources' && activeNav === 'resources' && (!activeModule || activeModule === 'library'));
+                               (item.id === 'bridge_btech' && activeNav === 'resources' && activeModule === 'curriculum') ||
+                               (item.id === 'resources' && activeNav === 'resources' && activeModule !== 'curriculum');
               return (
                 <button
                   key={item.id}
@@ -1968,18 +2276,23 @@ Return ONLY a valid JSON object without markdown:
           <div className="relative pt-0.5">
             <div className="w-full flex items-center justify-between p-1.5 px-2 rounded-xl hover:bg-white/[0.06] transition-colors text-left">
               <div className="flex items-center gap-2.5 min-w-0">
-                <img
-                  src="/gprec-user-avatar.png"
-                  alt="Student Profile"
-                  onError={(e) => { e.target.src = '/founder.png'; }}
-                  className="w-8 h-8 rounded-full object-cover border border-purple-500/40 flex-shrink-0"
-                />
+                {user?.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={studentName}
+                    className="w-8 h-8 rounded-full object-cover border border-purple-500/40 flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-inner">
+                    {studentInitials}
+                  </div>
+                )}
                 <div className="min-w-0">
                   <div className="text-xs font-semibold text-white truncate">
-                    {studentName && studentName !== 'Student Officer' ? studentName : 'Shaik'}
+                    {studentName || 'GPREC Scholar'}
                   </div>
                   <div className="text-[10px] text-slate-400 font-medium truncate">
-                    {user?.email || 'shaik@lumixora.com'}
+                    {user?.email || 'scholar@gprec.ac.in'}
                   </div>
                 </div>
               </div>
@@ -2063,39 +2376,113 @@ Return ONLY a valid JSON object without markdown:
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="w-8 h-8 rounded-full bg-white/90 hover:bg-purple-50 border border-purple-200/60 flex items-center justify-center text-slate-600 transition-colors relative cursor-pointer shadow-2xs"
-                title="Notifications"
+                title="Placement Notifications"
               >
                 <Bell className="w-4 h-4 text-slate-600" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-2xs">
-                  3
-                </span>
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-2xs animate-pulse">
+                    {unreadNotificationsCount}
+                  </span>
+                )}
               </button>
 
               {/* Notifications Popover */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-purple-100 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between pb-3 border-b border-purple-50">
-                    <h3 className="text-xs font-bold text-slate-900 tracking-tight">Placement Notifications</h3>
-                    <button
-                      onClick={() => setNotificationsList(prev => prev.map(n => ({ ...n, read: true })))}
-                      className="text-[11px] font-semibold text-purple-600 hover:text-purple-700 cursor-pointer"
-                    >
-                      Mark all as read
-                    </button>
+                <div className="absolute right-0 mt-2 w-80 sm:w-[410px] bg-white border border-purple-100 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-purple-50 gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h3 className="text-xs font-bold text-slate-900 tracking-tight">Placement Notifications</h3>
+                      {unreadNotificationsCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-extrabold flex-shrink-0">
+                          {unreadNotificationsCount} new
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {isFounder && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowNotifications(false);
+                            setShowBroadcastModal(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-[10px] font-extrabold flex items-center gap-1 cursor-pointer transition-all shadow-xs"
+                          title="Broadcast notification to all scholars"
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>+ Send Alert</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={handleMarkAllNotificationsRead}
+                        className="text-[11px] font-semibold text-purple-600 hover:text-purple-700 cursor-pointer whitespace-nowrap"
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
                   </div>
-                  <div className="divide-y divide-purple-50 max-h-72 overflow-y-auto">
-                    {notificationsList.map(n => (
-                      <div key={n.id} className="py-2.5 flex items-start gap-2.5 hover:bg-purple-50/50 rounded-lg px-1 transition-colors">
-                        <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.read ? 'bg-slate-300' : 'bg-purple-600'}`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-semibold text-slate-900 truncate">{n.title}</h4>
-                            <span className="text-[10px] text-slate-400">{n.time}</span>
+
+                  <div className="divide-y divide-purple-50 max-h-80 overflow-y-auto">
+                    {notificationsList.length > 0 ? (
+                      notificationsList.map(n => {
+                        const isUrgent = !!n.urgent;
+                        return (
+                          <div 
+                            key={n.id} 
+                            onClick={(e) => handleMarkSingleNotificationRead(n, e)}
+                            className="py-3 flex items-start gap-2.5 hover:bg-purple-50/50 rounded-xl px-2 transition-all cursor-pointer group"
+                          >
+                            <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                              isUrgent 
+                                ? 'bg-rose-500 ring-4 ring-rose-200 animate-pulse' 
+                                : n.read 
+                                ? 'bg-slate-300' 
+                                : 'bg-purple-600'
+                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md ${
+                                    isUrgent 
+                                      ? 'bg-rose-100 text-rose-700 border border-rose-200' 
+                                      : n.category === 'OA & Exam' || n.category === 'OA & Assessment'
+                                      ? 'bg-purple-100 text-purple-700'
+                                      : n.category === 'Drive Alert'
+                                      ? 'bg-cyan-100 text-cyan-800'
+                                      : 'bg-indigo-100 text-indigo-700'
+                                  }`}>
+                                    {isUrgent ? 'Urgent' : n.category || 'Alert'}
+                                  </span>
+                                  <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-purple-700">{n.title}</h4>
+                                </div>
+                                <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{n.time}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{n.desc}</p>
+                              
+                              <div className="flex items-center justify-between mt-1.5 text-[10px] text-slate-400">
+                                <span className="text-slate-500 font-medium">
+                                  {n.author || 'Placement Directorate'} • <span className="text-purple-600 font-semibold">{n.target || 'All Scholars'}</span>
+                                </span>
+                                {isFounder && n.isBroadcast && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleDeleteBroadcastNotification(n.id, e)}
+                                    className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Delete broadcast for everyone"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{n.desc}</p>
-                        </div>
+                        );
+                      })
+                    ) : (
+                      <div className="py-8 text-center text-xs text-slate-400">
+                        No notifications right now. You&apos;re completely up to date!
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}
@@ -2110,6 +2497,12 @@ Return ONLY a valid JSON object without markdown:
                 <span>👑 Founder Console</span>
               </button>
             )}
+
+            {/* Real Telemetry Status Pill */}
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-[11px] font-bold shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Real Telemetry Active</span>
+            </div>
 
             {/* Student Initials Avatar */}
             <div 
@@ -2186,6 +2579,46 @@ Return ONLY a valid JSON object without markdown:
           )}
 
           {/* ========================================================= */}
+          {/* VIEW: CAREER GROWTH (OFF-CAMPUS, PORTFOLIO, REFERRALS)    */}
+          {/* ========================================================= */}
+          {activeNav === 'career_growth' && (
+            <GprecCareerGrowthHub
+              user={user}
+              overallReadiness={overallReadiness}
+              solvedCount={solvedProblemIds.length}
+              aptitudeCount={aptitudeScoreCount}
+              awardXP={awardXP}
+              addToast={addToast}
+              onTrackApplication={(job) => {
+                setApplications(prev => [{
+                  id: Date.now(),
+                  company: job.company,
+                  role: job.role,
+                  ctc: job.ctc,
+                  status: 'Saved',
+                  date: new Date().toISOString().split('T')[0]
+                }, ...prev]);
+                addToast({ message: `Saved ${job.company} (${job.role}) to Application Tracker!`, type: 'success' });
+              }}
+            />
+          )}
+
+          {/* ========================================================= */}
+          {/* VIEW: CAMPUS ARENA (LEADERBOARD, OFFER WALL, STREAKS)     */}
+          {/* ========================================================= */}
+          {activeNav === 'campus_arena' && (
+            <GprecCampusArenaHub
+              user={user}
+              overallReadiness={overallReadiness}
+              solvedCount={solvedProblemIds.length}
+              aptitudeCount={aptitudeScoreCount}
+              streakDays={streakDays}
+              awardXP={awardXP}
+              addToast={addToast}
+            />
+          )}
+
+          {/* ========================================================= */}
           {/* VIEW: TECHPULSE™ (FEATURE PORTAL)                          */}
           {/* ========================================================= */}
           {activeNav === 'tech_pulse' && (
@@ -2243,37 +2676,6 @@ Return ONLY a valid JSON object without markdown:
                     title="Watch Overview"
                   />
                 </div>
-              </div>
-
-              {/* ========================================================= */}
-              {/* ROW 2: FLOATING HORIZONTAL SUB-NAV CAPSULE BAR            */}
-              {/* ========================================================= */}
-              <div className="bg-white/80 backdrop-blur-2xl border border-white/90 rounded-2xl p-1.5 shadow-md shadow-purple-500/5 flex items-center justify-between gap-1 overflow-x-auto">
-                {[
-                  { id: 'dashboard', label: 'Placement Dashboard', icon: Briefcase, nav: 'dashboard', sub: null },
-                  { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'daily_mission' },
-                  { id: 'ai_career_brain', label: 'AI Career Brain', icon: Brain, nav: 'placement', sub: 'twin_engine' },
-                  { id: 'learning_paths', label: 'Learning Paths', icon: BookOpen, nav: 'resources', sub: 'curriculum' },
-                  { id: 'career_services', label: 'Career Services', icon: ShieldCheck, nav: 'placement', sub: 'company_sim' },
-                  { id: 'more', label: 'More', icon: Layers, nav: 'analytics', sub: 'analytics' }
-                ].map(tab => {
-                  const Icon = tab.icon;
-                  const isActive = (tab.id === 'dashboard' && activeNav === 'dashboard');
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => navigateTo(tab.nav, tab.sub)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
-                        isActive 
-                          ? 'bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] text-white shadow-md shadow-purple-500/25' 
-                          : 'text-slate-600 hover:text-purple-600 hover:bg-purple-50/50'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
               </div>
 
               {/* ========================================================= */}
@@ -2448,12 +2850,12 @@ Return ONLY a valid JSON object without markdown:
                               strokeLinecap="round"
                               fill="none"
                               strokeDasharray="251.2"
-                              strokeDashoffset={251.2 * (1 - (overallReadiness > 0 ? overallReadiness : 78) / 100)}
+                              strokeDashoffset={251.2 * (1 - Math.min(100, Math.max(0, overallReadiness)) / 100)}
                             />
                           </svg>
                           <div className="absolute flex flex-col items-center justify-center text-center">
                             <span className="text-2xl font-black text-white leading-none">
-                              {overallReadiness > 0 ? overallReadiness : 78}%
+                              {overallReadiness}%
                             </span>
                             <span className="text-[9px] font-medium text-slate-400 mt-0.5">Overall Readiness</span>
                           </div>
@@ -2463,10 +2865,10 @@ Return ONLY a valid JSON object without markdown:
                       {/* Right: 4 Skill Progress Bars */}
                       <div className="col-span-7 flex flex-col gap-2">
                         {[
-                          { label: 'Technical Skills', pct: (twinScores?.coding > 0 ? twinScores.coding : (twinScores?.dsa > 0 ? twinScores.dsa : 92)) },
-                          { label: 'Communication', pct: (twinScores?.communication > 0 ? twinScores.communication : 85) },
-                          { label: 'Aptitude', pct: (twinScores?.aptitude > 0 ? twinScores.aptitude : 80) },
-                          { label: 'Soft Skills', pct: (twinScores?.interview > 0 ? twinScores.interview : (twinScores?.resume > 0 ? twinScores.resume : 76)) }
+                          { label: 'Technical Skills', pct: (twinScores?.coding || twinScores?.dsa || (solvedProblemIds.length > 0 ? Math.min(100, solvedProblemIds.length * 5) : 0)) },
+                          { label: 'Communication', pct: (twinScores?.communication || 0) },
+                          { label: 'Aptitude', pct: (twinScores?.aptitude || (aptitudeScoreCount > 0 ? Math.min(100, aptitudeScoreCount * 10) : 0)) },
+                          { label: 'Soft Skills', pct: (twinScores?.interview || twinScores?.resume || (resumeReport?.score || 0)) }
                         ].map(skill => (
                           <div key={skill.label} className="flex flex-col gap-0.5">
                             <div className="flex items-center justify-between text-[11px]">
@@ -2591,18 +2993,17 @@ Return ONLY a valid JSON object without markdown:
                 {/* Horizontal Apple Subtab Bar */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
                   {[
-                    { id: 'overview', label: 'Overview' },
-                    { id: 'twin_engine', label: 'Placement Twin' },
+                    { id: 'overview', label: 'Overview & Placement Twin' },
+                    { id: 'rejection_risk', label: 'Rejection Risk Radar' },
                     { id: 'job_match', label: 'Job Match' },
                     { id: 'company_sim', label: 'Company Simulator' },
-                    { id: 'rejection_risk', label: 'Rejection Risk' },
                     { id: 'applications', label: 'Application Tracker' }
                   ].map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveModule(tab.id)}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                        activeModule === tab.id
+                        (activeModule === tab.id || (tab.id === 'overview' && (!activeModule || activeModule === 'twin_engine')))
                           ? 'bg-blue-600 text-white shadow-2xs'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                       }`}
@@ -2936,61 +3337,145 @@ Return ONLY a valid JSON object without markdown:
                 </div>
               )}
 
-              {/* Subtab: Rejection Risk */}
-              {activeModule === 'rejection_risk' && (
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Rejection Risk Radar</h3>
-                    <p className="text-xs text-slate-500">Autonomous vulnerability scanner identifying potential elimination bottlenecks before campus drives.</p>
+              {/* Subtab: Dynamic Rejection Risk Radar */}
+              {activeModule === 'rejection_risk' && (() => {
+                const oaCoding = twinScores?.coding || 0;
+                const oaApt = twinScores?.aptitude || 0;
+                const oaComp = Math.round((oaCoding * 0.6) + (oaApt * 0.4));
+                const oaRiskPct = (solvedProblemIds.length > 5 || oaComp >= 75) ? Math.max(5, 100 - oaComp) : oaComp > 0 ? 35 : 68;
+                const oaLevel = oaRiskPct <= 20 ? 'Low' : oaRiskPct <= 45 ? 'Moderate' : 'High';
+
+                const vivaScore = projectVivaReport?.score || (twinScores?.projects || 0);
+                const vivaRiskPct = vivaScore >= 80 ? Math.max(6, 100 - vivaScore) : vivaScore > 0 ? 30 : 62;
+                const vivaLevel = vivaRiskPct <= 20 ? 'Low' : vivaRiskPct <= 45 ? 'Moderate' : 'High';
+
+                const atsScore = resumeReport?.score || (twinScores?.resume || 0);
+                const atsRiskPct = atsScore >= 80 ? Math.max(5, 100 - atsScore) : atsScore > 0 ? 32 : 65;
+                const atsLevel = atsRiskPct <= 20 ? 'Low' : atsRiskPct <= 45 ? 'Moderate' : 'High';
+
+                return (
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900">Dynamic Rejection Risk Radar</h3>
+                        <p className="text-xs text-slate-500">Autonomous vulnerability scanner evaluating real-time candidate elimination probability.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                          {solvedProblemIds.length} Verified Solutions
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* OA Risk */}
+                      <div className={`p-5 rounded-xl border flex flex-col justify-between ${
+                        oaLevel === 'Low' ? 'bg-emerald-50/60 border-emerald-100' : oaLevel === 'Moderate' ? 'bg-amber-50/60 border-amber-100' : 'bg-rose-50/60 border-rose-100'
+                      }`}>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <h4 className={`text-xs font-bold ${oaLevel === 'Low' ? 'text-emerald-800' : oaLevel === 'Moderate' ? 'text-amber-800' : 'text-rose-800'}`}>
+                              Online Assessment (OA) Risk
+                            </h4>
+                            <span className={`text-xs font-bold ${oaLevel === 'Low' ? 'text-emerald-600' : oaLevel === 'Moderate' ? 'text-amber-600' : 'text-rose-600'}`}>
+                              {oaLevel} ({oaRiskPct}%)
+                            </span>
+                          </div>
+                          <p className={`text-xs mt-2 ${oaLevel === 'Low' ? 'text-emerald-700' : oaLevel === 'Moderate' ? 'text-amber-700' : 'text-rose-700'}`}>
+                            {oaLevel === 'Low' 
+                              ? 'Your DSA proficiency and quant speed comfortably clear standard HackerRank & AMCAT cutoffs.'
+                              : oaLevel === 'Moderate'
+                              ? 'Passing borderline cutoffs. Practice medium array/tree questions in Coding Arena to eliminate risk.'
+                              : 'Solve coding drills and aptitude sets in Skill Hub to avoid elimination in round 1.'}
+                          </p>
+                        </div>
+                        <div className="mt-3">
+                          {oaLevel === 'Low' ? (
+                            <span className="text-[10px] text-emerald-600 font-semibold">PASSED BENCHMARK</span>
+                          ) : (
+                            <button 
+                              onClick={() => navigateTo('skill_hub', 'coding_arena')}
+                              className="text-[10px] text-amber-700 font-bold hover:underline text-left cursor-pointer"
+                            >
+                              SOLVE CODING DRILLS →
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* System Design / Project Viva Risk */}
+                      <div className={`p-5 rounded-xl border flex flex-col justify-between ${
+                        vivaLevel === 'Low' ? 'bg-emerald-50/60 border-emerald-100' : vivaLevel === 'Moderate' ? 'bg-amber-50/60 border-amber-100' : 'bg-rose-50/60 border-rose-100'
+                      }`}>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <h4 className={`text-xs font-bold ${vivaLevel === 'Low' ? 'text-emerald-800' : vivaLevel === 'Moderate' ? 'text-amber-800' : 'text-rose-800'}`}>
+                              System Design & Viva Risk
+                            </h4>
+                            <span className={`text-xs font-bold ${vivaLevel === 'Low' ? 'text-emerald-600' : vivaLevel === 'Moderate' ? 'text-amber-600' : 'text-rose-600'}`}>
+                              {vivaLevel} ({vivaRiskPct}%)
+                            </span>
+                          </div>
+                          <p className={`text-xs mt-2 ${vivaLevel === 'Low' ? 'text-emerald-700' : vivaLevel === 'Moderate' ? 'text-amber-700' : 'text-rose-700'}`}>
+                            {vivaLevel === 'Low'
+                              ? `Senior Architect Viva defense scored ${vivaScore}%. Low risk in technical rounds.`
+                              : vivaLevel === 'Moderate'
+                              ? 'Potential weakness in distributed caching invalidation and database indexing trade-offs.'
+                              : 'Project defense not yet verified. Run your Senior Architect Viva in Mock Interviews.'}
+                          </p>
+                        </div>
+                        <div className="mt-3">
+                          {vivaLevel === 'Low' ? (
+                            <span className="text-[10px] text-emerald-600 font-semibold">DEFENSE VERIFIED</span>
+                          ) : (
+                            <button 
+                              onClick={() => navigateTo('mock_interviews', 'project_defense')}
+                              className="text-[10px] text-amber-700 font-bold hover:underline text-left cursor-pointer"
+                            >
+                              RUN ARCHITECTURE DEFENSE →
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Resume ATS Rejection Risk */}
+                      <div className={`p-5 rounded-xl border flex flex-col justify-between ${
+                        atsLevel === 'Low' ? 'bg-emerald-50/60 border-emerald-100' : atsLevel === 'Moderate' ? 'bg-amber-50/60 border-amber-100' : 'bg-rose-50/60 border-rose-100'
+                      }`}>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <h4 className={`text-xs font-bold ${atsLevel === 'Low' ? 'text-emerald-800' : atsLevel === 'Moderate' ? 'text-amber-800' : 'text-rose-800'}`}>
+                              Resume ATS Rejection Risk
+                            </h4>
+                            <span className={`text-xs font-bold ${atsLevel === 'Low' ? 'text-emerald-600' : atsLevel === 'Moderate' ? 'text-amber-600' : 'text-rose-600'}`}>
+                              {atsLevel} ({atsRiskPct}%)
+                            </span>
+                          </div>
+                          <p className={`text-xs mt-2 ${atsLevel === 'Low' ? 'text-emerald-700' : atsLevel === 'Moderate' ? 'text-amber-700' : 'text-rose-700'}`}>
+                            {atsLevel === 'Low'
+                              ? `ATS score is ${atsScore}%. High keyword match protects against automated parsing filters.`
+                              : atsLevel === 'Moderate'
+                              ? `ATS score is ${atsScore}%. Add quantified metrics and action verbs in Resume Builder.`
+                              : 'Resume not yet validated. Build your ATS-compliant resume in Resume Builder.'}
+                          </p>
+                        </div>
+                        <div className="mt-3">
+                          {atsLevel === 'Low' ? (
+                            <span className="text-[10px] text-emerald-600 font-semibold">ATS VALIDATED</span>
+                          ) : (
+                            <button 
+                              onClick={() => navigateTo('mock_interviews', 'resume_defense')}
+                              className="text-[10px] text-amber-700 font-bold hover:underline text-left cursor-pointer"
+                            >
+                              BUILD ATS RESUME →
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-5 rounded-xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-emerald-800">Online Assessment (OA) Risk</h4>
-                          <span className="text-xs font-bold text-emerald-600">Low (8%)</span>
-                        </div>
-                        <p className="text-xs text-emerald-700 mt-2">
-                          Your speed quant and 2-pointer/array accuracy comfortably clears standard HackerRank & AMCAT cutoffs.
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-emerald-600 font-semibold mt-3">PASSED BENCHMARK</span>
-                    </div>
-
-                    <div className="p-5 rounded-xl bg-amber-50/60 border border-amber-100 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-amber-800">System Design Viva Risk</h4>
-                          <span className="text-xs font-bold text-amber-600">Medium (24%)</span>
-                        </div>
-                        <p className="text-xs text-amber-700 mt-2">
-                          Potential weakness in distributed caching invalidation and Redis cluster split-brain scenarios.
-                        </p>
-                      </div>
-                      <button 
-                        onClick={() => navigateTo('mock_interviews', 'project_defense')}
-                        className="text-[10px] text-amber-700 font-bold mt-3 hover:underline text-left cursor-pointer"
-                      >
-                        RUN ARCHITECTURE DEFENSE →
-                      </button>
-                    </div>
-
-                    <div className="p-5 rounded-xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-emerald-800">Resume ATS Rejection Risk</h4>
-                          <span className="text-xs font-bold text-emerald-600">Low (6%)</span>
-                        </div>
-                        <p className="text-xs text-emerald-700 mt-2">
-                          95% keyword match and action-oriented metric statements protect against automated parsing filters.
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-emerald-600 font-semibold mt-3">ATS VALIDATED</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Subtab: Application Tracker (Kanban) */}
               {activeModule === 'applications' && (
@@ -4301,15 +4786,21 @@ Return ONLY a valid JSON object without markdown:
                       <div className="space-y-2 text-xs">
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>Arrays & Strings</span>
-                          <span className="text-emerald-600">Mastered</span>
+                          <span className={solvedProblemIds.length > 0 ? "text-emerald-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 0 ? 'Mastered' : 'To Calibrate'}
+                          </span>
                         </div>
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>Time & Space Complexity</span>
-                          <span className="text-emerald-600">Mastered</span>
+                          <span className={solvedProblemIds.length > 2 ? "text-emerald-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 2 ? 'Mastered' : 'To Calibrate'}
+                          </span>
                         </div>
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>OOP & Memory Model</span>
-                          <span className="text-emerald-600">Mastered</span>
+                          <span className={solvedProblemIds.length > 3 ? "text-emerald-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 3 ? 'Mastered' : 'To Calibrate'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -4319,15 +4810,21 @@ Return ONLY a valid JSON object without markdown:
                       <div className="space-y-2 text-xs">
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>Trees & Binary Search Trees</span>
-                          <span className="text-blue-600">In Progress (92%)</span>
+                          <span className={solvedProblemIds.length > 5 ? "text-blue-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 5 ? `In Progress (${Math.min(100, solvedProblemIds.length * 6)}%)` : 'To Calibrate'}
+                          </span>
                         </div>
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>Graphs (BFS, DFS, Dijkstra)</span>
-                          <span className="text-blue-600">In Progress (88%)</span>
+                          <span className={solvedProblemIds.length > 8 ? "text-blue-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 8 ? `In Progress (${Math.min(100, solvedProblemIds.length * 5)}%)` : 'To Calibrate'}
+                          </span>
                         </div>
                         <div className="p-2.5 bg-white rounded-lg border border-slate-100 font-semibold text-slate-800 flex items-center justify-between">
                           <span>Dynamic Programming (1D / 2D)</span>
-                          <span className="text-blue-600">In Progress (85%)</span>
+                          <span className={solvedProblemIds.length > 12 ? "text-blue-600 font-bold" : "text-slate-400"}>
+                            {solvedProblemIds.length > 12 ? `In Progress (${Math.min(100, solvedProblemIds.length * 4)}%)` : 'To Calibrate'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -4356,631 +4853,16 @@ Return ONLY a valid JSON object without markdown:
           )}
 
           {/* ========================================================= */}
-          {/* VIEW: 4. MOCK INTERVIEWS (Subtabs)                        */}
+          {/* VIEW: 4. RESUME-GROUNDED MOCK INTERVIEW PORTAL (DEDICATED) */}
           {/* ========================================================= */}
           {activeNav === 'mock_interviews' && (
-            <div className="flex flex-col gap-6">
-              {/* Header & Subtabs */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
-                <div>
-                  <div className="text-xs font-medium text-slate-400">Mock Interviews</div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
-                    AI Viva Voice Room, Resume & Project Defense
-                  </h2>
-                </div>
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-                  {[
-                    { id: 'mock_interview', label: 'Technical Mock Viva' },
-                    { id: 'scorecard_report', label: 'Bar Raiser Scorecard & PDF Report' },
-                    { id: 'resume_defense', label: 'Resume Defense' },
-                    { id: 'project_defense', label: 'Project Architecture Defense' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveModule(tab.id)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                        activeModule === tab.id
-                          ? 'bg-blue-600 text-white shadow-2xs'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Reusable Bar Raiser Scorecard & Diagnostic Report Component */}
-              {(() => {
-                const activeReport = interviewReport || {
-                  score: 88,
-                  techAccuracy: 92,
-                  clarity: 88,
-                  depth: 90,
-                  resilience: 89,
-                  feedback: `Comprehensive Bar Raiser diagnostic evaluation for ${targetRoleObj.name} at ${selectedInterviewCompany?.name || 'Recruiter'}. Candidate demonstrated clear technical ownership of resume architecture and concurrency patterns.`,
-                  strongAnswers: [
-                    "Clear explanation of microservice boundaries, caching, and thread locks",
-                    "Sound database composite indexing and connection pooling rationale"
-                  ],
-                  poorAnswers: [
-                    "Include more quantified throughput and latency SLAs under sudden 50x spikes"
-                  ]
-                };
-
-                const renderBarRaiserScorecardContent = () => (
-                  <div className="flex flex-col gap-6">
-                    <div className="p-6 rounded-xl bg-blue-50/70 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <div className="text-xs font-bold text-blue-600 uppercase tracking-wider">Placement Benchmark Assessment • Bar Raiser Scorecard</div>
-                        <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">Bar Raiser Performance Report</h3>
-                        <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">{activeReport.feedback}</p>
-                      </div>
-                      <div className="text-center sm:text-right flex-shrink-0">
-                        <div className="text-3xl font-black text-blue-600">{activeReport.score}%</div>
-                        <div className="text-xs font-semibold text-slate-500">Overall Score</div>
-                        <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          (activeReport.score || 0) >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {(activeReport.score || 0) >= 70 ? 'OFFER RECOMMENDED' : 'NEEDS PRACTICE'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 4-Metric Diagnostic Breakdown */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Technical Accuracy</div>
-                        <div className="text-lg font-black text-slate-900 mt-1">{activeReport.techAccuracy || 90}%</div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                          <div className="bg-blue-600 h-full rounded-full" style={{ width: `${activeReport.techAccuracy || 90}%` }}></div>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Architecture Depth</div>
-                        <div className="text-lg font-black text-slate-900 mt-1">{activeReport.depth || 88}%</div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                          <div className="bg-purple-600 h-full rounded-full" style={{ width: `${activeReport.depth || 88}%` }}></div>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Communication Clarity</div>
-                        <div className="text-lg font-black text-slate-900 mt-1">{activeReport.clarity || 86}%</div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                          <div className="bg-emerald-600 h-full rounded-full" style={{ width: `${activeReport.clarity || 86}%` }}></div>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Problem Resilience</div>
-                        <div className="text-lg font-black text-slate-900 mt-1">{activeReport.resilience || 89}%</div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                          <div className="bg-amber-600 h-full rounded-full" style={{ width: `${activeReport.resilience || 89}%` }}></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 text-xs">
-                        <h4 className="font-bold text-emerald-800 mb-2 flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          <span>Key Strengths</span>
-                        </h4>
-                        <ul className="space-y-1.5 text-emerald-700">
-                          {activeReport.strongAnswers?.map((a, i) => <li key={i}>✓ {a}</li>)}
-                        </ul>
-                      </div>
-                      <div className="p-4 rounded-xl bg-rose-50/70 border border-rose-100 text-xs">
-                        <h4 className="font-bold text-rose-800 mb-2 flex items-center gap-1.5">
-                          <AlertCircle className="w-4 h-4 text-rose-600" />
-                          <span>Areas for Improvement</span>
-                        </h4>
-                        <ul className="space-y-1.5 text-rose-700">
-                          {activeReport.poorAnswers?.map((a, i) => <li key={i}>• {a}</li>)}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Question-by-Question Model Answers Deep Dive */}
-                    <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-                      <div className="p-3.5 bg-slate-50 flex items-center justify-between border-b border-slate-200/80">
-                        <span className="flex items-center gap-2 text-xs font-bold text-slate-800">
-                          <FileText className="w-4 h-4 text-blue-600" />
-                          <span>Question-by-Question Review & Expert Model Answers</span>
-                        </span>
-                        <span className="text-[11px] font-bold text-blue-600">{interviewQuestionsList.length} Technical Questions Evaluated</span>
-                      </div>
-                      <div className="p-4 space-y-4 bg-white divide-y divide-slate-100">
-                        {interviewQuestionsList.map((q, idx) => (
-                          <div key={idx} className="pt-3 first:pt-0 space-y-2 text-xs">
-                            <div className="font-bold text-slate-900 flex items-start justify-between gap-2">
-                              <span>Q{idx + 1}: {q.q}</span>
-                              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold whitespace-nowrap">{q.category}</span>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-100">
-                              <span className="font-bold text-slate-500 block mb-0.5">Your Response:</span>
-                              <p className="italic">{interviewAnswers[idx] || '(No response provided)'}</p>
-                            </div>
-                            <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100 text-emerald-800">
-                              <span className="font-bold text-emerald-700 block mb-0.5">Expert Model Technical Answer:</span>
-                              <p className="leading-relaxed">{q.modelAnswer || q.hint}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Scorecard Action Buttons: PDF Download, Certificate & Retake */}
-                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                      <button
-                        onClick={handleDownloadDiagnosticPDF}
-                        className="w-full sm:flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-all"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>Download PDF Diagnostic Report</span>
-                      </button>
-
-                      {(activeReport.score || 0) >= 70 && (
-                        <button
-                          onClick={handleClaimCertificate}
-                          disabled={!!claimedCert}
-                          className={`w-full sm:flex-1 py-2.5 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                            claimedCert ? 'bg-emerald-600 cursor-default' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 shadow-2xs'
-                          }`}
-                        >
-                          <Award className="w-4 h-4" />
-                          <span>{claimedCert ? `Certificate Claimed (${claimedCert.id})` : 'Claim Proof-of-Skill Certificate'}</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          setInterviewFinished(false);
-                          setInterviewStep(0);
-                          setInterviewAnswers({});
-                          setInterviewReport(null);
-                          setClaimedCert(null);
-                          setInterviewTimeLeft(150);
-                          setActiveModule('mock_interview');
-                        }}
-                        className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer transition-colors"
-                      >
-                        Start Another Mock Interview
-                      </button>
-                    </div>
-                  </div>
-                );
-
-                return (
-                  <>
-                    {/* Subtab: Technical Mock Interview */}
-                    {activeModule === 'mock_interview' && (
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-                        {/* Preset Company & Resume Grounding Selector Bar */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-slate-50/90 rounded-xl border border-slate-200/80">
-                          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                            <span className="text-xs font-bold text-slate-600 flex-shrink-0">Target Company:</span>
-                            {TARGET_COMPANIES.map(comp => (
-                              <button
-                                key={comp.id}
-                                onClick={() => {
-                                  setSelectedInterviewCompany(comp);
-                                  setInterviewStep(0);
-                                  setInterviewAnswers({});
-                                  setInterviewFinished(false);
-                                  addToast({ message: `Configured viva rubrics for ${comp.name} (${comp.role})`, type: 'info' });
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                                  selectedInterviewCompany?.id === comp.id
-                                    ? 'bg-blue-600 text-white shadow-2xs'
-                                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                                }`}
-                              >
-                                {comp.name}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700 flex items-center gap-1.5 shadow-2xs">
-                              <FileText className="w-3.5 h-3.5" />
-                              <span>Resume: {resumeHighlights.projects[0]?.title || 'Grounded in Profile'}</span>
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Bar Raiser Benchmark Quick Access Banner */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200/80 shadow-2xs">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0 shadow-2xs">
-                              <Award className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                <span>Bar Raiser Scorecard & Diagnostic Report</span>
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Live</span>
-                              </div>
-                              <p className="text-[11px] text-slate-500 mt-0.5">
-                                Evaluates Technical Accuracy, Architectural Depth, Communication Clarity, and Problem Resilience.
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
-                              type="button"
-                              onClick={handleDownloadDiagnosticPDF}
-                              className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 hover:bg-blue-50 text-blue-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all"
-                              title="Download official PDF diagnostic report"
-                            >
-                              <Download className="w-3.5 h-3.5 text-blue-600" />
-                              <span>Diagnostic PDF</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleTriggerEvaluation}
-                              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all"
-                              title="View full Bar Raiser scorecard & model answers"
-                            >
-                              <BarChart2 className="w-3.5 h-3.5" />
-                              <span>View Scorecard</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {!interviewFinished ? (
-                          <div className="flex flex-col gap-5">
-                            <div className="flex items-center justify-between text-xs text-slate-500">
-                              <span className="font-bold text-blue-600 uppercase">Question {interviewStep + 1} of {interviewQuestionsList.length}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="hidden sm:inline font-medium">Mode: {interviewMode} • {selectedInterviewCompany?.name}</span>
-                                <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold flex items-center gap-1 border border-blue-200/60">
-                                  <Clock className="w-3 h-3 text-blue-600" />
-                                  <span>{interviewTimeLeft}s</span>
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Question card */}
-                            <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-3">
-                              <div className="flex items-start justify-between gap-3">
-                                <h3 className="text-base font-bold text-slate-900 leading-snug">
-                                  {interviewQuestionsList[interviewStep]?.q}
-                                </h3>
-                                <button
-                                  onClick={() => speakText(interviewQuestionsList[interviewStep]?.q)}
-                                  className="p-2 rounded-lg border border-slate-200 hover:bg-white text-slate-600 cursor-pointer flex-shrink-0 transition-colors"
-                                  title={isSpeaking ? "Stop speech" : "Listen to question aloud"}
-                                >
-                                  <Volume2 className={`w-4 h-4 ${isSpeaking ? 'text-emerald-600 animate-pulse' : 'text-blue-600'}`} />
-                                </button>
-                              </div>
-                              <p className="text-xs text-slate-500">💡 Hint: {interviewQuestionsList[interviewStep]?.hint}</p>
-
-                              {/* Model Technical Answer & Diagnostic Quick Link */}
-                              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/60 mt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setExpandedModelAnswerIndex(prev => prev === interviewStep ? null : interviewStep)}
-                                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-                                  <span>{expandedModelAnswerIndex === interviewStep ? 'Hide Model Technical Answer' : '💡 View Expert Model Technical Answer'}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleTriggerEvaluation}
-                                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <Download className="w-3.5 h-3.5 text-indigo-500" />
-                                  <span>Open Bar Raiser Scorecard & PDF</span>
-                                </button>
-                              </div>
-
-                              {expandedModelAnswerIndex === interviewStep && (
-                                <div className="p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-900 animate-fade-in space-y-1 mt-1 shadow-2xs">
-                                  <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span>Expert Model Technical Answer ({interviewQuestionsList[interviewStep]?.category}):</span>
-                                  </div>
-                                  <p className="leading-relaxed text-slate-700">{interviewQuestionsList[interviewStep]?.modelAnswer}</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Candidate Answer Box with Voice Recording */}
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-slate-800">Your Technical Response</label>
-                                <button
-                                  onClick={startMicRecording}
-                                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
-                                    isListening 
-                                      ? 'bg-rose-500 text-white animate-pulse shadow-xs' 
-                                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                                  }`}
-                                >
-                                  <Mic className="w-3.5 h-3.5" />
-                                  <span>{isListening ? 'Listening (Speak now)...' : 'Voice Input'}</span>
-                                </button>
-                              </div>
-                              <textarea
-                                rows={4}
-                                value={interviewAnswers[interviewStep] || ''}
-                                onChange={(e) => setInterviewAnswers(prev => ({ ...prev, [interviewStep]: e.target.value }))}
-                                placeholder="Type or speak your technical explanation here..."
-                                className="w-full p-4 rounded-xl border border-slate-200 text-xs md:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-sans leading-relaxed"
-                              />
-                            </div>
-
-                            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                              <span className="text-[11px] text-slate-400">
-                                Category: <strong className="text-slate-600">{interviewQuestionsList[interviewStep]?.category || 'Technical Viva'}</strong>
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleTriggerEvaluation}
-                                  disabled={isEvaluatingInterview}
-                                  className="px-4 py-2.5 rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-700 font-semibold text-xs md:text-sm cursor-pointer flex items-center gap-1.5 shadow-2xs transition-all"
-                                >
-                                  <Download className="w-4 h-4 text-blue-600" />
-                                  <span>Evaluate & View Bar Raiser PDF</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleInterviewAnswerSubmit}
-                                  disabled={isEvaluatingInterview}
-                                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm cursor-pointer flex items-center gap-2 shadow-2xs active:scale-[0.99] transition-all"
-                                >
-                                  {isEvaluatingInterview ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                  <span>{interviewStep < interviewQuestionsList.length - 1 ? 'Submit & Next Question' : 'Finish & Evaluate Viva'}</span>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          renderBarRaiserScorecardContent()
-                        )}
-                      </div>
-                    )}
-
-                    {/* Subtab: Bar Raiser Scorecard & PDF Report */}
-                    {activeModule === 'scorecard_report' && (
-                      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-                        {renderBarRaiserScorecardContent()}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-
-              {/* Subtab: Resume Builder + AI ATS Defense */}
-              {activeModule === 'resume_defense' && (
-                <div className="flex flex-col gap-5">
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-3 px-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setResumeSubView('builder')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          resumeSubView === 'builder'
-                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        Interactive ATS Resume Builder
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setResumeSubView('audit')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          resumeSubView === 'audit'
-                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        AI ATS Audit & Claim Defense
-                      </button>
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-500">
-                      Build a 1-page GPREC ATS resume, export PDF, then defend every claim live.
-                    </span>
-                  </div>
-
-                  {resumeSubView === 'builder' ? (
-                    <GprecResumeBuilderPanel
-                      user={user}
-                      addToast={addToast}
-                      onSendToAudit={(plainText) => {
-                        setResumeContent(plainText);
-                        setResumeSubView('audit');
-                        addToast({ message: 'Resume loaded into AI ATS Audit & Claim Defense! Click "Audit Resume for ATS".', type: 'success' });
-                      }}
-                    />
-                  ) : (
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">AI Resume Audit & Claim Defense</h3>
-                    <p className="text-xs text-slate-500">Paste your resume to test ATS match and defend your project claims against interrogative questions.</p>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <textarea
-                      rows={5}
-                      value={resumeContent}
-                      onChange={(e) => setResumeContent(e.target.value)}
-                      placeholder="Paste your plain text resume (Education, Skills, Experience, Projects)..."
-                      className="w-full p-4 rounded-xl border border-slate-200 text-xs md:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    />
-                    <div className="flex justify-end">
-                      <button
-                        onClick={handleAuditResume}
-                        disabled={isAuditingResume || !resumeContent.trim()}
-                        className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm cursor-pointer flex items-center gap-2 shadow-2xs"
-                      >
-                        {isAuditingResume ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                        <span>Audit Resume for ATS</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {resumeReport && (
-                    <div className="pt-4 border-t border-slate-100 flex flex-col gap-4">
-                      <div className="flex items-center gap-4">
-                        <span className="text-2xl font-black text-blue-600">{resumeReport.atsScore}% ATS Score</span>
-                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          Verified for Institutional Placement
-                        </span>
-                      </div>
-
-                      {/* Defense Question */}
-                      <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-3">
-                        <div className="text-xs font-bold text-rose-600 uppercase">Interrogative Claim Challenge</div>
-                        <div className="text-sm font-bold text-slate-900">{resumeReport.defenseQuestion}</div>
-
-                        <textarea
-                          rows={3}
-                          value={resumeDefenseAnswer}
-                          onChange={(e) => setResumeDefenseAnswer(e.target.value)}
-                          placeholder="Defend your architectural and code decisions..."
-                          className="w-full p-3 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white"
-                        />
-                        <div className="flex justify-end">
-                          <button
-                            onClick={handleDefendResumeClaim}
-                            disabled={isDefendingResume || !resumeDefenseAnswer.trim()}
-                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer"
-                          >
-                            {isDefendingResume ? 'Evaluating Defense...' : 'Defend Claim'}
-                          </button>
-                        </div>
-                      </div>
-
-                      {resumeDefenseFeedback && (
-                        <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 text-xs flex flex-col gap-1">
-                          <div className="font-bold text-emerald-800">{resumeDefenseFeedback.verdict} ({resumeDefenseFeedback.defensibilityRating}%)</div>
-                          <p className="text-emerald-700">{resumeDefenseFeedback.comment}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                  )}
-                </div>
-              )}
-
-              {/* Subtab: Project Platform & Architecture Defense */}
-              {activeModule === 'project_defense' && (
-                <div className="flex flex-col gap-5">
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-3 px-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setProjectSubView('portfolio')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          projectSubView === 'portfolio'
-                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        My Project Portfolio & Blueprints
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setProjectSubView('viva')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          projectSubView === 'viva'
-                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        Project Architecture Viva Defense
-                      </button>
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-500">
-                      Build your GPREC project showcase and pass Senior Architect Viva interrogation.
-                    </span>
-                  </div>
-
-                  {projectSubView === 'portfolio' ? (
-                    <GprecProjectPlatformPanel
-                      user={user}
-                      addToast={addToast}
-                      onDefendProject={(proj) => {
-                        setProjectName(proj.title || '');
-                        setProjectTechStack(proj.stack || '');
-                        setProjectDescription(proj.summary || '');
-                        setProjectSubView('viva');
-                        addToast({ message: `Loaded "${proj.title}" into Architecture Defense Arena!`, type: 'info' });
-                      }}
-                    />
-                  ) : (
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Project Architecture Defense Arena</h3>
-                    <p className="text-xs text-slate-500">Probe your capstone project with senior architect questions to verify hands-on ownership.</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-800 block mb-1">Project Name</label>
-                      <input
-                        type="text"
-                        value={projectName}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-800 block mb-1">Tech Stack</label>
-                      <input
-                        type="text"
-                        value={projectTechStack}
-                        onChange={(e) => setProjectTechStack(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">Architecture & Scaling Summary</label>
-                    <textarea
-                      rows={3}
-                      value={projectDescription}
-                      onChange={(e) => setProjectDescription(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800"
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleGenerateProjectViva}
-                      disabled={isGeneratingProjectViva}
-                      className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs md:text-sm cursor-pointer flex items-center gap-2 shadow-2xs"
-                    >
-                      {isGeneratingProjectViva ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
-                      <span>Generate Architecture Vivas</span>
-                    </button>
-                  </div>
-
-                  {projectVivaReport && (
-                    <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Senior Architect Challenge Questions</h4>
-                      {[projectVivaReport.vivaQ1, projectVivaReport.vivaQ2, projectVivaReport.vivaQ3].map((q, i) => (
-                        <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800">
-                          <span className="font-bold text-blue-600 mr-2">Viva #{i + 1}:</span>
-                          {q}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                  )}
-                </div>
-              )}
-            </div>
+            <GprecResumeMockInterviewPortal
+              user={user}
+              awardXP={awardXP}
+              addToast={addToast}
+              onUpdateTwinSkill={updateTwinSkill}
+              savedResumeText={resumeContent}
+            />
           )}
 
           {/* ========================================================= */}
@@ -5025,23 +4907,23 @@ Return ONLY a valid JSON object without markdown:
                 <div className="p-5 rounded-xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Institutional Percentile</div>
                   <div className="text-3xl font-extrabold text-blue-600 mt-2">
-                    {overallReadiness >= 90 ? 'Top 8%' : overallReadiness >= 80 ? 'Top 15%' : overallReadiness >= 70 ? 'Top 25%' : 'Top 8%'}
+                    {overallReadiness >= 90 ? 'Top 8%' : overallReadiness >= 80 ? 'Top 15%' : overallReadiness >= 70 ? 'Top 25%' : overallReadiness > 0 ? 'Top 50%' : 'Calibrating'}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">Ranked among top performers in GPREC CSE/ECE batches.</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{overallReadiness > 0 ? 'Ranked among active performers in GPREC CSE/ECE batches.' : 'Solve coding problems or aptitude drills to calibrate your institutional rank.'}</p>
                 </div>
                 <div className="p-5 rounded-xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Interview Confidence Index</div>
                   <div className="text-3xl font-extrabold text-purple-600 mt-2">
-                    {twinScores?.interview >= 60 ? `${twinScores.interview} / 100` : '91 / 100'}
+                    {twinScores?.interview > 0 ? `${twinScores.interview} / 100` : '0 / 100'}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">Based on technical accuracy and speech clarity telemetry.</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{twinScores?.interview > 0 ? 'Based on technical accuracy and speech clarity telemetry.' : 'Complete an AI Mock Tech Viva or STAR session to calibrate.'}</p>
                 </div>
                 <div className="p-5 rounded-xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between">
                   <div className="text-xs font-bold text-slate-700">Drive Conversion Probability</div>
                   <div className="text-3xl font-extrabold text-emerald-600 mt-2">
-                    {overallReadiness >= 60 ? `${(overallReadiness * 0.962).toFixed(1)}%` : '88.5%'}
+                    {overallReadiness > 0 ? `${(overallReadiness * 0.962).toFixed(1)}%` : '0%'}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">Predicted probability of receiving premier job offer.</p>
+                  <p className="text-[11px] text-slate-500 mt-1">{overallReadiness > 0 ? 'Predicted probability of receiving premier job offer.' : 'Calibrates dynamically as your readiness vectors improve.'}</p>
                 </div>
               </div>
 
@@ -5067,7 +4949,7 @@ Return ONLY a valid JSON object without markdown:
                             </p>
                           </div>
                           <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                            92nd Percentile (Top 8%)
+                            {overallReadiness >= 90 ? '92nd Percentile (Top 8%)' : overallReadiness >= 75 ? '75th Percentile (Top 25%)' : overallReadiness > 0 ? `${overallReadiness}th Percentile` : 'Pending Baseline Test'}
                           </span>
                         </div>
 
@@ -5131,11 +5013,11 @@ Return ONLY a valid JSON object without markdown:
                                 label={{ value: 'Tier-1 Cutoff: 75%', position: 'top', fill: '#059669', fontSize: 10, fontWeight: 700 }}
                               />
                               <ReferenceLine
-                                x={overallReadiness >= 60 ? overallReadiness : 92}
+                                x={overallReadiness > 0 ? overallReadiness : 0}
                                 stroke="#C5A059"
                                 strokeWidth={2.5}
                                 label={{
-                                  value: `★ You: ${overallReadiness >= 60 ? overallReadiness : 92}%`,
+                                  value: overallReadiness > 0 ? `★ You: ${overallReadiness}%` : '★ You: 0%',
                                   position: 'top',
                                   fill: '#9A7328',
                                   fontSize: 10,
@@ -5162,7 +5044,7 @@ Return ONLY a valid JSON object without markdown:
                             </span>
                           </div>
                           <span className="font-semibold text-slate-800">
-                            Candidate Safety Buffer: <span className="text-emerald-600 font-bold">+16.0%</span> over Tier-1 bar
+                            Candidate Safety Buffer: {overallReadiness >= 75 ? <span className="text-emerald-600 font-bold">+{overallReadiness - 75}% over Tier-1 bar</span> : <span className="text-amber-600 font-bold">{75 - overallReadiness}% to Tier-1 bar</span>}
                           </span>
                         </div>
                       </div>
@@ -5313,19 +5195,19 @@ Return ONLY a valid JSON object without markdown:
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-200/60 text-center">
                       <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
                         <div className="text-[10px] text-slate-400 font-semibold">Start Baseline (W1)</div>
-                        <div className="text-sm font-bold text-slate-700 mt-0.5">42.0%</div>
+                        <div className="text-sm font-bold text-slate-700 mt-0.5">{overallReadiness > 0 ? `${Math.max(0, overallReadiness - 25)}%` : '0%'}</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
                         <div className="text-[10px] text-slate-400 font-semibold">Current Calibrated</div>
-                        <div className="text-sm font-bold text-emerald-600 mt-0.5">{overallReadiness >= 60 ? `${overallReadiness}%` : '92%'}</div>
+                        <div className="text-sm font-bold text-emerald-600 mt-0.5">{overallReadiness > 0 ? `${overallReadiness}%` : '0%'}</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
                         <div className="text-[10px] text-slate-400 font-semibold">Threshold Clearance</div>
-                        <div className="text-sm font-bold text-blue-600 mt-0.5">Passed Week 5</div>
+                        <div className="text-sm font-bold text-blue-600 mt-0.5">{overallReadiness >= 80 ? 'Cleared Tier-1' : overallReadiness >= 60 ? 'In Progress' : 'Pending Practice'}</div>
                       </div>
                       <div className="p-2.5 rounded-xl bg-white border border-slate-200/60">
                         <div className="text-[10px] text-slate-400 font-semibold">Projected Peak (W9)</div>
-                        <div className="text-sm font-bold text-purple-600 mt-0.5">96.0% (Marquee)</div>
+                        <div className="text-sm font-bold text-purple-600 mt-0.5">{overallReadiness > 0 ? `${Math.min(99, overallReadiness + 7)}%` : 'Pending Calibration'}</div>
                       </div>
                     </div>
                   </div>
@@ -5552,6 +5434,8 @@ Return ONLY a valid JSON object without markdown:
                 { title: 'Coding Arena (10,000+ Problems)', category: 'Coding Arena', action: () => navigateTo('skill_hub', 'coding_arena') },
                 { title: 'Aptitude Arena (Quant, Logical, Verbal)', category: 'Aptitude Arena', action: () => navigateTo('skill_hub', 'aptitude_arena') },
                 { title: 'Secure Exams & Live AI Proctoring Suite', category: 'Secure Exams', action: () => navigateTo('secure_exams', 'hall') },
+                { title: 'Career Growth (Off-Campus Jobs, Portfolio & Alumni Referrals)', category: 'Career Growth', action: () => navigateTo('career_growth', 'jobs') },
+                { title: 'Campus Arena (Branch Leaderboard, Offer Wall & Streak Rewards)', category: 'Campus Arena', action: () => navigateTo('campus_arena', 'leaderboard') },
                 { title: 'Technical Mock Interviews & Voice Viva', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'mock_interview') },
                 { title: 'Resume Builder & AI ATS Defense', category: 'Resume Builder', action: () => navigateTo('mock_interviews', 'resume_defense') },
                 { title: 'Project Platform & Architecture Viva', category: 'Project Platform', action: () => navigateTo('mock_interviews', 'project_defense') },
@@ -5685,6 +5569,8 @@ Return ONLY a valid JSON object without markdown:
                   { label: 'Coding Arena', desc: '10,000+ DSA Problems', nav: 'skill_hub', sub: 'coding_arena' },
                   { label: 'Aptitude Arena', desc: 'Quant, Logic & Verbal', nav: 'skill_hub', sub: 'aptitude_arena' },
                   { label: 'Secure Exams', desc: 'Proctored MCQ & Coding OA', nav: 'secure_exams', sub: 'hall' },
+                  { label: 'Career Growth', desc: 'Off-Campus, Portfolio & Alumni', nav: 'career_growth', sub: 'jobs' },
+                  { label: 'Campus Arena', desc: 'Leaderboard, Offer Wall & XP', nav: 'campus_arena', sub: 'leaderboard' },
                   { label: 'Mock Interviews', desc: 'AI Voice & Tech Viva', nav: 'mock_interviews', sub: 'mock_interview' },
                   { label: 'Resume Builder', desc: 'ATS Builder & Audit', nav: 'mock_interviews', sub: 'resume_defense' },
                   { label: 'Project Platform', desc: 'Portfolio & Viva Defense', nav: 'mock_interviews', sub: 'project_defense' },
@@ -5759,6 +5645,177 @@ Return ONLY a valid JSON object without markdown:
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ========================================================= */}
+      {/* MODAL: Founder Broadcast Notification Dispatcher          */}
+      {/* ========================================================= */}
+      {showBroadcastModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#0B0F2A] border border-amber-500/40 rounded-3xl shadow-2xl shadow-amber-950/40 w-full max-w-xl p-6 sm:p-7 text-white animate-in fade-in zoom-in-95 my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20">
+                  👑
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                    <span>Founder Broadcast Dispatcher</span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[10px] font-mono font-bold uppercase">
+                      Live Push
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Send instant notifications & placement circulars to all 446+ GPREC scholars.
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowBroadcastModal(false)} 
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendFounderNotification} className="space-y-4 mt-5 text-xs">
+              <div>
+                <label className="font-bold text-slate-200 block mb-1">
+                  Notification Title <span className="text-amber-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Amazon SDE-1 OA Link Live — Assessment Starts Tomorrow at 10 AM"
+                  value={broadcastForm.title}
+                  onChange={(e) => setBroadcastForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 text-xs transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-200 block mb-1">Category</label>
+                  <select
+                    value={broadcastForm.category}
+                    onChange={(e) => setBroadcastForm(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full p-3 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                  >
+                    <option value="Drive Alert">🚀 Drive Alert</option>
+                    <option value="OA & Assessment">💻 OA & Assessment</option>
+                    <option value="Interview Schedule">🎙️ Interview Schedule</option>
+                    <option value="Placement Milestone">🏆 Placement Milestone</option>
+                    <option value="Urgent Advisory">⚠️ Urgent Advisory</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-200 block mb-1">Target Scholars</label>
+                  <select
+                    value={broadcastForm.target}
+                    onChange={(e) => setBroadcastForm(prev => ({ ...prev, target: e.target.value }))}
+                    className="w-full p-3 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                  >
+                    <option value="All Registered Scholars">👥 All Registered Scholars (GPREC)</option>
+                    <option value="CSE / CSM / CSD">💻 CSE / CSM / CSD Departments</option>
+                    <option value="ECE / EEE">⚡ ECE / EEE Departments</option>
+                    <option value="MECH / CIVIL">⚙️ MECH / CIVIL Departments</option>
+                    <option value="Final Year 2026 Batch">🎓 Final Year 2026 Batch</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-200 block mb-1">
+                  Announcement Message / Instructions <span className="text-amber-400">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Provide detailed instructions, eligibility criteria, assessment timings, or important guidelines..."
+                  value={broadcastForm.desc}
+                  onChange={(e) => setBroadcastForm(prev => ({ ...prev, desc: e.target.value }))}
+                  className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 text-xs transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                <div>
+                  <label className="font-bold text-slate-200 block mb-1">Action Link / Portal Route (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. #mock_interviews, #coding_practice, or https://..."
+                    value={broadcastForm.link}
+                    onChange={(e) => setBroadcastForm(prev => ({ ...prev, link: e.target.value }))}
+                    className="w-full p-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 text-xs"
+                  />
+                </div>
+
+                <div className="pt-4 sm:pt-6">
+                  <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-rose-400/40 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={broadcastForm.urgent}
+                      onChange={(e) => setBroadcastForm(prev => ({ ...prev, urgent: e.target.checked }))}
+                      className="w-4 h-4 rounded-sm text-rose-600 focus:ring-0 bg-transparent border-white/30"
+                    />
+                    <span className="text-xs font-semibold text-rose-300 flex items-center gap-1">
+                      <span>🔥 Urgent Priority Alert</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Real-time Student Preview Card */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
+                <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex items-center justify-between">
+                  <span>Student View Live Preview</span>
+                  <span className="text-amber-400 font-normal">Real-Time Dropdown Preview</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2.5">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${broadcastForm.urgent ? 'bg-rose-500 animate-pulse' : 'bg-amber-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                          {broadcastForm.category}
+                        </span>
+                        <span className="text-xs font-bold text-white truncate">
+                          {broadcastForm.title || 'Your Announcement Title Here...'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">Just now</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                      {broadcastForm.desc || 'Detailed instructions and circular description will render here for scholars.'}
+                    </p>
+                    <div className="text-[10px] text-amber-400/80 mt-1">
+                      Target: {broadcastForm.target}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowBroadcastModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isBroadcasting}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isBroadcasting ? 'Broadcasting to Scholars...' : 'Dispatch Live Notification'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

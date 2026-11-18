@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { cleanScholarName } from './authSecurity';
 
 /**
  * placementResourcePdfs.js
@@ -33,7 +34,8 @@ function addHeader(doc, title, subtitle, user, pageNum) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(203, 213, 225);
-  const scholarName = user?.name || user?.rollNumber ? `${user?.name || 'GPREC Scholar'} (${user?.rollNumber || 'Verified Candidate'})` : 'GPREC Verified Placement Candidate';
+  const cleanName = cleanScholarName(user?.name || user?.displayName, 'GPREC Scholar');
+  const scholarName = user?.name || user?.rollNumber ? `${cleanName} (${user?.rollNumber || 'Verified Candidate'})` : 'GPREC Verified Placement Candidate';
   doc.text(`${subtitle} • Issued to: ${scholarName}`, 14, 33);
 
   // Verified Badge on Right

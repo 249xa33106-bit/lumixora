@@ -1,24 +1,24 @@
 import Realistic3DLogo from './components/Realistic3DLogo';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Capacitor } from '@capacitor/core';
 import MainLayout from './layouts/MainLayout';
-import Dashboard from './pages/Dashboard';
-import DoubtSolving from './pages/DoubtSolving';
-import NotesPlatform from './pages/NotesPlatform';
-import TaskManager from './pages/TaskManager';
-import AuthPortal from './pages/AuthPortal';
-import LandingPage from './pages/LandingPage';
-import LearningHub from './pages/LearningHub';
-import ContributeNotes from './pages/ContributeNotes';
-import ContactUs from './pages/ContactUs';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DoubtSolving = lazy(() => import('./pages/DoubtSolving'));
+const NotesPlatform = lazy(() => import('./pages/NotesPlatform'));
+const TaskManager = lazy(() => import('./pages/TaskManager'));
+const AuthPortal = lazy(() => import('./pages/AuthPortal'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LearningHub = lazy(() => import('./pages/LearningHub'));
+const ContributeNotes = lazy(() => import('./pages/ContributeNotes'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './context/ToastContext';
 import { GamificationProvider } from './context/GamificationContext';
 import { ThemeProvider } from './context/ThemeContext';
-import CodingPractice from './pages/CodingPractice';
-import CodeEditorPage from './pages/CodeEditorPage';
-import PersonalMentor from './pages/PersonalMentor';
-import MyAcademics from './pages/MyAcademics';
+const CodingPractice = lazy(() => import('./pages/CodingPractice'));
+const CodeEditorPage = lazy(() => import('./pages/CodeEditorPage'));
+const PersonalMentor = lazy(() => import('./pages/PersonalMentor'));
+const MyAcademics = lazy(() => import('./pages/MyAcademics'));
 import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment, KNOWN_PAID_EMAILS } from './data/collegesData';
 import CollegeAccessFeeModal from './components/CollegeAccessFeeModal';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
@@ -29,61 +29,75 @@ import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/u
 import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { checkUserAccessStatus, cleanScholarName, isFounderEmail } from './utils/authSecurity';
 import { cloudSync } from './services/cloudSyncService';
-import StudyWithMe from './pages/StudyWithMe';
-import ReportBug from './pages/ReportBug';
-import LifeReplay from './pages/LifeReplay';
-import FounderPortal from './pages/FounderPortal';
+const StudyWithMe = lazy(() => import('./pages/StudyWithMe'));
+const ReportBug = lazy(() => import('./pages/ReportBug'));
+const LifeReplay = lazy(() => import('./pages/LifeReplay'));
+const FounderPortal = lazy(() => import('./pages/FounderPortal'));
 import FounderLoginModal from './components/FounderLoginModal';
 import { recordSessionHeartbeat } from './services/userActivityLogService';
-import TestPortal from './pages/TestPortal';
-import AssignedTasksPortal from './pages/AssignedTasksPortal';
-import AttendancePortal from './pages/AttendancePortal';
-import Marketplace from './pages/Marketplace';
-import CommunityPortal from './pages/CommunityPortal';
-import JoinGroup from './pages/JoinGroup';
-import CareerRoadmap from './pages/CareerRoadmap';
-import SimulationPortal from './pages/SimulationPortal';
-import AiPlacementCommander from './pages/AiPlacementCommander';
-import LumixoraPlacementCommander from './pages/LumixoraPlacementCommander';
-import LumixoraTechPulse from './pages/LumixoraTechPulse';
-import ClubsPortal from './pages/ClubsPortal';
-import FacultyPortal from './pages/FacultyPortal';
-import HackathonPortal from './pages/HackathonPortal';
-import GrievancePortal from './pages/GrievancePortal';
-import ProjectShowcase from './pages/ProjectShowcase';
-import ResumeCreator from './pages/ResumeCreator';
-import VideoPortal from './pages/VideoPortal';
-import TeamPortal from './pages/TeamPortal';
-import OurTeamPortal from './pages/OurTeamPortal';
-import AlumniReferralBridge from './pages/AlumniReferralBridge';
-import CompanyPlacementPapers from './pages/CompanyPlacementPapers';
-import AptitudeArena from './components/AptitudeArena';
+const TestPortal = lazy(() => import('./pages/TestPortal'));
+const AssignedTasksPortal = lazy(() => import('./pages/AssignedTasksPortal'));
+const AttendancePortal = lazy(() => import('./pages/AttendancePortal'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const CommunityPortal = lazy(() => import('./pages/CommunityPortal'));
+const JoinGroup = lazy(() => import('./pages/JoinGroup'));
+const CareerRoadmap = lazy(() => import('./pages/CareerRoadmap'));
+const SimulationPortal = lazy(() => import('./pages/SimulationPortal'));
+const AiPlacementCommander = lazy(() => import('./pages/AiPlacementCommander'));
+const LumixoraPlacementCommander = lazy(() => import('./pages/LumixoraPlacementCommander'));
+const LumixoraTechPulse = lazy(() => import('./pages/LumixoraTechPulse'));
+const ClubsPortal = lazy(() => import('./pages/ClubsPortal'));
+const FacultyPortal = lazy(() => import('./pages/FacultyPortal'));
+const HackathonPortal = lazy(() => import('./pages/HackathonPortal'));
+const GrievancePortal = lazy(() => import('./pages/GrievancePortal'));
+const ProjectShowcase = lazy(() => import('./pages/ProjectShowcase'));
+const ResumeCreator = lazy(() => import('./pages/ResumeCreator'));
+const TeamPortal = lazy(() => import('./pages/TeamPortal'));
+const OurTeamPortal = lazy(() => import('./pages/OurTeamPortal'));
+const AlumniReferralBridge = lazy(() => import('./pages/AlumniReferralBridge'));
+const CompanyPlacementPapers = lazy(() => import('./pages/CompanyPlacementPapers'));
+const AptitudeArena = lazy(() => import('./components/AptitudeArena'));
 import PlatformTourModal from './components/PlatformTourModal';
 import CinematicIntro from './components/CinematicIntro';
 import TomAndJerryIntro from './components/TomAndJerryIntro';
 import CursorGlow from './components/CursorGlow';
-import CadEnglishClubPortal from './components/CadEnglishClubPortal';
-import PublicCadMemberPass from './pages/PublicCadMemberPass';
-import AiMockInterviewRoom from './pages/AiMockInterviewRoom';
-import ProofOfSkillCertificates from './pages/ProofOfSkillCertificates';
-import PublicCertificateVerification from './pages/PublicCertificateVerification';
-import CoursesPortal from './pages/CoursesPortal';
-import BoloClassPortal from './pages/BoloClassPortal';
+const CadEnglishClubPortal = lazy(() => import('./components/CadEnglishClubPortal'));
+const PublicCadMemberPass = lazy(() => import('./pages/PublicCadMemberPass'));
+const AiMockInterviewRoom = lazy(() => import('./pages/AiMockInterviewRoom'));
+const ProofOfSkillCertificates = lazy(() => import('./pages/ProofOfSkillCertificates'));
+const PublicCertificateVerification = lazy(() => import('./pages/PublicCertificateVerification'));
+const CoursesPortal = lazy(() => import('./pages/CoursesPortal'));
+const BoloClassPortal = lazy(() => import('./pages/BoloClassPortal'));
 // EduPulsePortal removed
 // RelayPortal removed
-import InternshipPortal from './pages/InternshipPortal';
-import InternWorkspacePortal from './pages/InternWorkspacePortal';
+const InternshipPortal = lazy(() => import('./pages/InternshipPortal'));
+const InternWorkspacePortal = lazy(() => import('./pages/InternWorkspacePortal'));
 // ProjectVerse removed
 import StudentOnboardingModal from './components/StudentOnboardingModal';
 import CursorCompanionModal from './components/CursorCompanionModal';
-import SpeakVersePortal from './pages/SpeakVersePortal';
-import TechPulsePortal from './pages/TechPulsePortal';
-import GprecPlacementLanding from './components/GprecPlacementLanding';
+const SpeakVersePortal = lazy(() => import('./pages/SpeakVersePortal'));
+const TechPulsePortal = lazy(() => import('./pages/TechPulsePortal'));
+const GprecPlacementLanding = lazy(() => import('./components/GprecPlacementLanding'));
 import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
-import GprecTpoPortal from './pages/GprecTpoPortal';
-import StudentPlacementDatabase from './pages/StudentPlacementDatabase';
+const GprecTpoPortal = lazy(() => import('./pages/GprecTpoPortal'));
+const StudentPlacementDatabase = lazy(() => import('./pages/StudentPlacementDatabase'));
 import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
-import TpoPortalLanding from './pages/TpoPortalLanding';
+const TpoPortalLanding = lazy(() => import('./pages/TpoPortalLanding'));
+
+
+// High-performance Suspense Loader Fallback
+function PortalFallback() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center animate-fadeIn">
+      <div className="relative w-12 h-12 flex items-center justify-center mb-3">
+        <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 animate-ping" />
+        <div className="w-9 h-9 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+      </div>
+      <div className="text-xs font-bold text-slate-700 tracking-tight">Initializing Workspace...</div>
+      <div className="text-[10px] text-slate-400 mt-0.5">Optimizing modular portal chunk</div>
+    </div>
+  );
+}
 
 function App() {
   const isGprecSubdomain = isGprecPlacementSubdomain();
@@ -1431,7 +1445,7 @@ function App() {
       case 'projectverse':
       case 'project-verse':
       case 'projects-hub':
-        return <Dashboard user={user} setActiveTab={handleTabChange} />;
+        return <ProjectShowcase user={user} setActiveTab={handleTabChange} />;
       case 'relay':
       case 'lumixora-relay':
       case 'fusion':
@@ -1500,7 +1514,7 @@ function App() {
       case 'all-clubs':
         if (isTpoSubdomain()) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
         if (isGprecPlacementSubdomain()) return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
-        return <ClubsPortal user={user} />;
+        return <ClubsPortal user={user} setActiveTab={handleTabChange} />;
       case 'cad':
       case 'cad-club':
       case 'cad-english-club':
@@ -1508,7 +1522,7 @@ function App() {
       case 'cadenglishclub':
         return <CadEnglishClubPortal user={user} isFounder={user?.role === 'founder'} onClose={() => handleTabChange('dashboard')} />;
       case 'marketplace':
-        return <Marketplace user={user} />;
+        return <Marketplace user={user} setActiveTab={handleTabChange} />;
       case 'community':
         return <CommunityPortal user={user} />;
       case 'verify':
@@ -1836,7 +1850,7 @@ function App() {
               <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:-translate-x-0.5 transition-all" />
               <span>Back to Home</span>
             </button>
-            <AuthPortal onLogin={handleLogin} mode={showLogin} onBackHome={() => setShowLogin(null)} />
+            <Suspense fallback={<PortalFallback />}><AuthPortal onLogin={handleLogin} mode={showLogin} onBackHome={() => setShowLogin(null)} /></Suspense>
             {renderUpdateModal()}
           </ToastProvider>
         </ThemeProvider>
@@ -1848,12 +1862,14 @@ function App() {
         <ThemeProvider>
           <ToastProvider>
             <CursorGlow />
-            <TpoPortalLanding 
-              onLoginClick={(role) => {
-                setGprecLoginRole(role || 'officer');
-                setShowGprecLogin(true);
-              }}
-            />
+            <Suspense fallback={<PortalFallback />}>
+              <TpoPortalLanding 
+                onLoginClick={(role) => {
+                  setGprecLoginRole(role || 'officer');
+                  setShowGprecLogin(true);
+                }}
+              />
+            </Suspense>
             <GprecPlacementLoginModal
               isOpen={showGprecLogin}
               defaultRole="student"
@@ -1876,25 +1892,27 @@ function App() {
         <ThemeProvider>
           <ToastProvider>
             <CursorGlow />
-            <GprecPlacementLanding 
-              onEnterPlacement={(portalId) => {
-                if (portalId === 'founder-login') {
-                  setShowFounderLogin(true);
-                  return;
-                }
-                setActiveTab(portalId || 'ai-commander');
-                setGprecLoginRole(portalId === 'tpo-dashboard' ? 'officer' : 'student');
-                setShowGprecLogin(true);
-              }}
-              onLoginClick={(role) => {
-                if (role === 'founder') {
-                  setShowFounderLogin(true);
-                  return;
-                }
-                setGprecLoginRole(role || 'student');
-                setShowGprecLogin(true);
-              }}
-            />
+            <Suspense fallback={<PortalFallback />}>
+              <GprecPlacementLanding 
+                onEnterPlacement={(portalId) => {
+                  if (portalId === 'founder-login') {
+                    setShowFounderLogin(true);
+                    return;
+                  }
+                  setActiveTab(portalId || 'ai-commander');
+                  setGprecLoginRole(portalId === 'tpo-dashboard' ? 'officer' : 'student');
+                  setShowGprecLogin(true);
+                }}
+                onLoginClick={(role) => {
+                  if (role === 'founder') {
+                    setShowFounderLogin(true);
+                    return;
+                  }
+                  setGprecLoginRole(role || 'student');
+                  setShowGprecLogin(true);
+                }}
+              />
+            </Suspense>
             <GprecPlacementLoginModal
               isOpen={showGprecLogin}
               defaultRole="student"
@@ -1922,7 +1940,7 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
           <CursorGlow />
-          <LandingPage onLoginClick={(type) => setShowLogin(type || 'student')} />
+          <Suspense fallback={<PortalFallback />}><LandingPage onLoginClick={(type) => setShowLogin(type || 'student')} /></Suspense>
           {renderUpdateModal()}
         </ToastProvider>
       </ThemeProvider>
@@ -1996,16 +2014,20 @@ function App() {
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
             {isGprecPlacementSubdomain() ? (
-              <AiPlacementCommander 
-                user={user} 
-                setActiveTab={handleTabChange} 
-                initialNav={activeTab} 
-                onLogout={handleLogout} 
-                embedded={false} 
-              />
+              <Suspense fallback={<PortalFallback />}>
+                <AiPlacementCommander 
+                  user={user} 
+                  setActiveTab={handleTabChange} 
+                  initialNav={activeTab} 
+                  onLogout={handleLogout} 
+                  embedded={false} 
+                />
+              </Suspense>
             ) : (
               <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
-                {renderContent()}
+                <Suspense fallback={<PortalFallback />}>
+                  {renderContent()}
+                </Suspense>
               </MainLayout>
             )}
             {renderUpdateModal()}

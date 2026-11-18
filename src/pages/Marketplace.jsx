@@ -26,7 +26,7 @@ const cleanScholarName = (rawName) => {
   return clean || 'Anonymous Scholar';
 };
 
-const Marketplace = () => {
+const Marketplace = ({ user: propUser, setActiveTab }) => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +38,7 @@ const Marketplace = () => {
   const { addToast } = useToast();
   
   // Assume user is stored in localStorage
-  const user = (() => { try { const item = localStorage.getItem('lumixora_user'); return item ? JSON.parse(item) : {}; } catch (e) { return {}; } })();
+  const user = propUser || (() => { try { const item = localStorage.getItem('lumixora_user'); return item ? JSON.parse(item) : {}; } catch (e) { return {}; } })();
   const college = user?.college || 'GPREC';
 
   // Form State
@@ -213,7 +213,7 @@ const Marketplace = () => {
     }
   };
 
-  const [activeTab, setActiveTabMode] = useState('opportunities'); // 'opportunities' | 'peer_market'
+  const [activeTab, setActiveTabMode] = useState('peer_market'); // 'peer_market' | 'opportunities'
   const [opportunityCategory, setOpportunityCategory] = useState('All');
 
   const OPPORTUNITY_CATEGORIES = ["All", "Internships", "Hackathons", "Scholarships", "Competitions", "Certifications & Workshops"];
@@ -230,7 +230,7 @@ const Marketplace = () => {
       badge: 'High Impact ⚡',
       badgeColor: 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10',
       description: 'Work directly on distributed student systems, LLM fine-tuning pipelines, and real-time backend API integration.',
-      link: 'https://lumixora-93cca.web.app/#/hackathons',
+      link: 'https://lumixora.in/#hackathons',
       skillsRequired: ['React', 'Python', 'Node.js', 'Firebase']
     },
     {
@@ -244,7 +244,7 @@ const Marketplace = () => {
       badge: 'Flagship 🏆',
       badgeColor: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
       description: 'Build futuristic solutions for campus safety, automated academic assistance, or student wellness. Cash prizes and direct internship offers.',
-      link: 'https://lumixora-93cca.web.app/#/hackathons',
+      link: 'https://lumixora.in/#hackathons',
       skillsRequired: ['AI/ML', 'Full Stack', 'UI/UX', 'Cloud']
     },
     {
