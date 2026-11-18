@@ -2162,12 +2162,12 @@ Return ONLY a valid JSON object without markdown:
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                {/* Hero Banner with Master High-Fidelity Graphic Matching Reference Mock Exactly */}
-                <div className="lg:col-span-8 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden flex items-center justify-center min-h-[220px] sm:min-h-[240px] md:min-h-[250px] group p-0">
+                {/* Hero Banner with Master High-Fidelity Graphic Matching Reference Mock Exactly - Full & Uncropped */}
+                <div className="lg:col-span-8 bg-gradient-to-r from-[#EDE8FA] via-[#FAF8FF] to-[#EBE4F9] border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden flex items-center justify-center p-0 aspect-[1254/426] group">
                   <img
                     src="/gprec-hero-banner-master.png"
                     alt="GPREC Placement Suite - Your Career. Our Commitment."
-                    className="w-full h-full object-cover rounded-[28px] select-none block"
+                    className="w-full h-full object-contain rounded-[28px] select-none block"
                   />
                   {/* Interactive Clickable Hotspots for Action Buttons */}
                   <div className="absolute inset-0 pointer-events-none">
@@ -2177,7 +2177,7 @@ Return ONLY a valid JSON object without markdown:
                       className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                       style={{
                         left: '3.5%',
-                        bottom: '8%',
+                        bottom: '9%',
                         width: '21%',
                         height: '18%'
                       }}
@@ -2189,7 +2189,7 @@ Return ONLY a valid JSON object without markdown:
                       className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
                       style={{
                         left: '26%',
-                        bottom: '8%',
+                        bottom: '9%',
                         width: '16%',
                         height: '18%'
                       }}

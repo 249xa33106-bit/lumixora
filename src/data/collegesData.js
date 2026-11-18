@@ -885,6 +885,7 @@ export const KNOWN_PAID_EMAILS = new Set([
   '259xa33079@gprec.ac.in', // Gajula Anusha (Paid ₹10 via Razorpay pay_Tu8rVAc8mVLav5)
   '269xa05526@gprec.ac.in', // Keshava Reddy (Paid ₹10 via Razorpay pay_TzfB14FOkNIoHi / Bank RRN 618108507754)
   '259xa05013@gprec.ac.in', // GPREC Placement Scholar (259XA05013)
+  '269x105013@gprec.ac.in', // GPREC Placement Scholar (269X105013)
 ]);
 
 /**

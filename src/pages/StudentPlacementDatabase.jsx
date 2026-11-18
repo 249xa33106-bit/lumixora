@@ -25,7 +25,8 @@ const PILOT_WHITELIST_ROLLS = [
   '249xa33112',
   '249xa33096',
   '249xa33091',
-  '259xa05013'
+  '259xa05013',
+  '269x105013'
 ];
 
 // 6 Distinct Recruitment Funnel Pipeline Stages
@@ -520,7 +521,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
             rollLower: roll,
             email: `${roll}@gprec.ac.in`,
             department: roll.includes('05') ? 'CSE' : 'CSM',
-            batchYear: roll.startsWith('259') ? '2025-2029' : '2022-2026',
+            batchYear: roll.startsWith('269') ? '2026-2030' : (roll.startsWith('259') ? '2025-2029' : '2022-2026'),
             placementSeason: '2025-2026',
             isGraduated: false,
             cgpa: ov.cgpa !== undefined ? parseFloat(ov.cgpa) : 8.5,

@@ -127,7 +127,7 @@ export default function GprecPlacementLoginModal({
       const verifiedUser = res?.user || (res?.id ? res : null);
       if (res?.success || verifiedUser) {
         setSuccessMsg('Identity verified. Entering GPREC Placement Suite...');
-        try { recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {}); } catch (_) {}
+        try { if (typeof recordUserLogin === 'function') { recordUserLogin(verifiedUser, 'Placement Suite').catch(() => {}); } } catch (_) {}
         if (onLoginSuccess) onLoginSuccess(verifiedUser);
         if (onClose) onClose();
       } else {
@@ -189,7 +189,7 @@ export default function GprecPlacementLoginModal({
       const userObj = res.user || res;
       if (res.success || userObj.isOfficer || userObj.isDean) {
         setSuccessMsg('Placement Officer authenticated. Loading operations suite...');
-        try { recordUserLogin(userObj, 'TPO Operations Suite').catch(() => {}); } catch (_) {}
+        try { if (typeof recordUserLogin === 'function') { recordUserLogin(userObj, 'TPO Operations Suite').catch(() => {}); } } catch (_) {}
         if (onLoginSuccess) onLoginSuccess(userObj);
         if (onClose) onClose();
       } else {
