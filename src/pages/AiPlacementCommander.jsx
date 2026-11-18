@@ -2656,24 +2656,24 @@ Return ONLY a valid JSON object without markdown:
                     onClick={() => navigateTo('placement', 'job_match')}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                     style={{
-                      left: '6.25%',
-                      bottom: '3.8%',
-                      width: '21.1%',
-                      height: '10.8%'
+                      left: '6.5%',
+                      top: '77.2%',
+                      width: '20.1%',
+                      height: '11.4%'
                     }}
-                    title="Explore Opportunities"
+                    aria-label="Explore Opportunities"
                   />
                   {/* Watch Overview Button Hotspot */}
                   <button
                     onClick={() => setShowOverviewModal(true)}
-                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
+                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
                     style={{
-                      left: '28.9%',
-                      bottom: '3.8%',
-                      width: '15.8%',
-                      height: '10.8%'
+                      left: '29.1%',
+                      top: '77.0%',
+                      width: '15.6%',
+                      height: '11.4%'
                     }}
-                    title="Watch Overview"
+                    aria-label="Watch Overview"
                   />
                 </div>
               </div>
