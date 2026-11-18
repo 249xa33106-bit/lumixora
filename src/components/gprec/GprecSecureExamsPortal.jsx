@@ -43,6 +43,14 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
     if (!code) return;
     const match = exams.find(ex => (ex.passcode || '').toUpperCase() === code);
     if (match) {
+      const studentEmailNorm = (user?.email || 'scholar@gprec.ac.in').toLowerCase();
+      const alreadyDone = match.singleAttemptOnly && attempts.some(
+        a => a.examId === match.id && (a.studentEmail || '').toLowerCase() === studentEmailNorm
+      );
+      if (alreadyDone) {
+        if (addToast) addToast({ message: `Single-Attempt Lock: You have already submitted "${match.title}".`, type: 'error' });
+        return;
+      }
       setQuickPasscode('');
       setActiveExam(match);
     } else if (addToast) {
@@ -202,6 +210,10 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
           {filteredExams.map(ex => {
             const mcqCount = (ex.sections || []).reduce((a, s) => a + (s.type === 'mcq' ? (s.questions?.length || 0) : 0), 0);
             const codeCount = (ex.sections || []).reduce((a, s) => a + (s.type === 'coding' ? (s.problems?.length || 0) : 0), 0);
+            const studentEmailNorm = (user?.email || 'scholar@gprec.ac.in').toLowerCase();
+            const isLockedSingleAttempt = Boolean(ex.singleAttemptOnly) && attempts.some(
+              a => a.examId === ex.id && (a.studentEmail || '').toLowerCase() === studentEmailNorm
+            );
             return (
               <div
                 key={ex.id}
@@ -250,20 +262,35 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
                     <span className="px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Max {ex.maxViolations} Strikes
                     </span>
+                    {ex.shuffleQuestions && (
+                      <span className="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700">
+                        Shuffled
+                      </span>
+                    )}
+                    {ex.singleAttemptOnly && (
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
+                        1-Attempt Lock
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                   <span className="text-[11px] text-slate-400 font-medium">
-                    Fullscreen • Anti-Paste • Auto-Graded
+                    Fullscreen • AI Vision • Anti-Paste IDE
                   </span>
                   <button
                     type="button"
+                    disabled={isLockedSingleAttempt}
                     onClick={() => setActiveExam(ex)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#7c3aed] hover:opacity-95 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                    className={`px-4 py-2 rounded-xl font-extrabold text-xs flex items-center gap-1.5 shadow-sm transition-all ${
+                      isLockedSingleAttempt
+                        ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] hover:opacity-95 text-white cursor-pointer'
+                    }`}
                   >
-                    <Play className="w-3.5 h-3.5" />
-                    <span>Launch Secure Exam</span>
+                    {isLockedSingleAttempt ? <Lock className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    <span>{isLockedSingleAttempt ? 'Attempt Locked' : 'Launch Secure Exam'}</span>
                   </button>
                 </div>
               </div>

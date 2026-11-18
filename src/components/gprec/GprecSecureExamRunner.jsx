@@ -1,4 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+
+const shuffleArray = (arr) => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
 import Editor from '@monaco-editor/react';
 import {
   Shield, ShieldAlert, ShieldCheck, Lock, Eye, Video, VideoOff, Mic, MicOff,
@@ -99,7 +108,32 @@ export default function GprecSecureExamRunner({
   // Final Graded Attempt Result
   const [finalAttempt, setFinalAttempt] = useState(null);
 
-  const currentSection = exam.sections?.[activeSectionIdx] || exam.sections?.[0];
+  // Per-candidate randomized copy when shuffleQuestions / shuffleOptions are enabled
+  const preparedExam = useMemo(() => {
+    const shouldShuffleQ = Boolean(exam.shuffleQuestions);
+    const shouldShuffleO = Boolean(exam.shuffleOptions);
+    if (!shouldShuffleQ && !shouldShuffleO) return exam;
+
+    const mappedSections = (exam.sections || []).map(sec => {
+      if (sec.type !== 'mcq') return sec;
+      let qs = (sec.questions || []).map(q => {
+        if (!shouldShuffleO || !Array.isArray(q.options)) return q;
+        const tagged = q.options.map((text, origIdx) => ({ text, isCorrect: origIdx === q.correctIndex }));
+        const mixed = shuffleArray(tagged);
+        return {
+          ...q,
+          options: mixed.map(x => x.text),
+          correctIndex: Math.max(0, mixed.findIndex(x => x.isCorrect))
+        };
+      });
+      if (shouldShuffleQ) qs = shuffleArray(qs);
+      return { ...sec, questions: qs };
+    });
+
+    return { ...exam, sections: mappedSections };
+  }, [exam]);
+
+  const currentSection = preparedExam.sections?.[activeSectionIdx] || preparedExam.sections?.[0];
   const sectionItems = currentSection?.type === 'coding'
     ? (currentSection.problems || [])
     : (currentSection?.questions || []);
@@ -198,7 +232,7 @@ export default function GprecSecureExamRunner({
     let totalMarks = 0;
     const sectionBreakdown = [];
 
-    (exam.sections || []).forEach(sec => {
+    (preparedExam.sections || []).forEach(sec => {
       let secEarned = 0;
       let secMax = 0;
 
@@ -288,7 +322,7 @@ export default function GprecSecureExamRunner({
     setPhase('result');
     if (onCompleteAttempt) onCompleteAttempt(attempt);
   }, [
-    exam, mcqAnswers, codingState, violations, trustScore,
+    exam, preparedExam, mcqAnswers, codingState, violations, trustScore,
     studentName, studentEmail, rollNumber, department, camStatus,
     stopHardwareAndBridge, onCompleteAttempt
   ]);
@@ -1365,16 +1399,37 @@ export default function GprecSecureExamRunner({
                     theme="vs-dark"
                     language={curCoding.language === 'cpp' ? 'cpp' : curCoding.language}
                     value={curCoding.code}
+                    onMount={(editor, monaco) => {
+                      // Block paste commands directly inside Monaco IDE
+                      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                        recordViolation('IDE Paste Blocked', 'Blocked Ctrl+V paste attempt inside locked Coding IDE', 15);
+                      });
+                      editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Insert, () => {
+                        recordViolation('IDE Paste Blocked', 'Blocked Shift+Insert paste inside locked Coding IDE', 15);
+                      });
+                    }}
                     onChange={(val) => {
+                      const nextCode = val || '';
+                      const prevCode = curCoding.code || '';
+                      const delta = nextCode.length - prevCode.length;
+                      if (exam.strictCodingLockdown !== false && delta > 45) {
+                        recordViolation('Bulk Code Injection Blocked', `Blocked sudden +${delta} char insertion inside Coding IDE`, 15);
+                        setCodingState(prev => ({
+                          ...prev,
+                          [currentItem.id]: { ...curCoding, code: prevCode }
+                        }));
+                        return;
+                      }
                       setCodingState(prev => ({
                         ...prev,
-                        [currentItem.id]: { ...curCoding, code: val || '' }
+                        [currentItem.id]: { ...curCoding, code: nextCode }
                       }));
                     }}
                     options={{
                       fontSize: 13,
                       minimap: { enabled: false },
                       contextmenu: false,
+                      dragAndDrop: false,
                       scrollBeyondLastLine: false,
                       automaticLayout: true
                     }}
