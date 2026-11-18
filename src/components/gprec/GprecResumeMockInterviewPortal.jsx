@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cleanScholarName } from '../../utils/authSecurity';
+import { GPREC_COMPANY_ATS_BENCHMARKS } from './gprecCompanyAtsBenchmarks';
 import {
   FileText, Upload, Sparkles, CheckCircle2, AlertCircle, ArrowRight,
   Mic, MicOff, Volume2, VolumeX, RefreshCw, Award, Download, Clock,
   ShieldCheck, Brain, Target, ChevronRight, BarChart2, Star, Check,
-  BookOpen, Code, Layers, MessageSquare, Play, RotateCcw
+  BookOpen, Code, Layers, MessageSquare, Play, RotateCcw,
+  Copy, CheckCheck, TrendingUp, Zap, Building2, ThumbsUp, Flame
 } from 'lucide-react';
 
 export default function GprecResumeMockInterviewPortal({
@@ -20,6 +22,12 @@ export default function GprecResumeMockInterviewPortal({
 
   const studentName = cleanScholarName(user?.name || user?.displayName, 'GPREC Scholar');
   const studentBranch = (user?.branch || user?.department || 'CSE').toUpperCase().slice(0, 5);
+
+  // Portal Tab Mode: 'ats_matcher' (Company ATS Matcher) | 'mock_interview' (Bar Raiser Viva)
+  const [activePortalTab, setActivePortalTab] = useState('ats_matcher');
+  const [targetCompanyId, setTargetCompanyId] = useState('amazon');
+  const [copiedBulletId, setCopiedBulletId] = useState(null);
+  const [appliedBulletIds, setAppliedBulletIds] = useState([]);
 
   // Portal Stages: 'upload' | 'analyzing' | 'review_plan' | 'interview' | 'scorecard'
   const [stage, setStage] = useState('upload');
@@ -66,6 +74,167 @@ export default function GprecResumeMockInterviewPortal({
       }
     } catch (e) {}
   }, [resumeDraftKey]);
+
+  // Active Target Company Benchmark
+  const activeCompanyBenchmark = useMemo(() => {
+    return GPREC_COMPANY_ATS_BENCHMARKS.find(c => c.id === targetCompanyId) || GPREC_COMPANY_ATS_BENCHMARKS[0];
+  }, [targetCompanyId]);
+
+  // Real-Time Company ATS Match Analysis Engine
+  const atsAnalysisResult = useMemo(() => {
+    const raw = resumeText || '';
+    const lower = raw.toLowerCase();
+    const benchmark = activeCompanyBenchmark;
+    const reqKeywords = benchmark.requiredKeywords || [];
+
+    const matched = [];
+    const missing = [];
+    let totalScore = 0;
+    let maxScore = 0;
+
+    reqKeywords.forEach(kw => {
+      const weight = kw.weight || 2;
+      maxScore += weight;
+
+      // Extract search tokens from keyword name (e.g., 'AWS / Cloud Services' -> ['aws', 'cloud'])
+      const tokens = kw.name.toLowerCase().split(/[/,s]+/).filter(t => t.length > 2 && !['and', 'for', 'the', 'services', 'core', 'implementation'].includes(t));
+      const foundInText = tokens.some(t => {
+        const regex = new RegExp(`\\b${t}`, 'i');
+        return regex.test(lower);
+      });
+
+      if (foundInText) {
+        matched.push(kw);
+        totalScore += weight;
+      } else {
+        missing.push(kw);
+      }
+    });
+
+    // Check for quantifiable metric density (numbers, %, ms, users, RPS)
+    const metricMatches = lower.match(/\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb))\b/gi) || [];
+    const metricBonus = Math.min(10, metricMatches.length * 2.5);
+
+    // Check for active engineering action verbs
+    const actionVerbs = ['architected', 'engineered', 'spearheaded', 'implemented', 'optimized', 'scaled', 'developed', 'orchestrated', 'profiled', 'containerized', 'designed'];
+    const foundVerbs = actionVerbs.filter(v => lower.includes(v));
+    const verbBonus = Math.min(10, foundVerbs.length * 2);
+
+    const basePct = maxScore > 0 ? (totalScore / maxScore) * 80 : 0;
+    const calculatedMatch = Math.min(100, Math.round(basePct + metricBonus + verbBonus));
+
+    let statusTier = 'high_risk';
+    let statusLabel = 'High Screening Rejection Risk';
+    let statusDesc = `Missing critical ${benchmark.name} recruiter keywords. High probability of automated ATS rejection.`;
+    let statusColor = 'text-rose-600';
+    let statusBg = 'bg-rose-50 border-rose-200';
+
+    if (calculatedMatch >= benchmark.passingThreshold) {
+      statusTier = 'premier';
+      statusLabel = '🌟 Premier Shortlist Ready';
+      statusDesc = `Surpasses ${benchmark.name} automated ATS screening bar (${benchmark.passingThreshold}%). High probability of interview call.`;
+      statusColor = 'text-emerald-700';
+      statusBg = 'bg-emerald-50 border-emerald-300';
+    } else if (calculatedMatch >= benchmark.passingThreshold - 12) {
+      statusTier = 'competitive';
+      statusLabel = 'Competitive (Minor Keyword Gaps)';
+      statusDesc = `Close to ${benchmark.name} passing threshold. Apply suggested 1-click rewrites to reach premier shortlist tier.`;
+      statusColor = 'text-blue-700';
+      statusBg = 'bg-blue-50 border-blue-200';
+    } else if (calculatedMatch >= 48) {
+      statusTier = 'moderate_risk';
+      statusLabel = '⚠️ Moderate Filter Risk';
+      statusDesc = `Resume lacks several core competencies expected by ${benchmark.name} recruiters.`;
+      statusColor = 'text-amber-700';
+      statusBg = 'bg-amber-50 border-amber-200';
+    }
+
+    return {
+      matchPercentage: calculatedMatch,
+      statusTier,
+      statusLabel,
+      statusDesc,
+      statusColor,
+      statusBg,
+      matchedKeywords: matched,
+      missingKeywords: missing,
+      metricCount: metricMatches.length,
+      actionVerbCount: foundVerbs.length
+    };
+  }, [resumeText, activeCompanyBenchmark]);
+
+  // 1-Click Bullet Point Rewrite Applicator
+  const handleApplyBulletRewrite = (rewrite) => {
+    if (!rewrite?.improved) return;
+
+    let newResume = resumeText;
+    const weakLower = rewrite.weak.toLowerCase();
+    const resumeLower = resumeText.toLowerCase();
+
+    if (resumeLower.includes(weakLower)) {
+      const idx = resumeLower.indexOf(weakLower);
+      newResume = resumeText.slice(0, idx) + rewrite.improved + resumeText.slice(idx + rewrite.weak.length);
+    } else {
+      if (newResume.trim()) {
+        newResume = `${newResume.trim()}\n• ${rewrite.improved}`;
+      } else {
+        newResume = `• ${rewrite.improved}`;
+      }
+    }
+
+    setResumeText(newResume);
+    setAppliedBulletIds(prev => [...new Set([...prev, rewrite.id])]);
+
+    if (addToast) {
+      addToast({
+        type: 'success',
+        message: `Applied ${activeCompanyBenchmark.name} ATS bullet! Score calibrated.`
+      });
+    }
+
+    if (onUpdateTwinSkill) {
+      onUpdateTwinSkill('resume', Math.min(100, atsAnalysisResult.matchPercentage + 6), `Applied ATS Bullet: ${rewrite.title}`);
+    }
+  };
+
+  const handleCopyBullet = (rewrite) => {
+    if (!rewrite?.improved) return;
+    navigator.clipboard?.writeText(rewrite.improved);
+    setCopiedBulletId(rewrite.id);
+    setTimeout(() => setCopiedBulletId(null), 2500);
+    if (addToast) {
+      addToast({ type: 'info', message: 'Copied high-conversion bullet point to clipboard!' });
+    }
+  };
+
+  const handleAddKeywordToResume = (kwName) => {
+    if (!kwName) return;
+    setResumeText(prev => {
+      const trimmed = prev.trim();
+      return trimmed ? `${trimmed}\n• Key Technical Competencies: ${kwName}` : `Key Technical Competencies: ${kwName}`;
+    });
+    if (addToast) {
+      addToast({ type: 'success', message: `Injected "${kwName}" into resume competencies!` });
+    }
+  };
+
+  const handleLaunchMockVivaFromAts = () => {
+    // Map company to persona
+    const companyId = activeCompanyBenchmark.id;
+    if (companyId === 'amazon') setSelectedPersona('amazon');
+    else if (companyId === 'tcs_prime') setSelectedPersona('tcs_prime');
+    else if (companyId === 'microsoft') setSelectedPersona('microsoft');
+    else setSelectedPersona('google');
+
+    setActivePortalTab('mock_interview');
+    setStage('upload');
+    if (addToast) {
+      addToast({
+        type: 'success',
+        message: `Pre-configured AI Bar Raiser for ${activeCompanyBenchmark.name}!`
+      });
+    }
+  };
 
   // Voice Recognition Setup
   useEffect(() => {
@@ -708,6 +877,537 @@ export default function GprecResumeMockInterviewPortal({
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-extrabold uppercase tracking-wider mb-2.5">
               <Brain className="w-3.5 h-3.5" />
+              <span>GPREC Scholar Placement Suite</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Company-Specific ATS Matcher & AI Bar Raiser Viva
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+              Target major recruiters visiting GPREC. Calculate your live Company ATS Match %, detect missing screening keywords, apply 1-click Google XYZ formula bullet rewrites, and defend your claims with an AI Senior Bar Raiser.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {activePortalTab === 'mock_interview' && stage !== 'upload' && (
+              <button
+                type="button"
+                onClick={() => setStage('upload')}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Change Resume
+              </button>
+            )}
+            {stage === 'scorecard' && finalReport && (
+              <button
+                type="button"
+                onClick={handleExportPDF}
+                className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+              >
+                <Download className="w-3.5 h-3.5" /> Download Scorecard PDF
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Primary Portal Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-slate-200/80 rounded-2xl p-2.5 shadow-xs">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <button
+            type="button"
+            onClick={() => setActivePortalTab('ats_matcher')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 cursor-pointer transition-all whitespace-nowrap ${
+              activePortalTab === 'ats_matcher'
+                ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 text-white shadow-md shadow-purple-500/20'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+            }`}
+          >
+            <Target className="w-4 h-4 text-amber-300" />
+            <span>Company ATS Resume Matcher</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-400 text-slate-950 uppercase tracking-wider">
+              Highest Conversion
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActivePortalTab('mock_interview')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 cursor-pointer transition-all whitespace-nowrap ${
+              activePortalTab === 'mock_interview'
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+            }`}
+          >
+            <Mic className="w-4 h-4 text-cyan-400" />
+            <span>AI Senior Bar Raiser Mock Viva</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-cyan-400/20 text-cyan-700 uppercase">
+              100% Grounded
+            </span>
+          </button>
+        </div>
+
+        {/* Live Target Recruiter Indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200/70 text-xs font-bold text-purple-900 self-start sm:self-auto">
+          <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse flex-shrink-0" />
+          <span className="truncate">Active Recruiter: {activeCompanyBenchmark.name}</span>
+          <span className="text-[10px] text-purple-600 font-normal hidden lg:inline">({activeCompanyBenchmark.tier})</span>
+        </div>
+      </div>
+
+      {/* ================================================================= */}
+      {/* VIEW: COMPANY ATS RESUME MATCHER (HIGHEST CONVERSION)             */}
+      {/* ================================================================= */}
+      {activePortalTab === 'ats_matcher' && (
+        <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          {/* Recruiter Selector Carousel */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-purple-600" />
+                <h3 className="text-sm font-extrabold text-slate-900">Select Target Company Recruiter</h3>
+                <span className="text-[11px] text-slate-400">({GPREC_COMPANY_ATS_BENCHMARKS.length} Active GPREC Recruiters)</span>
+              </div>
+              <span className="text-xs font-bold text-indigo-600">Screening Threshold: {activeCompanyBenchmark.passingThreshold}%</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+              {GPREC_COMPANY_ATS_BENCHMARKS.map(comp => {
+                const isSelected = targetCompanyId === comp.id;
+                return (
+                  <button
+                    key={comp.id}
+                    type="button"
+                    onClick={() => setTargetCompanyId(comp.id)}
+                    className={`p-3 rounded-2xl text-left border cursor-pointer transition-all flex flex-col justify-between gap-1.5 ${
+                      isSelected
+                        ? 'bg-purple-50/80 border-purple-600 ring-2 ring-purple-500/20 shadow-xs'
+                        : 'bg-white border-slate-200/80 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-black text-slate-900 truncate">{comp.name}</span>
+                      {isSelected && <Check className="w-3.5 h-3.5 text-purple-600 stroke-3 flex-shrink-0" />}
+                    </div>
+                    <div className="text-[10px] text-slate-400 line-clamp-1">{comp.role}</div>
+                    <div className="text-[10px] font-extrabold text-purple-700 truncate">{comp.tier.split('(')[0]}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main 2-Column Work Area */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Upload & Resume Text Editor (5 cols) */}
+            <div className="lg:col-span-5 flex flex-col gap-4">
+              {/* File Upload Box */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900">1. Upload or Paste Resume</h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Instant client-side parser (PDF, DOCX, TXT)</p>
+                  </div>
+                  {resumeFileName && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700">
+                      {resumeFileName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Dropzone */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-indigo-200 hover:border-indigo-500 hover:bg-indigo-50/30 rounded-2xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 group"
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".pdf,.txt,.docx,.md"
+                    className="hidden"
+                  />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center transition-colors">
+                    {isParsingFile ? <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" /> : <Upload className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <div className="text-xs font-extrabold text-slate-800">
+                      {isParsingFile ? 'Extracting Resume Text...' : 'Click or Drag & Drop Resume File'}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {isParsingFile ? 'Fast client-side stream parser (<2s)' : 'PDF, DOCX, TXT up to 10 MB'}
+                    </div>
+                  </div>
+                  {isParsingFile && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsParsingFile(false);
+                      }}
+                      className="mt-1 px-2.5 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      Cancel / Enter Plain Text
+                    </button>
+                  )}
+                </div>
+
+                {/* 1-Click Fast Presets */}
+                <div className="flex flex-col gap-2 pt-1 border-t border-slate-100">
+                  {hasSavedDraft && (
+                    <button
+                      type="button"
+                      onClick={handleLoadSavedAtsResume}
+                      className="p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200/70 text-purple-900 text-xs font-bold flex items-center justify-between transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Load from Saved GPREC ATS Resume Draft</span>
+                      </div>
+                      <ArrowRight className="w-3 h-3 text-purple-600" />
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleLoadProfile}
+                    className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold flex items-center justify-between transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Load Verified Scholar Profile & Projects</span>
+                    </div>
+                    <ArrowRight className="w-3 h-3 text-slate-400" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Resume Textbox */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">Editable Resume Content</h3>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    {resumeText.trim().length} chars • ~{resumeText.trim().split(/\s+/).filter(Boolean).length} words
+                  </span>
+                </div>
+
+                <textarea
+                  rows={14}
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                  placeholder="Paste or review your resume plain text here... (Projects, Tech Stack, Experience, Metrics & Key Achievements)"
+                  className="w-full p-3.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 leading-relaxed bg-slate-50/50"
+                />
+
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setResumeText('')}
+                    className="text-[11px] font-bold text-slate-400 hover:text-rose-600 cursor-pointer"
+                  >
+                    Clear Text
+                  </button>
+                  <span className="text-[11px] text-slate-400">
+                    Live Score Recalculates As You Edit
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Live Company ATS Match % & Keyword Insights (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col gap-5">
+              {/* Score & Verdict Card */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                        {activeCompanyBenchmark.name}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">•</span>
+                      <span className="text-xs font-bold text-slate-500">{activeCompanyBenchmark.role}</span>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 mt-1">
+                      Automated ATS Screening Match: {atsAnalysisResult.matchPercentage}%
+                    </h3>
+                  </div>
+
+                  {/* Circular Score Badge */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full bg-slate-100 border-4 border-slate-200" />
+                      <div
+                        className={`absolute inset-0 rounded-full border-4 transition-all duration-700 ${
+                          atsAnalysisResult.matchPercentage >= activeCompanyBenchmark.passingThreshold
+                            ? 'border-emerald-500'
+                            : atsAnalysisResult.matchPercentage >= 55
+                            ? 'border-amber-500'
+                            : 'border-rose-500'
+                        }`}
+                        style={{
+                          clipPath: `polygon(50% 50%, -50% -50%, ${atsAnalysisResult.matchPercentage * 2}% -50%, ${atsAnalysisResult.matchPercentage * 2}% 150%)`
+                        }}
+                      />
+                      <span className="relative text-lg font-black text-slate-900">
+                        {atsAnalysisResult.matchPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar & Threshold */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                    <span className="text-slate-600">Screening Compatibility Bar</span>
+                    <span className="text-slate-400">
+                      Company Cutoff: <strong className="text-slate-700">{activeCompanyBenchmark.passingThreshold}%</strong>
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden relative">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
+                        atsAnalysisResult.matchPercentage >= activeCompanyBenchmark.passingThreshold
+                          ? 'from-emerald-500 to-teal-500'
+                          : atsAnalysisResult.matchPercentage >= 55
+                          ? 'from-amber-500 to-yellow-500'
+                          : 'from-rose-500 to-red-600'
+                      }`}
+                      style={{ width: `${Math.max(5, atsAnalysisResult.matchPercentage)}%` }}
+                    />
+                    {/* Cutoff Marker */}
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5 bg-slate-900 z-10"
+                      style={{ left: `${activeCompanyBenchmark.passingThreshold}%` }}
+                      title={`Target Cutoff (${activeCompanyBenchmark.passingThreshold}%)`}
+                    />
+                  </div>
+                </div>
+
+                {/* Verdict Box */}
+                <div className={`p-4 rounded-xl border flex items-start gap-3 ${atsAnalysisResult.statusBg}`}>
+                  <div className="mt-0.5 flex-shrink-0">
+                    {atsAnalysisResult.matchPercentage >= activeCompanyBenchmark.passingThreshold ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-amber-600" />
+                    )}
+                  </div>
+                  <div>
+                    <div className={`text-xs font-black ${atsAnalysisResult.statusColor}`}>
+                      {atsAnalysisResult.statusLabel}
+                    </div>
+                    <div className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                      {atsAnalysisResult.statusDesc}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recruiter Metrics Summary Pill */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 text-center">
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Keywords Found</div>
+                    <div className="text-base font-black text-slate-800 mt-0.5">
+                      {atsAnalysisResult.matchedKeywords.length} / {activeCompanyBenchmark.requiredKeywords.length}
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Missing Signals</div>
+                    <div className="text-base font-black text-rose-600 mt-0.5">
+                      {atsAnalysisResult.missingKeywords.length}
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Quantified Metrics</div>
+                    <div className="text-base font-black text-slate-800 mt-0.5">
+                      {atsAnalysisResult.metricCount}
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Action Verbs</div>
+                    <div className="text-base font-black text-slate-800 mt-0.5">
+                      {atsAnalysisResult.actionVerbCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recruiter Keyword Audit */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    <h3 className="text-sm font-extrabold text-slate-900">
+                      Recruiter Keywords Audit ({activeCompanyBenchmark.name})
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-slate-400">Click "+" to inject into resume</span>
+                </div>
+
+                {/* Missing Keywords (Actionable) */}
+                {atsAnalysisResult.missingKeywords.length > 0 && (
+                  <div>
+                    <div className="text-xs font-bold text-rose-700 mb-2 flex items-center gap-1.5">
+                      <span>Missing Recruiter Keywords ({atsAnalysisResult.missingKeywords.length})</span>
+                      <span className="text-[10px] font-normal text-slate-400">— Critical for automated screening</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {atsAnalysisResult.missingKeywords.map(kw => (
+                        <button
+                          key={kw.name}
+                          type="button"
+                          onClick={() => handleAddKeywordToResume(kw.name)}
+                          className="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 group"
+                          title={`Click to inject "${kw.name}" into resume`}
+                        >
+                          <span>{kw.name}</span>
+                          <span className="text-[10px] text-rose-500 font-bold group-hover:text-rose-700">+ Add</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Matched Keywords */}
+                {atsAnalysisResult.matchedKeywords.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="text-xs font-bold text-emerald-700 mb-2 flex items-center gap-1.5">
+                      <span>Matched Competencies ({atsAnalysisResult.matchedKeywords.length})</span>
+                      <span className="text-[10px] font-normal text-slate-400">— Detected in your resume</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {atsAnalysisResult.matchedKeywords.map(kw => (
+                        <span
+                          key={kw.name}
+                          className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1.5"
+                        >
+                          <Check className="w-3 h-3 text-emerald-600 stroke-3" />
+                          <span>{kw.name}</span>
+                          <span className="text-[9px] text-emerald-600 uppercase font-mono">({kw.category})</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* High-Conversion 1-Click Bullet Point Rewrites (Google XYZ Formula) */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <h3 className="text-sm font-extrabold text-slate-900">
+                      1-Click High-Conversion Bullet Rewrites (Google XYZ Formula)
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-extrabold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                    Target: {activeCompanyBenchmark.name}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Screening algorithms penalize generic responsibility statements. Below are recruiter-calibrated rewrites formatted with quantifiable impact (Accomplished [X], measured by [Y], by doing [Z]).
+                </p>
+
+                <div className="space-y-4">
+                  {(activeCompanyBenchmark.bulletRewrites || []).map(rewrite => {
+                    const isApplied = appliedBulletIds.includes(rewrite.id);
+                    const isCopied = copiedBulletId === rewrite.id;
+                    return (
+                      <div
+                        key={rewrite.id}
+                        className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col gap-3 transition-all hover:border-purple-300 hover:bg-purple-50/20"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <span className="w-1.5 h-3.5 bg-purple-600 rounded-full" />
+                            <span>{rewrite.title}</span>
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">Google XYZ Formula</span>
+                        </div>
+
+                        {/* Weak Statement */}
+                        <div className="p-2.5 rounded-xl bg-white border border-rose-200 text-xs text-slate-600 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-rose-700">Before (Filter Risk): </span>
+                            <span className="line-through opacity-80">{rewrite.weak}</span>
+                          </div>
+                        </div>
+
+                        {/* Improved Statement */}
+                        <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-slate-800 flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-extrabold text-emerald-800">Company-Calibrated Rewrite: </span>
+                            <span className="font-medium text-slate-900 leading-relaxed">{rewrite.improved}</span>
+                          </div>
+                        </div>
+
+                        {/* Recruiter Impact Reason */}
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                          <ThumbsUp className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+                          <span>{rewrite.reason}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyBullet(rewrite)}
+                            className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                          >
+                            {isCopied ? <CheckCheck className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                            <span>{isCopied ? 'Copied!' : 'Copy Bullet'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleApplyBulletRewrite(rewrite)}
+                            className={`px-4 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-xs ${
+                              isApplied
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white'
+                            }`}
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>{isApplied ? 'Applied ✓' : 'Apply Rewrite to Resume'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Bridge to Mock Viva CTA */}
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-xs text-slate-500">
+                    Ready to defend your claims? Practice in the Bar Raiser room.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLaunchMockVivaFromAts}
+                    disabled={!resumeText.trim()}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all disabled:opacity-50"
+                  >
+                    <span>Launch {activeCompanyBenchmark.name} Mock Interview</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================= */}
+      {/* VIEW: AI SENIOR BAR RAISER MOCK VIVA (ORIGINAL STAGES)            */}
+      {/* ================================================================= */}
+      {activePortalTab === 'mock_interview' && (
+        <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+      <div className="bg-gradient-to-br from-[#080B22] via-[#14123E] to-[#2B0E4C] rounded-3xl p-6 text-white shadow-xl border border-purple-900/40 relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-extrabold uppercase tracking-wider mb-2.5">
+              <Brain className="w-3.5 h-3.5" />
               <span>Strictly Resume-Grounded Mock Interview Portal</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
@@ -1311,6 +2011,8 @@ export default function GprecResumeMockInterviewPortal({
               </button>
             </div>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>
