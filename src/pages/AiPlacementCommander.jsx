@@ -2210,11 +2210,11 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[1854/636] group">
+              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[1024/576] group">
                 <img
-                  src="/gprec-hero-banner-no-pulse.png"
-                  alt="GPREC Placement Suite - Your Career. Our Commitment."
-                  className="w-full h-full object-fill rounded-[28px] select-none block"
+                  src="/gprec-hero-banner-pullareddy.png"
+                  alt="GPREC Placement Suite - G. Pulla Reddy Memorial - Your Career. Our Commitment."
+                  className="w-full h-full object-cover rounded-[28px] select-none block"
                 />
                 {/* Interactive Clickable Hotspots for Action Buttons */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -2223,10 +2223,10 @@ Return ONLY a valid JSON object without markdown:
                     onClick={() => navigateTo('placement', 'job_match')}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                     style={{
-                      left: '3.2%',
-                      bottom: '5.2%',
-                      width: '20.2%',
-                      height: '13.2%'
+                      left: '6.25%',
+                      bottom: '25.7%',
+                      width: '21.1%',
+                      height: '8.3%'
                     }}
                     title="Explore Opportunities"
                   />
@@ -2235,10 +2235,10 @@ Return ONLY a valid JSON object without markdown:
                     onClick={() => setShowOverviewModal(true)}
                     className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
                     style={{
-                      left: '25.1%',
-                      bottom: '5.2%',
-                      width: '16.2%',
-                      height: '13.2%'
+                      left: '28.9%',
+                      bottom: '25.7%',
+                      width: '15.8%',
+                      height: '8.3%'
                     }}
                     title="Watch Overview"
                   />
