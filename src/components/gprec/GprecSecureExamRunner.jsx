@@ -30,6 +30,9 @@ export default function GprecSecureExamRunner({
   const studentEmail = user?.email || 'scholar@gprec.ac.in';
   const rollNumber = user?.rollNumber || user?.roll || 'GPREC-STUDENT';
   const department = user?.branch || user?.department || 'CSE';
+  const studentIdentityLabel = studentName.toUpperCase().includes(String(rollNumber).toUpperCase())
+    ? studentName
+    : `${studentName} (${rollNumber})`;
 
   // Phase: 'preflight' | 'active' | 'result'
   const [phase, setPhase] = useState('preflight');
@@ -54,7 +57,15 @@ export default function GprecSecureExamRunner({
   const [violations, setViolations] = useState([]);
   const [activeAlertBanner, setActiveAlertBanner] = useState(null);
   const [proctorMessage, setProctorMessage] = useState(null);
+  const [visionStatus, setVisionStatus] = useState('verified'); // 'verified' | 'obstructed' | 'no_face' | 'multi_face'
+  const [visionDetail, setVisionDetail] = useState('Face & Camera Verified');
   const submittedRef = useRef(false);
+  const examStartedAtRef = useRef(0);
+  const lastFocusStrikeAtRef = useRef(0);
+  const lastVisionStrikeAtRef = useRef(0);
+  const lastAudioStrikeAtRef = useRef(0);
+  const visionAnomalyStreakRef = useRef(0);
+  const audioSpikeStreakRef = useRef(0);
 
   // Exam Navigation & Timers
   const [activeSectionIdx, setActiveSectionIdx] = useState(0);
@@ -349,6 +360,7 @@ export default function GprecSecureExamRunner({
       );
     } catch (e) {}
 
+    examStartedAtRef.current = Date.now();
     setPhase('active');
     if (camStatus !== 'ready') {
       // Log camera fallback in audit trail cleanly (no strike penalty, informational 5% note)
@@ -363,21 +375,32 @@ export default function GprecSecureExamRunner({
     }
   };
 
-  // Active Security Lockdown Listeners
+  // Active Security Lockdown Listeners (with 3s launch grace window + focus/tab deduplication)
   useEffect(() => {
     if (phase !== 'active') return;
 
+    const withinLaunchGrace = () => Date.now() - examStartedAtRef.current < 3000;
+
     const handleVisibility = () => {
+      if (withinLaunchGrace()) return;
       if (document.hidden) {
+        const now = Date.now();
+        if (now - lastFocusStrikeAtRef.current < 1500) return;
+        lastFocusStrikeAtRef.current = now;
         recordViolation('Tab Switch Detected', 'Candidate navigated away from the secure exam tab', 15);
       }
     };
     const handleBlur = () => {
+      if (withinLaunchGrace()) return;
+      const now = Date.now();
+      if (now - lastFocusStrikeAtRef.current < 1500) return;
+      lastFocusStrikeAtRef.current = now;
       recordViolation('Window Focus Lost', 'Candidate clicked outside the locked exam window', 12);
     };
     const handleFullscreenChange = () => {
       const inFs = Boolean(document.fullscreenElement);
       setIsFullscreen(inFs);
+      if (withinLaunchGrace()) return;
       if (!inFs && !submittedRef.current) {
         recordViolation('Fullscreen Exit', 'Candidate exited mandatory fullscreen lockdown', 15);
       }
@@ -446,6 +469,128 @@ export default function GprecSecureExamRunner({
     return () => clearInterval(timer);
   }, [phase, activeSectionIdx, finalizeExam]);
 
+  // Real-Time AI Vision Analyzer: Detects Covered/Blocked Lens, Low Contrast, No-Face & Multiple Faces
+  useEffect(() => {
+    if (phase !== 'active' || camStatus !== 'ready') return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 120;
+    canvas.height = 90;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    let faceDetector = null;
+    try {
+      if (typeof window !== 'undefined' && 'FaceDetector' in window) {
+        faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 3 });
+      }
+    } catch (e) {}
+
+    const analyzeFrame = async () => {
+      const vid = liveVideoRef.current;
+      if (!vid || vid.readyState < 2 || vid.videoWidth === 0 || !ctx) return;
+      if (Date.now() - examStartedAtRef.current < 3500) return;
+
+      ctx.drawImage(vid, 0, 0, 120, 90);
+      const imgData = ctx.getImageData(0, 0, 120, 90).data;
+
+      // Compute luminance mean, spatial standard deviation & edge energy
+      const n = 120 * 90;
+      const lum = new Float32Array(n);
+      let sum = 0;
+      for (let i = 0; i < n; i++) {
+        const idx = i * 4;
+        const y = 0.299 * imgData[idx] + 0.587 * imgData[idx + 1] + 0.114 * imgData[idx + 2];
+        lum[i] = y;
+        sum += y;
+      }
+      const mean = sum / n;
+      let sqDiff = 0;
+      for (let i = 0; i < n; i++) {
+        const d = lum[i] - mean;
+        sqDiff += d * d;
+      }
+      const stdDev = Math.sqrt(sqDiff / n);
+
+      let edgeSum = 0;
+      let edgeCount = 0;
+      for (let r = 1; r < 89; r += 2) {
+        for (let c = 1; c < 119; c += 2) {
+          const p = r * 120 + c;
+          edgeSum += Math.abs(lum[p] - lum[p - 1]) + Math.abs(lum[p] - lum[p - 120]);
+          edgeCount++;
+        }
+      }
+      const avgEdge = edgeCount > 0 ? edgeSum / edgeCount : 0;
+
+      // Covered lens / finger / lens cap / pitch-dark detection
+      const isObstructed = mean < 18 || stdDev < 18 || avgEdge < 4.5;
+
+      let nextStatus = 'verified';
+      let nextDetail = 'Face & Camera Verified';
+
+      if (isObstructed) {
+        nextStatus = 'obstructed';
+        nextDetail = 'Camera Blocked / Lens Covered';
+      } else if (faceDetector) {
+        try {
+          const faces = await faceDetector.detect(canvas);
+          if (faces.length === 0) {
+            nextStatus = 'no_face';
+            nextDetail = 'No Face Detected in Frame';
+          } else if (faces.length > 1) {
+            nextStatus = 'multi_face';
+            nextDetail = `Multiple Faces Detected (${faces.length})`;
+          }
+        } catch (e) {}
+      }
+
+      setVisionStatus(nextStatus);
+      setVisionDetail(nextDetail);
+
+      if (nextStatus !== 'verified') {
+        visionAnomalyStreakRef.current += 1;
+        const now = Date.now();
+        if (visionAnomalyStreakRef.current >= 2 && now - lastVisionStrikeAtRef.current >= 12000) {
+          lastVisionStrikeAtRef.current = now;
+          visionAnomalyStreakRef.current = 0;
+          const strikeLabel =
+            nextStatus === 'obstructed'
+              ? 'Camera Obstruction Detected'
+              : nextStatus === 'multi_face'
+              ? 'Multiple Faces Detected'
+              : 'Face Not Visible';
+          recordViolation(
+            strikeLabel,
+            `${nextDetail} — keep your webcam uncovered and face centered`,
+            10
+          );
+        }
+      } else {
+        visionAnomalyStreakRef.current = 0;
+      }
+    };
+
+    const timer = setInterval(analyzeFrame, 2500);
+    return () => clearInterval(timer);
+  }, [phase, camStatus, recordViolation]);
+
+  // Ambient Speech / Noise Spike Monitor
+  useEffect(() => {
+    if (phase !== 'active' || camStatus !== 'ready') return;
+    if (Date.now() - examStartedAtRef.current < 4000) return;
+
+    if (audioDb >= 72) {
+      audioSpikeStreakRef.current += 1;
+      const now = Date.now();
+      if (audioSpikeStreakRef.current >= 4 && now - lastAudioStrikeAtRef.current >= 15000) {
+        lastAudioStrikeAtRef.current = now;
+        audioSpikeStreakRef.current = 0;
+        recordViolation('High Ambient Audio Detected', `Sustained background speech/noise (${audioDb} dB)`, 8);
+      }
+    } else {
+      audioSpikeStreakRef.current = 0;
+    }
+  }, [audioDb, phase, camStatus, recordViolation]);
+
   // Periodic Live Proctor Telemetry Broadcast (every 6 seconds)
   useEffect(() => {
     if (phase !== 'active') return;
@@ -472,14 +617,14 @@ export default function GprecSecureExamRunner({
         frame: frameData,
         warnings: violations.length,
         trustScore,
-        faceStatus: camStatus === 'ready' ? 'verified' : 'no-camera',
+        faceStatus: camStatus === 'ready' ? visionStatus : 'no-camera',
         audioDb,
         currentQuestion: activeQuestionIdx + 1,
         totalQuestions: totalQs
       });
     }, 6000);
     return () => clearInterval(interval);
-  }, [phase, violations.length, trustScore, camStatus, audioDb, activeQuestionIdx, exam.sections]);
+  }, [phase, violations.length, trustScore, camStatus, visionStatus, audioDb, activeQuestionIdx, exam.sections]);
 
   const handleRunCode = (includeHidden) => {
     if (!currentItem) return;
@@ -790,7 +935,7 @@ export default function GprecSecureExamRunner({
       >
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="text-xs font-mono font-bold tracking-widest text-white whitespace-nowrap">
-            {studentName} • {rollNumber} • {sessionTokenRef.current}
+            {studentIdentityLabel} • {sessionTokenRef.current}
           </div>
         ))}
       </div>
@@ -834,7 +979,7 @@ export default function GprecSecureExamRunner({
           <div className="min-w-0">
             <div className="text-xs sm:text-sm font-extrabold text-white truncate">{exam.title}</div>
             <div className="text-[10px] text-slate-400 truncate">
-              {studentName} ({rollNumber}) • Session {sessionTokenRef.current}
+              {studentIdentityLabel} • Session {sessionTokenRef.current}
             </div>
           </div>
         </div>
@@ -1056,22 +1201,57 @@ export default function GprecSecureExamRunner({
                 </div>
               </div>
 
-              {/* Live Webcam Proctoring PiP */}
-              <div className="bg-[#10142D] border border-slate-800 rounded-2xl p-3 space-y-2">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-slate-200 flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${camStatus === 'ready' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                    <span>Live AI Proctor Feed</span>
+              {/* Live Webcam Proctoring PiP with Real-Time AI Obstruction & Face Presence Alerts */}
+              <div className={`bg-[#10142D] border rounded-2xl p-3 space-y-2 transition-colors ${
+                camStatus === 'ready' && visionStatus !== 'verified'
+                  ? 'border-rose-500/80 shadow-lg shadow-rose-950/40'
+                  : 'border-slate-800'
+              }`}>
+                <div className="flex items-center justify-between text-[11px] gap-2">
+                  <span className="font-bold text-slate-200 flex items-center gap-1.5 min-w-0">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      camStatus !== 'ready'
+                        ? 'bg-amber-400'
+                        : visionStatus === 'verified'
+                        ? 'bg-emerald-400 animate-pulse'
+                        : 'bg-rose-500 animate-ping'
+                    }`} />
+                    <span className="truncate">Live AI Proctor Feed</span>
                   </span>
-                  <span className="font-mono text-[10px] text-cyan-300">{audioDb} dB</span>
+                  <span className={`font-mono text-[10px] font-bold ${audioDb >= 72 ? 'text-rose-400' : 'text-cyan-300'}`}>
+                    {audioDb} dB
+                  </span>
                 </div>
-                <div className="aspect-video rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center">
+                <div className="relative aspect-video rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center">
                   {camStatus === 'ready' ? (
-                    <video ref={liveVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                    <>
+                      <video ref={liveVideoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                      {visionStatus !== 'verified' && (
+                        <div className="absolute inset-0 bg-rose-950/75 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 text-center">
+                          <ShieldAlert className="w-6 h-6 text-rose-400 mb-1 animate-bounce" />
+                          <div className="text-[11px] font-extrabold text-white uppercase tracking-wide">
+                            {visionDetail}
+                          </div>
+                          <div className="text-[10px] text-rose-200 mt-0.5">
+                            Uncover camera & center face immediately
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <span className="text-[11px] text-slate-500">Browser Lockdown Mode Active</span>
                   )}
                 </div>
+                {camStatus === 'ready' && (
+                  <div className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center justify-between ${
+                    visionStatus === 'verified'
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                  }`}>
+                    <span>{visionDetail}</span>
+                    <span>{visionStatus === 'verified' ? 'OK' : 'ALERT'}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
