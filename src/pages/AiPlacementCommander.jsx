@@ -44,6 +44,10 @@ import { COMPANY_PRESETS, ROLE_TRACKS } from '../services/interviewService';
 import { generateMockInterviewDiagnosticPDF } from '../utils/pdfGenerator';
 import { issueNewCertificate } from '../services/certificateService';
 import { saveMockInterviewScorecardToSupabase } from '../services/supabaseDataSyncService';
+import GprecBridgeToBtechPortal from '../components/gprec/GprecBridgeToBtechPortal';
+import GprecHelpDeskPortal from '../components/gprec/GprecHelpDeskPortal';
+import GprecResumeBuilderPanel from '../components/gprec/GprecResumeBuilderPanel';
+import GprecProjectPlatformPanel from '../components/gprec/GprecProjectPlatformPanel';
 
 // Target Roles & Role-Specific Weighted Placement Readiness Engine
 const TARGET_ROLES = [
@@ -469,10 +473,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     const clean = String(nav).toLowerCase().replace(/[-_]/g, '');
     if (clean.includes('founderaudit') || clean.includes('founder') || clean.includes('timelog') || clean.includes('audit')) return 'founder_audit';
     if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
-    if (clean.includes('mock') || clean.includes('interview')) return 'mock_interviews';
+    if (clean.includes('mock') || clean.includes('interview') || clean.includes('resume') || clean.includes('project')) return 'mock_interviews';
     if (clean.includes('skill') || clean.includes('coding') || clean.includes('aptitude') || clean.includes('code')) return 'skill_hub';
-    if (clean.includes('analytic') || clean.includes('metric') || clean.includes('rejection') || clean.includes('tracker')) return 'analytics';
-    if (clean.includes('resource') || clean.includes('paper')) return 'resources';
+    if (clean.includes('analytic') || clean.includes('metric')) return 'analytics';
+    if (clean.includes('resource') || clean.includes('paper') || clean.includes('bridge') || clean.includes('btech') || clean.includes('curriculum') || clean.includes('helpdesk') || clean.includes('faq')) return 'resources';
     if (clean.includes('setting')) return 'settings';
     if (clean === 'placement' || clean.includes('twin') || clean.includes('jobmatch') || clean.includes('companysim')) return 'placement';
     return 'dashboard';
@@ -674,6 +678,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return () => clearInterval(timer);
   }, [interviewFinished, activeNav, interviewStep]);
 
+  const [resumeSubView, setResumeSubView] = useState('builder');
+  const [projectSubView, setProjectSubView] = useState('portfolio');
   const [resumeContent, setResumeContent] = useState('');
   const [isAuditingResume, setIsAuditingResume] = useState(false);
   const [resumeReport, setResumeReport] = useState(null);
@@ -873,6 +879,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   });
   const [newAppCompany, setNewAppCompany] = useState('');
   const [newAppRole, setNewAppRole] = useState('');
+  const [newAppCtc, setNewAppCtc] = useState('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`lumixora_applications_${user?.id || 'guest'}`, JSON.stringify(applications));
+    } catch (e) {}
+  }, [applications, user?.id]);
 
   // Notifications
   const [notificationsList, setNotificationsList] = useState([
@@ -1773,11 +1786,34 @@ Return ONLY a valid JSON object without markdown:
     }
   };
 
-  // Navigation jumping helper
-  const navigateTo = (navId, subModuleId = null) => {
+  // Navigation jumping helper with safe default sub-module resolution
+  const DEFAULT_SUBMODULE_BY_NAV = {
+    dashboard: null,
+    placement: 'overview',
+    skill_hub: 'daily_mission',
+    mock_interviews: 'mock_interview',
+    analytics: 'analytics',
+    resources: 'library',
+    tech_pulse: null,
+    founder_audit: null
+  };
+  const navigateTo = (navId, subModuleId = undefined) => {
     setActiveNav(navId);
-    if (subModuleId) setActiveModule(subModuleId);
+    if (subModuleId !== undefined && subModuleId !== null) {
+      setActiveModule(subModuleId);
+    } else if (navId in DEFAULT_SUBMODULE_BY_NAV) {
+      setActiveModule(DEFAULT_SUBMODULE_BY_NAV[navId]);
+    } else {
+      setActiveModule(null);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper to pre-load a featured opportunity into Job Match or Application Tracker
+  const openOpportunityInJobMatch = (company, role, ctc, summary) => {
+    setJdText(`${company} — ${role} (${ctc})\n\n${summary}`);
+    navigateTo('placement', 'job_match');
+    addToast({ message: `Loaded ${company} (${role}) into AI Job Match!`, type: 'info' });
   };
 
   // Filter Aptitude Questions
@@ -1853,15 +1889,15 @@ Return ONLY a valid JSON object without markdown:
               { id: 'applications', label: 'Application Tracker', icon: Clock, nav: 'placement', sub: 'applications' },
               { id: 'analytics', label: 'Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
               { id: 'helpdesk', label: 'HelpDesk', icon: HelpCircle, nav: 'resources', sub: 'faq', badge: 'NEW' },
-              { id: 'resources', label: 'Resources', icon: BookOpen, nav: 'resources', sub: null }
+              { id: 'resources', label: 'Resources', icon: BookOpen, nav: 'resources', sub: 'library' }
             ].map((item) => {
               const Icon = item.icon;
               const isActive = (item.id === 'dashboard' && activeNav === 'dashboard') ||
-                               (item.id === 'placement' && activeNav === 'placement' && (!activeModule || activeModule === 'overview')) ||
-                               (item.id === 'skill_hub' && activeNav === 'skill_hub' && activeModule === 'daily_mission') ||
+                               (item.id === 'placement' && activeNav === 'placement' && (!activeModule || activeModule === 'overview' || activeModule === 'twin_engine' || activeModule === 'rejection_risk')) ||
+                               (item.id === 'skill_hub' && activeNav === 'skill_hub' && (!activeModule || activeModule === 'daily_mission' || activeModule === 'skill_gap' || activeModule === 'skill_graph')) ||
                                (item.id === 'coding_arena' && activeNav === 'skill_hub' && activeModule === 'coding_arena') ||
                                (item.id === 'aptitude_arena' && activeNav === 'skill_hub' && activeModule === 'aptitude_arena') ||
-                               (item.id === 'mock_interviews' && activeNav === 'mock_interviews' && (!activeModule || activeModule === 'mock_interview')) ||
+                               (item.id === 'mock_interviews' && activeNav === 'mock_interviews' && (!activeModule || activeModule === 'mock_interview' || activeModule === 'scorecard_report')) ||
                                (item.id === 'resume_builder' && activeNav === 'mock_interviews' && activeModule === 'resume_defense') ||
                                (item.id === 'project_platform' && activeNav === 'mock_interviews' && activeModule === 'project_defense') ||
                                (item.id === 'job_match' && activeNav === 'placement' && activeModule === 'job_match') ||
@@ -1870,7 +1906,7 @@ Return ONLY a valid JSON object without markdown:
                                (item.id === 'applications' && activeNav === 'placement' && activeModule === 'applications') ||
                                (item.id === 'analytics' && activeNav === 'analytics') ||
                                (item.id === 'helpdesk' && activeNav === 'resources' && activeModule === 'faq') ||
-                               (item.id === 'resources' && activeNav === 'resources' && !activeModule);
+                               (item.id === 'resources' && activeNav === 'resources' && (!activeModule || activeModule === 'library'));
               return (
                 <button
                   key={item.id}
@@ -2070,13 +2106,13 @@ Return ONLY a valid JSON object without markdown:
               </button>
             )}
 
-            {/* Student Initials Avatar (Matches SP in screenshot) */}
+            {/* Student Initials Avatar */}
             <div 
               onClick={() => setShowSettingsModal(true)}
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold text-xs flex items-center justify-center shadow-md shadow-purple-500/20 cursor-pointer hover:scale-105 transition-transform"
-              title={`${studentName} - SP`}
+              title={`${studentName} - Placement Settings`}
             >
-              SP
+              {studentInitials}
             </div>
           </div>
         </header>
@@ -2161,114 +2197,50 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-                {/* Hero Banner (75% width - Col 9): Full Width, Zero Letterboxing, 100% Uncropped */}
-                <div className="xl:col-span-9 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden flex items-center justify-center p-0 group">
-                  <img
-                    src="/gprec-hero-banner-master.png"
-                    alt="GPREC Placement Suite - Your Career. Our Commitment."
-                    className="w-full h-full object-cover rounded-[28px] select-none block"
+              <div className="w-full bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden aspect-[2472/504] group">
+                <img
+                  src="/gprec-hero-row1-master.png"
+                  alt="GPREC Placement Suite - Your Career. Our Commitment. Placement Pulse"
+                  className="w-full h-full object-fill rounded-[28px] select-none block"
+                />
+                {/* Interactive Clickable Hotspots for Action Buttons */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Explore Opportunities Button Hotspot */}
+                  <button
+                    onClick={() => navigateTo('placement', 'job_match')}
+                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
+                    style={{
+                      left: '2.4%',
+                      bottom: '7.5%',
+                      width: '15.2%',
+                      height: '16.7%'
+                    }}
+                    title="Explore Opportunities"
                   />
-                  {/* Interactive Clickable Hotspots for Action Buttons */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {/* Explore Opportunities Button Hotspot */}
-                    <button
-                      onClick={() => navigateTo('placement', 'job_match')}
-                      className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
-                      style={{
-                        left: '2.5%',
-                        bottom: '7%',
-                        width: '19%',
-                        height: '15%'
-                      }}
-                      title="Explore Opportunities"
-                    />
-                    {/* Watch Overview Button Hotspot */}
-                    <button
-                      onClick={() => setShowOverviewModal(true)}
-                      className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
-                      style={{
-                        left: '22.5%',
-                        bottom: '7%',
-                        width: '15%',
-                        height: '15%'
-                      }}
-                      title="Watch Overview"
-                    />
-                  </div>
-                </div>
-
-                {/* Placement Pulse Card (25% width - Col 3): Compact, perfectly balanced */}
-                <div className="xl:col-span-3 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-4 sm:p-5 shadow-xl shadow-purple-500/5 flex flex-col justify-between">
-                  <div>
-                    {/* Title + Live Badge */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-sm">
-                          <Activity className="w-3.5 h-3.5" />
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-900 tracking-tight">Placement Pulse</h3>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Live</span>
-                      </div>
-                    </div>
-
-                    {/* Growth Header + 92% pill */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs font-medium text-slate-500">Growth in Placements</span>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0B0D21] text-white">92%</span>
-                    </div>
-
-                    {/* Purple Spline Chart SVG */}
-                    <div className="relative h-20 w-full my-2">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 240 70">
-                        <defs>
-                          <linearGradient id="purplePulseGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.28" />
-                            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.0" />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d="M 10,48 Q 40,55 70,38 T 130,22 T 190,12 T 235,5 L 235,68 L 10,68 Z"
-                          fill="url(#purplePulseGrad)"
-                        />
-                        <path
-                          d="M 10,48 Q 40,55 70,38 T 130,22 T 190,12 T 235,5"
-                          fill="none"
-                          stroke="#7C3AED"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                        />
-                        {[
-                          {x: 10, y: 48}, {x: 40, y: 52}, {x: 70, y: 38}, {x: 100, y: 32},
-                          {x: 130, y: 22}, {x: 160, y: 18}, {x: 190, y: 12}, {x: 235, y: 5}
-                        ].map((pt, i) => (
-                          <circle key={i} cx={pt.x} cy={pt.y} r={3} fill="#7C3AED" stroke="#FFFFFF" strokeWidth={1.5} />
-                        ))}
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* 3 Metrics Row */}
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-purple-50 text-center">
-                    <div className="flex flex-col items-center">
-                      <User className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
-                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">1.2K+</div>
-                      <div className="text-[10px] font-medium text-slate-400">Placed Students</div>
-                    </div>
-                    <div className="flex flex-col items-center border-x border-purple-50">
-                      <Briefcase className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
-                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">₹12.5 LPA</div>
-                      <div className="text-[10px] font-medium text-slate-400">Avg Package</div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <Star className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
-                      <div className="text-sm md:text-base font-extrabold text-slate-900 tracking-tight">92%</div>
-                      <div className="text-[10px] font-medium text-slate-400">Placement Rate</div>
-                    </div>
-                  </div>
+                  {/* Watch Overview Button Hotspot */}
+                  <button
+                    onClick={() => setShowOverviewModal(true)}
+                    className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
+                    style={{
+                      left: '18.8%',
+                      bottom: '7.5%',
+                      width: '12.2%',
+                      height: '16.7%'
+                    }}
+                    title="Watch Overview"
+                  />
+                  {/* Placement Pulse Live Telemetry Hotspot */}
+                  <button
+                    onClick={() => navigateTo('analytics', 'analytics')}
+                    className="absolute pointer-events-auto rounded-[24px] cursor-pointer hover:bg-white/10 active:scale-98 transition-all"
+                    style={{
+                      right: '0%',
+                      top: '0%',
+                      width: '24.5%',
+                      height: '100%'
+                    }}
+                    title="View Placement Pulse Details"
+                  />
                 </div>
               </div>
 
@@ -2347,7 +2319,7 @@ Return ONLY a valid JSON object without markdown:
 
                       <div className="z-10 flex items-center justify-between pt-4">
                         <button
-                          onClick={() => navigateTo('placement', 'job_match')}
+                          onClick={() => openOpportunityInJobMatch('Google', 'Software Engineer (SWE-1)', '₹20 - ₹40 LPA', 'Requirements: Strong DSA (Graphs, Dynamic Programming, Trees), C++/Java/Python, System Design fundamentals, OS, DBMS, and clean production engineering experience.')}
                           className="px-5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <span>Apply Now</span>
@@ -2360,7 +2332,7 @@ Return ONLY a valid JSON object without markdown:
                     <div className="md:col-span-6 flex flex-col justify-between gap-2.5">
                       {/* Microsoft */}
                       <div 
-                        onClick={() => navigateTo('placement', 'job_match')}
+                        onClick={() => openOpportunityInJobMatch('Microsoft', 'Product & SWE Intern', '₹1.25L / month', 'Requirements: Problem solving with Algorithms & Data Structures, OOP, OS, Computer Networks, React/TypeScript or C#/Java, and Azure cloud awareness.')}
                         className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
@@ -2379,7 +2351,7 @@ Return ONLY a valid JSON object without markdown:
                           </div>
                         </div>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          onClick={(e) => { e.stopPropagation(); openOpportunityInJobMatch('Microsoft', 'Product & SWE Intern', '₹1.25L / month', 'Requirements: Problem solving with Algorithms & Data Structures, OOP, OS, Computer Networks, React/TypeScript or C#/Java, and Azure cloud awareness.'); }}
                           className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
                         >
                           Apply
@@ -2388,7 +2360,7 @@ Return ONLY a valid JSON object without markdown:
 
                       {/* Amazon SDE */}
                       <div 
-                        onClick={() => navigateTo('placement', 'job_match')}
+                        onClick={() => openOpportunityInJobMatch('Amazon', 'SDE Intern / SDE-1', '₹28 - ₹45 LPA', 'Requirements: High-bar DSA (Arrays, Trees, Graphs, DP), Java/Python/C++, AWS & Distributed Systems basics, REST APIs, and Amazon Leadership Principles.')}
                         className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
@@ -2402,7 +2374,7 @@ Return ONLY a valid JSON object without markdown:
                           </div>
                         </div>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          onClick={(e) => { e.stopPropagation(); openOpportunityInJobMatch('Amazon', 'SDE Intern / SDE-1', '₹28 - ₹45 LPA', 'Requirements: High-bar DSA (Arrays, Trees, Graphs, DP), Java/Python/C++, AWS & Distributed Systems basics, REST APIs, and Amazon Leadership Principles.'); }}
                           className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
                         >
                           Apply
@@ -2411,7 +2383,7 @@ Return ONLY a valid JSON object without markdown:
 
                       {/* TCS NQT 2025 */}
                       <div 
-                        onClick={() => navigateTo('placement', 'job_match')}
+                        onClick={() => openOpportunityInJobMatch('TCS', 'TCS Digital / Prime (NQT)', '₹7 - ₹9 LPA', 'Requirements: Quantitative Aptitude, Logical Reasoning, Verbal Ability, Hands-on Coding in Java/Python/C++, SQL/DBMS, OOPS, and full-stack project defense.')}
                         className="p-3 rounded-2xl bg-white border border-purple-100/80 hover:border-purple-300 transition-all flex items-center justify-between cursor-pointer group shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
@@ -2424,7 +2396,7 @@ Return ONLY a valid JSON object without markdown:
                           </div>
                         </div>
                         <button 
-                          onClick={(e) => { e.stopPropagation(); navigateTo('placement', 'job_match'); }}
+                          onClick={(e) => { e.stopPropagation(); openOpportunityInJobMatch('TCS', 'TCS Digital / Prime (NQT)', '₹7 - ₹9 LPA', 'Requirements: Quantitative Aptitude, Logical Reasoning, Verbal Ability, Hands-on Coding in Java/Python/C++, SQL/DBMS, OOPS, and full-stack project defense.'); }}
                           className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#EDE9FE] hover:bg-[#DDD6FE] text-[#7C3AED] transition-all cursor-pointer"
                         >
                           Apply
@@ -2861,30 +2833,70 @@ Return ONLY a valid JSON object without markdown:
                       <h4 className="text-xs font-bold text-slate-900">Simulate Selection Probability for {selectedCompanySim.name}</h4>
                       <p className="text-xs text-slate-500">Calculates OA cutoff threshold, DSA rigor, and interviewer pass probability.</p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setIsSimulatingCompany(true);
-                        setTimeout(() => {
-                          setIsSimulatingCompany(false);
-                          setSimVerdict({
-                            company: selectedCompanySim.name,
-                            probability: 91,
-                            oaChance: 96,
-                            techRoundChance: 89,
-                            hrChance: 94,
-                            recommendation: "Focus on 2D Dynamic Programming & System Design scalability for round 2."
-                          });
-                        }, 800);
-                      }}
-                      className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
-                    >
-                      {isSimulatingCompany ? 'Running Simulation...' : 'Run Simulation'}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const exists = applications.some(a => a.company.toLowerCase() === selectedCompanySim.name.toLowerCase());
+                          if (!exists) {
+                            setApplications(prev => [{
+                              id: Date.now(),
+                              company: selectedCompanySim.name,
+                              role: selectedCompanySim.role,
+                              ctc: selectedCompanySim.ctc,
+                              status: 'Saved',
+                              date: new Date().toISOString().split('T')[0]
+                            }, ...prev]);
+                            addToast({ message: `Saved ${selectedCompanySim.name} to Application Tracker!`, type: 'success' });
+                          } else {
+                            addToast({ message: `${selectedCompanySim.name} is already in Application Tracker.`, type: 'info' });
+                          }
+                          navigateTo('placement', 'applications');
+                        }}
+                        className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-xs shadow-2xs transition-colors cursor-pointer"
+                      >
+                        + Track Drive
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsSimulatingCompany(true);
+                          setTimeout(() => {
+                            setIsSimulatingCompany(false);
+                            const baseScore = overallReadiness > 0 ? overallReadiness : 68;
+                            const isFaang = ['google', 'amazon', 'microsoft'].includes(selectedCompanySim.id);
+                            const tierDelta = isFaang ? -6 : 10;
+                            const oaChance = Math.min(98, Math.max(42, Math.round(baseScore + (twinScores?.aptitude ? twinScores.aptitude * 0.15 : 8) + (isFaang ? -2 : 12))));
+                            const techRoundChance = Math.min(96, Math.max(38, Math.round(baseScore + (twinScores?.dsa ? twinScores.dsa * 0.15 : 4) + tierDelta)));
+                            const hrChance = Math.min(97, Math.max(55, Math.round(baseScore + 12)));
+                            const probability = Math.round((oaChance * 0.35) + (techRoundChance * 0.45) + (hrChance * 0.20));
+                            const adviceMap = {
+                              google: 'Prioritize Graphs, 2D Dynamic Programming, and optimal Big-O dry runs before Phone Screen.',
+                              amazon: 'Combine Trees/Sliding Window DSA rigor with 14 Amazon Leadership Principle STAR stories.',
+                              microsoft: 'Strengthen Linked Lists/Trees, OS concurrency, OOP LLD, and clean bug-free code structure.',
+                              tcs: 'Master timed NQT Quantitative Aptitude + 2 medium string/array coding problems in 55 minutes.',
+                              infosys: 'Focus on HackWithInfy Greedy/DP coding problems, DBMS SQL joins, and project viva clarity.',
+                              accenture: 'Practice Cognitive + Technical MCQs, pseudocode dry runs, and clear spoken communication.'
+                            };
+                            setSimVerdict({
+                              company: selectedCompanySim.name,
+                              role: selectedCompanySim.role,
+                              probability,
+                              oaChance,
+                              techRoundChance,
+                              hrChance,
+                              recommendation: adviceMap[selectedCompanySim.id] || 'Focus on DSA patterns, Core CS fundamentals, and timed mock interviews.'
+                            });
+                          }, 500);
+                        }}
+                        className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+                      >
+                        {isSimulatingCompany ? 'Running Simulation...' : 'Run Simulation'}
+                      </button>
+                    </div>
                   </div>
 
                   {simVerdict && (
                     <div className="p-5 rounded-xl bg-blue-50/60 border border-blue-100 flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <span className="text-lg font-bold text-slate-900">{simVerdict.company} Selection Verdict</span>
                         <span className="text-xl font-extrabold text-blue-600">{simVerdict.probability}% Probability</span>
                       </div>
@@ -2903,6 +2915,20 @@ Return ONLY a valid JSON object without markdown:
                         </div>
                       </div>
                       <p className="text-xs text-slate-600 mt-1">💡 <span className="font-semibold">Advice:</span> {simVerdict.recommendation}</p>
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-blue-100">
+                        <button
+                          onClick={() => navigateTo('skill_hub', 'coding_arena')}
+                          className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-blue-200 text-blue-700 font-bold text-xs cursor-pointer"
+                        >
+                          Practice {simVerdict.company} DSA →
+                        </button>
+                        <button
+                          onClick={() => navigateTo('mock_interviews', 'mock_interview')}
+                          className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer"
+                        >
+                          Launch {simVerdict.company} Mock Viva →
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -2988,20 +3014,28 @@ Return ONLY a valid JSON object without markdown:
                         onChange={(e) => setNewAppRole(e.target.value)}
                         className="p-2 rounded-lg border border-slate-200 text-xs text-slate-800"
                       />
+                      <input
+                        type="text"
+                        placeholder="CTC (e.g. ₹12 LPA)"
+                        value={newAppCtc}
+                        onChange={(e) => setNewAppCtc(e.target.value)}
+                        className="w-28 p-2 rounded-lg border border-slate-200 text-xs text-slate-800 hidden sm:block"
+                      />
                       <button
                         onClick={() => {
                           if (!newAppCompany.trim()) return;
                           const newApp = {
                             id: Date.now(),
-                            company: newAppCompany,
-                            role: newAppRole || 'Software Engineer',
-                            ctc: '₹14 - ₹24 LPA',
+                            company: newAppCompany.trim(),
+                            role: newAppRole.trim() || 'Software Engineer',
+                            ctc: newAppCtc.trim() || '₹10 - ₹18 LPA',
                             status: 'Applied',
                             date: new Date().toISOString().split('T')[0]
                           };
                           setApplications(prev => [newApp, ...prev]);
                           setNewAppCompany('');
                           setNewAppRole('');
+                          setNewAppCtc('');
                           addToast({ message: `Added application for ${newApp.company}`, type: 'success' });
                         }}
                         className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer flex items-center gap-1"
@@ -3014,7 +3048,9 @@ Return ONLY a valid JSON object without markdown:
 
                   {/* Kanban Columns */}
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 overflow-x-auto">
-                    {['Saved', 'Applied', 'Online Assessment', 'Technical Interview', 'Offer Received'].map(col => {
+                    {(() => {
+                      const STAGES = ['Saved', 'Applied', 'Online Assessment', 'Technical Interview', 'Offer Received'];
+                      return STAGES.map((col, colIdx) => {
                       const colApps = applications.filter(a => a.status === col);
                       return (
                         <div key={col} className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col gap-2.5 min-w-[200px]">
@@ -3033,6 +3069,7 @@ Return ONLY a valid JSON object without markdown:
                                   <button
                                     onClick={() => setApplications(prev => prev.filter(a => a.id !== app.id))}
                                     className="text-slate-400 hover:text-rose-500 cursor-pointer"
+                                    title="Delete application"
                                   >
                                     <X className="w-3 h-3" />
                                   </button>
@@ -3041,6 +3078,30 @@ Return ONLY a valid JSON object without markdown:
                                 <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-50">
                                   <span>{app.ctc}</span>
                                   <span>{app.date}</span>
+                                </div>
+                                <div className="flex items-center justify-between gap-1 pt-1">
+                                  <button
+                                    type="button"
+                                    disabled={colIdx === 0}
+                                    onClick={() => setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: STAGES[colIdx - 1] } : a))}
+                                    className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-[10px] font-bold text-slate-600 cursor-pointer"
+                                    title="Move to previous stage"
+                                  >
+                                    ← Back
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={colIdx === STAGES.length - 1}
+                                    onClick={() => {
+                                      const nextStage = STAGES[colIdx + 1];
+                                      setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: nextStage } : a));
+                                      addToast({ message: `Moved ${app.company} → ${nextStage}`, type: 'success' });
+                                    }}
+                                    className="px-2 py-0.5 rounded bg-purple-50 hover:bg-purple-100 disabled:opacity-30 text-[10px] font-bold text-purple-700 cursor-pointer"
+                                    title="Advance to next stage"
+                                  >
+                                    Next →
+                                  </button>
                                 </div>
                               </div>
                             ))}
@@ -3052,7 +3113,8 @@ Return ONLY a valid JSON object without markdown:
                           </div>
                         </div>
                       );
-                    })}
+                    });
+                    })()}
                   </div>
                 </div>
               )}
@@ -4692,8 +4754,50 @@ Return ONLY a valid JSON object without markdown:
                 );
               })()}
 
-              {/* Subtab: Resume Defense */}
+              {/* Subtab: Resume Builder + AI ATS Defense */}
               {activeModule === 'resume_defense' && (
+                <div className="flex flex-col gap-5">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-3 px-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setResumeSubView('builder')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          resumeSubView === 'builder'
+                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        Interactive ATS Resume Builder
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResumeSubView('audit')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          resumeSubView === 'audit'
+                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        AI ATS Audit & Claim Defense
+                      </button>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-500">
+                      Build a 1-page GPREC ATS resume, export PDF, then defend every claim live.
+                    </span>
+                  </div>
+
+                  {resumeSubView === 'builder' ? (
+                    <GprecResumeBuilderPanel
+                      user={user}
+                      addToast={addToast}
+                      onSendToAudit={(plainText) => {
+                        setResumeContent(plainText);
+                        setResumeSubView('audit');
+                        addToast({ message: 'Resume loaded into AI ATS Audit & Claim Defense! Click "Audit Resume for ATS".', type: 'success' });
+                      }}
+                    />
+                  ) : (
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">AI Resume Audit & Claim Defense</h3>
@@ -4761,10 +4865,56 @@ Return ONLY a valid JSON object without markdown:
                     </div>
                   )}
                 </div>
+                  )}
+                </div>
               )}
 
-              {/* Subtab: Project Defense */}
+              {/* Subtab: Project Platform & Architecture Defense */}
               {activeModule === 'project_defense' && (
+                <div className="flex flex-col gap-5">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-3 px-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setProjectSubView('portfolio')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          projectSubView === 'portfolio'
+                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        My Project Portfolio & Blueprints
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProjectSubView('viva')}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          projectSubView === 'viva'
+                            ? 'bg-gradient-to-r from-[#6366f1] to-[#7c3aed] text-white shadow-xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        Project Architecture Viva Defense
+                      </button>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-500">
+                      Build your GPREC project showcase and pass Senior Architect Viva interrogation.
+                    </span>
+                  </div>
+
+                  {projectSubView === 'portfolio' ? (
+                    <GprecProjectPlatformPanel
+                      user={user}
+                      addToast={addToast}
+                      onDefendProject={(proj) => {
+                        setProjectName(proj.title || '');
+                        setProjectTechStack(proj.stack || '');
+                        setProjectDescription(proj.summary || '');
+                        setProjectSubView('viva');
+                        addToast({ message: `Loaded "${proj.title}" into Architecture Defense Arena!`, type: 'info' });
+                      }}
+                    />
+                  ) : (
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">Project Architecture Defense Arena</h3>
@@ -4823,6 +4973,8 @@ Return ONLY a valid JSON object without markdown:
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
                   )}
                 </div>
               )}
@@ -5265,51 +5417,106 @@ Return ONLY a valid JSON object without markdown:
           )}
 
           {/* ========================================================= */}
-          {/* VIEW: 6. RESOURCES                                        */}
+          {/* VIEW: 6. RESOURCES, BRIDGE TO B.TECH & HELPDESK           */}
           {/* ========================================================= */}
           {activeNav === 'resources' && (
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-              <div>
-                <div className="text-xs font-medium text-slate-400">Resources</div>
-                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
-                  Curated Placement Papers, Cheat Sheets & Syllabus
-                </h2>
+            <div className="flex flex-col gap-6">
+              {/* Unified Subtab Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div>
+                  <div className="text-xs font-medium text-slate-400">
+                    {activeModule === 'curriculum' ? 'Bridge to B.Tech' : activeModule === 'faq' ? 'HelpDesk' : 'Resources'}
+                  </div>
+                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+                    {activeModule === 'curriculum'
+                      ? 'GPREC Academic-to-Industry Bridge & Semester Roadmap'
+                      : activeModule === 'faq'
+                      ? 'GPREC Placement HelpDesk & TPO Support Center'
+                      : 'Curated Placement Papers, Cheat Sheets & Syllabus'}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                  {[
+                    { id: 'library', label: 'Resources Library' },
+                    { id: 'curriculum', label: 'Bridge to B.Tech' },
+                    { id: 'faq', label: 'HelpDesk (NEW)' }
+                  ].map(tab => {
+                    const currentResTab = activeModule === 'curriculum' || activeModule === 'faq' ? activeModule : 'library';
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveModule(tab.id)}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                          currentResTab === tab.id
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {[
-                  { title: 'TCS Digital Previous Papers (2024-2026)', type: 'PDF • 4.2 MB', desc: 'Advanced coding questions, quant & verbal solutions.' },
-                  { title: 'Amazon SDE-1 Interview Guide', type: 'Guide • 6.8 MB', desc: '14 Leadership Principles and high-frequency LeetCode questions.' },
-                  { title: 'Operating Systems & DBMS Cheat Sheet', type: 'Cheat Sheet • 2.1 MB', desc: 'Paging, virtual memory, ACID properties, and B-trees.' },
-                  { title: 'Computer Networks & OSI Quick Revision', type: 'PDF • 3.0 MB', desc: 'TCP 3-way handshake, subnetting, HTTP/2 vs HTTP/3.' },
-                  { title: 'Full Stack System Design Architecture', type: 'Handbook • 5.5 MB', desc: 'Microservices, rate limiting, and Redis cache strategies.' },
-                  { title: 'Campus HR & Behavioral Viva Drills', type: 'Viva Kit • 1.8 MB', desc: 'STAR method response templates for hiring manager rounds.' }
-                ].map((res, i) => (
-                  <div key={i} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-200 transition-all flex flex-col justify-between gap-3">
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{res.title}</div>
-                      <div className="text-[10px] text-blue-600 font-semibold mt-0.5">{res.type}</div>
-                      <p className="text-[11px] text-slate-500 mt-1 leading-snug">{res.desc}</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        try {
-                          addToast({ message: `Generating ${res.title}...`, type: 'info' });
-                          const fileName = downloadPlacementResource(res.title, user);
-                          addToast({ message: `✓ Downloaded ${fileName}`, type: 'success' });
-                        } catch (err) {
-                          console.error('Resource download error:', err);
-                          addToast({ message: `Failed to download ${res.title}. Please try again.`, type: 'error' });
-                        }
-                      }}
-                      className="w-full py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-xs font-semibold text-slate-800 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-[0.99] transition-all"
-                    >
-                      <Download className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Download Resource</span>
-                    </button>
+              {/* Subtab: Bridge to B.Tech */}
+              {activeModule === 'curriculum' && (
+                <GprecBridgeToBtechPortal
+                  user={user}
+                  navigateTo={navigateTo}
+                  awardXP={awardXP}
+                  addToast={addToast}
+                />
+              )}
+
+              {/* Subtab: HelpDesk */}
+              {activeModule === 'faq' && (
+                <GprecHelpDeskPortal
+                  user={user}
+                  navigateTo={navigateTo}
+                  addToast={addToast}
+                />
+              )}
+
+              {/* Subtab: Resources Library (Default) */}
+              {activeModule !== 'curriculum' && activeModule !== 'faq' && (
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {[
+                      { title: 'TCS Digital Previous Papers (2024-2026)', type: 'PDF • 4.2 MB', desc: 'Advanced coding questions, quant & verbal solutions.' },
+                      { title: 'Amazon SDE-1 Interview Guide', type: 'Guide • 6.8 MB', desc: '14 Leadership Principles and high-frequency LeetCode questions.' },
+                      { title: 'Operating Systems & DBMS Cheat Sheet', type: 'Cheat Sheet • 2.1 MB', desc: 'Paging, virtual memory, ACID properties, and B-trees.' },
+                      { title: 'Computer Networks & OSI Quick Revision', type: 'PDF • 3.0 MB', desc: 'TCP 3-way handshake, subnetting, HTTP/2 vs HTTP/3.' },
+                      { title: 'Full Stack System Design Architecture', type: 'Handbook • 5.5 MB', desc: 'Microservices, rate limiting, and Redis cache strategies.' },
+                      { title: 'Campus HR & Behavioral Viva Drills', type: 'Viva Kit • 1.8 MB', desc: 'STAR method response templates for hiring manager rounds.' }
+                    ].map((res, i) => (
+                      <div key={i} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-200 transition-all flex flex-col justify-between gap-3">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">{res.title}</div>
+                          <div className="text-[10px] text-blue-600 font-semibold mt-0.5">{res.type}</div>
+                          <p className="text-[11px] text-slate-500 mt-1 leading-snug">{res.desc}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            try {
+                              addToast({ message: `Generating ${res.title}...`, type: 'info' });
+                              const fileName = downloadPlacementResource(res.title, user);
+                              addToast({ message: `✓ Downloaded ${fileName}`, type: 'success' });
+                            } catch (err) {
+                              console.error('Resource download error:', err);
+                              addToast({ message: `Failed to download ${res.title}. Please try again.`, type: 'error' });
+                            }
+                          }}
+                          className="w-full py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-xs font-semibold text-slate-800 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-[0.99] transition-all"
+                        >
+                          <Download className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Download Resource</span>
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -5326,7 +5533,7 @@ Return ONLY a valid JSON object without markdown:
               <input
                 type="text"
                 autoFocus
-                placeholder="Search anything.. (jobs, skills, companies, news)..."
+                placeholder="Search anything.. (jobs, skills, companies, bridge, helpdesk)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
@@ -5337,13 +5544,22 @@ Return ONLY a valid JSON object without markdown:
             </div>
             <div className="p-3 max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
               {[
-                { title: 'TechPulse Intelligence & Opportunities', category: 'TechPulse', action: () => navigateTo('tech_pulse') },
-                { title: 'Coding Arena', category: 'Skill Hub', action: () => navigateTo('skill_hub', 'coding_arena') },
-                { title: 'Technical Mock Interview', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'mock_interview') },
-                { title: 'Resume Defense', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'resume_defense') },
-                { title: 'Company Simulator (Amazon, Google, Microsoft)', category: 'Placement', action: () => navigateTo('placement', 'company_sim') },
-                { title: 'Aptitude Arena (Quant, Logical, Verbal)', category: 'Skill Hub', action: () => navigateTo('skill_hub', 'aptitude_arena') },
-                { title: 'Application Tracker (Kanban)', category: 'Placement', action: () => navigateTo('placement', 'applications') }
+                { title: 'Home Dashboard', category: 'Home', action: () => navigateTo('dashboard', null) },
+                { title: 'My Placement Overview & Twin Engine', category: 'My Placement', action: () => navigateTo('placement', 'overview') },
+                { title: 'Skill Hub & Daily Missions', category: 'Skill Hub', action: () => navigateTo('skill_hub', 'daily_mission') },
+                { title: 'Coding Arena (10,000+ Problems)', category: 'Coding Arena', action: () => navigateTo('skill_hub', 'coding_arena') },
+                { title: 'Aptitude Arena (Quant, Logical, Verbal)', category: 'Aptitude Arena', action: () => navigateTo('skill_hub', 'aptitude_arena') },
+                { title: 'Technical Mock Interviews & Voice Viva', category: 'Mock Interviews', action: () => navigateTo('mock_interviews', 'mock_interview') },
+                { title: 'Resume Builder & AI ATS Defense', category: 'Resume Builder', action: () => navigateTo('mock_interviews', 'resume_defense') },
+                { title: 'Project Platform & Architecture Viva', category: 'Project Platform', action: () => navigateTo('mock_interviews', 'project_defense') },
+                { title: 'AI Job Match Analyzer', category: 'Job Match', action: () => navigateTo('placement', 'job_match') },
+                { title: 'Company Services & Selection Simulator', category: 'Company Services', action: () => navigateTo('placement', 'company_sim') },
+                { title: 'Bridge to B.Tech Roadmap (R20/R23)', category: 'Bridge to B.Tech', action: () => navigateTo('resources', 'curriculum') },
+                { title: 'Application Tracker (Kanban Pipeline)', category: 'Application Tracker', action: () => navigateTo('placement', 'applications') },
+                { title: 'Placement Analytics & Readiness Curves', category: 'Analytics', action: () => navigateTo('analytics', 'analytics') },
+                { title: 'GPREC Placement HelpDesk & FAQs', category: 'HelpDesk', action: () => navigateTo('resources', 'faq') },
+                { title: 'Resources Library & Previous Papers', category: 'Resources', action: () => navigateTo('resources', 'library') },
+                { title: 'TechPulse Intelligence & Opportunities', category: 'TechPulse', action: () => navigateTo('tech_pulse') }
               ]
                 .filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.category.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((item, idx) => (
@@ -5435,6 +5651,72 @@ Return ONLY a valid JSON object without markdown:
               >
                 Save Preferences
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: GPREC Placement Suite Overview Walkthrough         */}
+      {/* ========================================================= */}
+      {showOverviewModal && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="bg-gradient-to-r from-[#0B0D21] via-[#1B1F4B] to-[#3B1E6E] p-6 text-white flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-purple-300">GPREC Placement Suite • Complete Ecosystem</div>
+                <h3 className="text-xl font-extrabold mt-0.5">15 Connected Portals for Campus Placement Mastery</h3>
+              </div>
+              <button onClick={() => setShowOverviewModal(false)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Every portal in <span className="font-bold text-slate-900">gprec.lumixora.in</span> feeds directly into your live Career Intelligence readiness score. Jump straight into any workspace below:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                {[
+                  { label: 'My Placement', desc: 'Twin Engine & Risk Radar', nav: 'placement', sub: 'overview' },
+                  { label: 'Skill Hub', desc: 'Daily Missions & Benchmarks', nav: 'skill_hub', sub: 'daily_mission' },
+                  { label: 'Coding Arena', desc: '10,000+ DSA Problems', nav: 'skill_hub', sub: 'coding_arena' },
+                  { label: 'Aptitude Arena', desc: 'Quant, Logic & Verbal', nav: 'skill_hub', sub: 'aptitude_arena' },
+                  { label: 'Mock Interviews', desc: 'AI Voice & Tech Viva', nav: 'mock_interviews', sub: 'mock_interview' },
+                  { label: 'Resume Builder', desc: 'ATS Builder & Audit', nav: 'mock_interviews', sub: 'resume_defense' },
+                  { label: 'Project Platform', desc: 'Portfolio & Viva Defense', nav: 'mock_interviews', sub: 'project_defense' },
+                  { label: 'Job Match', desc: 'AI JD Skill Scanner', nav: 'placement', sub: 'job_match' },
+                  { label: 'Company Services', desc: 'Recruiter Simulator', nav: 'placement', sub: 'company_sim' },
+                  { label: 'Bridge to B.Tech', desc: 'R20/R23 Semester Bridge', nav: 'resources', sub: 'curriculum' },
+                  { label: 'Application Tracker', desc: '5-Stage Kanban Pipeline', nav: 'placement', sub: 'applications' },
+                  { label: 'Analytics', desc: 'Cohort Readiness Curves', nav: 'analytics', sub: 'analytics' },
+                  { label: 'HelpDesk (NEW)', desc: 'TPO Tickets & AI Advisor', nav: 'resources', sub: 'faq' },
+                  { label: 'Resources', desc: 'Papers & Cheat Sheets', nav: 'resources', sub: 'library' }
+                ].map(p => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => {
+                      navigateTo(p.nav, p.sub);
+                      setShowOverviewModal(false);
+                    }}
+                    className="p-3 rounded-xl border border-slate-200/80 hover:border-purple-400 hover:bg-purple-50/50 text-left transition-all cursor-pointer group"
+                  >
+                    <div className="font-bold text-slate-900 group-hover:text-purple-700 flex items-center justify-between">
+                      <span>{p.label}</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-purple-600" />
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">{p.desc}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end pt-2 border-t border-slate-100">
+                <button
+                  onClick={() => setShowOverviewModal(false)}
+                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+                >
+                  Close Overview
+                </button>
+              </div>
             </div>
           </div>
         </div>
