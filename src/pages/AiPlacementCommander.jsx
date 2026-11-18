@@ -2161,13 +2161,13 @@ Return ONLY a valid JSON object without markdown:
               {/* ========================================================= */}
               {/* ROW 1: HERO BANNER (70%) + PLACEMENT PULSE (30%)          */}
               {/* ========================================================= */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                {/* Hero Banner with Master High-Fidelity Graphic Matching Reference Mock Exactly - Full & Uncropped */}
-                <div className="lg:col-span-8 bg-gradient-to-r from-[#EDE8FA] via-[#FAF8FF] to-[#EBE4F9] border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden flex items-center justify-center p-0 aspect-[1254/426] group">
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+                {/* Hero Banner (75% width - Col 9): Full Width, Zero Letterboxing, 100% Uncropped */}
+                <div className="xl:col-span-9 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] shadow-xl shadow-purple-500/5 relative overflow-hidden flex items-center justify-center p-0 group">
                   <img
                     src="/gprec-hero-banner-master.png"
                     alt="GPREC Placement Suite - Your Career. Our Commitment."
-                    className="w-full h-full object-contain rounded-[28px] select-none block"
+                    className="w-full h-full object-cover rounded-[28px] select-none block"
                   />
                   {/* Interactive Clickable Hotspots for Action Buttons */}
                   <div className="absolute inset-0 pointer-events-none">
@@ -2176,10 +2176,10 @@ Return ONLY a valid JSON object without markdown:
                       onClick={() => navigateTo('placement', 'job_match')}
                       className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
                       style={{
-                        left: '3.5%',
-                        bottom: '9%',
-                        width: '21%',
-                        height: '18%'
+                        left: '2.5%',
+                        bottom: '7%',
+                        width: '19%',
+                        height: '15%'
                       }}
                       title="Explore Opportunities"
                     />
@@ -2188,18 +2188,18 @@ Return ONLY a valid JSON object without markdown:
                       onClick={() => setShowOverviewModal(true)}
                       className="absolute pointer-events-auto rounded-full cursor-pointer hover:bg-white/20 active:scale-95 transition-all"
                       style={{
-                        left: '26%',
-                        bottom: '9%',
-                        width: '16%',
-                        height: '18%'
+                        left: '22.5%',
+                        bottom: '7%',
+                        width: '15%',
+                        height: '15%'
                       }}
                       title="Watch Overview"
                     />
                   </div>
                 </div>
 
-                {/* Placement Pulse Card (Right 30%) */}
-                <div className="lg:col-span-4 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-5 md:p-6 shadow-xl shadow-purple-500/5 flex flex-col justify-between">
+                {/* Placement Pulse Card (25% width - Col 3): Compact, perfectly balanced */}
+                <div className="xl:col-span-3 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-[28px] p-4 sm:p-5 shadow-xl shadow-purple-500/5 flex flex-col justify-between">
                   <div>
                     {/* Title + Live Badge */}
                     <div className="flex items-center justify-between">
