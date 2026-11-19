@@ -2512,7 +2512,7 @@ Return ONLY a valid JSON object without markdown:
       {/* ========================================================= */}
       {/* MAIN CONTENT AREA WITH TOP NAVBAR                         */}
       {/* ========================================================= */}
-      <div className={`flex-1 ${!embedded ? (isSidebarCollapsed ? 'md:pl-[72px]' : 'md:pl-60 lg:md:pl-64') : ''} flex flex-col min-w-0 transition-all duration-300 ease-in-out`}>
+      <div className={`flex-1 ${!embedded ? (isSidebarCollapsed ? 'md:pl-[72px]' : 'md:pl-60 lg:pl-64') : ''} flex flex-col min-w-0 transition-all duration-300 ease-in-out`}>
         {/* Sticky Top Navigation Bar (Clean Floating Modern Header Matching Screenshot) */}
         {!embedded && (
           <header className="sticky top-0 z-30 h-16 bg-white/70 backdrop-blur-xl border-b border-purple-100/60 px-4 md:px-8 flex items-center justify-between gap-4 shadow-[0_4px_20px_rgb(124,58,237,0.04)]">
@@ -3281,34 +3281,39 @@ Return ONLY a valid JSON object without markdown:
           {activeNav === 'placement' && (
             <div className="flex flex-col gap-6">
               {/* Module Header & Subtabs */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
-                <div>
-                  <div className="text-xs font-medium text-slate-400">My Placement</div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/50 mb-1">
+                    Placement Intelligence
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     Strategic Placement Intelligence & Tracking
                   </h2>
                 </div>
-                {/* Horizontal Apple Subtab Bar */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                {/* Segmented Subtab Pills */}
+                <div className="shrink-0 flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1 overflow-x-auto max-w-full">
                   {[
-                    { id: 'overview', label: 'Overview & Placement Twin' },
+                    { id: 'overview', label: 'Overview & Twin' },
                     { id: 'rejection_risk', label: 'Rejection Risk Radar' },
                     { id: 'job_match', label: 'Job Match' },
                     { id: 'company_sim', label: 'Company Simulator' },
                     { id: 'applications', label: 'Application Tracker' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveModule(tab.id)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                        (activeModule === tab.id || (tab.id === 'overview' && (!activeModule || activeModule === 'twin_engine')))
-                          ? 'bg-blue-600 text-white shadow-2xs'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                  ].map(tab => {
+                    const isSelected = (activeModule === tab.id || (tab.id === 'overview' && (!activeModule || activeModule === 'twin_engine')));
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveModule(tab.id)}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -3912,33 +3917,39 @@ Return ONLY a valid JSON object without markdown:
           {activeNav === 'skill_hub' && (
             <div className="flex flex-col gap-6">
               {/* Header & Subtabs */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
-                <div>
-                  <div className="text-xs font-medium text-slate-400">Skill Hub</div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/50 mb-1">
+                    Skill Hub & Practice
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     Coding Arena, Aptitude & Skill Benchmarks
                   </h2>
                 </div>
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                {/* Segmented Subtab Pills */}
+                <div className="shrink-0 flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1 overflow-x-auto max-w-full">
                   {[
                     { id: 'daily_mission', label: 'Daily Mission' },
                     { id: 'coding_arena', label: 'Coding Arena' },
                     { id: 'aptitude_arena', label: 'Aptitude Arena' },
-                    { id: 'skill_gap', label: 'Advanced Skill Gap' },
+                    { id: 'skill_gap', label: 'Skill Gap Radar' },
                     { id: 'skill_graph', label: 'Skill Graph' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveModule(tab.id)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                        activeModule === tab.id
-                          ? 'bg-blue-600 text-white shadow-2xs'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                  ].map(tab => {
+                    const isSelected = activeModule === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveModule(tab.id)}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
