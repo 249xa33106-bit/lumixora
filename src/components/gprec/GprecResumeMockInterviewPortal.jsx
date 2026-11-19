@@ -267,6 +267,19 @@ function GprecResumeMockInterviewPortal({
   const [speechSpeed, setSpeechSpeed] = useState(1.0); // 1.0 | 1.15
   const [questionCount, setQuestionCount] = useState(5); // 3 | 5 | 7
 
+  // Analysis Result
+  const [resumeAnalysis, setResumeAnalysis] = useState(null);
+  const [interviewQuestions, setInterviewQuestions] = useState([]);
+
+  // Live Interview State (Declared early so currentQIndex is initialized before dependent sub-states)
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [candidateAnswers, setCandidateAnswers] = useState({});
+  const [evaluatedAnswers, setEvaluatedAnswers] = useState({});
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
   // Live Code & SQL Scratchpad State (The #1 Top Placement Decider)
   const [activeInputMode, setActiveInputMode] = useState('prose'); // 'prose' | 'code'
   const [candidateCodes, setCandidateCodes] = useState({}); // { [qIndex]: string }
@@ -317,19 +330,6 @@ function GprecResumeMockInterviewPortal({
   useEffect(() => {
     currentPhaseRef.current = currentPhase;
   }, [currentPhase]);
-
-  // Analysis Result
-  const [resumeAnalysis, setResumeAnalysis] = useState(null);
-  const [interviewQuestions, setInterviewQuestions] = useState([]);
-
-  // Live Interview State
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [candidateAnswers, setCandidateAnswers] = useState({});
-  const [evaluatedAnswers, setEvaluatedAnswers] = useState({});
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(180);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isListening, setIsListening] = useState(false);
 
   // Final Evaluation
   const [finalReport, setFinalReport] = useState(null);
