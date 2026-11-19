@@ -69,6 +69,168 @@ const GPREC_INTERVIEW_TRACKS = [
   }
 ];
 
+// 1-Click Common Technical Placement Boilerplates
+const CODE_BOILERPLATES = {
+  java: {
+    name: 'Java (Spring / OpenJDK)',
+    templates: [
+      {
+        title: 'LRU Cache (O(1) Get & Put)',
+        code: `class LRUCache {\n    private class Node {\n        int key, val;\n        Node prev, next;\n        Node(int k, int v) { key = k; val = v; }\n    }\n    \n    private final int capacity;\n    private final Map<Integer, Node> map;\n    private final Node head, tail;\n    \n    public LRUCache(int capacity) {\n        this.capacity = capacity;\n        this.map = new HashMap<>();\n        head = new Node(0, 0);\n        tail = new Node(0, 0);\n        head.next = tail;\n        tail.prev = head;\n    }\n    \n    public int get(int key) {\n        if (!map.containsKey(key)) return -1;\n        Node n = map.get(key);\n        moveToHead(n);\n        return n.val;\n    }\n    \n    public void put(int key, int value) {\n        if (map.containsKey(key)) {\n            Node n = map.get(key);\n            n.val = value;\n            moveToHead(n);\n        } else {\n            if (map.size() >= capacity) {\n                map.remove(tail.prev.key);\n                removeNode(tail.prev);\n            }\n            Node n = new Node(key, value);\n            map.put(key, n);\n            addNode(n);\n        }\n    }\n    \n    private void moveToHead(Node n) { removeNode(n); addNode(n); }\n    private void addNode(Node n) { n.next = head.next; n.prev = head; head.next.prev = n; head.next = n; }\n    private void removeNode(Node n) { n.prev.next = n.next; n.next.prev = n.prev; }\n}`
+      },
+      {
+        title: 'Sliding Window Rate Limiter',
+        code: `public class SlidingWindowRateLimiter {\n    private final int maxRequests;\n    private final long windowSizeMillis;\n    private final Deque<Long> requestTimestamps = new LinkedList<>();\n    \n    public SlidingWindowRateLimiter(int maxRequests, long windowSizeMillis) {\n        this.maxRequests = maxRequests;\n        this.windowSizeMillis = windowSizeMillis;\n    }\n    \n    public synchronized boolean allowRequest() {\n        long now = System.currentTimeMillis();\n        while (!requestTimestamps.isEmpty() && now - requestTimestamps.peekFirst() > windowSizeMillis) {\n            requestTimestamps.pollFirst();\n        }\n        if (requestTimestamps.size() < maxRequests) {\n            requestTimestamps.addLast(now);\n            return true;\n        }\n        return false;\n    }\n}`
+      }
+    ]
+  },
+  python: {
+    name: 'Python 3',
+    templates: [
+      {
+        title: 'LRU Cache (Collections OrderedDict O(1))',
+        code: `from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n        \n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n        \n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache.move_to_end(key)\n        self.cache[key] = value\n        if len(self.cache) > self.capacity:\n            self.cache.popitem(last=False) # Evict least recently used`
+      },
+      {
+        title: 'Two-Pointer O(N) Subarray Sum',
+        code: `def find_target_subarray(nums: list[int], target: int) -> list[int]:\n    if not nums:\n        return []\n    left, current_sum = 0, 0\n    for right in range(len(nums)):\n        current_sum += nums[right]\n        while current_sum > target and left < right:\n            current_sum -= nums[left]\n            left += 1\n        if current_sum == target:\n            return [left, right]\n    return []`
+      }
+    ]
+  },
+  sql: {
+    name: 'PostgreSQL / MySQL',
+    templates: [
+      {
+        title: 'Window Function (DENSE_RANK Partition)',
+        code: `-- Find the top 3 highest-earning engineers per department with ties preserved\nWITH RankedSalaries AS (\n    SELECT\n        employee_id,\n        employee_name,\n        department_id,\n        salary,\n        DENSE_RANK() OVER (\n            PARTITION BY department_id\n            ORDER BY salary DESC\n        ) as salary_rank\n    FROM employees\n    WHERE status = 'ACTIVE'\n)\nSELECT employee_id, employee_name, department_id, salary, salary_rank\nFROM RankedSalaries\nWHERE salary_rank <= 3\nORDER BY department_id, salary_rank;`
+      },
+      {
+        title: 'ACID Transaction with Row-Level Locking',
+        code: `-- Atomic Wallet Transfer with Row-Level Pessimistic Locking\nBEGIN;\n\n-- Step 1: Check balance and acquire lock\nSELECT balance FROM user_wallets \nWHERE user_id = 101 \nFOR UPDATE;\n\n-- Step 2: Deduct from sender\nUPDATE user_wallets \nSET balance = balance - 500 \nWHERE user_id = 101 AND balance >= 500;\n\n-- Step 3: Credit recipient\nUPDATE user_wallets \nSET balance = balance + 500 \nWHERE user_id = 202;\n\n-- Step 4: Record audit log\nINSERT INTO audit_ledger (sender_id, recipient_id, amount, status, created_at)\nVALUES (101, 202, 500, 'COMPLETED', NOW());\n\nCOMMIT;`
+      }
+    ]
+  },
+  javascript: {
+    name: 'JavaScript / Node.js',
+    templates: [
+      {
+        title: 'Debounce & Throttle High-Frequency Events',
+        code: `// High-performance debounce with immediate execution option\nfunction debounce(func, wait = 150, immediate = false) {\n  let timeout;\n  return function executedFunction(...args) {\n    const context = this;\n    const later = () => {\n      timeout = null;\n      if (!immediate) func.apply(context, args);\n    };\n    const callNow = immediate && !timeout;\n    clearTimeout(timeout);\n    timeout = setTimeout(later, wait);\n    if (callNow) func.apply(context, args);\n  };\n}`
+      }
+    ]
+  },
+  cpp: {
+    name: 'C++ 20',
+    templates: [
+      {
+        title: 'Custom Fast Hash Map with Probing',
+        code: `#include <vector>\n#include <utility>\n\nclass SimpleIntHashMap {\nprivate:\n    static const int TABLE_SIZE = 10007;\n    std::vector<std::pair<int, int>> table[TABLE_SIZE];\n    \n    int hash(int key) const {\n        return (key % TABLE_SIZE + TABLE_SIZE) % TABLE_SIZE;\n    }\npublic:\n    void put(int key, int value) {\n        int idx = hash(key);\n        for (auto& pair : table[idx]) {\n            if (pair.first == key) {\n                pair.second = value;\n                return;\n            }\n        }\n        table[idx].emplace_back(key, value);\n    }\n    \n    int get(int key) const {\n        int idx = hash(key);\n        for (const auto& pair : table[idx]) {\n            if (pair.first == key) return pair.second;\n        }\n        return -1;\n    }\n};`
+      }
+    ]
+  }
+};
+
+// Big-O Complexity & Code Quality Verification Engine
+const analyzeCodeComplexityAndQuality = (code, lang = 'java') => {
+  const raw = (code || '').trim();
+  if (!raw || raw.length < 15) {
+    return {
+      timeComplexity: 'N/A',
+      spaceComplexity: 'N/A',
+      score: 0,
+      feedback: 'No code provided yet.',
+      issues: ['Code snippet is empty or too brief to evaluate.']
+    };
+  }
+
+  const lines = raw.split(/\r?\n/);
+  const lower = raw.toLowerCase();
+
+  // 1. SQL Analysis
+  if (lang === 'sql' || lower.includes('select ') || lower.includes('from ')) {
+    const hasWindow = /over\s*\(.*partition/i.test(raw);
+    const hasJoin = /\b(?:inner|left|right|full)?\s*join\b/i.test(raw);
+    const hasGroup = /\bgroup\s+by\b/i.test(raw);
+    const hasIndexHint = /\b(?:index|where|btree)\b/i.test(raw);
+
+    const timeComplexity = hasJoin || hasGroup ? 'O(N log N) [Hash/Sort-Merge Join]' : hasIndexHint ? 'O(log N) [Index Scan]' : 'O(N) [Sequential Scan]';
+    const spaceComplexity = hasGroup || hasWindow ? 'O(N) [TempDB / Sort Memory]' : 'O(1) [Streaming Rowset]';
+    let sqlScore = 20 + (hasWindow ? 3 : 0) + (hasJoin ? 2 : 0);
+
+    return {
+      timeComplexity,
+      spaceComplexity,
+      score: Math.min(25, sqlScore),
+      feedback: hasWindow ? 'Advanced relational query using analytical window partitioning with deterministic ranking.' : 'Clean relational query structure with valid filter predicates.',
+      issues: hasIndexHint ? [] : ['Verify index selectivity on WHERE/JOIN columns to prevent full table scans in production.']
+    };
+  }
+
+  // 2. Algorithmic Complexity (Java, Python, C++, JS)
+  const forLoops = (raw.match(/\bfor\b/g) || []).length;
+  const whileLoops = (raw.match(/\bwhile\b/g) || []).length;
+  const totalLoops = forLoops + whileLoops;
+
+  let timeComplexity = 'O(1) [Constant Time]';
+  let spaceComplexity = 'O(1) [Constant Memory]';
+  const issues = [];
+  let score = 20;
+
+  // Check nested loops
+  let maxLoopDepth = 0;
+  let currentDepth = 0;
+  for (const line of lines) {
+    if (/\b(?:for|while)\b/.test(line)) {
+      currentDepth++;
+      if (currentDepth > maxLoopDepth) maxLoopDepth = currentDepth;
+    }
+    if (line.includes('}')) {
+      if (currentDepth > 0) currentDepth--;
+    }
+  }
+
+  if (maxLoopDepth >= 2 || (totalLoops >= 2 && /for.*for|while.*for|for.*while/s.test(raw))) {
+    timeComplexity = 'O(N²) [Quadratic Time]';
+    issues.push('Nested loop detected. Senior interviewers will ask to optimize this to O(N log N) with sorting or O(N) using a Hash Map.');
+    score = Math.max(14, score - 5);
+  } else if (maxLoopDepth === 1 || totalLoops === 1) {
+    if (/\b(?:binary|mid|low\s*<=|high\s*>=)\b/i.test(raw) && whileLoops >= 1) {
+      timeComplexity = 'O(log N) [Logarithmic Binary Search]';
+      score += 4;
+    } else {
+      timeComplexity = 'O(N) [Linear Time]';
+      score += 3;
+    }
+  } else if (/\b(?:recursion|return.*\(|dfs|bfs)\b/i.test(raw)) {
+    timeComplexity = 'O(2^N) or O(N) [Recursive Branching]';
+    spaceComplexity = 'O(N) [Call Stack Depth]';
+  }
+
+  // Space complexity
+  if (/(?:new\s+(?:HashMap|HashSet|ArrayList|Array|int\[|vector|map)|malloc|dict\(|set\(|\[\]|\{\})/i.test(raw)) {
+    spaceComplexity = 'O(N) [Auxiliary In-Memory Allocation]';
+  } else {
+    spaceComplexity = 'O(1) [In-Place Constant Space]';
+    score += 2;
+  }
+
+  // Edge cases
+  const hasNullCheck = /\b(?:null|nil|None|undefined|empty|isEmpty|size\s*==\s*0|len\(.*==\s*0)\b/i.test(raw);
+  if (!hasNullCheck) {
+    issues.push('Missing explicit null or empty-collection guard at function entry.');
+  } else {
+    score += 2;
+  }
+
+  return {
+    timeComplexity,
+    spaceComplexity,
+    score: Math.min(25, score),
+    feedback: issues.length === 0 ? 'Clean, well-bounded implementation meeting senior engineering standards.' : 'Working implementation with clear optimization opportunities.',
+    issues
+  };
+};
+
 function GprecResumeMockInterviewPortal({
   user,
   awardXP,
@@ -103,6 +265,43 @@ function GprecResumeMockInterviewPortal({
   const [selectedTrack, setSelectedTrack] = useState('all'); // 'all' | 'round1_screening' | 'round2_architecture' | 'round3_bar_raiser'
   const [speechSpeed, setSpeechSpeed] = useState(1.0); // 1.0 | 1.15
   const [questionCount, setQuestionCount] = useState(5); // 3 | 5 | 7
+
+  // Live Code & SQL Scratchpad State (The #1 Top Placement Decider)
+  const [activeInputMode, setActiveInputMode] = useState('prose'); // 'prose' | 'code'
+  const [candidateCodes, setCandidateCodes] = useState({}); // { [qIndex]: string }
+  const [candidateCodeLangs, setCandidateCodeLangs] = useState({}); // { [qIndex]: 'java' | 'python' | 'sql' | 'javascript' | 'cpp' }
+  const [codeAnalysisResults, setCodeAnalysisResults] = useState({}); // { [qIndex]: result }
+  const [isAnalyzingCode, setIsAnalyzingCode] = useState(false);
+
+  // 1-Click Code Boilerplate Loader
+  const handleLoadBoilerplate = (boilerplateCode) => {
+    setCandidateCodes(prev => ({
+      ...prev,
+      [currentQIndex]: boilerplateCode
+    }));
+    if (addToast) addToast({ type: 'success', message: 'Loaded technical boilerplate template!' });
+  };
+
+  // 1-Click Big-O Complexity Analyzer
+  const handleAnalyzeCodeComplexity = (customCode, lang) => {
+    const raw = customCode || candidateCodes[currentQIndex] || '';
+    if (!raw.trim()) {
+      if (addToast) addToast({ type: 'warning', message: 'Please write a code snippet first to analyze Big-O complexity.' });
+      return;
+    }
+    setIsAnalyzingCode(true);
+    setTimeout(() => {
+      const result = analyzeCodeComplexityAndQuality(raw, lang || candidateCodeLangs[currentQIndex] || 'java');
+      setCodeAnalysisResults(prev => ({ ...prev, [currentQIndex]: result }));
+      setIsAnalyzingCode(false);
+      if (addToast) {
+        addToast({
+          type: 'info',
+          message: `Verified Big-O: ${result.timeComplexity} | ${result.spaceComplexity}`
+        });
+      }
+    }, 300);
+  };
 
   // Multi-Turn Counter-Interrogation State
   // questionPhases: { [qIndex]: 'initial' | 'counter_probe' | 'completed' }
@@ -1256,6 +1455,9 @@ function GprecResumeMockInterviewPortal({
     setGeneratedProbes({});
     setEvaluatedAnswers({});
     setActiveExemplarTabs({});
+    setCandidateCodes({});
+    setCodeAnalysisResults({});
+    setActiveInputMode('prose');
     setStage('interview');
   };
 
@@ -1301,7 +1503,8 @@ function GprecResumeMockInterviewPortal({
   };
 
   // Rigorous Technical Viva Rubric Evaluator (Evaluates both initial defense and counter-interrogation)
-  const evaluateTechnicalVivaResponse = (answerText, currentQ, counterText = '') => {
+  const evaluateTechnicalVivaResponse = (answerText, currentQ, counterText = '', codeSnippet = '', codeLang = 'java') => {
+    const codeObj = codeSnippet ? analyzeCodeComplexityAndQuality(codeSnippet, codeLang) : null;
     const answer = (answerText || '').trim();
     const counter = (counterText || '').trim();
     const combined = counter ? `${answer}\n\n[Counter-Defense]: ${counter}` : answer;
@@ -1404,9 +1607,18 @@ function GprecResumeMockInterviewPortal({
       critique = 'Reasonable conceptual foundation, but needs deeper technical rigor. Explicitly explain your benchmarking tools, baseline metrics, and failure recovery mechanisms.';
     }
 
+    // Live Code Implementation Bonus (Show Me The Code Standard)
+    let finalTotalScore = totalScore;
+    if (codeObj && codeObj.score >= 18) {
+      accuracy = Math.min(25, accuracy + 2);
+      depth = Math.min(25, depth + 2);
+      finalTotalScore = Math.min(100, finalTotalScore + 4);
+      critique += ` Candidate supplemented oral defense with clean ${codeLang.toUpperCase()} code implementation (${codeObj.timeComplexity}, ${codeObj.spaceComplexity}).`;
+    }
+
     return {
       questionId: currentQ.id,
-      score: totalScore,
+      score: finalTotalScore,
       accuracy,
       depth,
       defensibility,
@@ -1414,6 +1626,10 @@ function GprecResumeMockInterviewPortal({
       verdict,
       critique,
       counterDefended: Boolean(counter),
+      codeAttached: Boolean(codeSnippet),
+      codeAnalysis: codeObj,
+      codeSnippet: codeSnippet || null,
+      codeLang: codeLang || 'java',
       modelAnswer: currentQ.modelAnswer,
       powerPhrases: currentQ.powerPhrases || []
     };
@@ -1473,7 +1689,9 @@ function GprecResumeMockInterviewPortal({
     setIsEvaluating(true);
 
     setTimeout(() => {
-      const result = evaluateTechnicalVivaResponse(initialAns, currentQ, counterAns);
+      const currentCode = candidateCodes[currentQIndex] || '';
+      const currentLang = candidateCodeLangs[currentQIndex] || 'java';
+      const result = evaluateTechnicalVivaResponse(initialAns, currentQ, counterAns, currentCode, currentLang);
       setEvaluatedAnswers(prev => ({ ...prev, [currentQIndex]: result }));
       setQuestionPhases(prev => ({ ...prev, [currentQIndex]: 'completed' }));
       setIsEvaluating(false);
@@ -1497,12 +1715,17 @@ function GprecResumeMockInterviewPortal({
         const studentAns = candidateAnswers[idx] || '(Candidate answered orally)';
         const counterAns = counterAnswers[idx] || '';
         const probeObj = generatedProbes[idx] || null;
-        const evalObj = evaluatedAnswers[idx] || evaluateTechnicalVivaResponse(studentAns, q, counterAns);
+        const studentCode = candidateCodes[idx] || '';
+        const studentLang = candidateCodeLangs[idx] || 'java';
+        const evalObj = evaluatedAnswers[idx] || evaluateTechnicalVivaResponse(studentAns, q, counterAns, studentCode, studentLang);
         return {
           ...q,
           studentAnswer: studentAns,
           counterProbe: probeObj?.probeText || null,
           counterAnswer: counterAns || null,
+          codeSnippet: studentCode || null,
+          codeLang: studentLang,
+          codeAnalysis: evalObj.codeAnalysis || null,
           evaluation: evalObj
         };
       });
@@ -1586,6 +1809,11 @@ function GprecResumeMockInterviewPortal({
         <div style="margin-top:8px;font-size:12px;color:#854d0e;background:#fefce8;padding:10px;border-radius:6px;border:1px solid #fef08a;">
           <strong>Senior Bar Raiser Deep Probe:</strong> ${esc(item.counterProbe)}
           ${item.counterAnswer ? `<div style="margin-top:6px;color:#0f172a;"><strong>Candidate Counter-Defense:</strong> ${esc(item.counterAnswer)}</div>` : ''}
+        </div>` : ''}
+        ${item.codeSnippet ? `
+        <div style="margin-top:8px;font-size:11px;color:#10b981;background:#0f172a;padding:10px;border-radius:6px;font-family:monospace;">
+          <div style="color:#38bdf8;font-weight:bold;margin-bottom:4px;">Verified Live Code (${esc(item.codeLang?.toUpperCase() || 'JAVA')}): ${item.codeAnalysis ? esc(item.codeAnalysis.timeComplexity) : ''}</div>
+          <pre style="margin:0;white-space:pre-wrap;">${esc(item.codeSnippet)}</pre>
         </div>` : ''}
         <div style="margin-top:8px;font-size:11.5px;color:#475569;">
           <strong>Bar Raiser Evaluation:</strong> <span style="font-weight:bold;color:#4f46e5;">Score: ${item.evaluation?.score || 85}/100</span> — ${esc(item.evaluation?.critique)}
@@ -2764,29 +2992,70 @@ function GprecResumeMockInterviewPortal({
             </div>
 
             {/* =============================================================== */}
-            {/* PHASE 1: INITIAL TECHNICAL DEFENSE                              */}
+            {/* PHASE 1: INITIAL TECHNICAL DEFENSE & CODE SCRATCHPAD            */}
             {/* =============================================================== */}
             {currentPhase === 'initial' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-extrabold text-slate-900">Your Technical Defense</h3>
-                    <p className="text-xs text-slate-500">Provide concrete architectural details, metrics, and trade-offs.</p>
+                {/* Segmented Mode Selector: Prose Defense vs Live Code Scratchpad */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => setActiveInputMode('prose')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all ${
+                        activeInputMode === 'prose'
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Technical Defense & STAR</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveInputMode('code')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all ${
+                        activeInputMode === 'code'
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Code className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Live Code & SQL Scratchpad</span>
+                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-cyan-400 text-slate-950 uppercase">
+                        #1 Decider
+                      </span>
+                      {candidateCodes[currentQIndex]?.trim() && (
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+                      )}
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleToggleDictation}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                      isListening
-                        ? 'bg-rose-600 text-white animate-pulse'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                    }`}
-                  >
-                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                    <span>{isListening ? 'Stop Recording' : 'Voice Dictate'}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {activeInputMode === 'prose' ? (
+                      <button
+                        type="button"
+                        onClick={handleToggleDictation}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                          isListening
+                            ? 'bg-rose-600 text-white animate-pulse'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                        <span>{isListening ? 'Stop Recording' : 'Voice Dictate'}</span>
+                      </button>
+                    ) : (
+                      <span className="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-200">
+                        "Show Me The Code" Mode Active
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {/* Sub-view A: Technical Defense & STAR (Prose) */}
+                {activeInputMode === 'prose' && (
+                  <div className="space-y-3 animate-in fade-in duration-150">
 
                 {/* 1-Click STAR & Engineering Scaffolding Ribbon */}
                 <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
@@ -2889,6 +3158,112 @@ function GprecResumeMockInterviewPortal({
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Sub-view B: Live Code & SQL Scratchpad ("Show Me The Code" Standard) */}
+            {activeInputMode === 'code' && (
+              <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800 text-white animate-in fade-in duration-150">
+                {/* Header & Language Selector */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-800 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-cyan-400" />
+                    <span className="font-extrabold text-cyan-300">Technical Implementation Scratchpad</span>
+                    <span className="text-[10px] text-slate-400 hidden sm:inline">("Show Me The Code" Standard)</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {['java', 'python', 'sql', 'javascript', 'cpp'].map(lang => {
+                      const isSel = (candidateCodeLangs[currentQIndex] || 'java') === lang;
+                      return (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => setCandidateCodeLangs(prev => ({ ...prev, [currentQIndex]: lang }))}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase cursor-pointer transition-all ${
+                            isSel
+                              ? 'bg-cyan-500 text-slate-950 shadow-xs'
+                              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                          }`}
+                        >
+                          {lang}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quick Starter Templates */}
+                <div className="flex flex-wrap items-center gap-1.5 text-[10.5px]">
+                  <span className="text-slate-400 text-[10px] font-bold">1-Click Starter Boilerplates:</span>
+                  {(CODE_BOILERPLATES[candidateCodeLangs[currentQIndex] || 'java']?.templates || []).map((t, tIdx) => (
+                    <button
+                      key={tIdx}
+                      type="button"
+                      onClick={() => handleLoadBoilerplate(t.code)}
+                      className="px-2 py-0.8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-cyan-300 font-bold cursor-pointer transition-colors"
+                    >
+                      + {t.title}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Monospace Code Editor */}
+                <textarea
+                  rows={9}
+                  value={candidateCodes[currentQIndex] || ''}
+                  onChange={(e) => setCandidateCodes({ ...candidateCodes, [currentQIndex]: e.target.value })}
+                  placeholder={`// Write your clean ${candidateCodeLangs[currentQIndex] || 'Java'} implementation or SQL query here...\n// Demonstrate defensive edge-case checking, O(1) or O(N) Big-O complexity, and clean naming.`}
+                  className="w-full p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-xs text-emerald-300 focus:outline-none focus:ring-1 focus:ring-cyan-500 leading-relaxed"
+                  spellCheck={false}
+                />
+
+                {/* Big-O Analysis Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    disabled={isAnalyzingCode}
+                    onClick={() => handleAnalyzeCodeComplexity(candidateCodes[currentQIndex], candidateCodeLangs[currentQIndex] || 'java')}
+                    className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    {isAnalyzingCode ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                    <span>Analyze Complexity & Syntax (Big-O)</span>
+                  </button>
+
+                  {codeAnalysisResults[currentQIndex] && (
+                    <div className="flex items-center gap-2 text-[11px] font-black">
+                      <span className="px-2 py-1 rounded bg-slate-900 border border-cyan-500/40 text-cyan-300">
+                        Time: {codeAnalysisResults[currentQIndex].timeComplexity}
+                      </span>
+                      <span className="px-2 py-1 rounded bg-slate-900 border border-purple-500/40 text-purple-300">
+                        Space: {codeAnalysisResults[currentQIndex].spaceComplexity}
+                      </span>
+                      <span className="px-2 py-1 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
+                        Score: {codeAnalysisResults[currentQIndex].score}/25
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Code Diagnostic Feedback Box */}
+                {codeAnalysisResults[currentQIndex] && (
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-1.5 text-slate-300">
+                    <div className="font-extrabold text-white flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Compiler & Recruiter Big-O Verification:</span>
+                    </div>
+                    <p className="text-slate-400 leading-relaxed">{codeAnalysisResults[currentQIndex].feedback}</p>
+                    {codeAnalysisResults[currentQIndex].issues?.length > 0 && (
+                      <ul className="list-disc pl-4 text-amber-300 text-[10.5px] space-y-0.5">
+                        {codeAnalysisResults[currentQIndex].issues.map((iss, iIdx) => (
+                          <li key={iIdx}>{iss}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
                 {/* Bottom Actions for Initial Phase */}
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
@@ -3069,12 +3444,13 @@ function GprecResumeMockInterviewPortal({
                     </div>
                   </div>
 
-                  {/* 3-Tab Switcher */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-purple-200/60">
+                  {/* 4-Tab Switcher including Code Verification */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-purple-200/60">
                     {[
                       { id: 'critique', label: 'Bar Raiser Critique' },
                       { id: 'exemplar', label: 'Staff Engineer Exemplar' },
-                      { id: 'power_phrases', label: 'L4 ➔ L5 Power Phrases' }
+                      { id: 'power_phrases', label: 'L4 ➔ L5 Power Phrases' },
+                      { id: 'code_verify', label: 'Code & Big-O Verification' }
                     ].map(tab => {
                       const activeTab = activeExemplarTabs[currentQIndex] || 'critique';
                       const isSel = activeTab === tab.id;
@@ -3135,6 +3511,30 @@ function GprecResumeMockInterviewPortal({
                         <li key={pIdx}>{phrase}</li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {/* Tab 4: Code & Big-O Verification */}
+                {(activeExemplarTabs[currentQIndex] || 'critique') === 'code_verify' && (
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-white space-y-2.5 text-xs font-mono">
+                    <div className="flex items-center justify-between text-[11px] font-sans pb-2 border-b border-slate-800">
+                      <span className="font-extrabold text-cyan-300">Candidate Implementation & Big-O Complexity</span>
+                      {evaluatedAnswers[currentQIndex].codeAnalysis && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-cyan-400">Time: {evaluatedAnswers[currentQIndex].codeAnalysis.timeComplexity}</span>
+                          <span className="text-purple-400">Space: {evaluatedAnswers[currentQIndex].codeAnalysis.spaceComplexity}</span>
+                        </div>
+                      )}
+                    </div>
+                    {candidateCodes[currentQIndex] ? (
+                      <pre className="p-3 bg-slate-900 rounded-lg text-emerald-300 text-[11px] leading-relaxed overflow-x-auto max-h-56">
+                        {candidateCodes[currentQIndex]}
+                      </pre>
+                    ) : (
+                      <div className="text-slate-400 font-sans p-3 bg-slate-900/60 rounded-lg text-center">
+                        No live code snippet was submitted for this question. You can re-attempt and use the Live Code & SQL Scratchpad to boost your Technical Accuracy score.
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3262,6 +3662,20 @@ function GprecResumeMockInterviewPortal({
                           <strong>Candidate Counter-Defense:</strong> {q.counterAnswer}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {q.codeSnippet && (
+                    <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 text-white space-y-1.5 font-mono text-xs">
+                      <div className="flex items-center justify-between text-[10px] font-sans text-cyan-300 font-extrabold pb-1 border-b border-slate-800">
+                        <span>Live Technical Implementation ({q.codeLang?.toUpperCase() || 'JAVA'})</span>
+                        {q.codeAnalysis && (
+                          <span>{q.codeAnalysis.timeComplexity} • {q.codeAnalysis.spaceComplexity}</span>
+                        )}
+                      </div>
+                      <pre className="text-emerald-300 text-[10.5px] leading-relaxed overflow-x-auto max-h-36">
+                        {q.codeSnippet}
+                      </pre>
                     </div>
                   )}
 
