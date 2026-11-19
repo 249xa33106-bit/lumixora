@@ -42,7 +42,7 @@ import { COMPANY_PRESETS, ROLE_TRACKS } from '../services/interviewService';
 import { generateMockInterviewDiagnosticPDF } from '../utils/pdfGenerator';
 import { issueNewCertificate } from '../services/certificateService';
 import { saveMockInterviewScorecardToSupabase, saveCodingSubmissionToSupabase, fetchFullStudentProgressFromSupabase } from '../services/supabaseDataSyncService';
-import { cleanScholarName } from '../utils/authSecurity';
+import { cleanScholarName, isFounderEmail } from '../utils/authSecurity';
 
 // High-Performance Code-Split Sub-Portals (Zero-Lag Dashboard Mount)
 const TechPulsePortal = lazy(() => import('./TechPulsePortal'));
@@ -723,7 +723,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
     return 0;
   });
-  const isFounder = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com' || (typeof window !== 'undefined' && localStorage.getItem('lumixora_founder_mode') === 'true');
+  const isFounder = user?.role === 'founder' ||
+    user?.isFounder === true ||
+    user?.isAdmin === true ||
+    isFounderEmail(user?.email) ||
+    user?.email?.toLowerCase() === 'founder@lumixora.com' ||
+    user?.email?.toLowerCase() === '249xa33106@gprec.ac.in' ||
+    (typeof window !== 'undefined' && localStorage.getItem('lumixora_founder_mode') === 'true');
   const [streakDays, setStreakDays] = useState(typeof user?.streak === 'number' ? user.streak : 0);
 
   // Adaptive Dynamic Daily Mission Generator (strictly tracks real student completion)
@@ -806,6 +812,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [activeCodeProblem, setActiveCodeProblem] = useState(() => getProblemFullDetails(CODING_PROBLEMS_10K[0]));
   const [codeLanguage, setCodeLanguage] = useState('javascript');
   const [codeContent, setCodeContent] = useState(() => getProblemFullDetails(CODING_PROBLEMS_10K[0]).langTemplates?.javascript || '');
+  const isSwitchingTemplateRef = useRef(false);
   const [codeOutput, setCodeOutput] = useState('');
   const [isExecutingCode, setIsExecutingCode] = useState(false);
   const [isReviewingCode, setIsReviewingCode] = useState(false);
@@ -924,7 +931,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     if (!problem) return;
     const full = getProblemFullDetails(problem);
     setActiveCodeProblem(full);
+    isSwitchingTemplateRef.current = true;
     setCodeContent(full.langTemplates?.[codeLanguage] || full.langTemplates?.javascript || '');
+    setTimeout(() => { isSwitchingTemplateRef.current = false; }, 200);
     setTestExecutionResults(null);
     setCodeOutput('');
     setAiCodeFeedback(null);
@@ -964,7 +973,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const handleResetCodeTemplate = () => {
     if (activeCodeProblem?.langTemplates?.[codeLanguage]) {
+      isSwitchingTemplateRef.current = true;
       setCodeContent(activeCodeProblem.langTemplates[codeLanguage]);
+      setTimeout(() => { isSwitchingTemplateRef.current = false; }, 200);
       addToast({ message: `Reset to initial ${codeLanguage.toUpperCase()} boilerplate`, type: 'info' });
     }
   };
@@ -4546,7 +4557,19 @@ Return ONLY a valid JSON object without markdown:
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Left Column: Problem Information & Subtabs */}
                         <div className="lg:col-span-5 flex flex-col gap-4">
-                          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
+                          <div 
+                            onCopy={(e) => {
+                              if (!isFounder) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                addToast({
+                                  message: '⚠️ Copying problem statements is disabled in Coding Arena. Read and analyze the requirements.',
+                                  type: 'warning'
+                                });
+                              }
+                            }}
+                            className={`bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4 ${!isFounder ? 'select-none' : ''}`}
+                          >
                             {/* Badges */}
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
@@ -4790,8 +4813,10 @@ Return ONLY a valid JSON object without markdown:
                                   <button
                                     key={lang}
                                     onClick={() => {
+                                      isSwitchingTemplateRef.current = true;
                                       setCodeLanguage(lang);
                                       setCodeContent(activeCodeProblem.langTemplates?.[lang] || '');
+                                      setTimeout(() => { isSwitchingTemplateRef.current = false; }, 200);
                                     }}
                                     className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all cursor-pointer ${
                                       codeLanguage === lang
@@ -4802,6 +4827,21 @@ Return ONLY a valid JSON object without markdown:
                                     {lang === 'javascript' ? 'JS' : lang}
                                   </button>
                                 ))}
+                              </div>
+
+                              {/* Anti-Cheat Copy-Paste Protection Status */}
+                              <div className="flex items-center gap-2">
+                                {!isFounder ? (
+                                  <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shadow-2xs">
+                                    <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Anti-Cheat: Copy/Paste Disabled</span>
+                                  </span>
+                                ) : (
+                                  <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200 shadow-2xs">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                                    <span>Founder Mode: Clipboard Unlocked</span>
+                                  </span>
+                                )}
                               </div>
 
                               {/* Actions: Reset, AI Review, Run Code */}
@@ -4834,13 +4874,104 @@ Return ONLY a valid JSON object without markdown:
                               </div>
                             </div>
 
-                            {/* Monaco Editor Container */}
-                            <div className="h-96 rounded-xl border border-slate-200 overflow-hidden shadow-inner">
+                            {/* Monaco Editor Container with Zero-Copy/Paste Protection */}
+                            <div 
+                              onPaste={(e) => {
+                                if (!isFounder) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  addToast({
+                                    message: '⚠️ Copy/Paste is disabled in GPREC Coding Arena. Write code manually.',
+                                    type: 'warning'
+                                  });
+                                }
+                              }}
+                              onCopy={(e) => {
+                                if (!isFounder) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  addToast({
+                                    message: '⚠️ Code copying is disabled in GPREC Coding Arena.',
+                                    type: 'warning'
+                                  });
+                                }
+                              }}
+                              onCut={(e) => {
+                                if (!isFounder) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }
+                              }}
+                              onContextMenu={(e) => {
+                                if (!isFounder) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }
+                              }}
+                              className="h-96 rounded-xl border border-slate-200 overflow-hidden shadow-inner relative"
+                            >
                               <Editor
                                 height="100%"
                                 language={codeLanguage === 'cpp' ? 'cpp' : codeLanguage}
                                 value={codeContent}
-                                onChange={(val) => setCodeContent(val || '')}
+                                onChange={(val) => {
+                                  if (!isFounder && val && codeContent) {
+                                    const charDiff = val.length - codeContent.length;
+                                    if (charDiff > 25 && !isSwitchingTemplateRef.current) {
+                                      addToast({
+                                        message: '⚠️ Bulk paste detected and blocked. Write code manually to build interview muscle memory.',
+                                        type: 'warning'
+                                      });
+                                      return;
+                                    }
+                                  }
+                                  setCodeContent(val || '');
+                                }}
+                                onMount={(editor, monaco) => {
+                                  if (!isFounder) {
+                                    editor.onKeyDown((e) => {
+                                      const isPaste = ((e.ctrlKey || e.metaKey) && (e.keyCode === monaco.KeyCode.KeyV || e.code === 'KeyV')) || (e.shiftKey && e.keyCode === monaco.KeyCode.Insert);
+                                      if (isPaste) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        addToast({
+                                          message: '⚠️ Copy/Paste is disabled in GPREC Coding Arena. Write code manually.',
+                                          type: 'warning'
+                                        });
+                                      }
+                                      const isCopy = ((e.ctrlKey || e.metaKey) && (e.keyCode === monaco.KeyCode.KeyC || e.code === 'KeyC'));
+                                      if (isCopy) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        addToast({
+                                          message: '⚠️ Code copying is disabled in GPREC Coding Arena.',
+                                          type: 'warning'
+                                        });
+                                      }
+                                    });
+
+                                    try {
+                                      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                                        addToast({
+                                          message: '⚠️ Copy/Paste is disabled in GPREC Coding Arena. Write code manually.',
+                                          type: 'warning'
+                                        });
+                                      });
+                                      editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Insert, () => {
+                                        addToast({
+                                          message: '⚠️ Copy/Paste is disabled in GPREC Coding Arena. Write code manually.',
+                                          type: 'warning'
+                                        });
+                                      });
+                                      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+                                        addToast({
+                                          message: '⚠️ Code copying is disabled in GPREC Coding Arena.',
+                                          type: 'warning'
+                                        });
+                                      });
+                                    } catch (err) {}
+                                  }
+                                }}
                                 theme="vs-light"
                                 options={{
                                   minimap: { enabled: false },
@@ -4848,7 +4979,9 @@ Return ONLY a valid JSON object without markdown:
                                   lineHeight: 20,
                                   scrollBeyondLastLine: false,
                                   automaticLayout: true,
-                                  padding: { top: 12, bottom: 12 }
+                                  padding: { top: 12, bottom: 12 },
+                                  contextmenu: isFounder,
+                                  dragAndDrop: isFounder
                                 }}
                               />
                             </div>
