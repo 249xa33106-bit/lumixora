@@ -16,7 +16,14 @@ import {
   GraduationCap,
   Award,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  UserPlus,
+  Trash2,
+  Check,
+  PlusCircle,
+  FileText,
+  KeyRound,
+  X
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { 
@@ -25,6 +32,13 @@ import {
   formatDuration, 
   deriveUserRoleMeta 
 } from '../services/userActivityLogService';
+import { 
+  getGprecScholarRoster, 
+  addGprecScholarRoll, 
+  bulkAddGprecScholarRolls, 
+  removeGprecScholarRoll,
+  syncCustomRollsFromCloud
+} from '../services/gprecPlacementAuth';
 import { useToast } from '../context/ToastContext';
 
 export default function FounderLoginAuditManager() {
@@ -32,10 +46,21 @@ export default function FounderLoginAuditManager() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('all'); // 'all' | 'student' | 'tpo' | 'faculty' | 'active'
+  const [activeCategory, setActiveCategory] = useState('all'); // 'all' | 'student' | 'tpo' | 'faculty' | 'active' | 'roster'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPortal, setSelectedPortal] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all'); // 'all' | 'today' | '7days'
+
+  // Scholar Roster & Access Management State
+  const [roster, setRoster] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addMode, setAddMode] = useState('single'); // 'single' | 'bulk'
+  const [singleRoll, setSingleRoll] = useState('');
+  const [singleName, setSingleName] = useState('');
+  const [singleDept, setSingleDept] = useState('CSM');
+  const [singleYear, setSingleYear] = useState('3rd Year');
+  const [bulkInput, setBulkInput] = useState('');
+  const [isSubmittingRoster, setIsSubmittingRoster] = useState(false);
 
   // Load audit logs on mount
   const loadLogs = async (showToast = false) => {
@@ -43,8 +68,12 @@ export default function FounderLoginAuditManager() {
     try {
       const data = await fetchAllLoginLogs();
       setLogs(data);
+      // Also refresh and sync scholars roster
+      await syncCustomRollsFromCloud();
+      setRoster(getGprecScholarRoster());
+
       if (showToast) {
-        addToast({ message: `Synchronized ${data.length} live user & officer login sessions.`, type: 'success' });
+        addToast({ message: `Synchronized ${data.length} live sessions and active scholar roster.`, type: 'success' });
       }
     } catch (err) {
       console.error('Error fetching logs:', err);
@@ -58,6 +87,7 @@ export default function FounderLoginAuditManager() {
   };
 
   useEffect(() => {
+    setRoster(getGprecScholarRoster());
     loadLogs(false);
     // Poll every 30 seconds for live session telemetry updates
     const interval = setInterval(() => {
@@ -65,6 +95,67 @@ export default function FounderLoginAuditManager() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleAddSingleScholar = async (e) => {
+    e.preventDefault();
+    if (!singleRoll.trim()) {
+      addToast({ message: 'Please enter a valid GPREC roll number (e.g. 249XA33106).', type: 'error' });
+      return;
+    }
+    setIsSubmittingRoster(true);
+    try {
+      await addGprecScholarRoll(singleRoll, {
+        name: singleName.trim() || undefined,
+        department: singleDept,
+        year: singleYear,
+        addedBy: 'Founder'
+      });
+      setRoster(getGprecScholarRoster());
+      addToast({ message: `Successfully whitelisted scholar ${singleRoll.toUpperCase()}!`, type: 'success' });
+      setSingleRoll('');
+      setSingleName('');
+      setIsAddModalOpen(false);
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to add scholar.', type: 'error' });
+    } finally {
+      setIsSubmittingRoster(false);
+    }
+  };
+
+  const handleBulkAddScholars = async (e) => {
+    e.preventDefault();
+    if (!bulkInput.trim()) {
+      addToast({ message: 'Please paste roll numbers separated by commas, spaces, or lines.', type: 'error' });
+      return;
+    }
+    setIsSubmittingRoster(true);
+    try {
+      const added = await bulkAddGprecScholarRolls(bulkInput, {
+        department: singleDept,
+        year: singleYear,
+        addedBy: 'Founder'
+      });
+      setRoster(getGprecScholarRoster());
+      addToast({ message: `Bulk whitelisted ${added.length} scholars successfully!`, type: 'success' });
+      setBulkInput('');
+      setIsAddModalOpen(false);
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to bulk add scholars.', type: 'error' });
+    } finally {
+      setIsSubmittingRoster(false);
+    }
+  };
+
+  const handleRemoveScholar = async (roll) => {
+    if (!confirm(`Are you sure you want to remove ${roll} from the whitelisted placement roster?`)) return;
+    try {
+      await removeGprecScholarRoll(roll);
+      setRoster(getGprecScholarRoster());
+      addToast({ message: `Scholar ${roll} access revoked.`, type: 'info' });
+    } catch (err) {
+      addToast({ message: 'Failed to remove scholar.', type: 'error' });
+    }
+  };
 
   // Filtered logs computation
   const filteredLogs = useMemo(() => {
@@ -362,6 +453,21 @@ export default function FounderLoginAuditManager() {
               {metrics.active}
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveCategory('roster')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer border ${
+              activeCategory === 'roster'
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md shadow-amber-400/20 font-black'
+                : 'bg-[#0B132B] text-amber-300 hover:bg-[#111C44] border-amber-500/30'
+            }`}
+          >
+            <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+            <span>Scholar Whitelist & Roster</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeCategory === 'roster' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-amber-500/20 text-amber-300'}`}>
+              {roster.length}
+            </span>
+          </button>
         </div>
 
         {/* Portal Filter Dropdown */}
@@ -412,171 +518,513 @@ export default function FounderLoginAuditManager() {
         )}
       </div>
 
-      {/* Login History & Time Logs Table */}
-      <div className="rounded-2xl border border-white/10 bg-[#0B132B] overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#111C44] text-slate-200 uppercase tracking-wider text-[10px] font-bold border-b border-white/10">
-              <tr>
-                <th className="px-5 py-3.5">User Profile & Identity</th>
-                <th className="px-5 py-3.5">Role / Institutional Scope</th>
-                <th className="px-5 py-3.5">Portal Accessed</th>
-                <th className="px-5 py-3.5">Login Time & Timestamp</th>
-                <th className="px-5 py-3.5">Session Time Log</th>
-                <th className="px-5 py-3.5">Device & Environment</th>
-                <th className="px-5 py-3.5">Live Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin text-amber-400 mx-auto mb-2" />
-                    <span>Loading real-time login audit telemetry...</span>
-                  </td>
-                </tr>
-              ) : filteredLogs.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
-                    <p className="text-sm font-semibold text-slate-400">No login records found matching criteria.</p>
-                    <p className="text-xs text-slate-500 mt-1">Try clearing your search query or switching tabs.</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredLogs.map((item) => {
-                  const roleMeta = deriveUserRoleMeta(item);
-                  const isRecentlyActive = (Date.now() - (item.lastActiveAt || item.loginTimestamp)) < 15 * 60 * 1000;
-                  const isLive = item.status === 'active' || isRecentlyActive;
+      {/* Login History & Time Logs Table OR Scholar Whitelist & Roster */}
+      {activeCategory === 'roster' ? (
+        <div className="rounded-2xl border border-amber-500/20 bg-[#0B132B] overflow-hidden shadow-2xl">
+          {/* Roster Header */}
+          <div className="p-5 bg-gradient-to-r from-amber-950/30 via-[#111C44] to-[#0B132B] border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <KeyRound className="w-4 h-4" />
+                </span>
+                <h3 className="text-base font-bold text-white font-sora">
+                  GPREC Whitelisted Scholars Roster
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {roster.length} Active Scholars
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Scholars in this roster are pre-approved to receive OTP verification codes and access <strong className="text-amber-400">gprec.lumixora.in</strong> with full placement features.
+              </p>
+            </div>
 
-                  return (
-                    <tr 
-                      key={item.id}
-                      className="hover:bg-white/[0.02] transition-colors"
-                    >
-                      {/* 1. User Identity */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                            item.role === 'tpo' 
-                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
-                              : item.role === 'faculty' 
-                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                              : item.role === 'founder'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          }`}>
-                            {item.name?.charAt(0)?.toUpperCase() || 'U'}
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-xs flex items-center gap-1.5">
-                              <span>{item.name}</span>
-                              {item.role === 'tpo' && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                                  TPO
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                              {item.email}
-                            </div>
-                            {item.rollNumber && item.rollNumber !== 'GPREC-OFFICER' && (
-                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                                Roll: {item.rollNumber}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setAddMode('single');
+                  setIsAddModalOpen(true);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-400/20 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>+ Add Scholar (e.g. 249XA33106)</span>
+              </button>
+              <button
+                onClick={() => {
+                  setAddMode('bulk');
+                  setIsAddModalOpen(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>Bulk Import</span>
+              </button>
+            </div>
+          </div>
 
-                      {/* 2. Role & Department */}
+          {/* Roster Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#111C44] text-slate-200 uppercase tracking-wider text-[10px] font-bold border-b border-white/10">
+                <tr>
+                  <th className="px-5 py-3.5">Roll Number</th>
+                  <th className="px-5 py-3.5">Scholar Name</th>
+                  <th className="px-5 py-3.5">GPREC Institutional Email</th>
+                  <th className="px-5 py-3.5">Department / Branch</th>
+                  <th className="px-5 py-3.5">Batch / Year</th>
+                  <th className="px-5 py-3.5">Cohort Category</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {roster
+                  .filter(item => {
+                    if (!searchQuery.trim()) return true;
+                    const q = searchQuery.toLowerCase().trim();
+                    return item.rollNumber.toLowerCase().includes(q) ||
+                           item.name.toLowerCase().includes(q) ||
+                           item.email.toLowerCase().includes(q) ||
+                           item.department.toLowerCase().includes(q);
+                  })
+                  .map((scholar) => (
+                    <tr key={scholar.rawRoll} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-5 py-3.5">
-                        <div>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${roleMeta.badgeClass}`}>
-                            {item.roleTitle || roleMeta.title}
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                            {scholar.rollNumber}
                           </span>
-                          <div className="text-[11px] text-slate-300 font-medium mt-1">
-                            {item.department || 'General'}
-                          </div>
-                          <div className="text-[10px] text-slate-500">
-                            {item.collegeCode || 'GPREC'}
-                          </div>
+                          {scholar.rawRoll === '249xa33106' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                              Founder
+                            </span>
+                          )}
                         </div>
                       </td>
-
-                      {/* 3. Portal Accessed */}
                       <td className="px-5 py-3.5">
-                        <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-semibold text-slate-300 inline-block">
-                          {item.portal || 'Placement Suite'}
+                        <span className="font-bold text-slate-100">{scholar.name}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="font-mono text-slate-300 text-[11px]">{scholar.email}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/20 text-[10px] font-bold">
+                          {scholar.department}
                         </span>
                       </td>
-
-                      {/* 4. Login Time */}
                       <td className="px-5 py-3.5">
-                        <div className="font-medium text-slate-200">
-                          {item.loginTimeFormatted}
-                        </div>
-                        <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Clock className="w-2.5 h-2.5" />
-                          <span>{formatTimeAgo(item.loginTimestamp)}</span>
-                        </div>
+                        <span className="text-slate-300 text-[11px]">{scholar.year}</span>
                       </td>
-
-                      {/* 5. Session Time Log */}
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className={`font-mono font-bold text-xs ${isLive ? 'text-emerald-400' : 'text-slate-300'}`}>
-                            {formatDuration(item.durationSeconds, isLive)}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">
-                          {isLive ? 'Heartbeat Active' : 'Session Duration'}
-                        </div>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          scholar.isCustom 
+                            ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' 
+                            : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                        }`}>
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                          {scholar.type}
+                        </span>
                       </td>
-
-                      {/* 6. Device & Environment */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5 text-slate-300 font-medium text-[11px]">
-                          {item.deviceType === 'Mobile' ? (
-                            <Smartphone className="w-3.5 h-3.5 text-slate-400" />
-                          ) : (
-                            <Laptop className="w-3.5 h-3.5 text-slate-400" />
-                          )}
-                          <span>{item.deviceType || 'Desktop'}</span>
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[150px]" title={item.userAgent}>
-                          {item.userAgent || 'Chrome / Edge'}
-                        </div>
-                      </td>
-
-                      {/* 7. Live Status */}
-                      <td className="px-5 py-3.5">
-                        {isLive ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Active Now
-                          </span>
+                      <td className="px-5 py-3.5 text-right">
+                        {scholar.isCustom ? (
+                          <button
+                            onClick={() => handleRemoveScholar(scholar.rollNumber)}
+                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all cursor-pointer"
+                            title="Remove scholar from whitelist"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-white/5">
-                            <CheckCircle2 className="w-3 h-3 text-slate-500" />
-                            Concluded
-                          </span>
+                          <span className="text-[10px] text-slate-500 italic">Built-in</span>
                         )}
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ))}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Footer info */}
-        <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
-          <span>Showing <strong>{filteredLogs.length}</strong> of <strong>{logs.length}</strong> total session records</span>
-          <span className="text-[11px] text-slate-500">Auto-synchronized with Firestore & Supabase session telemetry</span>
+          <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+            <span>Whitelisted scholars can enter their roll number at <strong className="text-amber-300">gprec.lumixora.in</strong> and complete 5-minute rolling OTP verification.</span>
+            <span className="text-[11px] text-slate-500">Auto-synchronized across localStorage and cloud database</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Login History & Time Logs Table */
+        <div className="rounded-2xl border border-white/10 bg-[#0B132B] overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#111C44] text-slate-200 uppercase tracking-wider text-[10px] font-bold border-b border-white/10">
+                <tr>
+                  <th className="px-5 py-3.5">User Profile & Identity</th>
+                  <th className="px-5 py-3.5">Role / Institutional Scope</th>
+                  <th className="px-5 py-3.5">Portal Accessed</th>
+                  <th className="px-5 py-3.5">Login Time & Timestamp</th>
+                  <th className="px-5 py-3.5">Session Time Log</th>
+                  <th className="px-5 py-3.5">Device & Environment</th>
+                  <th className="px-5 py-3.5">Live Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
+                      <RefreshCw className="w-6 h-6 animate-spin text-amber-400 mx-auto mb-2" />
+                      <span>Loading real-time login audit telemetry...</span>
+                    </td>
+                  </tr>
+                ) : filteredLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
+                      <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
+                      <p className="text-sm font-semibold text-slate-400">No login records found matching criteria.</p>
+                      <p className="text-xs text-slate-500 mt-1">Try clearing your search query or switching tabs.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLogs.map((item) => {
+                    const roleMeta = deriveUserRoleMeta(item);
+                    const isRecentlyActive = (Date.now() - (item.lastActiveAt || item.loginTimestamp)) < 15 * 60 * 1000;
+                    const isLive = item.status === 'active' || isRecentlyActive;
+
+                    return (
+                      <tr 
+                        key={item.id}
+                        className="hover:bg-white/[0.02] transition-colors"
+                      >
+                        {/* 1. User Identity */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                              item.role === 'tpo' 
+                                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
+                                : item.role === 'faculty' 
+                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                : item.role === 'founder'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            }`}>
+                              {item.name?.charAt(0)?.toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-white text-xs flex items-center gap-1.5">
+                                <span>{item.name}</span>
+                                {item.role === 'tpo' && (
+                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                    TPO
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                {item.email}
+                              </div>
+                              {item.rollNumber && item.rollNumber !== 'GPREC-OFFICER' && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                  Roll: {item.rollNumber}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 2. Role & Department */}
+                        <td className="px-5 py-3.5">
+                          <div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${roleMeta.badgeClass}`}>
+                              {item.roleTitle || roleMeta.title}
+                            </span>
+                            <div className="text-[11px] text-slate-300 font-medium mt-1">
+                              {item.department || 'General'}
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              {item.collegeCode || 'GPREC'}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 3. Portal Accessed */}
+                        <td className="px-5 py-3.5">
+                          <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-semibold text-slate-300 inline-block">
+                            {item.portal || 'Placement Suite'}
+                          </span>
+                        </td>
+
+                        {/* 4. Login Time */}
+                        <td className="px-5 py-3.5">
+                          <div className="font-medium text-slate-200">
+                            {item.loginTimeFormatted}
+                          </div>
+                          <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-2.5 h-2.5" />
+                            <span>{formatTimeAgo(item.loginTimestamp)}</span>
+                          </div>
+                        </td>
+
+                        {/* 5. Session Time Log */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-mono font-bold text-xs ${isLive ? 'text-emerald-400' : 'text-slate-300'}`}>
+                              {formatDuration(item.durationSeconds, isLive)}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            {isLive ? 'Heartbeat Active' : 'Session Duration'}
+                          </div>
+                        </td>
+
+                        {/* 6. Device & Environment */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1.5 text-slate-300 font-medium text-[11px]">
+                            {item.deviceType === 'Mobile' ? (
+                              <Smartphone className="w-3.5 h-3.5 text-slate-400" />
+                            ) : (
+                              <Laptop className="w-3.5 h-3.5 text-slate-400" />
+                            )}
+                            <span>{item.deviceType || 'Desktop'}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 truncate max-w-[150px]" title={item.userAgent}>
+                            {item.userAgent || 'Chrome / Edge'}
+                          </div>
+                        </td>
+
+                        {/* 7. Live Status */}
+                        <td className="px-5 py-3.5">
+                          {isLive ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              Active Now
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-white/5">
+                              <CheckCircle2 className="w-3 h-3 text-slate-500" />
+                              Concluded
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer info */}
+          <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+            <span>Showing <strong>{filteredLogs.length}</strong> of <strong>{logs.length}</strong> total session records</span>
+            <span className="text-[11px] text-slate-500">Auto-synchronized with Firestore & Supabase session telemetry</span>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Whitelist Scholar Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-2xl bg-[#0B132B] border border-amber-500/40 p-6 shadow-2xl relative">
+            <button
+              onClick={() => setIsAddModalOpen(false)}
+              className="absolute right-4 top-4 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white font-sora">
+                  {addMode === 'single' ? 'Whitelist GPREC Scholar' : 'Bulk Import GPREC Scholars'}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Allow student to pass OTP gate and enter the Placement Suite
+                </p>
+              </div>
+            </div>
+
+            {/* Mode Toggle */}
+            <div className="flex items-center gap-2 p-1 rounded-xl bg-white/5 border border-white/10 mb-4">
+              <button
+                type="button"
+                onClick={() => setAddMode('single')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  addMode === 'single' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Single Scholar
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddMode('bulk')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  addMode === 'bulk' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Bulk Import
+              </button>
+            </div>
+
+            {addMode === 'single' ? (
+              <form onSubmit={handleAddSingleScholar} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    GPREC Roll Number <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={singleRoll}
+                    onChange={(e) => setSingleRoll(e.target.value)}
+                    placeholder="e.g. 249XA33106 or 249XA33107"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 uppercase tracking-wider"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Institutional email will automatically be resolved to: <span className="text-amber-300 font-mono">{singleRoll ? `${singleRoll.trim().toLowerCase()}@gprec.ac.in` : 'roll@gprec.ac.in'}</span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Scholar Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={singleName}
+                    onChange={(e) => setSingleName(e.target.value)}
+                    placeholder="e.g. Mohammed Ghouse or Leave blank for auto-generate"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Department
+                    </label>
+                    <select
+                      value={singleDept}
+                      onChange={(e) => setSingleDept(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="CSM" className="bg-[#0B132B]">CSM (AI & ML)</option>
+                      <option value="CSE" className="bg-[#0B132B]">CSE</option>
+                      <option value="ECE" className="bg-[#0B132B]">ECE</option>
+                      <option value="EEE" className="bg-[#0B132B]">EEE</option>
+                      <option value="Civil" className="bg-[#0B132B]">Civil</option>
+                      <option value="Mechanical" className="bg-[#0B132B]">Mechanical</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Academic Year
+                    </label>
+                    <select
+                      value={singleYear}
+                      onChange={(e) => setSingleYear(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="1st Year" className="bg-[#0B132B]">1st Year (2026-2030)</option>
+                      <option value="2nd Year" className="bg-[#0B132B]">2nd Year (2025-2029)</option>
+                      <option value="3rd Year" className="bg-[#0B132B]">3rd Year (2024-2028)</option>
+                      <option value="4th Year" className="bg-[#0B132B]">4th Year (2023-2027)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingRoster || !singleRoll.trim()}
+                    className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-amber-400/20"
+                  >
+                    {isSubmittingRoster ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Whitelist Scholar</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleBulkAddScholars} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Paste Roll Numbers <span className="text-amber-400">*</span>
+                  </label>
+                  <textarea
+                    rows={5}
+                    required
+                    value={bulkInput}
+                    onChange={(e) => setBulkInput(e.target.value)}
+                    placeholder="Paste roll numbers separated by commas, spaces, or line breaks:
+249XA33106, 249XA33107
+249XA33108
+259XA05014"
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Format: Any mix of commas, line breaks, or spaces. Duplicates will automatically be merged.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Default Department
+                    </label>
+                    <select
+                      value={singleDept}
+                      onChange={(e) => setSingleDept(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="CSM" className="bg-[#0B132B]">CSM (AI & ML)</option>
+                      <option value="CSE" className="bg-[#0B132B]">CSE</option>
+                      <option value="ECE" className="bg-[#0B132B]">ECE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Default Batch Year
+                    </label>
+                    <select
+                      value={singleYear}
+                      onChange={(e) => setSingleYear(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="3rd Year" className="bg-[#0B132B]">3rd Year (2024-2028)</option>
+                      <option value="2nd Year" className="bg-[#0B132B]">2nd Year (2025-2029)</option>
+                      <option value="4th Year" className="bg-[#0B132B]">4th Year (2023-2027)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingRoster || !bulkInput.trim()}
+                    className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-amber-400/20"
+                  >
+                    {isSubmittingRoster ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Import All Scholars</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

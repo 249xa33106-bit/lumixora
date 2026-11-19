@@ -5,8 +5,10 @@
  */
 
 import { supabase } from '../config/supabase';
+import { db } from '../config/firebase';
+import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 
-// Approved GPREC Roll Numbers for the placement pilot (STRICT)
+// Built-in Approved GPREC Roll Numbers for the placement pilot (STRICT DEFAULT)
 export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '249xa33106',
   '249xa33112',
@@ -17,6 +19,7 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
+export const STORAGE_CUSTOM_ROLLS_KEY = 'lumixora_gprec_custom_allowed_rolls';
 
 /**
  * Normalizes input roll number to lowercase trimmed string
@@ -27,12 +30,266 @@ export function normalizeRollNumber(input = '') {
 }
 
 /**
+ * Derives department name from roll number branch code
+ */
+export function deriveBranchFromRoll(rollNumber = '') {
+  const normalized = normalizeRollNumber(rollNumber);
+  if (normalized.includes('33') || normalized.includes('csm')) return 'CSM (AI & ML)';
+  if (normalized.includes('05') || normalized.includes('cse')) return 'CSE';
+  if (normalized.includes('04') || normalized.includes('ece')) return 'ECE';
+  if (normalized.includes('02') || normalized.includes('eee')) return 'EEE';
+  if (normalized.includes('01') || normalized.includes('ce')) return 'Civil';
+  if (normalized.includes('03') || normalized.includes('me')) return 'Mechanical';
+  return 'CSE / Tech';
+}
+
+/**
+ * Derives academic year from roll number prefix
+ */
+export function deriveYearFromRoll(rollNumber = '') {
+  const normalized = normalizeRollNumber(rollNumber);
+  if (normalized.startsWith('259')) return '2nd Year';
+  if (normalized.startsWith('249')) return '3rd Year';
+  if (normalized.startsWith('239')) return '4th Year';
+  if (normalized.startsWith('269')) return '1st Year';
+  return '3rd Year';
+}
+
+/**
+ * Reads custom whitelisted scholars stored locally
+ */
+export function getStoredCustomRolls() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_CUSTOM_ROLLS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Saves custom whitelisted scholars locally
+ */
+export function saveCustomRolls(rolls = []) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_CUSTOM_ROLLS_KEY, JSON.stringify(rolls));
+  } catch (e) {}
+}
+
+/**
+ * Returns merged array of all allowed roll numbers (built-in + founder-added)
+ */
+export function getAllowedGprecRollNumbers() {
+  const customList = getStoredCustomRolls();
+  const customRolls = customList.map(item => typeof item === 'string' ? item : item.rollNumber).map(normalizeRollNumber);
+  const combined = Array.from(new Set([...GPREC_ALLOWED_ROLL_NUMBERS, ...customRolls]));
+  return combined.filter(Boolean);
+}
+
+/**
+ * Synchronizes custom whitelisted scholars with Firestore
+ */
+export async function syncCustomRollsFromCloud() {
+  try {
+    if (!db) return getAllowedGprecRollNumbers();
+    const colRef = collection(db, 'gprec_whitelisted_scholars');
+    const snap = await getDocs(colRef);
+    if (!snap.empty) {
+      const cloudRolls = [];
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.rollNumber) {
+          cloudRolls.push({
+            rollNumber: normalizeRollNumber(data.rollNumber),
+            name: data.name || `GPREC Scholar (${data.rollNumber.toUpperCase()})`,
+            department: data.department || deriveBranchFromRoll(data.rollNumber),
+            year: data.year || deriveYearFromRoll(data.rollNumber),
+            addedAt: data.addedAt || Date.now(),
+            addedBy: data.addedBy || 'Founder'
+          });
+        }
+      });
+      if (cloudRolls.length > 0) {
+        // Merge with existing local storage
+        const local = getStoredCustomRolls();
+        const map = new Map();
+        local.forEach(item => {
+          const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
+          if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+        });
+        cloudRolls.forEach(c => map.set(c.rollNumber, c));
+        const merged = Array.from(map.values());
+        saveCustomRolls(merged);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not sync whitelisted scholars from cloud:', err);
+  }
+  return getAllowedGprecRollNumbers();
+}
+
+/**
+ * Returns complete scholar roster metadata for Founder Console
+ */
+export function getGprecScholarRoster() {
+  const customList = getStoredCustomRolls();
+  const customMap = new Map();
+  customList.forEach(item => {
+    if (typeof item === 'string') {
+      const r = normalizeRollNumber(item);
+      customMap.set(r, { rollNumber: r, name: `GPREC Scholar (${r.toUpperCase()})`, isCustom: true });
+    } else if (item?.rollNumber) {
+      const r = normalizeRollNumber(item.rollNumber);
+      customMap.set(r, { ...item, rollNumber: r, isCustom: true });
+    }
+  });
+
+  const fullList = [];
+  
+  // 1. Built-in core cohorts
+  GPREC_ALLOWED_ROLL_NUMBERS.forEach(r => {
+    const customMeta = customMap.get(r);
+    fullList.push({
+      rollNumber: r.toUpperCase(),
+      rawRoll: r,
+      email: `${r}@gprec.ac.in`,
+      name: customMeta?.name || (r === '249xa33106' ? 'Founder Scholar (249XA33106)' : `GPREC Scholar (${r.toUpperCase()})`),
+      department: customMeta?.department || deriveBranchFromRoll(r),
+      year: customMeta?.year || deriveYearFromRoll(r),
+      status: 'Active',
+      type: 'Core Cohort',
+      isCustom: false,
+      addedAt: customMeta?.addedAt || 1731500000000
+    });
+    customMap.delete(r);
+  });
+
+  // 2. Founder added custom scholars
+  customMap.forEach((meta, r) => {
+    fullList.push({
+      rollNumber: r.toUpperCase(),
+      rawRoll: r,
+      email: `${r}@gprec.ac.in`,
+      name: meta.name || `GPREC Scholar (${r.toUpperCase()})`,
+      department: meta.department || deriveBranchFromRoll(r),
+      year: meta.year || deriveYearFromRoll(r),
+      status: 'Active',
+      type: 'Founder Whitelisted',
+      isCustom: true,
+      addedAt: meta.addedAt || Date.now(),
+      addedBy: meta.addedBy || 'Founder'
+    });
+  });
+
+  return fullList;
+}
+
+/**
+ * Adds a new student roll number to whitelist (Founder action)
+ */
+export async function addGprecScholarRoll(rollInput, meta = {}) {
+  const normalized = normalizeRollNumber(rollInput);
+  if (!normalized) throw new Error('Valid roll number is required.');
+  if (normalized.length < 5) throw new Error('Roll number is too short.');
+
+  const existing = getStoredCustomRolls();
+  const exists = existing.some(item => (typeof item === 'string' ? item : item.rollNumber).toLowerCase() === normalized)
+    || GPREC_ALLOWED_ROLL_NUMBERS.includes(normalized);
+
+  const newEntry = {
+    rollNumber: normalized,
+    name: meta.name?.trim() || `GPREC Scholar (${normalized.toUpperCase()})`,
+    department: meta.department || deriveBranchFromRoll(normalized),
+    year: meta.year || deriveYearFromRoll(normalized),
+    addedAt: Date.now(),
+    addedBy: meta.addedBy || 'Founder'
+  };
+
+  if (!exists) {
+    existing.push(newEntry);
+    saveCustomRolls(existing);
+  }
+
+  // Sync to Firestore
+  try {
+    if (db) {
+      await setDoc(doc(db, 'gprec_whitelisted_scholars', normalized), {
+        ...newEntry,
+        rollNumber: normalized,
+        updatedAt: Date.now()
+      });
+    }
+  } catch (err) {
+    console.warn('Cloud sync of scholar failed, stored locally:', err);
+  }
+
+  return newEntry;
+}
+
+/**
+ * Bulk adds multiple roll numbers separated by comma, newline, or space
+ */
+export async function bulkAddGprecScholarRolls(rawInput = '', defaultMeta = {}) {
+  if (!rawInput || typeof rawInput !== 'string') return [];
+  const tokens = rawInput
+    .split(/[\n,;\s]+/)
+    .map(s => normalizeRollNumber(s))
+    .filter(s => s && s.length >= 5);
+
+  const uniqueTokens = Array.from(new Set(tokens));
+  const results = [];
+
+  for (const token of uniqueTokens) {
+    try {
+      const added = await addGprecScholarRoll(token, {
+        ...defaultMeta,
+        name: `GPREC Scholar (${token.toUpperCase()})`
+      });
+      results.push(added);
+    } catch (e) {
+      console.warn('Error adding roll in bulk:', token, e);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Removes a custom whitelisted roll number
+ */
+export async function removeGprecScholarRoll(rollInput) {
+  const normalized = normalizeRollNumber(rollInput);
+  if (!normalized) return false;
+
+  const existing = getStoredCustomRolls();
+  const filtered = existing.filter(item => {
+    const r = typeof item === 'string' ? item : item.rollNumber;
+    return normalizeRollNumber(r) !== normalized;
+  });
+  saveCustomRolls(filtered);
+
+  try {
+    if (db) {
+      await deleteDoc(doc(db, 'gprec_whitelisted_scholars', normalized));
+    }
+  } catch (e) {
+    console.warn('Cloud delete failed, deleted locally:', e);
+  }
+  return true;
+}
+
+/**
  * Validates if the given roll number is approved for the GPREC Placement Suite.
  */
 export function isAllowedGprecRoll(rollNumber = '') {
   const normalized = normalizeRollNumber(rollNumber);
   if (!normalized) return false;
-  return GPREC_ALLOWED_ROLL_NUMBERS.includes(normalized);
+  const allowed = getAllowedGprecRollNumbers();
+  return allowed.includes(normalized);
 }
 
 /**
