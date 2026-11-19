@@ -5197,16 +5197,16 @@ Return ONLY a valid JSON object without markdown:
           {/* ========================================================= */}
           {activeNav === 'analytics' && (
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <div className="text-xs font-medium text-slate-400">Analytics</div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-purple-600 mb-0.5">Telemetry & Analytics</div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     Cohort Placement Analytics & Readiness Curves
                   </h2>
                 </div>
 
                 {/* DVT View Switcher Pills */}
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto text-xs font-semibold">
+                <div className="shrink-0 flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 overflow-x-auto max-w-full text-xs font-semibold">
                   {[
                     { id: 'all', label: 'All Telemetry' },
                     { id: 'distribution', label: 'Readiness Bell Curve' },
@@ -5633,12 +5633,12 @@ Return ONLY a valid JSON object without markdown:
           {activeNav === 'resources' && (
             <div className="flex flex-col gap-6">
               {/* Unified Subtab Header */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
-                <div>
-                  <div className="text-xs font-medium text-slate-400">
-                    {activeModule === 'curriculum' ? 'Bridge to B.Tech' : activeModule === 'faq' ? 'HelpDesk' : 'Resources'}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/50 mb-1">
+                    {activeModule === 'curriculum' ? 'Bridge to B.Tech' : activeModule === 'faq' ? 'Placement HelpDesk' : 'Resource Library'}
                   </div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
                     {activeModule === 'curriculum'
                       ? 'GPREC Academic-to-Industry Bridge & Semester Roadmap'
                       : activeModule === 'faq'
@@ -5646,21 +5646,22 @@ Return ONLY a valid JSON object without markdown:
                       : 'Curated Placement Papers, Cheat Sheets & Syllabus'}
                   </h2>
                 </div>
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                <div className="shrink-0 flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1 overflow-x-auto max-w-full">
                   {[
-                    { id: 'library', label: 'Resources Library' },
+                    { id: 'library', label: 'Resource Library' },
                     { id: 'curriculum', label: 'Bridge to B.Tech' },
-                    { id: 'faq', label: 'HelpDesk (NEW)' }
+                    { id: 'faq', label: 'HelpDesk & Support' }
                   ].map(tab => {
                     const currentResTab = activeModule === 'curriculum' || activeModule === 'faq' ? activeModule : 'library';
+                    const isSelected = currentResTab === tab.id;
                     return (
                       <button
                         key={tab.id}
                         onClick={() => setActiveModule(tab.id)}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                          currentResTab === tab.id
-                            ? 'bg-blue-600 text-white shadow-2xs'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                         }`}
                       >
                         {tab.label}
