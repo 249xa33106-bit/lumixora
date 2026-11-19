@@ -7,7 +7,7 @@ import {Flame, Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Mic, MicOff, Volume2, VolumeX, FileText, Calendar, Filter, Sparkles,
   Compass, AlertCircle, Cpu, Brain, CheckSquare, Target, User, LogOut,
   Send, HelpCircle, MessageSquare, Activity, Radio, GraduationCap,
-  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info, Moon, Star } from 'lucide-react';
+  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info, Moon, Star, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -552,6 +552,23 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('gprec_sidebar_collapsed') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('gprec_sidebar_collapsed', String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
   const [showOverviewModal, setShowOverviewModal] = useState(false);
   const [selectedCompanyForPapers, setSelectedCompanyForPapers] = useState('all');
   const [showPlacementCertModal, setShowPlacementCertModal] = useState(false);
@@ -2214,135 +2231,218 @@ Return ONLY a valid JSON object without markdown:
       {/* LEFT FIXED SIDEBAR (Only rendered in standalone mode)    */}
       {/* ========================================================= */}
       {!embedded && (
-        <aside className={`fixed inset-y-0 left-0 z-40 w-60 lg:w-64 bg-[#0B0D21] border-r border-[#1B1F3B] flex flex-col justify-between p-3.5 sm:p-4 transition-transform duration-200 ease-in-out md:translate-x-0 overflow-y-auto custom-scrollbar ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="flex flex-col gap-4">
-          {/* GPREC Placement Suite Official Brand Header */}
-          <div 
-            onClick={() => {
-              navigateTo('dashboard');
-              setMobileMenuOpen(false);
-            }}
-            className="flex items-center gap-3 px-1.5 py-1 cursor-pointer group"
-            title="GPREC Placement Suite - Campus Placement Platform"
-          >
-            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg shadow-purple-950/40 border border-white/20 flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
-              <img 
-                src="/gprec_logo.png" 
-                alt="G. Pulla Reddy Engineering College Crest" 
-                className="w-full h-full object-contain select-none" 
-              />
-            </div>
-            <div>
-              <div className="font-extrabold text-white tracking-tight text-base leading-tight flex items-center gap-1.5 group-hover:text-purple-300 transition-colors">
-                GPREC
-              </div>
-              <div className="text-[11px] font-medium text-slate-400 tracking-tight">
-                Placement Suite
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar Navigation Items (Exact 15 Items matching reference screenshot) */}
-          <nav className="flex flex-col gap-1">
-            {isFounder && (
-              <button
+        <aside className={`fixed inset-y-0 left-0 z-40 ${isSidebarCollapsed ? 'w-[72px]' : 'w-60 lg:w-64'} bg-[#0B0D21] border-r border-[#1B1F3B] flex flex-col justify-between p-3 transition-all duration-300 ease-in-out md:translate-x-0 overflow-y-auto overflow-x-hidden custom-scrollbar ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex flex-col gap-3">
+          {/* GPREC Placement Suite Brand Header */}
+          {!isSidebarCollapsed ? (
+            <div className="flex items-center justify-between px-1.5 py-1">
+              <div 
                 onClick={() => {
-                  navigateTo('founder_audit');
+                  navigateTo('dashboard');
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer border mb-1 ${
-                  activeNav === 'founder_audit'
-                    ? 'bg-amber-400 text-slate-950 shadow-md border-amber-400'
-                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
-                }`}
+                className="flex items-center gap-3 cursor-pointer group min-w-0"
+                title="GPREC Placement Suite - Campus Placement Platform"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="truncate">Founder Audit</span>
+                <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg shadow-purple-950/40 border border-white/20 flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+                  <img 
+                    src="/gprec_logo.png" 
+                    alt="G. Pulla Reddy Engineering College Crest" 
+                    className="w-full h-full object-contain select-none" 
+                  />
                 </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400 text-slate-950 uppercase">Live</span>
+                <div className="min-w-0">
+                  <div className="font-extrabold text-white tracking-tight text-base leading-tight flex items-center gap-1.5 group-hover:text-purple-300 transition-colors truncate">
+                    GPREC
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-400 tracking-tight truncate">
+                    Placement Suite
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop Collapse Button */}
+              <button
+                onClick={toggleSidebarCollapse}
+                title="Collapse sidebar to Focus Mode"
+                className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+              >
+                <PanelLeftClose className="w-4 h-4" />
               </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <div 
+                onClick={() => {
+                  navigateTo('dashboard');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg shadow-purple-950/40 border border-white/20 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+                title="GPREC Placement Suite - Home"
+              >
+                <img 
+                  src="/gprec_logo.png" 
+                  alt="GPREC" 
+                  className="w-full h-full object-contain select-none" 
+                />
+              </div>
+              <button
+                onClick={toggleSidebarCollapse}
+                title="Expand sidebar"
+                className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <PanelLeftOpen className="w-4 h-4 text-purple-300" />
+              </button>
+            </div>
+          )}
+
+          {/* Categorized Navigation Sections */}
+          <nav className="flex flex-col gap-3">
+            {isFounder && (
+              <div className="space-y-1">
+                {!isSidebarCollapsed && (
+                  <div className="px-2.5 text-[9px] font-black uppercase tracking-wider text-amber-400/80">
+                    Administration
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    navigateTo('founder_audit');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center h-10' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-all text-left cursor-pointer border ${
+                    activeNav === 'founder_audit'
+                      ? 'bg-amber-400 text-slate-950 shadow-md border-amber-400'
+                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                  }`}
+                  title="Founder Audit"
+                >
+                  <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-2.5'} min-w-0`}>
+                    <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Founder Audit</span>}
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400 text-slate-950 uppercase">Live</span>
+                  )}
+                </button>
+              </div>
             )}
 
             {[
-              { id: 'dashboard', label: 'Home', icon: Home, nav: 'dashboard', sub: null },
-              { id: 'company_papers', label: 'Company Papers', icon: BookOpen, nav: 'company_papers', sub: null, badge: 'ANSWERS' },
-              { id: 'company_drills', label: 'Company Drill Packs', icon: Target, nav: 'company_drills', sub: null, badge: 'MOCK OA' },
-              { id: 'placement', label: 'My Placement', icon: Briefcase, nav: 'placement', sub: 'overview' },
-              { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'coding_arena' },
-              { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall', badge: 'SECURE' },
-              { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
-              { id: 'career_growth', label: 'Career Growth', icon: Rocket, nav: 'career_growth', sub: 'jobs', badge: 'LIVE' },
-              { id: 'campus_arena', label: 'Campus Arena', icon: Trophy, nav: 'campus_arena', sub: 'leaderboard', badge: 'HOT' },
-              { id: 'analytics', label: 'Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
-              { id: 'bridge_btech', label: 'Bridge to B.Tech', icon: GraduationCap, nav: 'resources', sub: 'curriculum' },
-              { id: 'resources', label: 'HelpDesk & Resources', icon: HelpCircle, nav: 'resources', sub: 'faq' }
-            ].map((item) => {
-              const Icon = item.icon;
-              const isActive = (item.id === 'dashboard' && activeNav === 'dashboard') ||
-                               (item.id === 'placement' && activeNav === 'placement') ||
-                               (item.id === 'skill_hub' && activeNav === 'skill_hub') ||
-                               (item.id === 'secure_exams' && activeNav === 'secure_exams') ||
-                               (item.id === 'mock_interviews' && activeNav === 'mock_interviews') ||
-                               (item.id === 'career_growth' && activeNav === 'career_growth') ||
-                               (item.id === 'campus_arena' && activeNav === 'campus_arena') ||
-                               (item.id === 'analytics' && activeNav === 'analytics') ||
-                               (item.id === 'bridge_btech' && activeNav === 'resources' && activeModule === 'curriculum') ||
-                               (item.id === 'resources' && activeNav === 'resources' && activeModule !== 'curriculum');
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    navigateTo(item.nav, item.sub);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all text-left cursor-pointer ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] text-white shadow-lg shadow-purple-600/30 font-bold' 
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} strokeWidth={isActive ? 2.2 : 1.9} />
-                    <span className="truncate">{item.label}</span>
+              {
+                title: 'Core Platform',
+                items: [
+                  { id: 'dashboard', label: 'Home', icon: Home, nav: 'dashboard', sub: null },
+                  { id: 'placement', label: 'My Placement', icon: Briefcase, nav: 'placement', sub: 'overview' },
+                  { id: 'analytics', label: 'Analytics', icon: BarChart2, nav: 'analytics', sub: 'analytics' },
+                ]
+              },
+              {
+                title: 'Company OA & Tests',
+                items: [
+                  { id: 'company_papers', label: 'Company Papers', icon: BookOpen, nav: 'company_papers', sub: null, badge: 'ANSWERS' },
+                  { id: 'company_drills', label: 'Company Drill Packs', icon: Target, nav: 'company_drills', sub: null, badge: 'MOCK OA' },
+                  { id: 'secure_exams', label: 'Secure Exams', icon: ShieldCheck, nav: 'secure_exams', sub: 'hall', badge: 'SECURE' },
+                ]
+              },
+              {
+                title: 'Skill & Interview Mastery',
+                items: [
+                  { id: 'skill_hub', label: 'Skill Hub', icon: Zap, nav: 'skill_hub', sub: 'coding_arena' },
+                  { id: 'mock_interviews', label: 'Mock Interviews', icon: Video, nav: 'mock_interviews', sub: 'mock_interview' },
+                  { id: 'career_growth', label: 'Career Growth', icon: Rocket, nav: 'career_growth', sub: 'jobs', badge: 'LIVE' },
+                  { id: 'campus_arena', label: 'Campus Arena', icon: Trophy, nav: 'campus_arena', sub: 'leaderboard', badge: 'HOT' },
+                ]
+              },
+              {
+                title: 'Ecosystem & Bridge',
+                items: [
+                  { id: 'bridge_btech', label: 'Bridge to B.Tech', icon: GraduationCap, nav: 'resources', sub: 'curriculum' },
+                  { id: 'resources', label: 'HelpDesk & Resources', icon: HelpCircle, nav: 'resources', sub: 'faq' },
+                ]
+              }
+            ].map((section, sIdx) => (
+              <div key={section.title} className="space-y-1">
+                {!isSidebarCollapsed ? (
+                  <div className={`px-2.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-400/80 ${sIdx > 0 ? 'pt-2' : 'pt-0.5'}`}>
+                    {section.title}
                   </div>
-                  {item.badge && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xs">
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                ) : (
+                  sIdx > 0 && <div className="my-2 border-t border-white/[0.08] mx-2" />
+                )}
+
+                <div className="flex flex-col gap-0.5">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = (item.id === 'dashboard' && activeNav === 'dashboard') ||
+                      (item.id === 'company_papers' && activeNav === 'company_papers') ||
+                      (item.id === 'company_drills' && activeNav === 'company_drills') ||
+                      (item.id === 'placement' && activeNav === 'placement') ||
+                      (item.id === 'skill_hub' && activeNav === 'skill_hub') ||
+                      (item.id === 'secure_exams' && activeNav === 'secure_exams') ||
+                      (item.id === 'mock_interviews' && activeNav === 'mock_interviews') ||
+                      (item.id === 'career_growth' && activeNav === 'career_growth') ||
+                      (item.id === 'campus_arena' && activeNav === 'campus_arena') ||
+                      (item.id === 'analytics' && activeNav === 'analytics') ||
+                      (item.id === 'bridge_btech' && activeNav === 'resources' && activeSubTab === 'curriculum') ||
+                      (item.id === 'resources' && activeNav === 'resources' && activeSubTab !== 'curriculum');
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          navigateTo(item.nav, item.sub);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`group relative w-full flex items-center ${
+                          isSidebarCollapsed 
+                            ? 'justify-center h-10 px-0' 
+                            : 'justify-between px-3 py-2'
+                        } rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                          isActive 
+                            ? 'bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#9333ea] text-white shadow-lg shadow-purple-600/30 font-bold' 
+                            : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                        }`}
+                        title={item.label}
+                      >
+                        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-2.5'} min-w-0`}>
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} strokeWidth={isActive ? 2.2 : 1.9} />
+                          {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+                        </div>
+
+                        {!isSidebarCollapsed && item.badge && (
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${
+                            isActive 
+                              ? 'bg-white/20 text-white' 
+                              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xs'
+                          }`}>
+                            {item.badge}
+                          </span>
+                        )}
+
+                        {/* Hover Tooltip in Rail */}
+                        {isSidebarCollapsed && (
+                          <div className="fixed left-[78px] hidden md:group-hover:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0F132A] text-white text-xs font-bold shadow-2xl border border-purple-500/30 whitespace-nowrap z-50 pointer-events-none backdrop-blur-xl">
+                            <span>{item.label}</span>
+                            {item.badge && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded-full font-black bg-gradient-to-r from-purple-500 to-pink-500 text-white uppercase shadow-xs">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </div>
 
-        {/* Sidebar Footer: Aim Higher Card + User Profile */}
-        <div className="flex flex-col gap-2 pt-3 border-t border-[#1B1F3B]">
-          {/* Aim Higher Card */}
-          <div className="mx-0.5 mb-1 p-2.5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-md flex items-center justify-between gap-2 relative overflow-hidden group">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img 
-                src="/gprec-trophy-icon.png" 
-                alt="Aim Higher" 
-                className="w-8 h-10 object-contain flex-shrink-0"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-white tracking-tight truncate">Aim Higher</div>
-                <div className="text-[9px] text-slate-400 truncate">Your Future Starts Here...</div>
-              </div>
-            </div>
-            <button
-              onClick={() => navigateTo('placement', 'overview')}
-              className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center text-white flex-shrink-0 hover:scale-105 transition-transform cursor-pointer shadow-sm shadow-purple-500/40"
-            >
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* User Profile Pill (Matching Shaik reference) */}
-          <div className="relative pt-0.5">
+        {/* Sidebar Footer: User Profile Only (Aim Higher Removed) */}
+        <div className="pt-2 border-t border-[#1B1F3B]">
+          {!isSidebarCollapsed ? (
             <div className="w-full flex items-center justify-between p-1.5 px-2 rounded-xl hover:bg-white/[0.06] transition-colors text-left">
               <div className="flex items-center gap-2.5 min-w-0">
                 {user?.photoURL ? (
@@ -2370,13 +2470,33 @@ Return ONLY a valid JSON object without markdown:
                   if (onLogout) onLogout();
                   else window.location.reload();
                 }}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                 title="Log Out"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1.5 py-1">
+              <div
+                onClick={() => setShowSettingsModal(true)}
+                title={`${studentName || 'GPREC Scholar'} • Settings`}
+                className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white font-bold text-xs flex items-center justify-center shadow-md cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all shrink-0"
+              >
+                {studentInitials}
+              </div>
+              <button
+                onClick={() => {
+                  if (onLogout) onLogout();
+                  else window.location.reload();
+                }}
+                title="Log Out"
+                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
       )}
@@ -2392,7 +2512,7 @@ Return ONLY a valid JSON object without markdown:
       {/* ========================================================= */}
       {/* MAIN CONTENT AREA WITH TOP NAVBAR                         */}
       {/* ========================================================= */}
-      <div className={`flex-1 ${!embedded ? 'md:pl-64' : ''} flex flex-col min-w-0`}>
+      <div className={`flex-1 ${!embedded ? (isSidebarCollapsed ? 'md:pl-[72px]' : 'md:pl-60 lg:md:pl-64') : ''} flex flex-col min-w-0 transition-all duration-300 ease-in-out`}>
         {/* Sticky Top Navigation Bar (Clean Floating Modern Header Matching Screenshot) */}
         {!embedded && (
           <header className="sticky top-0 z-30 h-16 bg-white/70 backdrop-blur-xl border-b border-purple-100/60 px-4 md:px-8 flex items-center justify-between gap-4 shadow-[0_4px_20px_rgb(124,58,237,0.04)]">
@@ -2402,6 +2522,19 @@ Return ONLY a valid JSON object without markdown:
             className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-purple-50"
           >
             <Layers className="w-5 h-5" />
+          </button>
+
+          {/* Desktop Focus Mode Toggle */}
+          <button
+            onClick={toggleSidebarCollapse}
+            title={isSidebarCollapsed ? "Expand Sidebar (Normal View)" : "Collapse Sidebar (Focus Mode)"}
+            className="hidden md:flex p-2 rounded-xl bg-white/90 hover:bg-white text-slate-600 hover:text-purple-600 border border-purple-200/60 shadow-2xs transition-all cursor-pointer items-center justify-center"
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4 text-purple-600" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
+            )}
           </button>
 
           {/* Search Input Bar (Matching screenshot: Search jobs, skills, companies or technologies... [Ctrl + K]) */}
