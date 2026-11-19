@@ -764,6 +764,109 @@ function GprecResumeMockInterviewPortal({
     }
   };
 
+  // Rigorous Technical Viva Rubric Evaluator (Evaluates answer substantive depth, keywords, metrics, and trade-offs)
+  const evaluateTechnicalVivaResponse = (answerText, currentQ) => {
+    const answer = (answerText || '').trim();
+    const lower = answer.toLowerCase();
+    const words = answer.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+
+    // 1. Explicit Oral Defense Mode
+    if (!answer || answer.includes('(Candidate answered orally)')) {
+      return {
+        questionId: currentQ.id,
+        score: 80,
+        accuracy: 20,
+        depth: 19,
+        defensibility: 20,
+        clarity: 21,
+        verdict: 'Orally Defended Viva',
+        critique: 'Candidate conducted an oral defense of this resume claim. Evaluator noted sound conceptual grasp of the stated technical architecture.',
+        modelAnswer: currentQ.modelAnswer
+      };
+    }
+
+    // 2. Trivial / Single-letter / Gibberish Responses (< 6 words or < 20 chars, e.g. "H", "B", "ok", "yes")
+    if (wordCount < 6 || answer.length < 20) {
+      const rawExcerpt = answer.length > 25 ? `${answer.slice(0, 22)}...` : answer;
+      const minimalScore = Math.min(20, Math.max(8, wordCount * 3));
+      return {
+        questionId: currentQ.id,
+        score: minimalScore,
+        accuracy: 3,
+        depth: 2,
+        defensibility: 3,
+        clarity: 3,
+        verdict: 'No Substantive Technical Defense',
+        critique: `Your response ("${rawExcerpt}") contains no substantive technical defense or architectural explanation (${wordCount} word${wordCount === 1 ? '' : 's'}). Senior Bar Raisers expect a concrete breakdown of component communication, database transactions, and scalability choices.`,
+        modelAnswer: currentQ.modelAnswer
+      };
+    }
+
+    // 3. Very Brief / Surface-Level Responses (6 - 19 words)
+    if (wordCount < 20) {
+      const surfaceScore = Math.min(48, Math.max(28, 25 + wordCount));
+      return {
+        questionId: currentQ.id,
+        score: surfaceScore,
+        accuracy: 10,
+        depth: 8,
+        defensibility: 9,
+        clarity: 11,
+        verdict: 'Surface Level — High Rejection Risk',
+        critique: `Your answer is overly brief (${wordCount} words) and lacks technical depth. Senior interviewers require you to walk through internal data flow, component lifecycles, and why you selected this stack over industry alternatives.`,
+        modelAnswer: currentQ.modelAnswer
+      };
+    }
+
+    // 4. Substantive Responses (20+ words): Dynamic Multi-Vector Rubric
+    const techKeywords = resumeAnalysis?.skills || [
+      'React', 'JavaScript', 'TypeScript', 'Node.js', 'Python', 'Java', 'SQL',
+      'PostgreSQL', 'Redis', 'Kafka', 'Docker', 'AWS', 'DSA', 'OOP'
+    ];
+
+    const hasKeywords = techKeywords.some(s => {
+      if (s === 'C++') return answer.includes('C++') || lower.includes('cpp');
+      return lower.includes(s.toLowerCase());
+    });
+
+    const hasMetrics = /\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb))\b/i.test(answer);
+    const hasTradeoffs = /\b(trade-off|tradeoff|bottleneck|because|instead of|alternative|latency|scale|concurrency|partition|timeout|circuit|index|cache|async)\b/i.test(answer);
+
+    let accuracy = 14 + (hasKeywords ? 7 : 2) + (wordCount >= 35 ? 3 : 0);
+    let depth = 12 + (hasTradeoffs ? 8 : 2) + (wordCount >= 50 ? 3 : 0);
+    let defensibility = 12 + (hasMetrics ? 8 : 2) + (wordCount >= 40 ? 3 : 0);
+    let clarity = 14 + (wordCount >= 25 && wordCount <= 160 ? 7 : 3);
+
+    // Bounds (each out of 25)
+    accuracy = Math.min(25, Math.max(6, accuracy));
+    depth = Math.min(25, Math.max(6, depth));
+    defensibility = Math.min(25, Math.max(6, defensibility));
+    clarity = Math.min(25, Math.max(6, clarity));
+
+    const totalScore = accuracy + depth + defensibility + clarity;
+
+    let verdict = 'Qualified Candidate';
+    if (totalScore >= 85) verdict = 'Strong Hire (Bar Raiser Cleared)';
+    else if (totalScore < 65) verdict = 'Needs Architectural Refinement';
+
+    const critique = totalScore >= 80
+      ? 'Strong technical defense. You demonstrated genuine ownership of the data flow, cited specific architectural patterns, and defended your design decisions.'
+      : 'Reasonable conceptual foundation, but needs deeper technical rigor. Explicitly explain your benchmarking tools, baseline metrics, and failure recovery mechanisms.';
+
+    return {
+      questionId: currentQ.id,
+      score: totalScore,
+      accuracy,
+      depth,
+      defensibility,
+      clarity,
+      verdict,
+      critique,
+      modelAnswer: currentQ.modelAnswer
+    };
+  };
+
   // Evaluate Current Answer
   const handleEvaluateCurrentAnswer = () => {
     const currentQ = interviewQuestions[currentQIndex];
@@ -786,52 +889,17 @@ function GprecResumeMockInterviewPortal({
     setIsEvaluating(true);
 
     setTimeout(() => {
-      // Dynamic rubric score based on answer depth, tech keywords, and metric rigor
-      const wordCount = answer.split(/\s+/).length;
-      const hasKeywords = (resumeAnalysis?.skills || []).some(s => {
-        if (s === 'C++') return answer.includes('C++') || answer.toLowerCase().includes('cpp');
-        try {
-          const escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          return new RegExp(`\\b${escaped}\\b`, 'i').test(answer);
-        } catch (e) {
-          return answer.toLowerCase().includes(s.toLowerCase());
-        }
-      });
-      const hasMetrics = /\b\d+(%|ms|users|queries|x|kb|mb)?\b/i.test(answer);
-      const hasTradeoffs = /\b(trade-off|bottleneck|because|instead of|alternative|latency|scale)\b/i.test(answer);
-
-      let accuracy = Math.min(25, Math.max(14, Math.round(16 + (hasKeywords ? 6 : 2) + (wordCount > 35 ? 3 : 0))));
-      let depth = Math.min(25, Math.max(13, Math.round(15 + (hasTradeoffs ? 7 : 1) + (wordCount > 60 ? 3 : 0))));
-      let defensibility = Math.min(25, Math.max(12, Math.round(14 + (hasMetrics ? 8 : 2))));
-      let clarity = Math.min(25, Math.max(14, Math.round(16 + (wordCount >= 30 && wordCount <= 180 ? 7 : 3))));
-
-      const totalScore = accuracy + depth + defensibility + clarity;
-
-      let verdict = 'Strong Hire';
-      if (totalScore < 70) verdict = 'Needs Architectural Refinement';
-      else if (totalScore < 85) verdict = 'Qualified Candidate';
-
-      const critique = wordCount < 30
-        ? `Your answer touches the correct concept but needs deeper architectural elaboration. Explain specific failure scenarios and why your solution scale-tested better than alternative designs.`
-        : `Strong technical defense of your resume claim. You demonstrated genuine ownership of the data flow and provided realistic engineering trade-offs.`;
-
-      const result = {
-        questionId: currentQ.id,
-        score: totalScore,
-        accuracy,
-        depth,
-        defensibility,
-        clarity,
-        verdict,
-        critique,
-        modelAnswer: currentQ.modelAnswer
-      };
-
+      const result = evaluateTechnicalVivaResponse(answer, currentQ);
       setEvaluatedAnswers(prev => ({ ...prev, [currentQIndex]: result }));
       setIsEvaluating(false);
 
-      if (addToast) addToast({ type: 'success', message: `Bar Raiser evaluated Question ${currentQIndex + 1}: ${totalScore}/100 (${verdict})` });
-    }, 700);
+      if (addToast) {
+        addToast({
+          type: result.score >= 70 ? 'success' : 'warning',
+          message: `Bar Raiser evaluated Question ${currentQIndex + 1}: ${result.score}/100 (${result.verdict})`
+        });
+      }
+    }, 400);
   };
 
   // Next or Finish Interview
@@ -842,31 +910,7 @@ function GprecResumeMockInterviewPortal({
       // Ensure all questions have a calibrated, grounded evaluation
       const evaluatedList = interviewQuestions.map((q, idx) => {
         const studentAns = candidateAnswers[idx] || '(Candidate answered orally)';
-        let evalObj = evaluatedAnswers[idx];
-        if (!evalObj) {
-          // Automatic calibrated evaluation for questions answered orally or directly reviewed
-          const words = studentAns.split(/\s+/).filter(Boolean);
-          const isOral = studentAns.includes('(Candidate answered orally)');
-          const baseQScore = isOral ? 84 : Math.min(94, Math.max(68, 70 + Math.min(20, words.length)));
-          const qAcc = Math.round(Math.min(25, (baseQScore / 100) * 25 + 0.5));
-          const qDepth = Math.round(Math.min(25, (baseQScore / 100) * 25 - 0.5));
-          const qDef = Math.round(Math.min(25, (baseQScore / 100) * 25));
-          const qClarity = Math.round(Math.min(25, (baseQScore / 100) * 25));
-
-          evalObj = {
-            questionId: q.id,
-            score: baseQScore,
-            accuracy: qAcc,
-            depth: qDepth,
-            defensibility: qDef,
-            clarity: qClarity,
-            verdict: baseQScore >= 85 ? 'Strong Hire' : 'Qualified Candidate',
-            critique: isOral 
-              ? 'Candidate defended project architecture orally with sound technical rationale.' 
-              : 'Defended resume claim with clear technical explanations and architecture decisions.',
-            modelAnswer: q.modelAnswer
-          };
-        }
+        const evalObj = evaluatedAnswers[idx] || evaluateTechnicalVivaResponse(studentAns, q);
         return {
           ...q,
           studentAnswer: studentAns,
@@ -876,10 +920,10 @@ function GprecResumeMockInterviewPortal({
 
       const totalItems = evaluatedList.length || 1;
       const avgScore = Math.round(evaluatedList.reduce((sum, item) => sum + item.evaluation.score, 0) / totalItems);
-      const accuracyScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.accuracy || 21), 0) / (totalItems * 25)) * 100));
-      const depthScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.depth || 20), 0) / (totalItems * 25)) * 100));
-      const defensibilityScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.defensibility || 21), 0) / (totalItems * 25)) * 100));
-      const clarityScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.clarity || 21), 0) / (totalItems * 25)) * 100));
+      const accuracyScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.accuracy || 15), 0) / (totalItems * 25)) * 100));
+      const depthScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.depth || 15), 0) / (totalItems * 25)) * 100));
+      const defensibilityScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.defensibility || 15), 0) / (totalItems * 25)) * 100));
+      const clarityScore = Math.min(100, Math.round((evaluatedList.reduce((sum, item) => sum + (item.evaluation.clarity || 15), 0) / (totalItems * 25)) * 100));
 
       const report = {
         id: `int_rep_${Date.now()}`,
@@ -892,8 +936,16 @@ function GprecResumeMockInterviewPortal({
         depthScore: depthScore || Math.min(100, Math.round(avgScore * 0.98)),
         defensibilityScore: defensibilityScore || Math.min(100, Math.round(avgScore * 1.01)),
         clarityScore: clarityScore || Math.min(100, Math.round(avgScore * 0.99)),
-        verdict: avgScore >= 85 ? 'Bar Raiser Mastered (Premier Hire)' : avgScore >= 70 ? 'Tier-1 Placement Ready' : 'Requires Viva Practice',
-        summary: `Rigorous resume-grounded mock viva evaluating ${interviewQuestions.length} deep architectural claims from the candidate's resume. Candidate demonstrated ${avgScore >= 80 ? 'exemplary' : 'competent'} technical command over their project stack.`,
+        verdict: avgScore >= 85 
+          ? 'Bar Raiser Mastered (Premier Hire)' 
+          : avgScore >= 70 
+          ? 'Tier-1 Placement Ready' 
+          : avgScore >= 50 
+          ? 'Requires Architectural Refinement'
+          : 'Inadequate Defense — High Rejection Risk',
+        summary: avgScore < 50
+          ? `Candidate provided minimal or non-substantive defense on multiple resume claims. Bar Raiser strongly recommends reviewing component communication, database transactions, and scalability trade-offs.`
+          : `Rigorous resume-grounded mock viva evaluating ${interviewQuestions.length} deep architectural claims from the candidate's resume. Candidate demonstrated ${avgScore >= 80 ? 'exemplary' : 'competent'} technical command over their project stack.`,
         questionsEvaluated: evaluatedList
       };
 
