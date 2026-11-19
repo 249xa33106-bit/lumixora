@@ -154,15 +154,6 @@ export const PORTAL_CATALOG = [
     suggestedQueries: ['Calculate how many classes I can miss', 'Track my daily attendance']
   },
   {
-    id: 'study-with-me',
-    name: 'Study Arena & Pomodoro',
-    category: 'Tools & Utilities',
-    description: 'Focus timer with Lo-Fi beats, ambient study sounds, and focus session leaderboards.',
-    icon: Sparkles,
-    keywords: ['pomodoro', 'study timer', 'focus', 'lofi', 'music', 'study room'],
-    suggestedQueries: ['Start a 25-minute Pomodoro study timer', 'Play Lo-Fi study beats']
-  },
-  {
     id: 'contribute',
     name: 'Contribute Notes & Earn',
     category: 'Tools & Utilities',

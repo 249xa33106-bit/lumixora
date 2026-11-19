@@ -31,9 +31,6 @@ export const ALL_PORTALS = [
   { id: 'clubs', label: 'Student Clubs & Societies', category: 'social', tags: ['clubs', 'cad', 'societies', 'student-body', 'events', 'activities', 'membership'] },
   { id: 'projects', label: 'Community Project Showcase', category: 'social', tags: ['projects', 'showcase', 'portfolio', 'build', 'github', 'community', 'web3', 'ai'] },
   { id: 'hackathons', label: 'Hackathons & Internships', category: 'social', tags: ['projects', 'coding', 'internship', 'competition'] },
-  { id: 'community', label: 'Class Community & Squads', category: 'social', tags: ['community', 'college', 'networking', 'all'] },
-  { id: 'assigned-tasks', label: 'Assigned Curriculum Tasks', category: 'social', tags: ['academics', 'tasks', 'curriculum'] },
-  { id: 'study-with-me', label: 'Study Arena & Pomodoro', category: 'social', tags: ['study', 'focus', 'pomodoro'] },
 
   // Support & Connect
   { id: 'contribute', label: 'Contribute Notes', category: 'support', tags: ['all', 'notes'] },
@@ -99,7 +96,7 @@ export function analyzeAndRecommendPortals({
     recommended.add('courses');
     recommended.add('boloclass');
     recommended.add('simulations');
-    recommended.add('assigned-tasks');
+    recommended.add('tasks');
     recommended.add('attendance');
   }
 
@@ -149,7 +146,7 @@ export function analyzeAndRecommendPortals({
       recommended.add('doubts');
       recommended.add('learning-hub');
       recommended.add('my-academics');
-      recommended.add('assigned-tasks');
+      recommended.add('tasks');
     }
     if (item.includes('internship') || item.includes('referral')) {
       recommended.add('internships');
@@ -157,13 +154,13 @@ export function analyzeAndRecommendPortals({
       recommended.add('hackathons');
     }
     if (item.includes('study') || item.includes('focus') || item.includes('pomodoro')) {
-      recommended.add('study-with-me');
+      recommended.add('notes');
     }
   }
 
   // 6. Study Style
   if (studyLower.includes('exam') || studyLower.includes('focus')) {
-    recommended.add('study-with-me');
+    recommended.add('notes');
     recommended.add('test-portal');
   }
 

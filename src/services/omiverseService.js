@@ -71,7 +71,7 @@ export const OMIVERSE_WORLDS = [
       { id: 'community', name: 'Campus Community & Squads', icon: 'Users' },
       { id: 'clubs', name: 'Student Clubs & Teams', icon: 'Compass' },
       { id: 'alumni-referrals', name: 'Alumni & Off-Campus Referrals', icon: 'Share2' },
-      { id: 'study-with-me', name: 'Study Arena Live Rooms', icon: 'Tv' },
+      
       { id: 'marketplace', name: 'Campus Marketplace', icon: 'ShoppingCart' },
       { id: 'grievance', name: 'Anonymous Grievances', icon: 'ShieldCheck' }
     ]
@@ -105,9 +105,9 @@ export const OMIVERSE_WORLDS = [
     gradient: 'from-teal-500/20 via-cyan-500/10 to-transparent',
     border: 'border-teal-500/30',
     textGradient: 'from-teal-300 via-emerald-200 to-sky-300',
-    primaryTab: 'assigned-tasks',
+    primaryTab: 'tasks',
     features: [
-      { id: 'assigned-tasks', name: 'Assigned Tasks & Audit', icon: 'ClipboardCheck' },
+      
       { id: 'attendance', name: 'My Attendance & 75% Calc', icon: 'UserCheck' },
       { id: 'tasks', name: 'Task Scheduler', icon: 'Calendar' },
       { id: 'faculty-portal', name: 'Faculty & TPO Dashboard', icon: 'Award' }

@@ -46,9 +46,7 @@ import { useData } from '../context/DataContext';
 import FounderTestManager from '../components/FounderTestManager';
 import FounderSubmissionsManager from '../components/FounderSubmissionsManager';
 import FounderFrequentUsers from '../components/FounderFrequentUsers';
-import FounderAssignedTasks from '../components/FounderAssignedTasks';
 import FounderAttendanceManager from '../components/FounderAttendanceManager';
-import FounderCommunityManager from '../components/FounderCommunityManager';
 import FounderAmbassadorManager from '../components/FounderAmbassadorManager';
 import FounderRevenueManager from '../components/FounderRevenueManager';
 import InternshipPortal from './InternshipPortal';
@@ -2611,12 +2609,6 @@ export default function FounderPortal({ user, setActiveTab }) {
               <Flame className="w-4 h-4" /> Frequent Users
             </button>
             <button
-              onClick={() => setActiveView('assigned_tasks')}
-              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'assigned_tasks' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
-            >
-              <ClipboardList className="w-4 h-4" /> Assigned Tasks
-            </button>
-            <button
               onClick={() => setActiveView('attendance')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'attendance' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
             >
@@ -2633,12 +2625,6 @@ export default function FounderPortal({ user, setActiveTab }) {
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'feedbacks' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
             >
               <MessageSquare className="w-4 h-4" /> Feedbacks
-            </button>
-            <button
-              onClick={() => setActiveView('community')}
-              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'community' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
-            >
-              <Users className="w-4 h-4" /> Class Groups
             </button>
             <button
               onClick={() => setActiveView('doubts')}
@@ -2754,8 +2740,6 @@ export default function FounderPortal({ user, setActiveTab }) {
         <FounderTestManager />
       ) : activeView === 'frequent' ? (
         <FounderFrequentUsers usersList={usersList} onToggleBlock={handleToggleBlock} />
-      ) : activeView === 'assigned_tasks' ? (
-        <FounderAssignedTasks />
       ) : activeView === 'attendance' ? (
         <FounderAttendanceManager />
       ) : activeView === 'approvals' ? (
@@ -2770,8 +2754,6 @@ export default function FounderPortal({ user, setActiveTab }) {
         <FounderClubsManager />
       ) : activeView === 'colleges' ? (
         <FounderCollegesManager />
-      ) : activeView === 'community' ? (
-        <FounderCommunityManager />
       ) : activeView === 'internships' ? (
         <InternshipPortal user={user} initialView="submissions" />
       ) : activeView === 'ambassadors' ? (

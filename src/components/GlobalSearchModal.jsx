@@ -23,8 +23,6 @@ const SEARCHABLE_PORTALS = [
   { id: 'alumni-referrals', title: 'Alumni & Referrals', desc: 'Connect with verified campus alumni for off-campus jobs', category: 'Career', icon: Briefcase, keywords: ['networking', 'referrals', 'seniors', 'jobs'] },
   { id: 'hackathons', title: 'Hackathons & Internships', desc: 'Curated national hackathons, bounties & paid internships', category: 'Opportunities', icon: Trophy, keywords: ['competitions', 'internships', 'projects', 'prizes'] },
   { id: 'career-roadmap', title: 'Career Roadmap', desc: 'Year-by-year engineering milestones & target skills', category: 'Career', icon: Map, keywords: ['guide', 'steps', 'curriculum', 'plan'] },
-  { id: 'community', title: 'Class Community & Squads', desc: 'Study groups, peer discussion & resource sharing', category: 'Social', icon: Compass, keywords: ['chat', 'groups', 'peers', 'friends'] },
-  { id: 'study-with-me', title: 'Study Arena & Pomodoro', desc: 'Live focus timers, Lo-Fi study beats & session tracking', category: 'Tools', icon: Clock, keywords: ['focus', 'pomodoro', 'timer', 'music'] },
 ];
 
 export default function GlobalSearchModal({ isOpen, onClose, onSelectTab }) {

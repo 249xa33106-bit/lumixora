@@ -10,7 +10,8 @@ import {
   Coins, Sun, Moon, ArrowLeft, ArrowRight, GraduationCap, LogOut, Code, Users, Home, Power, ShoppingCart,
   Bot, Award, HelpCircle, BookOpen, CheckSquare, UserCheck, Rocket, FileText,
   Building2, Check, Plus, Layers, Trophy, CheckCircle2, TrendingUp, Download, 
-  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders
+  FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders,
+  MessageSquare, MessageCircle
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -32,9 +33,7 @@ const QUICK_FEATURES = [
   { id: 'coding-practice', label: 'Codeverse', icon: Code, highlight: true },
   { id: 'learning-hub', label: 'Learnverse', icon: BookOpen },
   { id: 'projects', label: 'Buildverse', icon: Rocket },
-  { id: 'community', label: 'Connectverse', icon: Users },
   { id: 'ai-commander', label: 'Placement', icon: Briefcase },
-  { id: 'assigned-tasks', label: 'Talentverse', icon: Award },
   { id: 'resume', label: 'AI Resume PDF', icon: FileText },
   { id: 'test-portal', label: 'Tests Hub', icon: Award },
   { id: 'doubts', label: 'Doubt Solver', icon: HelpCircle },
@@ -1410,11 +1409,11 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         </button>
 
         <button
-          onClick={() => setActiveTab('community')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'community' ? 'text-brand-purple' : 'text-gray-400'}`}
+          onClick={() => setActiveTab('clubs')}
+          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'clubs' ? 'text-brand-purple' : 'text-gray-400'}`}
         >
           <Users className="w-4 h-4" />
-          <span>Network</span>
+          <span>Clubs</span>
         </button>
 
         <button
@@ -2206,36 +2205,45 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
 
       {/* Floating AI Platform Navigator Chatbot Launcher (Hidden on gprec placement subdomain) */}
       {!isGprecPlacementSubdomain(user) && (
-        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
-        {/* Helper Tooltip Prompt */}
-        <div 
-          onClick={() => setShowNavigatorBot(true)}
-          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#0A0E1A]/90 hover:bg-[#0e1424] border border-cyan-500/30 text-white shadow-xl cursor-pointer backdrop-blur-md transition-all hover:scale-105 group"
-        >
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-xs font-bold text-gray-200 group-hover:text-cyan-300">
-            Need help finding a portal?
-          </span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">
-            Ask AI
-          </span>
-        </div>
+        <div className="fixed bottom-5 right-5 z-40 select-none">
+          <button
+            onClick={() => setShowNavigatorBot(true)}
+            title="Chat with Lumix AI Assistant"
+            aria-label="Open AI Chatbot"
+            className="group relative flex items-center cursor-pointer"
+          >
+            {/* Hover Tooltip Pill - ONLY shows on hover so it occupies 0 permanent screen space */}
+            <div className="absolute right-full mr-3 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 text-white text-xs font-semibold border border-indigo-500/30 shadow-xl backdrop-blur-md opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 pointer-events-none whitespace-nowrap">
+              <Bot className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Ask Lumix AI</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            </div>
 
-        {/* Floating Action Button */}
-        <button
-          onClick={() => setShowNavigatorBot(true)}
-          title="Open Lumixora Navigator Bot"
-          className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#101A35] via-[#0284c7] to-[#06b6d4] p-0.5 shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer flex items-center justify-center relative group"
-        >
-          <div className="w-full h-full bg-[#0A0E1A] rounded-[14px] flex items-center justify-center relative overflow-hidden group-hover:bg-[#0c1322] transition-colors">
-            <Realistic3DLogo size="sm" interactive={false} />
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0A0E1A]" />
-            </span>
-          </div>
-        </button>
-      </div>
+            {/* Compact Chatbot Floating Circle */}
+            <div className="relative w-12 h-12 sm:w-13 sm:h-13 rounded-full p-[2px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-[0_8px_25px_rgba(99,102,241,0.35)] group-hover:shadow-[0_12px_32px_rgba(168,85,247,0.5)] group-hover:scale-105 active:scale-95 transition-all duration-300">
+              {/* Outer ambient glow */}
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 opacity-40 blur-sm group-hover:opacity-75 transition duration-300 pointer-events-none" />
+
+              {/* Bot Button Body */}
+              <div className="relative w-full h-full rounded-full bg-slate-900 dark:bg-[#0B0F19] flex items-center justify-center overflow-hidden">
+                {/* Subtle sheen */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 via-transparent to-purple-500/20 pointer-events-none" />
+
+                {/* Robot Chatbot Icon */}
+                <div className="relative z-10 text-white transition-transform duration-300 group-hover:scale-110">
+                  <Bot className="w-6 h-6 text-white drop-shadow-[0_2px_6px_rgba(99,102,241,0.6)]" />
+                  <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+                </div>
+
+                {/* Online Indicator Badge */}
+                <span className="absolute top-1 right-1 flex h-2.5 w-2.5 z-20">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 ring-1.5 ring-slate-900" />
+                </span>
+              </div>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* Lumixora Platform Navigator Chatbot Modal */}

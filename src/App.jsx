@@ -2,7 +2,7 @@ import Realistic3DLogo from './components/Realistic3DLogo';
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Capacitor } from '@capacitor/core';
 import MainLayout from './layouts/MainLayout';
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+import Dashboard from './pages/Dashboard';
 const DoubtSolving = lazy(() => import('./pages/DoubtSolving'));
 const NotesPlatform = lazy(() => import('./pages/NotesPlatform'));
 const TaskManager = lazy(() => import('./pages/TaskManager'));
@@ -29,18 +29,13 @@ import { checkAppUpdate, isVersionOutdated, CURRENT_VERSION } from './services/u
 import { Lock, RefreshCw, LogOut, ShieldCheck, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { checkUserAccessStatus, cleanScholarName, isFounderEmail } from './utils/authSecurity';
 import { cloudSync } from './services/cloudSyncService';
-const StudyWithMe = lazy(() => import('./pages/StudyWithMe'));
 const ReportBug = lazy(() => import('./pages/ReportBug'));
-const LifeReplay = lazy(() => import('./pages/LifeReplay'));
 const FounderPortal = lazy(() => import('./pages/FounderPortal'));
 import FounderLoginModal from './components/FounderLoginModal';
 import { recordSessionHeartbeat } from './services/userActivityLogService';
 const TestPortal = lazy(() => import('./pages/TestPortal'));
-const AssignedTasksPortal = lazy(() => import('./pages/AssignedTasksPortal'));
 const AttendancePortal = lazy(() => import('./pages/AttendancePortal'));
 const Marketplace = lazy(() => import('./pages/Marketplace'));
-const CommunityPortal = lazy(() => import('./pages/CommunityPortal'));
-const JoinGroup = lazy(() => import('./pages/JoinGroup'));
 const CareerRoadmap = lazy(() => import('./pages/CareerRoadmap'));
 const SimulationPortal = lazy(() => import('./pages/SimulationPortal'));
 const AiPlacementCommander = lazy(() => import('./pages/AiPlacementCommander'));
@@ -52,7 +47,6 @@ const HackathonPortal = lazy(() => import('./pages/HackathonPortal'));
 const GrievancePortal = lazy(() => import('./pages/GrievancePortal'));
 const ProjectShowcase = lazy(() => import('./pages/ProjectShowcase'));
 const ResumeCreator = lazy(() => import('./pages/ResumeCreator'));
-const TeamPortal = lazy(() => import('./pages/TeamPortal'));
 const OurTeamPortal = lazy(() => import('./pages/OurTeamPortal'));
 const AlumniReferralBridge = lazy(() => import('./pages/AlumniReferralBridge'));
 const CompanyPlacementPapers = lazy(() => import('./pages/CompanyPlacementPapers'));
@@ -61,8 +55,6 @@ import PlatformTourModal from './components/PlatformTourModal';
 import CinematicIntro from './components/CinematicIntro';
 import TomAndJerryIntro from './components/TomAndJerryIntro';
 import CursorGlow from './components/CursorGlow';
-const CadEnglishClubPortal = lazy(() => import('./components/CadEnglishClubPortal'));
-const PublicCadMemberPass = lazy(() => import('./pages/PublicCadMemberPass'));
 const AiMockInterviewRoom = lazy(() => import('./pages/AiMockInterviewRoom'));
 const ProofOfSkillCertificates = lazy(() => import('./pages/ProofOfSkillCertificates'));
 const PublicCertificateVerification = lazy(() => import('./pages/PublicCertificateVerification'));
@@ -85,18 +77,9 @@ import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, GPREC_
 const TpoPortalLanding = lazy(() => import('./pages/TpoPortalLanding'));
 
 
-// High-performance Suspense Loader Fallback
+// Instant silent Suspense Fallback (Zero loading screen, instant render)
 function PortalFallback() {
-  return (
-    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center animate-fadeIn">
-      <div className="relative w-12 h-12 flex items-center justify-center mb-3">
-        <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 animate-ping" />
-        <div className="w-9 h-9 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
-      </div>
-      <div className="text-xs font-bold text-slate-700 tracking-tight">Initializing Workspace...</div>
-      <div className="text-[10px] text-slate-400 mt-0.5">Optimizing modular portal chunk</div>
-    </div>
-  );
+  return null;
 }
 
 function App() {
@@ -129,7 +112,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'community', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'ai-commander'].includes(hash)) return hash;
+        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'ai-commander'].includes(hash)) return hash;
       }
     }
     return 'dashboard';
@@ -668,7 +651,7 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'study-with-me', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'community', 'join-group', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
@@ -1483,7 +1466,7 @@ function App() {
         return <PersonalMentor user={user} />;
       case 'study-with-me':
       case 'study-room':
-        return <StudyWithMe user={user} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'portfolio':
       case 'scholar-portfolio':
       case 'projects':
@@ -1495,14 +1478,14 @@ function App() {
       case 'report-bug':
         return <ReportBug user={user} />;
       case 'life-replay':
-        return <LifeReplay user={user} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'test-portal':
       case 'tests':
       case 'assignments':
       case 'tests-assignments':
         return <TestPortal user={user} setActiveTab={handleTabChange} />;
       case 'assigned-tasks':
-        return <AssignedTasksPortal user={user} setActiveTab={handleTabChange} />;
+        return <Dashboard user={user} setActiveTab={handleTabChange} />;
       case 'attendance':
         return <AttendancePortal user={user} />;
       case 'resume':
@@ -1520,11 +1503,11 @@ function App() {
       case 'cad-english-club':
       case 'cad&englishclub':
       case 'cadenglishclub':
-        return <CadEnglishClubPortal user={user} isFounder={user?.role === 'founder'} onClose={() => handleTabChange('dashboard')} />;
+        return <ClubsPortal user={user} setActiveTab={handleTabChange} />;
       case 'marketplace':
         return <Marketplace user={user} setActiveTab={handleTabChange} />;
       case 'community':
-        return <CommunityPortal user={user} />;
+        return <ClubsPortal user={user} setActiveTab={handleTabChange} />;
       case 'verify':
       case 'verify-cert':
       case 'cert-verify':
@@ -1532,20 +1515,15 @@ function App() {
         const certHash = window.location.hash.substring(1);
         const certIdFromHash = certHash.split('/')[1] || '';
         return <PublicCertificateVerification certId={certIdFromHash} onBack={() => handleTabChange('dashboard')} />;
-      case 'join-group':
-        const joinHash = window.location.hash.substring(1);
-        const joinGroupId = joinHash.split('/')[1] || null;
-        return <JoinGroup groupId={joinGroupId} user={user} setActiveTab={handleTabChange} />;
       case 'our-team':
       case 'team':
       case 'team-leads':
       case 'lumixora-team':
       case 'team-members':
       case 'core-team':
-        return <OurTeamPortal user={user} setActiveTab={handleTabChange} />;
       case 'team-portal':
       case 'teammate-portal':
-        return <TeamPortal user={user} setActiveTab={handleTabChange} />;
+        return <OurTeamPortal user={user} setActiveTab={handleTabChange} />;
       case 'tpo-dashboard':
       case 'tpo-analytics':
       case 'placement-officer':

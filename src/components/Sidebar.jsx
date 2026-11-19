@@ -118,59 +118,54 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       title: '🎓 Academics & Learning',
       items: [
         { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
-        { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Interactive ⚛️' },
-        { id: 'courses', label: 'All Courses & Diplomas', icon: BookOpen, badge: 'Diplomas 🎓' },
-        { id: 'boloclass', label: 'BoloClass AI Classroom', icon: Brain, badge: 'Voice & Slides 🎙️' },
-        { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', icon: GraduationCap, badge: 'NEW 📊' },
-        { id: 'doubts', label: 'Doubt Solver (AI 24/7)', icon: HelpCircle, badge: 'AI ⚡' },
-        { id: 'learning-hub', label: 'Learning & Video Hub', icon: BookOpen, badge: 'Notes + Vids' },
-        { id: 'test-portal', label: 'Tests & Assessment Hub', icon: Target, badge: 'Exams' },
+        { id: 'learning-hub', label: 'Notes & Video Hub', icon: BookOpen },
+        { id: 'doubts', label: 'AI Doubt Solver', icon: HelpCircle },
+        { id: 'my-academics', label: 'My Academics (SGPA)', icon: GraduationCap },
+        { id: 'courses', label: 'Courses & Diplomas', icon: BookOpen },
+        { id: 'test-portal', label: 'Tests & Assessments', icon: Target },
+        { id: 'boloclass', label: 'BoloClass AI', icon: Brain },
+        { id: 'simulations', label: 'Interactive Simulations', icon: Atom },
         { id: 'attendance', label: 'Attendance Tracker', icon: ClipboardList },
       ]
     },
     {
       key: 'speakverse_hub',
-      title: '🎙️ SpeakVerse™ Flagship Portal',
+      title: '🎙️ SpeakVerse™ Flagship',
       items: [
-        { id: 'speakverse', label: 'SpeakVerse™ AI', icon: Mic, badge: 'PORTAL 👑' },
+        { id: 'speakverse', label: 'SpeakVerse AI', icon: Mic, badge: 'AI' },
       ]
     },
     {
       key: 'career',
-      title: '🚀 Placement & Career Hub',
+      title: '🚀 Placement & Career',
       items: [
-        { id: 'ai-commander', label: 'AI Placement Commander™', icon: Cpu, badge: 'NEW 📊' },
-        { id: 'tech-pulse', label: 'Tech Pulse & Jobs Radar', icon: Radio, badge: 'LIVE 🔥' },
-        { id: 'simulations', label: 'Simulation Portal', icon: Atom, badge: 'Visualizer ⚛️' },
-        { id: 'interview', label: 'AI Mock Interview Room', icon: Mic, badge: 'Live AI 🎙️' },
-        { id: 'coding-practice', label: 'Code Arena & 30D Java', icon: Code, badge: 'DSA' },
-        { id: 'certificates', label: 'Proof-of-Skill Badges', icon: Award, badge: 'LinkedIn 📜' },
-        { id: 'intern-portal', label: 'Intern Workspace & Pass', icon: Briefcase, badge: 'Portal 💼' },
-        { id: 'internships', label: 'Lumixora Internships', icon: Briefcase, badge: 'Batch 01' },
-        { id: 'alumni-referrals', label: 'Alumni & Off-Campus Jobs', icon: Briefcase, badge: 'Referrals' },
+        { id: 'ai-commander', label: 'Placement Commander', icon: Cpu },
+        { id: 'interview', label: 'AI Mock Interviews', icon: Mic, badge: 'LIVE' },
+        { id: 'tech-pulse', label: 'TechPulse & Jobs', icon: Radio },
+        { id: 'coding-practice', label: 'Code Arena & DSA', icon: Code },
+        { id: 'certificates', label: 'Skill Certifications', icon: Award },
+        { id: 'internships', label: 'Student Internships', icon: Briefcase },
+        { id: 'alumni-referrals', label: 'Alumni Referrals', icon: Users },
         { id: 'career-roadmap', label: 'Career Roadmap', icon: Map },
       ]
     },
     {
       key: 'social',
-      title: '🌐 Campus & Opportunities',
+      title: '🌐 Campus & Community',
       items: [
-        { id: 'marketplace', label: 'Campus Marketplace', icon: ShoppingCart, badge: 'P2P 🛒' },
-        { id: 'clubs', label: 'Student Clubs & Societies', icon: Users, badge: 'Clubs ⚡' },
-        { id: 'projects', label: 'Project Showcase', icon: Rocket, badge: 'Community 🚀' },
-        { id: 'hackathons', label: 'Hackathons & Internships', icon: Trophy, badge: 'HOT 🏆' },
-        { id: 'community', label: 'Class Community & Squads', icon: MessageCircle },
-        { id: 'assigned-tasks', label: 'Assigned Curriculum Tasks', icon: ClipboardList },
-        { id: 'study-with-me', label: 'Study Arena & Pomodoro', icon: Clock },
+        { id: 'marketplace', label: 'Campus Marketplace', icon: ShoppingCart },
+        { id: 'clubs', label: 'Clubs & Societies', icon: Users },
+        { id: 'projects', label: 'Project Showcase', icon: Rocket },
+        { id: 'hackathons', label: 'Hackathons & Contests', icon: Trophy },
       ]
     },
     {
       key: 'support',
-      title: '🛠️ Settings & Connect',
+      title: '🛠️ Settings & Help',
       items: [
         { id: 'contribute', label: 'Contribute Notes', icon: UploadCloud },
-        { id: 'contact', label: 'Connect with Founder', icon: Mail },
-        { id: 'report-bug', label: 'Report Platform Issue', icon: AlertTriangle },
+        { id: 'contact', label: 'Founder Connect', icon: Mail },
+        { id: 'report-bug', label: 'Report Issue', icon: AlertTriangle },
       ]
     }
   ];
@@ -317,15 +312,15 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
               <div key={sec.key} className="space-y-1.5 pt-1">
                 <div 
                   onClick={() => toggleSection(sec.key)}
-                  className="flex items-center justify-between px-2 py-1 text-xs font-black uppercase tracking-wider text-gray-200 hover:text-cyan-300 cursor-pointer transition-colors group select-none"
+                  className="flex items-center justify-between px-2 py-1 text-xs font-black uppercase tracking-wider text-gray-400 hover:text-indigo-300 cursor-pointer transition-colors group select-none"
                 >
-                  <span className="font-extrabold tracking-wide text-[11px] text-gray-300 group-hover:text-cyan-300 transition-colors">
+                  <span className="font-extrabold tracking-wide text-[11px] text-gray-400 group-hover:text-indigo-300 transition-colors">
                     {sec.title}
                   </span>
                   {isCollapsed ? (
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-cyan-300 transition-transform stroke-[2.5]" />
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-500 group-hover:text-indigo-300 transition-transform stroke-[2.5]" />
                   ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-cyan-300 transition-transform stroke-[2.5]" />
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-500 group-hover:text-indigo-300 transition-transform stroke-[2.5]" />
                   )}
                 </div>
 
@@ -340,18 +335,18 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                           onClick={() => handleTabClick(item.id)}
                           className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             isActive
-                              ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-500/10'
+                              ? 'bg-gradient-to-r from-indigo-500/20 to-purple-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
                               : 'text-gray-300 hover:text-white hover:bg-white/5 border border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-gray-400'}`} />
+                            <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-400' : 'text-gray-400'}`} />
                             <span className="truncate">{item.label}</span>
                           </div>
 
                           {item.badge && (
                             <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-extrabold uppercase shrink-0 ${
-                              isActive ? 'bg-cyan-400 text-black' : 'bg-white/10 text-cyan-300'
+                              isActive ? 'bg-indigo-500 text-white shadow-sm' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
                             }`}>
                               {item.badge}
                             </span>
