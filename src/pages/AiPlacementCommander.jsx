@@ -973,6 +973,9 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [aptitudeCategoryFilter, setAptitudeCategoryFilter] = useState('All');
   const [selectedAptOption, setSelectedAptOption] = useState(null);
   const [showAptExplanation, setShowAptExplanation] = useState(false);
+  const [aptTimeRemaining, setAptTimeRemaining] = useState(60);
+  const [isAptTimedMode, setIsAptTimedMode] = useState(true);
+  const [aptNetScore, setAptNetScore] = useState(0);
   const [aptitudeScoreCount, setAptitudeScoreCount] = useState(() => {
     try {
       const saved = localStorage.getItem('lumixora_aptitude_scores_count');
@@ -983,6 +986,27 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     } catch (e) {}
     return 0;
   });
+
+  // Section Speed-Accuracy Countdown Timer for Aptitude Drills
+  useEffect(() => {
+    let timer = null;
+    if (activeNav === 'skill_hub' && activeModule === 'aptitude_arena' && isAptTimedMode && selectedAptOption === null) {
+      timer = setInterval(() => {
+        setAptTimeRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setSelectedAptOption(-1);
+            setShowAptExplanation(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [activeNav, activeModule, isAptTimedMode, selectedAptOption, aptitudeIndex]);
 
   // Synchronize daily missions completion dynamically with solved coding problems and aptitude drills
   useEffect(() => {
@@ -4933,69 +4957,153 @@ Return ONLY a valid JSON object without markdown:
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">Aptitude & Cognitive Drills</h3>
-                      <p className="text-xs text-slate-500">Official aptitude patterns for TCS Digital, Amazon, and Infosys recruitment.</p>
+                      <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200/50 mb-1">
+                        Cognitive & Technical Speed OA
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">Aptitude & Cognitive Speed Arena</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Simulating real 60-second OA time constraints and negative marking for TCS Digital, Amazon, and Infosys.</p>
                     </div>
-                    {/* Category Filter */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      {['All', 'Quantitative', 'Logical', 'Data Interpretation', 'Verbal'].map(cat => (
-                        <button
-                          key={cat}
-                          onClick={() => { setAptitudeCategoryFilter(cat); setAptitudeIndex(0); setSelectedAptOption(null); setShowAptExplanation(false); }}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer ${
-                            aptitudeCategoryFilter === cat ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
+
+                    <div className="flex items-center gap-2">
+                      {/* Timed Mode Toggle */}
+                      <button
+                        onClick={() => {
+                          setIsAptTimedMode(!isAptTimedMode);
+                          setAptTimeRemaining(60);
+                        }}
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          isAptTimedMode
+                            ? 'bg-purple-50 text-purple-700 border-purple-200/80'
+                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                        }`}
+                        title="Toggle 60s per-question pressure timer"
+                      >
+                        <Clock className={`w-3.5 h-3.5 ${isAptTimedMode ? 'text-purple-600' : 'text-slate-400'}`} />
+                        <span>{isAptTimedMode ? 'Timed OA Mode (60s)' : 'Practice Mode'}</span>
+                      </button>
+
+                      {/* Category Filter */}
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                        {['All', 'Quantitative', 'Logical', 'Data Interpretation', 'Verbal'].map(cat => (
+                          <button
+                            key={cat}
+                            onClick={() => {
+                              setAptitudeCategoryFilter(cat);
+                              setAptitudeIndex(0);
+                              setSelectedAptOption(null);
+                              setShowAptExplanation(false);
+                              setAptTimeRemaining(60);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${
+                              aptitudeCategoryFilter === cat
+                                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
+                  {/* Section Speed-Accuracy HUD Bar */}
+                  {isAptTimedMode && (
+                    <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-slate-950 text-white border border-slate-800 shadow-md">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <div className="flex items-center gap-2">
+                          <Clock className={`w-4 h-4 ${aptTimeRemaining <= 15 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`} />
+                          <span className="text-slate-300">OA Pace Countdown:</span>
+                          <span className={`font-mono text-sm ${aptTimeRemaining <= 15 ? 'text-rose-400 font-black animate-pulse' : 'text-cyan-300'}`}>
+                            {aptTimeRemaining}s remaining
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-medium text-slate-400">Section Net Score (OA Rule: +1 / -0.25):</span>
+                          <span className={`font-mono text-xs px-2 py-0.5 rounded-md font-extrabold ${aptNetScore >= 0 ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800/60' : 'bg-rose-950/70 text-rose-400 border border-rose-800/60'}`}>
+                            {aptNetScore > 0 ? `+${aptNetScore}` : aptNetScore}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Animated Speed Bar */}
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-1000 ${
+                            aptTimeRemaining <= 15
+                              ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                              : 'bg-gradient-to-r from-cyan-400 to-indigo-500'
+                          }`}
+                          style={{ width: `${(aptTimeRemaining / 60) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Question Box */}
-                  <div className="p-6 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-4">
+                  <div className="p-6 rounded-2xl bg-slate-50/80 border border-slate-200/80 flex flex-col gap-4 shadow-2xs">
                     <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span className="font-bold text-blue-600 uppercase">{currentAptQuestion.category}</span>
-                      <span>Question {(aptitudeIndex % filteredAptitude.length) + 1} of {filteredAptitude.length}</span>
+                      <span className="font-extrabold text-purple-700 uppercase tracking-wide bg-purple-100/70 px-2.5 py-0.5 rounded-md">{currentAptQuestion.category}</span>
+                      <span className="font-semibold text-slate-600">Question {(aptitudeIndex % filteredAptitude.length) + 1} of {filteredAptitude.length}</span>
                     </div>
 
-                    <div className="text-sm md:text-base font-bold text-slate-900">
+                    <div className="text-base font-extrabold text-slate-900 leading-snug">
                       {currentAptQuestion.question}
                     </div>
 
+                    {/* Timed-Out Alert Notice */}
+                    {selectedAptOption === -1 && (
+                      <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 font-semibold flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>⏰ Time expired (60s limit reached)! In company OAs, unanswered questions reduce your percentile rank. Review the correct option and solution below.</span>
+                      </div>
+                    )}
+
                     {/* Options */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
                       {currentAptQuestion.options.map((opt, idx) => {
                         const isChosen = selectedAptOption === idx;
                         const isCorrect = idx === currentAptQuestion.correct;
                         return (
                           <button
                             key={idx}
+                            disabled={selectedAptOption !== null}
                             onClick={() => {
+                              if (selectedAptOption !== null) return;
+                              const timeTaken = 60 - aptTimeRemaining;
                               setSelectedAptOption(idx);
                               setShowAptExplanation(true);
                               if (idx === currentAptQuestion.correct) {
+                                setAptNetScore(s => +(s + 1.0).toFixed(2));
                                 setAptitudeScoreCount(c => {
                                   const nextCount = c + 1;
                                   try { localStorage.setItem('lumixora_aptitude_scores_count', String(nextCount)); } catch (e) {}
                                   return nextCount;
                                 });
                                 updateTwinSkill('aptitude', 2, 'Solved Aptitude Drill');
+                                if (timeTaken <= 20) {
+                                  addToast({ message: `⚡ Speed Bonus! Solved in ${timeTaken}s (+15 Speed XP)`, type: 'success' });
+                                }
+                              } else {
+                                setAptNetScore(s => +(s - 0.25).toFixed(2));
+                                addToast({ message: `Incorrect (-0.25 OA penalty). Review the solution breakdown below.`, type: 'error' });
                               }
                             }}
-                            className={`p-3.5 rounded-xl border text-left text-xs md:text-sm font-semibold transition-all cursor-pointer ${
+                            className={`p-4 rounded-xl border text-left text-xs md:text-sm font-bold transition-all cursor-pointer ${
                               showAptExplanation
                                 ? isCorrect
-                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-800'
+                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/30'
                                   : isChosen
-                                    ? 'bg-rose-50 border-rose-500 text-rose-800'
-                                    : 'bg-white border-slate-200 text-slate-600'
-                                : isChosen
-                                  ? 'bg-blue-50 border-blue-600 text-blue-900'
-                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100/70'
+                                    ? 'bg-rose-50 border-rose-500 text-rose-900 ring-2 ring-rose-500/30'
+                                    : 'bg-white border-slate-200 text-slate-500 opacity-60'
+                                : 'bg-white border-slate-200/90 text-slate-800 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-2xs'
                             }`}
                           >
-                            {opt}
+                            <div className="flex items-center justify-between">
+                              <span>{opt}</span>
+                              {showAptExplanation && isCorrect && (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              )}
+                            </div>
                           </button>
                         );
                       })}
@@ -5003,9 +5111,12 @@ Return ONLY a valid JSON object without markdown:
 
                     {/* Explanation */}
                     {showAptExplanation && (
-                      <div className="mt-3 p-3.5 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-slate-700 flex flex-col gap-1">
-                        <div className="font-bold text-blue-900">Explanation:</div>
-                        <div>{currentAptQuestion.explanation}</div>
+                      <div className="mt-2 p-4 bg-purple-50/80 border border-purple-200/80 rounded-xl text-xs text-slate-800 flex flex-col gap-1.5 shadow-2xs">
+                        <div className="font-extrabold text-purple-900 flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-purple-600" />
+                          <span>Detailed Solution & Shortcut Method:</span>
+                        </div>
+                        <div className="text-slate-700 leading-relaxed font-medium">{currentAptQuestion.explanation}</div>
                       </div>
                     )}
 
@@ -5015,10 +5126,11 @@ Return ONLY a valid JSON object without markdown:
                           setAptitudeIndex(i => i + 1);
                           setSelectedAptOption(null);
                           setShowAptExplanation(false);
+                          setAptTimeRemaining(60);
                         }}
-                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs cursor-pointer flex items-center gap-2 shadow-sm transition-all"
                       >
-                        <span>Next Drill</span>
+                        <span>Next Practice Question</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
