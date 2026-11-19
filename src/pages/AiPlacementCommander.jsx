@@ -2608,15 +2608,6 @@ Return ONLY a valid JSON object without markdown:
               </button>
             </div>
 
-            {/* Claim Placement Certificate Quick Action */}
-            <button
-              onClick={() => setShowPlacementCertModal(true)}
-              className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
-              title="Claim your Verified GPREC Placement Readiness Certificate"
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Claim Certificate</span>
-            </button>
 
             {/* Notification Bell */}
             <div className="relative">
