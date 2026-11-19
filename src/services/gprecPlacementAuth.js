@@ -91,44 +91,90 @@ export function getAllowedGprecRollNumbers() {
 }
 
 /**
- * Synchronizes custom whitelisted scholars with Firestore
+ * Helper to run a promise with a fast timeout fallback
+ */
+function withTimeout(promise, ms = 1500) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Cloud sync timeout')), ms))
+  ]);
+}
+
+/**
+ * Synchronizes custom whitelisted scholars with Supabase & Firestore real cloud databases
  */
 export async function syncCustomRollsFromCloud() {
+  const cloudRolls = [];
+
+  // 1. Primary Real Database: Supabase founder_notifications with type 'gprec_whitelisted_scholar'
   try {
-    if (!db) return getAllowedGprecRollNumbers();
-    const colRef = collection(db, 'gprec_whitelisted_scholars');
-    const snap = await getDocs(colRef);
-    if (!snap.empty) {
-      const cloudRolls = [];
-      snap.forEach(d => {
-        const data = d.data();
-        if (data.rollNumber) {
-          cloudRolls.push({
-            rollNumber: normalizeRollNumber(data.rollNumber),
-            name: data.name || `GPREC Scholar (${data.rollNumber.toUpperCase()})`,
-            department: data.department || deriveBranchFromRoll(data.rollNumber),
-            year: data.year || deriveYearFromRoll(data.rollNumber),
-            addedAt: data.addedAt || Date.now(),
-            addedBy: data.addedBy || 'Founder'
-          });
-        }
-      });
-      if (cloudRolls.length > 0) {
-        // Merge with existing local storage
-        const local = getStoredCustomRolls();
-        const map = new Map();
-        local.forEach(item => {
-          const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
-          if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+    if (supabase) {
+      const { data: supaRows, error } = await supabase
+        .from('founder_notifications')
+        .select('*')
+        .eq('type', 'gprec_whitelisted_scholar');
+
+      if (!error && Array.isArray(supaRows)) {
+        supaRows.forEach(row => {
+          const m = row.meta || {};
+          const r = normalizeRollNumber(m.rollNumber || m.rollLower);
+          if (r) {
+            cloudRolls.push({
+              id: row.id,
+              rollNumber: r,
+              name: m.name || `GPREC Scholar (${r.toUpperCase()})`,
+              department: m.department || deriveBranchFromRoll(r),
+              year: m.year || deriveYearFromRoll(r),
+              addedAt: m.timestamp || new Date(row.created_at).getTime() || Date.now(),
+              addedBy: m.addedBy || 'Founder'
+            });
+          }
         });
-        cloudRolls.forEach(c => map.set(c.rollNumber, c));
-        const merged = Array.from(map.values());
-        saveCustomRolls(merged);
       }
     }
   } catch (err) {
-    console.warn('Could not sync whitelisted scholars from cloud:', err);
+    console.warn('Supabase whitelist fetch notice:', err.message || err);
   }
+
+  // 2. Secondary Real Database: Supabase users with @gprec.ac.in roll numbers
+  try {
+    if (supabase) {
+      const { data: userRows } = await supabase
+        .from('users')
+        .select('roll_number, name, email, department, year')
+        .not('roll_number', 'is', null)
+        .ilike('email', '%@gprec.ac.in');
+
+      if (Array.isArray(userRows)) {
+        userRows.forEach(u => {
+          const r = normalizeRollNumber(u.roll_number);
+          if (r && !cloudRolls.some(c => c.rollNumber === r)) {
+            cloudRolls.push({
+              rollNumber: r,
+              name: (u.name || '').split('{')[0].trim() || `GPREC Scholar (${r.toUpperCase()})`,
+              department: u.department || deriveBranchFromRoll(r),
+              year: u.year || deriveYearFromRoll(r),
+              addedAt: Date.now(),
+              addedBy: 'Database User'
+            });
+          }
+        });
+      }
+    }
+  } catch (e) {}
+
+  if (cloudRolls.length > 0) {
+    const local = getStoredCustomRolls();
+    const map = new Map();
+    local.forEach(item => {
+      const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
+      if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+    });
+    cloudRolls.forEach(c => map.set(c.rollNumber, c));
+    const merged = Array.from(map.values());
+    saveCustomRolls(merged);
+  }
+
   return getAllowedGprecRollNumbers();
 }
 
@@ -190,11 +236,18 @@ export function getGprecScholarRoster() {
 
 /**
  * Adds a new student roll number to whitelist (Founder action)
+ * Persists immediately into real cloud database (Supabase) + local cache
  */
 export async function addGprecScholarRoll(rollInput, meta = {}) {
   const normalized = normalizeRollNumber(rollInput);
   if (!normalized) throw new Error('Valid roll number is required.');
   if (normalized.length < 5) throw new Error('Roll number is too short.');
+
+  const rollUpper = normalized.toUpperCase();
+  const email = `${normalized}@gprec.ac.in`;
+  const scholarName = meta.name?.trim() || `GPREC Scholar (${rollUpper})`;
+  const department = meta.department || deriveBranchFromRoll(normalized);
+  const year = meta.year || deriveYearFromRoll(normalized);
 
   const existing = getStoredCustomRolls();
   const exists = existing.some(item => (typeof item === 'string' ? item : item.rollNumber).toLowerCase() === normalized)
@@ -202,9 +255,9 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
 
   const newEntry = {
     rollNumber: normalized,
-    name: meta.name?.trim() || `GPREC Scholar (${normalized.toUpperCase()})`,
-    department: meta.department || deriveBranchFromRoll(normalized),
-    year: meta.year || deriveYearFromRoll(normalized),
+    name: scholarName,
+    department,
+    year,
     addedAt: Date.now(),
     addedBy: meta.addedBy || 'Founder'
   };
@@ -214,17 +267,37 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
     saveCustomRolls(existing);
   }
 
-  // Sync to Firestore
+  // 1. Write directly to REAL Supabase database (founder_notifications table)
   try {
-    if (db) {
-      await setDoc(doc(db, 'gprec_whitelisted_scholars', normalized), {
-        ...newEntry,
-        rollNumber: normalized,
-        updatedAt: Date.now()
-      });
+    if (supabase) {
+      await supabase.from('founder_notifications').insert([{
+        type: 'gprec_whitelisted_scholar',
+        title: `GPREC Whitelisted Scholar: ${rollUpper}`,
+        message: `Founder whitelisted scholar ${rollUpper} (${scholarName}) for placement suite access.`,
+        meta: {
+          rollNumber: rollUpper,
+          rollLower: normalized,
+          email,
+          name: scholarName,
+          department,
+          year,
+          addedBy: meta.addedBy || 'Founder',
+          timestamp: Date.now()
+        },
+        read: false
+      }]);
+
+      // 2. Also register or approve user in Supabase users table
+      await supabase.from('users').update({
+        roll_number: rollUpper,
+        is_approved: true,
+        department,
+        branch: department,
+        college: 'GPREC'
+      }).ilike('email', email);
     }
   } catch (err) {
-    console.warn('Cloud sync of scholar failed, stored locally:', err);
+    console.warn('Supabase real cloud write error:', err);
   }
 
   return newEntry;
@@ -259,7 +332,7 @@ export async function bulkAddGprecScholarRolls(rawInput = '', defaultMeta = {}) 
 }
 
 /**
- * Removes a custom whitelisted roll number
+ * Removes a custom whitelisted roll number from real database + local storage
  */
 export async function removeGprecScholarRoll(rollInput) {
   const normalized = normalizeRollNumber(rollInput);
@@ -272,13 +345,28 @@ export async function removeGprecScholarRoll(rollInput) {
   });
   saveCustomRolls(filtered);
 
+  // Remove from Supabase real database
   try {
-    if (db) {
-      await deleteDoc(doc(db, 'gprec_whitelisted_scholars', normalized));
+    if (supabase) {
+      // Find row in founder_notifications matching this roll
+      const { data: matches } = await supabase
+        .from('founder_notifications')
+        .select('id, meta')
+        .eq('type', 'gprec_whitelisted_scholar');
+
+      if (Array.isArray(matches)) {
+        for (const row of matches) {
+          const r = normalizeRollNumber(row.meta?.rollNumber || row.meta?.rollLower);
+          if (r === normalized) {
+            await supabase.from('founder_notifications').delete().eq('id', row.id);
+          }
+        }
+      }
     }
   } catch (e) {
-    console.warn('Cloud delete failed, deleted locally:', e);
+    console.warn('Real database delete note:', e);
   }
+
   return true;
 }
 
