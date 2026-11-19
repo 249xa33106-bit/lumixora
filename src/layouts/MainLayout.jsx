@@ -1436,84 +1436,86 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
 {/* Scholar Profile & Verified Progress Center Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-xl z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="glass-panel w-full max-w-2xl rounded-3xl p-5 sm:p-7 border border-white/15 relative overflow-hidden bg-[#0a0b12] text-white shadow-2xl animate-fade-in my-8 max-h-[90vh] flex flex-col">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-brand-teal/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-brand-purple/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="w-full max-w-2xl rounded-2xl p-6 sm:p-7 border border-slate-800 bg-[#0d111c] text-slate-100 shadow-2xl relative flex flex-col my-8 max-h-[90vh] overflow-hidden animate-fade-in">
 
             {/* Modal Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-white/10 relative z-10 shrink-0">
+            <div className="flex items-start justify-between pb-5 border-b border-slate-800/80 relative z-10 shrink-0">
               <div className="flex items-center gap-3.5">
-                <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-brand-teal/50 shadow-md shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center font-bold text-slate-200 text-sm shrink-0 overflow-hidden shadow-inner">
                   {avatarUrl || (profile.avatarUrl && profile.avatarUrl !== '/lumixora_logo.jpg') ? (
                     <img src={avatarUrl || profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-tr from-brand-teal via-[#0d9488] to-brand-blue flex items-center justify-center font-black text-white text-lg shadow-inner">
+                    <div className="w-full h-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-sm">
                       {getScholarInitials(editName || user?.name || user?.displayName)}
                     </div>
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                    {cleanScholarName(user?.name || user?.displayName)}
-                    <span className="px-2.5 py-0.5 rounded-full bg-brand-teal/15 text-brand-teal text-[10px] font-black uppercase tracking-wider border border-brand-teal/30">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg font-bold text-white tracking-tight">
+                      {cleanScholarName(user?.name || user?.displayName)}
+                    </h2>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 text-[11px] font-semibold border border-emerald-800/40">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                       Verified Scholar
                     </span>
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-0.5 font-medium">
-                    {user?.email || 'N/A'} • <span className="text-gray-300 font-semibold">{editCollege || 'GPREC'} ({editYear || '1st Year'})</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {user?.email || 'N/A'} • <span className="text-slate-300 font-medium">{editCollege || 'GPREC'} ({editYear || '1st Year'})</span>
                   </p>
                 </div>
               </div>
 
               <button 
                 onClick={() => setShowProfileModal(false)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 pt-4 pb-3 relative z-10 shrink-0 border-b border-white/5">
+            {/* Segmented Control Tabs */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs font-medium my-4 overflow-x-auto shrink-0 select-none">
               <button
                 onClick={() => setProfileModalTab('progress')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
                   profileModalTab === 'progress'
-                    ? 'bg-brand-teal text-black shadow-md font-black'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
                 <Activity className="w-3.5 h-3.5" />
-                My Progress & Analytics
+                Progress & Stats
               </button>
               <button
                 onClick={() => setProfileModalTab('history')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
                   profileModalTab === 'history'
-                    ? 'bg-brand-purple text-white shadow-md font-black'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Solved Codes & History ({myProgressStats.tasksCount + myProgressStats.testsCount})
+                Solved Codes ({myProgressStats.tasksCount + myProgressStats.testsCount})
               </button>
               <button
                 onClick={() => setProfileModalTab('badges')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
                   profileModalTab === 'badges'
-                    ? 'bg-amber-400 text-black shadow-md font-black'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
                 <Award className="w-3.5 h-3.5" />
-                Badges & Placement Tier
+                Placement Tier
               </button>
               <button
                 onClick={() => setProfileModalTab('settings')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
                   profileModalTab === 'settings'
-                    ? 'bg-white/20 text-white shadow-md font-black'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
                 <UserCheck className="w-3.5 h-3.5" />
@@ -1521,106 +1523,106 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               </button>
               <button
                 onClick={() => setProfileModalTab('portals')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
                   profileModalTab === 'portals'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-md font-black'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
-                {isGprecPlacementSubdomain(user) ? 'Placement Modules' : 'My Portals & Workspace'}
+                {isGprecPlacementSubdomain(user) ? 'Modules' : 'Portals'}
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto pt-4 space-y-6 relative z-10 pr-1">
+            <div className="flex-1 overflow-y-auto pt-1 space-y-5 relative z-10 pr-1">
               {profileModalTab === 'progress' && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-5 animate-fade-in">
                   {/* 4 Core Progress Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-4 rounded-2xl bg-brand-teal/5 border border-brand-teal/20 relative overflow-hidden">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Placement Readiness</span>
-                      <span className="text-2xl font-black text-brand-teal mt-1 block">{myProgressStats.placementScore}%</span>
-                      <span className={`text-[9px] font-semibold mt-1 block ${
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                      <span className="text-[11px] font-medium text-slate-400 block">Placement Readiness</span>
+                      <span className="text-2xl font-bold text-white mt-1 block">{myProgressStats.placementScore}%</span>
+                      <span className={`text-[11px] font-medium mt-1 flex items-center gap-1 ${
                         myProgressStats.placementScore >= 75 
                           ? 'text-emerald-400' 
                           : myProgressStats.placementScore >= 55 
-                            ? 'text-teal-300' 
-                            : 'text-amber-300'
+                            ? 'text-indigo-400' 
+                            : 'text-amber-400'
                       }`}>
                         {myProgressStats.placementScore >= 75 
-                          ? '🚀 Drive Ready' 
+                          ? '● Drive Ready' 
                           : myProgressStats.placementScore >= 55 
-                            ? '⚡ Advancing' 
-                            : '📈 Foundation'}
+                            ? '● Advancing' 
+                            : '● Foundation'}
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-brand-purple/5 border border-brand-purple/20 relative overflow-hidden">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Codes Solved</span>
-                      <span className="text-2xl font-black text-brand-purple mt-1 block">{myProgressStats.tasksCount}</span>
-                      <span className="text-[9px] text-purple-300 font-semibold mt-1 block">{myProgressStats.javaTasksCount} Java Days</span>
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                      <span className="text-[11px] font-medium text-slate-400 block">Codes Solved</span>
+                      <span className="text-2xl font-bold text-white mt-1 block">{myProgressStats.tasksCount}</span>
+                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">{myProgressStats.javaTasksCount} Java Days</span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 relative overflow-hidden">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Tests Attempted</span>
-                      <span className="text-2xl font-black text-amber-400 mt-1 block">{myProgressStats.testsCount}</span>
-                      <span className="text-[9px] text-amber-300 font-semibold mt-1 block">Avg: {myProgressStats.avgAccuracy}%</span>
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                      <span className="text-[11px] font-medium text-slate-400 block">Tests Attempted</span>
+                      <span className="text-2xl font-bold text-white mt-1 block">{myProgressStats.testsCount}</span>
+                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">Avg: {myProgressStats.avgAccuracy}%</span>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 relative overflow-hidden">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Global Aura (AP)</span>
-                      <span className="text-2xl font-black text-blue-400 mt-1 block">{user?.xp || 100}</span>
-                      <span className="text-[9px] text-blue-300 font-semibold mt-1 block">{user?.coins || 100} SC Energy</span>
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                      <span className="text-[11px] font-medium text-slate-400 block">Scholar Points</span>
+                      <span className="text-2xl font-bold text-white mt-1 block">{user?.xp || 100}</span>
+                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">{user?.coins || 100} SC Energy</span>
                     </div>
                   </div>
 
                   {/* Tracks & Progress Bars */}
-                  <div className="space-y-4 bg-white/[0.02] border border-white/10 rounded-2xl p-5">
-                    <h3 className="text-xs font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2">
-                      <Terminal className="w-4 h-4 text-brand-teal" /> Curriculum Tracks Progress
+                  <div className="space-y-4 bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 sm:p-5">
+                    <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-indigo-400" /> Curriculum Tracks Progress
                     </h3>
 
                     {/* Java 30-Day Master Track */}
                     <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-gray-200">☕ 30-Day Java Master Track (Basic to Advance)</span>
-                        <span className="text-brand-teal font-mono font-bold">{myProgressStats.javaTasksCount} / 30 Days ({Math.min(100, Math.round((myProgressStats.javaTasksCount / 30) * 100))}%)</span>
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-slate-200">30-Day Java Master Track (Basic to Advanced)</span>
+                        <span className="text-indigo-400 font-mono font-semibold">{myProgressStats.javaTasksCount} / 30 Days ({Math.min(100, Math.round((myProgressStats.javaTasksCount / 30) * 100))}%)</span>
                       </div>
-                      <div className="w-full h-2.5 rounded-full bg-black/50 border border-white/5 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-brand-teal to-brand-blue rounded-full transition-all duration-500"
+                          className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                           style={{ width: `${Math.max(5, Math.min(100, (myProgressStats.javaTasksCount / 30) * 100))}%` }}
-                        ></div>
+                        />
                       </div>
                     </div>
 
                     {/* Placement Readiness Progress Bar */}
-                    <div className="space-y-1.5 pt-2">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-gray-200">🎯 Campus Placement & Aptitude Readiness</span>
-                        <span className="text-brand-pink font-mono font-bold">{myProgressStats.placementScore}%</span>
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-slate-200">Campus Placement & Aptitude Readiness</span>
+                        <span className="text-emerald-400 font-mono font-semibold">{myProgressStats.placementScore}%</span>
                       </div>
-                      <div className="w-full h-2.5 rounded-full bg-black/50 border border-white/5 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-brand-pink to-brand-purple rounded-full transition-all duration-500"
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                           style={{ width: `${myProgressStats.placementScore}%` }}
-                        ></div>
+                        />
                       </div>
                     </div>
                   </div>
 
                   {/* Personal Export Buttons */}
-                  <div className="flex flex-wrap gap-3 pt-2">
+                  <div className="flex flex-wrap gap-3 pt-1">
                     <button
                       onClick={handleExportMyPDF}
-                      className="flex-1 py-3 px-4 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                     >
-                      <Download className="w-4 h-4" /> Download My Verified Transcript (.pdf)
+                      <Download className="w-4 h-4" /> Download Verified Transcript (.pdf)
                     </button>
                     <button
                       onClick={handleExportMyExcel}
-                      className="flex-1 py-3 px-4 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                     >
                       <FileSpreadsheet className="w-4 h-4" /> Export Activity Log (.xlsx)
                     </button>

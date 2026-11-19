@@ -2216,15 +2216,24 @@ Return ONLY a valid JSON object without markdown:
       {!embedded && (
         <aside className={`fixed inset-y-0 left-0 z-40 w-60 lg:w-64 bg-[#0B0D21] border-r border-[#1B1F3B] flex flex-col justify-between p-3.5 sm:p-4 transition-transform duration-200 ease-in-out md:translate-x-0 overflow-y-auto custom-scrollbar ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="flex flex-col gap-4">
-          {/* GPREC Placement Suite Brand Header with 4-pointed Spark star */}
-          <div className="flex items-center gap-3 px-1.5 py-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 flex-shrink-0">
-              <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
-              </svg>
+          {/* GPREC Placement Suite Official Brand Header */}
+          <div 
+            onClick={() => {
+              navigateTo('dashboard');
+              setMobileMenuOpen(false);
+            }}
+            className="flex items-center gap-3 px-1.5 py-1 cursor-pointer group"
+            title="GPREC Placement Suite - Campus Placement Platform"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-lg shadow-purple-950/40 border border-white/20 flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+              <img 
+                src="/gprec_logo.png" 
+                alt="G. Pulla Reddy Engineering College Crest" 
+                className="w-full h-full object-contain select-none" 
+              />
             </div>
             <div>
-              <div className="font-extrabold text-white tracking-tight text-base leading-tight flex items-center gap-1.5">
+              <div className="font-extrabold text-white tracking-tight text-base leading-tight flex items-center gap-1.5 group-hover:text-purple-300 transition-colors">
                 GPREC
               </div>
               <div className="text-[11px] font-medium text-slate-400 tracking-tight">
@@ -2591,10 +2600,12 @@ Return ONLY a valid JSON object without markdown:
           <div className="p-4 md:px-8 pt-4 pb-0">
             <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0B132B] text-slate-100 p-3 px-5 rounded-2xl shadow-sm border border-slate-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs flex-shrink-0">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2C10.8954 2 10 2.89543 10 4V8.17157C9.46957 8.05973 8.92484 8 8.375 8C5.95875 8 4 9.95875 4 12.375C4 13.5398 4.45396 14.5985 5.19526 15.3807L2.29289 18.2831C1.90237 18.6736 1.90237 19.3068 2.29289 19.6973C2.68342 20.0878 3.31658 20.0878 3.70711 19.6973L6.60948 16.7949C7.39174 17.5362 8.45041 17.9902 9.61523 17.9902C12.0315 17.9902 13.9902 16.0315 13.9902 13.6152C13.9902 13.0654 13.9305 12.5207 13.8186 11.9902H18C19.1046 11.9902 20 11.0948 20 9.99023C20 8.88566 19.1046 7.99023 18 7.99023H13.8284C13.9305 7.46957 14 6.92484 14 6.375C14 3.95875 12.0413 2 9.625 2H12Z" />
-                  </svg>
+                <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs flex-shrink-0 border border-white/20 overflow-hidden">
+                  <img 
+                    src="/gprec_logo.png" 
+                    alt="GPREC Crest" 
+                    className="w-full h-full object-contain" 
+                  />
                 </div>
                 <div>
                   <div className="font-bold text-sm text-white leading-tight">GPREC Placement Suite</div>
