@@ -2384,8 +2384,8 @@ Return ONLY a valid JSON object without markdown:
                       (item.id === 'career_growth' && activeNav === 'career_growth') ||
                       (item.id === 'campus_arena' && activeNav === 'campus_arena') ||
                       (item.id === 'analytics' && activeNav === 'analytics') ||
-                      (item.id === 'bridge_btech' && activeNav === 'resources' && activeSubTab === 'curriculum') ||
-                      (item.id === 'resources' && activeNav === 'resources' && activeSubTab !== 'curriculum');
+                      (item.id === 'bridge_btech' && activeNav === 'resources' && activeModule === 'curriculum') ||
+                      (item.id === 'resources' && activeNav === 'resources' && activeModule !== 'curriculum');
 
                     return (
                       <button
