@@ -6,8 +6,68 @@ import {
   Mic, MicOff, Volume2, VolumeX, RefreshCw, Award, Download, Clock,
   ShieldCheck, Brain, Target, ChevronRight, BarChart2, Star, Check,
   BookOpen, Code, Layers, MessageSquare, Play, RotateCcw,
-  Copy, CheckCheck, TrendingUp, Zap, Building2, ThumbsUp, Flame
+  Copy, CheckCheck, TrendingUp, Zap, Building2, ThumbsUp, Flame,
+  Radio, Compass, Sliders, Activity, CornerDownRight, HelpCircle
 } from 'lucide-react';
+
+// Real-Time Audio Frequency Waveform Visualizer for Realistic Live Immersion
+function AudioWaveVisualizer({ isActive, isListening, label }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-white/10 text-xs backdrop-blur-sm">
+      <div className="flex items-end gap-1 h-3.5">
+        {[30, 75, 95, 60, 100, 45, 80, 50, 90, 70, 40, 85].map((heightPct, idx) => (
+          <span
+            key={idx}
+            style={{
+              height: (isActive || isListening) ? `${heightPct}%` : '25%',
+              transition: 'height 0.15s ease'
+            }}
+            className={`w-0.8 rounded-full transition-all duration-150 ${
+              isListening
+                ? 'bg-rose-400 animate-pulse'
+                : isActive
+                ? 'bg-cyan-400 animate-pulse'
+                : 'bg-slate-600'
+            }`}
+          />
+        ))}
+      </div>
+      <span className={`text-[10px] font-bold tracking-wide ${
+        isListening ? 'text-rose-300 animate-pulse' : isActive ? 'text-cyan-300' : 'text-slate-400'
+      }`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// 4 Distinct Real-World Enterprise Interview Tracks
+const GPREC_INTERVIEW_TRACKS = [
+  {
+    id: 'all',
+    title: 'Comprehensive Bar Raiser',
+    badge: 'All 3 Rounds',
+    desc: 'Blends DSA complexities, low-level architecture, and STAR leadership viva.'
+  },
+  {
+    id: 'round1_screening',
+    title: 'Round 1: Screening & DSA Internals',
+    badge: 'DSA & Memory',
+    desc: 'Time/space Big-O bounds, hash collisions, thread contention & memory leaks.'
+  },
+  {
+    id: 'round2_architecture',
+    title: 'Round 2: System Architecture & LLD',
+    badge: 'Architecture & LLD',
+    desc: 'Component data flow, B+ tree indexing, caching invalidation & circuit breakers.'
+  },
+  {
+    id: 'round3_bar_raiser',
+    title: 'Round 3: STAR Behavioral Leadership',
+    badge: 'Senior Bar Raiser',
+    desc: 'Production outages, debugging under pressure, post-mortems & quantified impact.'
+  }
+];
 
 function GprecResumeMockInterviewPortal({
   user,
@@ -38,9 +98,25 @@ function GprecResumeMockInterviewPortal({
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [hasSavedDraft, setHasSavedDraft] = useState(false);
 
-  // Target Interview Config
-  const [selectedPersona, setSelectedPersona] = useState('amazon'); // 'amazon' | 'google' | 'microsoft' | 'tcs_prime'
+  // Target Interview Config & Track
+  const [selectedPersona, setSelectedPersona] = useState('amazon'); // 'amazon' | 'google' | 'microsoft' | 'tcs_prime' | 'zoho' | 'cognizant'
+  const [selectedTrack, setSelectedTrack] = useState('all'); // 'all' | 'round1_screening' | 'round2_architecture' | 'round3_bar_raiser'
+  const [speechSpeed, setSpeechSpeed] = useState(1.0); // 1.0 | 1.15
   const [questionCount, setQuestionCount] = useState(5); // 3 | 5 | 7
+
+  // Multi-Turn Counter-Interrogation State
+  // questionPhases: { [qIndex]: 'initial' | 'counter_probe' | 'completed' }
+  const [questionPhases, setQuestionPhases] = useState({});
+  const [counterAnswers, setCounterAnswers] = useState({});
+  const [generatedProbes, setGeneratedProbes] = useState({});
+  const [activeExemplarTabs, setActiveExemplarTabs] = useState({}); // { [qIndex]: 'critique' | 'exemplar' | 'power_phrases' }
+
+  // Current Question Phase ref to route voice recognition correctly
+  const currentPhase = questionPhases[currentQIndex] || 'initial';
+  const currentPhaseRef = useRef(currentPhase);
+  useEffect(() => {
+    currentPhaseRef.current = currentPhase;
+  }, [currentPhase]);
 
   // Analysis Result
   const [resumeAnalysis, setResumeAnalysis] = useState(null);
@@ -269,10 +345,17 @@ function GprecResumeMockInterviewPortal({
           transcript += event.results[i][0].transcript;
         }
         if (transcript.trim()) {
-          setCandidateAnswers(prev => ({
-            ...prev,
-            [currentQIndex]: (prev[currentQIndex] ? prev[currentQIndex] + ' ' : '') + transcript
-          }));
+          if (currentPhaseRef.current === 'counter_probe') {
+            setCounterAnswers(prev => ({
+              ...prev,
+              [currentQIndex]: (prev[currentQIndex] ? prev[currentQIndex] + ' ' : '') + transcript
+            }));
+          } else {
+            setCandidateAnswers(prev => ({
+              ...prev,
+              [currentQIndex]: (prev[currentQIndex] ? prev[currentQIndex] + ' ' : '') + transcript
+            }));
+          }
         }
       };
 
@@ -541,6 +624,158 @@ function GprecResumeMockInterviewPortal({
     if (addToast) addToast({ type: 'info', message: 'Loaded verified GPREC scholar academic context!' });
   };
 
+  // 1-Click STAR & Architecture Prompt Scaffolding Handlers
+  const handleInsertScaffoldingTag = (tagType) => {
+    const currentText = candidateAnswers[currentQIndex] || '';
+    const snippets = {
+      situation: '[Situation]: In our production environment at peak concurrent load...',
+      task: '[Task]: I was responsible for diagnosing the latency bottleneck and re-architecting...',
+      action: '[Action]: I implemented connection pooling with PostgreSQL and Redis cache-aside with TTL jitter...',
+      result: '[Result]: Dropped 95th percentile query latency by 45% (from 420ms to 65ms) verified via JMeter...',
+      tradeoff: '[Trade-off]: We accepted slight eventual consistency on cache invalidation to maximize read throughput...'
+    };
+    const snippet = snippets[tagType] || '';
+    setCandidateAnswers(prev => ({
+      ...prev,
+      [currentQIndex]: currentText.trim() ? `${currentText.trim()}\n${snippet}` : snippet
+    }));
+  };
+
+  const handleInsertCounterTag = (tagType) => {
+    const currentText = counterAnswers[currentQIndex] || '';
+    const snippets = {
+      invalidation: '[Cache Invalidation]: We use write-through invalidation with Redis atomic DEL inside DB transaction...',
+      stampede: '[Thundering Herd Defense]: We apply random TTL jitter (+/-15%) and mutex locks on cache misses...',
+      p99: '[Tail Latency Bounding]: Benchmarked via JMeter; p50 was 38ms while p99 was strictly bounded under 90ms...',
+      fallback: '[Circuit Fallback]: Resilience4j trips to 503 fallback returning cached read-only metadata to prevent thread starvation...'
+    };
+    const snippet = snippets[tagType] || '';
+    setCounterAnswers(prev => ({
+      ...prev,
+      [currentQIndex]: currentText.trim() ? `${currentText.trim()}\n${snippet}` : snippet
+    }));
+  };
+
+  // Instant Live Rubric Quality Meter (Evaluated dynamically as scholar types, O(1) linear scan)
+  const liveAnswerRubricStats = useMemo(() => {
+    const text = (candidateAnswers[currentQIndex] || '');
+    const words = text.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+
+    const hasArchitecture = /(?:architecture|microservice|gateway|service|stateless|controller|database|postgres|mysql|mongo|redis|kafka|docker|rest|grpc|orm|schema|connection\s*pool|b\+\s*tree)/i.test(text);
+    const hasMetrics = /\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb|%))\b/i.test(text);
+    const hasTradeoffs = /(?:trade-off|tradeoff|bottleneck|circuit|timeout|retry|fallback|partition|lock|concurrency|cache|index|latency|scale|failure|invalidation|stampede|p99)/i.test(text);
+    const hasStar = /(?:situation|task|action|result|because|implemented|resolved|measured|engineered|architected)/i.test(text);
+
+    let qualityScore = 0;
+    if (hasArchitecture) qualityScore += 25;
+    if (hasMetrics) qualityScore += 25;
+    if (hasTradeoffs) qualityScore += 25;
+    if (hasStar) qualityScore += 25;
+
+    let readinessLabel = 'Surface Level (Add architecture & metrics)';
+    let readinessColor = 'text-amber-600 bg-amber-50 border-amber-200';
+    if (qualityScore >= 75) {
+      readinessLabel = '🌟 Senior L5/L6 Defense Ready';
+      readinessColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    } else if (qualityScore >= 50) {
+      readinessLabel = '⚡ Competent (Add trade-offs & failure modes)';
+      readinessColor = 'text-indigo-700 bg-indigo-50 border-indigo-200';
+    }
+
+    return {
+      wordCount,
+      hasArchitecture,
+      hasMetrics,
+      hasTradeoffs,
+      hasStar,
+      qualityScore,
+      readinessLabel,
+      readinessColor
+    };
+  }, [candidateAnswers, currentQIndex]);
+
+  // Senior Bar Raiser Counter-Interrogation Generator
+  const generateSeniorCounterProbe = (currentQ, initialAnswer, stackList = []) => {
+    const ansLower = (initialAnswer || '').toLowerCase();
+
+    if (ansLower.includes('cache') || ansLower.includes('redis') || ansLower.includes('memcached')) {
+      return {
+        focusArea: 'Distributed Caching & Invalidation',
+        probeText: `You highlighted caching in your answer. Walk me through your exact cache invalidation strategy when records are updated in your primary database. How do you handle cache stampede / thundering herd when popular keys expire under high concurrent load?`,
+        exemplarCounter: `We use a cache-aside pattern with write-through invalidation: on record mutation, an ACID transaction commits to PostgreSQL before issuing an atomic Redis DEL. To avert thundering herd, we apply random TTL jitter (+/-15%) and use distributed mutex locks on cache misses.`,
+        powerPhrases: [
+          'Say "Implemented cache-aside pattern with TTL jitter" instead of "We cached queries in Redis".',
+          'Say "Guaranteed cache coherence via transactional invalidation" instead of "We deleted the old cache".',
+          'Say "Averted thundering herd with distributed mutex locks" instead of "Handled many users trying to load the same thing".'
+        ]
+      };
+    }
+
+    if (ansLower.includes('latency') || ansLower.includes('ms') || ansLower.includes('%') || ansLower.includes('throughput') || ansLower.includes('bottleneck')) {
+      return {
+        focusArea: 'Benchmarking & Profiling Rigor',
+        probeText: `You cited measurable performance gains. Exactly what profiling tools (e.g. EXPLAIN ANALYZE, Chrome DevTools, JMeter) did you use to isolate application runtime from network latency, and what was your p99 tail latency under stress?`,
+        exemplarCounter: `We benchmarked baseline performance using Apache JMeter and PostgreSQL EXPLAIN ANALYZE over an isolated local VPC. Under 500 concurrent threads, sequential disk scans previously pushed p99 latency to 780ms. Composite B+ tree indexing dropped p99 down to 88ms while keeping p50 at 38ms.`,
+        powerPhrases: [
+          'Say "Profiled query execution plan via EXPLAIN ANALYZE" instead of "Found the slow query".',
+          'Say "Bounded tail latency at p99 under 90ms" instead of "Made it super fast".',
+          'Say "Eliminated sequential table scans via composite indexing" instead of "Added an index".'
+        ]
+      };
+    }
+
+    if (ansLower.includes('database') || ansLower.includes('sql') || ansLower.includes('postgres') || ansLower.includes('mongo') || ansLower.includes('query')) {
+      return {
+        focusArea: 'Database Concurrency & Transaction Isolation',
+        probeText: `In your database persistence layer, what transaction isolation level did you configure, and how does your application prevent dirty reads, phantom reads, or deadlocks during concurrent write bursts?`,
+        exemplarCounter: `We configured PostgreSQL Read Committed isolation with optimistic concurrency control using version timestamps. For critical financial or inventory updates, we employ SELECT ... FOR UPDATE pessimistic locks with short timeouts to prevent deadlocks and serialization failures.`,
+        powerPhrases: [
+          'Say "Optimistic concurrency control via version columns" instead of "Checked if data changed".',
+          'Say "Configured HikariCP pool with 1.5s checkout timeouts" instead of "Used a database connection".',
+          'Say "Avoided N+1 queries via JOIN FETCH" instead of "Combined queries together".'
+        ]
+      };
+    }
+
+    if (ansLower.includes('fail') || ansLower.includes('error') || ansLower.includes('crash') || ansLower.includes('breaker') || ansLower.includes('retry')) {
+      return {
+        focusArea: 'Fault Tolerance & Cascading Failure Defense',
+        probeText: `When your downstream dependency or database experiences latency spikes or connection timeouts, how does your code prevent cascading thread exhaustion from crashing the entire server?`,
+        exemplarCounter: `We set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in Resilience4j circuit breakers with exponential backoff and jitter. If the failure rate exceeds 40% in a 10s sliding window, the breaker trips OPEN with a cached fallback payload.`,
+        powerPhrases: [
+          'Say "Circuit breaker with exponential backoff and jitter" instead of "We retried the API call".',
+          'Say "Averted cascading thread pool starvation" instead of "Prevented the server from crashing".',
+          'Say "Graceful degradation via read-only fallback payloads" instead of "Showed a nice error message".'
+        ]
+      };
+    }
+
+    if (currentQ.defaultCounterProbe) {
+      return {
+        focusArea: currentQ.type || 'Architectural Rigor',
+        probeText: currentQ.defaultCounterProbe,
+        exemplarCounter: currentQ.exemplarCounter || currentQ.modelAnswer,
+        powerPhrases: currentQ.powerPhrases || [
+          'Say "Stateless horizontal scaling with sticky session offloading" instead of "Ran multiple servers".',
+          'Say "Enforced strict API schemas via TypeScript/Protobuf" instead of "Validated the inputs".',
+          'Say "Asynchronous decoupled processing via message queue" instead of "Sent it in the background".'
+        ]
+      };
+    }
+
+    return {
+      focusArea: 'Low-Level System Mechanics & Trade-offs',
+      probeText: `Your initial response outlines the high-level architecture. Walk me step-by-step through the packet/request lifecycle: when a client request arrives, what components process it, where does serialization occur, and what is the single biggest architectural trade-off in this design?`,
+      exemplarCounter: `Client requests hit an Nginx reverse proxy performing SSL termination before routing to our Node/Java gateway. Requests authenticate JWT claims statelessly. The primary trade-off is eventual consistency in read replicas, which we accepted to maximize read throughput and sub-50ms response times.`,
+      powerPhrases: [
+        'Say "Stateless JWT token verification at edge gateway" instead of "Checked the user login".',
+        'Say "Accepted eventual consistency for 10x read throughput" instead of "Data might take a second to update".',
+        'Say "Benchmarked socket connection overhead" instead of "Tested the connection speed".'
+      ]
+    };
+  };
+
   // 4. Deep Resume Analysis & Extraction Engine
   const analyzeResumeAndGenerateQuestions = () => {
     if (!resumeText.trim()) {
@@ -624,49 +859,346 @@ function GprecResumeMockInterviewPortal({
           persona: selectedPersona
         };
 
-        // 5. Generate Strictly Resume-Grounded Questions
-        const questions = [
-          {
-            id: 'q1',
-            type: 'Project Architecture & Data Flow',
-            claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
-            question: `In your resume, you listed "${primaryProject}". Walk me through your low-level data flow, how your services communicate, and defend why you chose ${primaryStack} over its primary industry alternatives.`,
-            hint: 'Explain client-to-server request lifecycle, API gateway/controllers, database connection pooling, and why this stack fit your latency/scale requirements.',
-            modelAnswer: `In "${primaryProject}", client requests hit an authenticated gateway validating JWT tokens. The stateless backend uses connection pooling with PostgreSQL to minimize handshake overhead. We chose ${primaryStack} because of strong type safety, mature ORM transactions (ACID guarantees), and built-in concurrency support, avoiding overhead compared to heavier monolithic frameworks.`
-          },
-          {
-            id: 'q2',
-            type: 'Quantified Claim & Metric Defense',
-            claimCitation: `Grounded in Resume Metric Claim: "${topClaim}"`,
-            question: `On your resume, you claim: "${topClaim}". Exactly how did you measure this baseline, what specific profiling tools or APM metrics did you monitor, and what technical change produced this improvement?`,
-            hint: 'Specify your benchmarking tool (JMeter/wrk/Chrome DevTools/EXPLAIN ANALYZE), baseline numbers before vs after, and whether index optimization or caching resolved the root bottleneck.',
-            modelAnswer: `We established baseline latency using Apache JMeter and PostgreSQL EXPLAIN ANALYZE, observing that sequential scans caused queries to spike past 420ms under 50 concurrent requests. By introducing a composite index on frequently filtered foreign keys and implementing Redis caching with a 60-second TTL, we eliminated the disk I/O bottleneck and dropped latency to under 80ms.`
-          },
-          {
-            id: 'q3',
-            type: 'System Failure & Fault Tolerance',
-            claimCitation: `Grounded in Tech Stack: ${analysis.skills.slice(0, 4).join(', ')}`,
-            question: `In "${primaryProject}", what happens when your primary database or downstream API experiences a network partition or heavy lock contention? How does your code prevent cascading thread exhaustion?`,
-            hint: 'Discuss retry policies with exponential backoff and jitter, circuit breaker patterns (Resilience4j/Hystrix), database timeouts, and graceful client fallback.',
-            modelAnswer: `To prevent thread pool exhaustion, we set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in a circuit breaker with exponential backoff and jitter. If failure rate exceeds 40% in a 10-second sliding window, the breaker trips to fallback responses, protecting the core server threads.`
-          },
-          {
-            id: 'q4',
-            type: 'Secondary Project & Scaling Viva',
-            claimCitation: `Grounded in Project: "${secondaryProject}"`,
-            question: `Looking at your work on "${secondaryProject}", suppose your daily active user count surges by 50x overnight. Where is the first architectural bottleneck that will break, and how would you refactor it?`,
-            hint: 'Identify database write locks, session state memory exhaustion, or synchronous long-running operations. Propose message queues (Kafka/RabbitMQ) and read replicas.',
-            modelAnswer: `The first point of failure would be synchronous database writes and transactional lock contention. I would introduce an asynchronous message broker (Kafka or Redis Streams) to ingest requests into a durable queue, allowing worker consumers to process batches asynchronously while offloading heavy reads to read-replicas.`
-          },
-          {
-            id: 'q5',
-            type: 'STAR Behavioral Technical Ownership',
-            claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
-            question: `Tell me about the single most frustrating bug or performance regression you personally debugged in "${primaryProject}". Walk me through your hypothesis, reproduction steps, and root-cause fix.`,
-            hint: 'Use the STAR format (Situation, Task, Action, Result). State the symptom, how you isolated the issue using logs/debuggers, and the permanent architectural patch.',
-            modelAnswer: `While stress-testing "${primaryProject}", we noticed CPU usage spiking to 99% during concurrent sessions. My hypothesis was an unindexed query, but profiling thread dumps revealed an N+1 query problem inside a nested loop. I refactored the ORM query to use eager fetching with explicit JOIN FETCH, reducing 45 individual roundtrips to a single query and dropping CPU utilization back to 22%.`
-          }
-        ];
+        // 5. Generate Strictly Resume-Grounded Questions Calibrated to Selected Track
+        let questions = [];
+
+        if (selectedTrack === 'round1_screening') {
+          // Track 1: Screening & DSA / Language Internals
+          questions = [
+            {
+              id: 'q1',
+              track: 'screening',
+              type: 'Data Structure Complexity & Space-Time Trade-offs',
+              claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
+              question: `In your work on "${primaryProject}", what core data structures did you utilize to manage in-memory collections or lookups? Walk me through the Big-O time and space complexity of your primary query operations and why a Hash Map or balanced tree was optimal over simpler linear arrays.`,
+              hint: 'Explain O(1) amortized average lookup vs worst-case O(N) hash collisions, load factor resizing overhead, and memory locality.',
+              modelAnswer: `In "${primaryProject}", we used hash-indexed sets and associative arrays for constant-time O(1) record retrieval. When lookups required ordered range scanning, we switched to balanced search trees to guarantee O(log N) bounds without unpredictable garbage collection pauses caused by array resizing.`,
+              powerPhrases: [
+                'Say "Amortized O(1) lookup with low collision load factor" instead of "Lookup was instantaneous".',
+                'Say "Avoided heap churn and memory fragmentation" instead of "Saved memory".',
+                'Say "Guaranteed O(log N) bounds for ordered range scans" instead of "Sorted items easily".'
+              ],
+              defaultCounterProbe: `How did you manage hash collision resolution, and what is the memory footprint impact when high load factors trigger internal bucket rehashing?`,
+              exemplarCounter: `In our hash map implementation, collisions use open addressing with quadratic probing or bucketed linked lists. When load factor exceeds 0.75, rehashing doubles the table capacity, causing an O(N) spike, so we pre-size tables during initialization.`
+            },
+            {
+              id: 'q2',
+              track: 'screening',
+              type: 'Language Internals & Thread Safety',
+              claimCitation: `Grounded in Core Stack: ${primaryStack}`,
+              question: `Looking at your proficiency in ${primaryStack}, explain how memory allocation, garbage collection, and concurrency primitives operate in your backend. How do you prevent thread contention, race conditions, or memory leaks in long-running services?`,
+              hint: 'Discuss heap vs stack allocation, event loop vs OS thread pools, immutable data structures, and atomic variables.',
+              modelAnswer: `In our backend, stateless worker threads service incoming HTTP requests from a bounded thread pool. We prevent data races by enforcing immutability across request payloads, avoiding shared mutable state, and utilizing concurrent hash maps with fine-grained segment locks instead of coarse synchronized blocks.`,
+              powerPhrases: [
+                'Say "Eliminated shared mutable state to ensure lock-free concurrency" instead of "Threads did not conflict".',
+                'Say "Bounded thread pool sizing via Little\'s Law" instead of "Kept threads limited".',
+                'Say "Fine-grained segment locking over coarse synchronization" instead of "Locked only parts of data".'
+              ],
+              defaultCounterProbe: `If a background worker holds onto object references causing a gradual heap leak, how would you capture and analyze a heap dump in production without stopping the service?`,
+              exemplarCounter: `We trigger a non-blocking heap dump via jcmd or Node --inspect with heapdump flags, upload the binary to an S3 diagnostics bucket, and analyze dominator trees in Eclipse MAT to isolate object retention roots.`
+            },
+            {
+              id: 'q3',
+              track: 'screening',
+              type: 'Low-Level Refactoring & Bottleneck Isolation',
+              claimCitation: `Grounded in Performance Claim: "${topClaim}"`,
+              question: `On your resume, you claim: "${topClaim}". In code reviews, what specific algorithmic refactoring or loop optimization transformed this logic from an inefficient nested scan into an optimized pipeline?`,
+              hint: 'Discuss replacing nested O(N^2) iterations with single-pass hash lookups, memoization, or stream lazy evaluation.',
+              modelAnswer: `Profiling revealed that an inner loop was performing sequential lookups against a list of 5,000 items, producing an O(N * M) quadratic bottleneck. I refactored the lookup target into an in-memory hash set, reducing execution to a single linear pass O(N + M) and dropping execution time from 1.2s to under 40ms.`,
+              powerPhrases: [
+                'Say "Transformed quadratic O(N^2) scan into single-pass O(N) hash indexing" instead of "Removed a nested loop".',
+                'Say "Avoided unnecessary memory allocation via lazy evaluation" instead of "Only loaded data when needed".',
+                'Say "Eliminated CPU cache misses by optimizing memory locality" instead of "Made data contiguous".'
+              ],
+              defaultCounterProbe: `When transforming this logic to a hash set, what was the memory trade-off, and how did you verify that GC pauses did not degrade p99 response times?`,
+              exemplarCounter: `The hash set introduced roughly 32 bytes of heap overhead per entry. We monitored GC pause times using JVM G1GC logs, confirming that young-generation collection pauses remained strictly under 8ms.`
+            },
+            {
+              id: 'q4',
+              track: 'screening',
+              type: 'Database Query Plan & Index Selectivity',
+              claimCitation: `Grounded in Project: "${primaryProject}"`,
+              question: `In "${primaryProject}", describe how your SQL queries interact with the database engine. How do you inspect whether the query planner is using an Index Scan vs a Sequential Table Scan, and how does index cardinality affect performance?`,
+              hint: 'Explain EXPLAIN ANALYZE, B+ Tree index traversal, high vs low cardinality columns, and composite index column ordering.',
+              modelAnswer: `We use EXPLAIN ANALYZE to verify query planner costs. We observed that filtering on low-cardinality status columns caused the planner to default to sequential table scans. By constructing a composite B+ tree index with the highest cardinality foreign key first followed by the status flag, we enabled efficient Index Scans, dropping buffer read hits by 90%.`,
+              powerPhrases: [
+                'Say "Inspected execution plan costs via EXPLAIN ANALYZE" instead of "Checked the query speed".',
+                'Say "Constructed composite B+ tree index respecting column cardinality" instead of "Indexed two columns".',
+                'Say "Replaced sequential full table scans with covering index scans" instead of "Made the query use an index".'
+              ],
+              defaultCounterProbe: `What is the write penalty on INSERT and UPDATE operations when adding multiple secondary indexes to a high-throughput table?`,
+              exemplarCounter: `Each secondary index requires synchronous B+ tree rebalancing and WAL logging on writes, increasing INSERT latency by ~12-18%. We mitigated this by removing unused redundant indexes identified via pg_stat_user_indexes.`
+            },
+            {
+              id: 'q5',
+              track: 'screening',
+              type: 'Object-Oriented Design & Clean Code Principles',
+              claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
+              question: `Walk me through the class hierarchy or modular interface boundaries you designed in "${primaryProject}". Defend how your design adheres to SOLID principles, particularly Dependency Inversion and Single Responsibility.`,
+              hint: 'Explain interface segregation, dependency injection, and decoupling business logic from external frameworks.',
+              modelAnswer: `In "${primaryProject}", we decoupled core domain logic from transport protocols using clean ports-and-adapters architecture. Controllers depend on interface abstractions injected at runtime, allowing us to swap persistence layers or mock external services in unit tests without altering business rules.`,
+              powerPhrases: [
+                'Say "Decoupled domain logic via ports-and-adapters architecture" instead of "Separated code into folders".',
+                'Say "Injected dependencies via interface abstractions for high testability" instead of "Used interfaces".',
+                'Say "Maintained strict single-responsibility boundaries across services" instead of "Kept files focused".'
+              ],
+              defaultCounterProbe: `How do you prevent over-engineering and premature abstraction when designing new domain services in an early-stage project?`,
+              exemplarCounter: `We follow the Rule of Three: keep logic concrete until identical patterns emerge across three distinct modules, avoiding premature interfaces until polymorphism is genuinely required.`
+            }
+          ];
+        } else if (selectedTrack === 'round2_architecture') {
+          // Track 2: System Architecture & Low-Level Design (LLD/HLD)
+          questions = [
+            {
+              id: 'q1',
+              track: 'architecture',
+              type: 'Project Architecture & Data Flow',
+              claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
+              question: `In your resume, you listed "${primaryProject}". Walk me through your low-level data flow, how your services communicate, and defend why you chose ${primaryStack} over its primary industry alternatives.`,
+              hint: 'Explain client-to-server request lifecycle, API gateway/controllers, database connection pooling, and why this stack fit your latency/scale requirements.',
+              modelAnswer: `In "${primaryProject}", client requests hit an authenticated gateway validating JWT tokens. The stateless backend uses connection pooling with PostgreSQL to minimize handshake overhead. We chose ${primaryStack} because of strong type safety, mature ORM transactions (ACID guarantees), and built-in concurrency support, avoiding overhead compared to heavier monolithic frameworks.`,
+              powerPhrases: [
+                'Say "Stateless authenticated edge gateway with JWT claims" instead of "Checked user login".',
+                'Say "Eliminated socket handshake overhead via connection pooling" instead of "Reused database connections".',
+                'Say "Guaranteed ACID transactional semantics on mutations" instead of "Saved data safely".'
+              ],
+              defaultCounterProbe: `What is your cache invalidation policy on writes, and how do you protect against cache stampede / thundering herd when popular keys expire?`,
+              exemplarCounter: `We implement cache-aside with transactional cache deletion and random TTL jitter (+/-15%), utilizing distributed Redis locks on cache misses to ensure only one thread queries the database.`
+            },
+            {
+              id: 'q2',
+              track: 'architecture',
+              type: 'High-Concurrency Scaling & Message Brokers',
+              claimCitation: `Grounded in Project: "${secondaryProject}"`,
+              question: `Looking at your work on "${secondaryProject}", suppose your daily active user count surges by 50x overnight. Where is the first architectural bottleneck that will break, and how would you refactor it?`,
+              hint: 'Identify database write locks, session state memory exhaustion, or synchronous long-running operations. Propose message queues (Kafka/RabbitMQ) and read replicas.',
+              modelAnswer: `The first point of failure would be synchronous database writes and transactional lock contention. I would introduce an asynchronous message broker (Kafka or Redis Streams) to ingest requests into a durable queue, allowing worker consumers to process batches asynchronously while offloading heavy reads to read-replicas.`,
+              powerPhrases: [
+                'Say "Decoupled synchronous request-response with durable message queues" instead of "Put work in the background".',
+                'Say "Offloaded read throughput to horizontally scaled read replicas" instead of "Added another database".',
+                'Say "Absorbed traffic spikes via rate limiting token buckets" instead of "Blocked too many requests".'
+              ],
+              defaultCounterProbe: `When consumers process Kafka messages asynchronously, how do you handle idempotent consumer processing if a message is redelivered after a network timeout?`,
+              exemplarCounter: `Each message includes a unique UUID event ID. The consumer records processed IDs in an atomic Redis set or database unique constraint table, discarding duplicate deliveries immediately.`
+            },
+            {
+              id: 'q3',
+              track: 'architecture',
+              type: 'Caching Topologies & Distributed Invalidation',
+              claimCitation: `Grounded in Performance Claim: "${topClaim}"`,
+              question: `In your caching layer, walk me through your cache hit ratio monitoring, your TTL expiration policy, and how you prevent cache penetration when malicious users query non-existent identifiers.`,
+              hint: 'Discuss Bloom filters, caching null values with short TTL, distributed Redis clusters, and write-through vs cache-aside.',
+              modelAnswer: `We configure Redis in a cluster topology using the cache-aside pattern. To prevent cache penetration for missing records, we cache empty sentinel objects with a short 30-second TTL and front queries with a Bloom filter in memory to reject invalid keys before hitting storage.`,
+              powerPhrases: [
+                'Say "Fronted storage with an in-memory Bloom filter" instead of "Checked if key exists".',
+                'Say "Cached sentinel null entries with short TTL to avert penetration" instead of "Handled missing data".',
+                'Say "Maintained 94% cache hit ratio across read endpoints" instead of "Cache worked well".'
+              ],
+              defaultCounterProbe: `What happens to Redis memory when key size unexpectedly grows? What eviction policy (allkeys-lru vs volatile-lru) did you configure?`,
+              exemplarCounter: `We configured volatile-lru with maxmemory-samples set to 10. When memory reaches 85% capacity, keys with explicit TTLs are evicted in least-recently-used order, triggering automated memory scale-up alerts.`
+            },
+            {
+              id: 'q4',
+              track: 'architecture',
+              type: 'Database Connection Pool Sizing & Sharding',
+              claimCitation: `Grounded in Database Architecture`,
+              question: `How do you determine optimal database connection pool sizing (e.g. HikariCP), and at what scale would you transition from vertical scaling to horizontal sharding?`,
+              hint: 'Cite the PostgreSQL/HikariCP formula: connections = (core_count * 2) + effective_spindle_count. Discuss database connection overhead.',
+              modelAnswer: `Following PostgreSQL benchmarking benchmarks, optimal connection pool size is calculated as connections = (CPU cores * 2) + effective spindle count. For our 4-core database server, a pool size of 10-15 connections minimized context switching overhead while serving thousands of requests via fast query execution.`,
+              powerPhrases: [
+                'Say "Calibrated connection pool via (cores * 2) + spindles formula" instead of "Picked a pool number".',
+                'Say "Averted kernel context-switching thrashing" instead of "Kept server from getting slow".',
+                'Say "Partitioned high-growth tables via range sharding on timestamp" instead of "Split tables up".'
+              ],
+              defaultCounterProbe: `If a slow reporting query exhausts all 15 connection pool slots, how do you prevent cascading HTTP 500 errors on critical user transactions?`,
+              exemplarCounter: `We isolate connection pools: user-facing transactional APIs use a dedicated high-priority HikariCP pool, while reporting queries use a secondary pool with strict 5-second query timeouts.`
+            },
+            {
+              id: 'q5',
+              track: 'architecture',
+              type: 'System Failure, Partitions & Circuit Breaking',
+              claimCitation: `Grounded in Fault Tolerance Architecture`,
+              question: `In "${primaryProject}", what happens when your primary database or downstream API experiences a network partition or heavy lock contention? How does your code prevent cascading thread exhaustion?`,
+              hint: 'Discuss retry policies with exponential backoff and jitter, circuit breaker patterns (Resilience4j/Hystrix), database timeouts, and graceful client fallback.',
+              modelAnswer: `To prevent thread pool exhaustion, we set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in a circuit breaker with exponential backoff and jitter. If failure rate exceeds 40% in a 10-second sliding window, the breaker trips to fallback responses, protecting the core server threads.`,
+              powerPhrases: [
+                'Say "Protected worker thread pools via circuit breakers" instead of "Handled errors gracefully".',
+                'Say "Exponential backoff with randomized jitter to prevent retry storms" instead of "Retried after a delay".',
+                'Say "Returned degraded cached fallback payloads" instead of "Showed error screen".'
+              ],
+              defaultCounterProbe: `When the circuit breaker transitions to HALF-OPEN, how do you probe downstream recovery without risking a second outage?`,
+              exemplarCounter: `In HALF-OPEN state, the breaker permits exactly 5 probe requests. If all 5 succeed with sub-100ms latency, the breaker resets to CLOSED; otherwise it trips immediately back to OPEN for 30s.`
+            }
+          ];
+        } else if (selectedTrack === 'round3_bar_raiser') {
+          // Track 3: STAR Behavioral Leadership & Production Ownership
+          questions = [
+            {
+              id: 'q1',
+              track: 'behavioral',
+              type: 'Production Outage & Root-Cause Triage (STAR)',
+              claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
+              question: `Tell me about the single most critical production outage, high-latency regression, or concurrency bug you personally resolved in "${primaryProject}". Walk me through your triage under pressure, root-cause identification, and permanent architectural patch.`,
+              hint: 'Use STAR: State the symptom, how you isolated the issue using logs/debuggers, rollback vs hotfix decision, and prevention.',
+              modelAnswer: `While stress-testing "${primaryProject}", we noticed CPU usage spiking to 99% during concurrent sessions. My hypothesis was an unindexed query, but profiling thread dumps revealed an N+1 query problem inside a nested loop. I refactored the ORM query to use eager fetching with explicit JOIN FETCH, reducing 45 individual roundtrips to a single query and dropping CPU utilization back to 22%.`,
+              powerPhrases: [
+                'Say "Isolated thread contention via runtime stack traces" instead of "Checked server logs".',
+                'Say "Refactored N+1 query loop to eager JOIN FETCH" instead of "Fixed the query in code".',
+                'Say "Constructed regression canary tests in CI" instead of "Made sure it would not happen again".'
+              ],
+              defaultCounterProbe: `What observability metrics or automated alerts did you configure afterwards so that on-call engineers would catch this before users report it?`,
+              exemplarCounter: `We configured Prometheus alert rules monitoring query latency p99 and thread pool saturation, triggering PagerDuty warnings if queue depth exceeds 20 items for more than 60 seconds.`
+            },
+            {
+              id: 'q2',
+              track: 'behavioral',
+              type: 'Technical Disagreement & Architectural Trade-offs',
+              claimCitation: `Grounded in Stack Decisions: ${primaryStack}`,
+              question: `Describe a scenario in "${primaryProject}" where you and a teammate or lead had strongly conflicting opinions on an architectural decision or technology choice. How did you advocate for your proposal with objective benchmarks, and how was consensus reached?`,
+              hint: 'Emphasize Amazon leadership principle "Have Backbone; Disagree and Commit" or data-driven technical evaluations without ego.',
+              modelAnswer: `When choosing between relational PostgreSQL and MongoDB for "${primaryProject}", a teammate argued for MongoDB due to rapid prototyping. I built a quick load benchmark demonstrating that our relational transactions required ACID guarantees to avoid balance reconciliation bugs. We reviewed the p99 latency data together, and agreed that PostgreSQL was the objectively safer foundation.`,
+              powerPhrases: [
+                'Say "Built data-driven benchmarks to objectively evaluate trade-offs" instead of "Proved I was right".',
+                'Say "Respected team consensus while advocating for architectural safety" instead of "Convinced everyone".',
+                'Say "Documented decision trade-offs in an Architecture Decision Record (ADR)" instead of "Wrote down our decision".'
+              ],
+              defaultCounterProbe: `If the team lead had overruled you and proceeded with MongoDB, how would you have supported the team while mitigating the risk?`,
+              exemplarCounter: `I would disagree and commit fully: implement transactional two-phase commits in application code, set up strict schema validators, and construct automated reconciliation cron jobs.`
+            },
+            {
+              id: 'q3',
+              track: 'behavioral',
+              type: 'Ambiguous Requirements & High-Ownership Delivery',
+              claimCitation: `Grounded in Capstone Engineering Delivery`,
+              question: `In "${primaryProject}", tell me about a time when user requirements or API contracts were ambiguous or incomplete. How did you take ownership, clarify the scope, and ensure on-time delivery without blocking progress?`,
+              hint: 'Discuss proactive communication, creating contract mocks, establishing minimum viable technical interfaces, and user validation.',
+              modelAnswer: `During the telemetry module development in "${primaryProject}", the data schema from external recruiter partners was undocumented. Rather than waiting, I drafted an OpenAPI specification based on expected access patterns, built contract mocks, and reviewed the proposed schema with stakeholders, allowing frontend and backend development to proceed in parallel.`,
+              powerPhrases: [
+                'Say "Unblocked parallel development via OpenAPI contract mocks" instead of "Made a fake backend".',
+                'Say "Proactively established domain boundaries amidst ambiguity" instead of "Did what I thought was best".',
+                'Say "Iterated rapidly based on early stakeholder feedback" instead of "Fixed things as we went".'
+              ],
+              defaultCounterProbe: `When the official API contract was finally delivered and diverged by 30% from your mock, how did you adapt without missing deadlines?`,
+              exemplarCounter: `Because our domain logic was decoupled through adapter layers, we only needed to update the ingress data serializer without modifying our core business services or database schemas.`
+            },
+            {
+              id: 'q4',
+              track: 'behavioral',
+              type: 'Quantified Business & System Impact',
+              claimCitation: `Grounded in Resume Metric Claim: "${topClaim}"`,
+              question: `On your resume, you claim: "${topClaim}". Connect this engineering improvement to concrete business value. How did this impact infrastructure compute costs, user engagement, or system availability?`,
+              hint: 'Connect technical achievements to cost savings, conversion rate, recruiter engagement, or server capacity.',
+              modelAnswer: `Optimizing latency by 35% directly reduced server compute costs by allowing us to scale down from 4 cloud instances to 2, saving 50% on infrastructure expenses. Furthermore, user session drop-offs decreased by 18% as portal responsiveness remained crisp even during peak concurrent placement drives.`,
+              powerPhrases: [
+                'Say "Reduced cloud compute provisioning overhead by 50%" instead of "Used fewer servers".',
+                'Say "Decreased user drop-off rate by 18% via sub-100ms response times" instead of "Users liked it better".',
+                'Say "Increased system capacity without additional hardware costs" instead of "Handled more load".'
+              ],
+              defaultCounterProbe: `How did you verify that this cost reduction did not compromise disaster recovery or failover capabilities?`,
+              exemplarCounter: `We conducted automated failover drills in staging: even with reduced instance count, each node is provisioned to handle 100% of peak traffic during single-node restarts.`
+            },
+            {
+              id: 'q5',
+              track: 'behavioral',
+              type: 'Technical Debt & Long-Term Scalability Post-Mortem',
+              claimCitation: `Grounded in Project Architecture: "${primaryProject}"`,
+              question: `Looking back at "${primaryProject}", what is the single biggest architectural shortcut or technical debt you accepted to meet deadlines? If you had 2 dedicated engineering sprints today, how would you refactor it?`,
+              hint: 'Demonstrate self-awareness, pragmatism, and understanding of scaling thresholds. Avoid pretending your project is flawless.',
+              modelAnswer: `To meet our launch deadline, we coupled notification dispatches directly inside synchronous HTTP request handlers. While functional for 50 users, this creates a thread bottleneck if SMTP or webhook endpoints stall. In a refactoring sprint, I would extract notifications into an asynchronous event queue (Kafka or RabbitMQ) processed by dedicated worker daemons.`,
+              powerPhrases: [
+                'Say "Pragmatic deadline-driven trade-off with clear mitigation plan" instead of "Cut a corner to finish on time".',
+                'Say "Extracted synchronous operations into decoupled event queues" instead of "Made it run in background".',
+                'Say "Maintained strict operational awareness of scaling thresholds" instead of "Knew it would break eventually".'
+              ],
+              defaultCounterProbe: `What would be your rollback plan if your asynchronous event queue worker encounters poison-pill messages?`,
+              exemplarCounter: `We route unprocessable messages to a Dead Letter Queue (DLQ) after 3 exponential retries, triggering an alert while allowing other events to process uninterrupted.`
+            }
+          ];
+        } else {
+          // Track 'all': Comprehensive Multi-Vector Bar Raiser (All 3 Dimensions)
+          questions = [
+            {
+              id: 'q1',
+              track: 'architecture',
+              type: 'Project Architecture & Data Flow',
+              claimCitation: `Grounded in Project: "${primaryProject}" (${primaryStack})`,
+              question: `In your resume, you listed "${primaryProject}". Walk me through your low-level data flow, how your services communicate, and defend why you chose ${primaryStack} over its primary industry alternatives.`,
+              hint: 'Explain client-to-server request lifecycle, API gateway/controllers, database connection pooling, and why this stack fit your latency/scale requirements.',
+              modelAnswer: `In "${primaryProject}", client requests hit an authenticated gateway validating JWT tokens. The stateless backend uses connection pooling with PostgreSQL to minimize handshake overhead. We chose ${primaryStack} because of strong type safety, mature ORM transactions (ACID guarantees), and built-in concurrency support, avoiding overhead compared to heavier monolithic frameworks.`,
+              powerPhrases: [
+                'Say "Stateless authenticated edge gateway with JWT claims" instead of "Checked user login".',
+                'Say "Eliminated socket handshake overhead via connection pooling" instead of "Reused database connections".',
+                'Say "Guaranteed ACID transactional semantics on mutations" instead of "Saved data safely".'
+              ],
+              defaultCounterProbe: `What is your cache invalidation policy on writes, and how do you protect against cache stampede / thundering herd when popular keys expire?`,
+              exemplarCounter: `We implement cache-aside with transactional cache deletion and random TTL jitter (+/-15%), utilizing distributed Redis locks on cache misses to ensure only one thread queries the database.`
+            },
+            {
+              id: 'q2',
+              track: 'architecture',
+              type: 'Quantified Claim & Metric Defense',
+              claimCitation: `Grounded in Resume Metric Claim: "${topClaim}"`,
+              question: `On your resume, you claim: "${topClaim}". Exactly how did you measure this baseline, what specific profiling tools or APM metrics did you monitor, and what technical change produced this improvement?`,
+              hint: 'Specify your benchmarking tool (JMeter/wrk/Chrome DevTools/EXPLAIN ANALYZE), baseline numbers before vs after, and whether index optimization or caching resolved the root bottleneck.',
+              modelAnswer: `We established baseline latency using Apache JMeter and PostgreSQL EXPLAIN ANALYZE, observing that sequential scans caused queries to spike past 420ms under 50 concurrent requests. By introducing a composite index on frequently filtered foreign keys and implementing Redis caching with a 60-second TTL, we eliminated the disk I/O bottleneck and dropped latency to under 80ms.`,
+              powerPhrases: [
+                'Say "Profiled execution plan costs via EXPLAIN ANALYZE" instead of "Found the slow query".',
+                'Say "Bounded tail latency at p99 under 90ms" instead of "Made it super fast".',
+                'Say "Eliminated sequential table scans via composite indexing" instead of "Added an index".'
+              ],
+              defaultCounterProbe: `How did you isolate profiling noise from test network latency, and what was your p99 (99th percentile) latency compared to average p50?`,
+              exemplarCounter: `We ran benchmarks across an isolated local loopback VPC using JMeter. Under 500 concurrent connections, while p50 latency was 38ms, unindexed queries previously caused p99 tail latency to exceed 780ms; composite indexing stabilized p99 under 88ms.`
+            },
+            {
+              id: 'q3',
+              track: 'architecture',
+              type: 'System Failure & Fault Tolerance',
+              claimCitation: `Grounded in Tech Stack: ${analysis.skills.slice(0, 4).join(', ')}`,
+              question: `In "${primaryProject}", what happens when your primary database or downstream API experiences a network partition or heavy lock contention? How does your code prevent cascading thread exhaustion?`,
+              hint: 'Discuss retry policies with exponential backoff and jitter, circuit breaker patterns (Resilience4j/Hystrix), database timeouts, and graceful client fallback.',
+              modelAnswer: `To prevent thread pool exhaustion, we set strict connection checkout timeouts (1.5s) on HikariCP and wrapped downstream API calls in a circuit breaker with exponential backoff and jitter. If failure rate exceeds 40% in a 10-second sliding window, the breaker trips to fallback responses, protecting the core server threads.`,
+              powerPhrases: [
+                'Say "Protected worker thread pools via circuit breakers" instead of "Handled errors gracefully".',
+                'Say "Exponential backoff with randomized jitter to prevent retry storms" instead of "Retried after a delay".',
+                'Say "Returned degraded cached fallback payloads" instead of "Showed error screen".'
+              ],
+              defaultCounterProbe: `When the circuit breaker trips OPEN, what fallback payload does your service return, and how does your monitoring system alert on-call engineers?`,
+              exemplarCounter: `The breaker returns cached read-only metadata with a 200/503 degraded header, while Micrometer metrics increment an outage counter alerting on-call staff via PagerDuty.`
+            },
+            {
+              id: 'q4',
+              track: 'architecture',
+              type: 'Secondary Project & Scaling Viva',
+              claimCitation: `Grounded in Project: "${secondaryProject}"`,
+              question: `Looking at your work on "${secondaryProject}", suppose your daily active user count surges by 50x overnight. Where is the first architectural bottleneck that will break, and how would you refactor it?`,
+              hint: 'Identify database write locks, session state memory exhaustion, or synchronous long-running operations. Propose message queues (Kafka/RabbitMQ) and read replicas.',
+              modelAnswer: `The first point of failure would be synchronous database writes and transactional lock contention. I would introduce an asynchronous message broker (Kafka or Redis Streams) to ingest requests into a durable queue, allowing worker consumers to process batches asynchronously while offloading heavy reads to read-replicas.`,
+              powerPhrases: [
+                'Say "Decoupled synchronous request-response with durable message queues" instead of "Put work in the background".',
+                'Say "Offloaded read throughput to horizontally scaled read replicas" instead of "Added another database".',
+                'Say "Absorbed traffic spikes via rate limiting token buckets" instead of "Blocked too many requests".'
+              ],
+              defaultCounterProbe: `When consumers process Kafka messages asynchronously, how do you handle idempotent consumer processing if a message is redelivered?`,
+              exemplarCounter: `Each message includes a unique event UUID. Consumers record processed UUIDs in an atomic Redis set or database unique constraint table, discarding duplicate deliveries immediately.`
+            },
+            {
+              id: 'q5',
+              track: 'behavioral',
+              type: 'STAR Behavioral Technical Ownership',
+              claimCitation: `Grounded in Project Implementation: "${primaryProject}"`,
+              question: `Tell me about the single most frustrating bug or performance regression you personally debugged in "${primaryProject}". Walk me through your hypothesis, reproduction steps, and root-cause fix.`,
+              hint: 'Use the STAR format (Situation, Task, Action, Result). State the symptom, how you isolated the issue using logs/debuggers, and the permanent architectural patch.',
+              modelAnswer: `While stress-testing "${primaryProject}", we noticed CPU usage spiking to 99% during concurrent sessions. My hypothesis was an unindexed query, but profiling thread dumps revealed an N+1 query problem inside a nested loop. I refactored the ORM query to use eager fetching with explicit JOIN FETCH, reducing 45 individual roundtrips to a single query and dropping CPU utilization back to 22%.`,
+              powerPhrases: [
+                'Say "Isolated thread contention via runtime stack traces" instead of "Checked server logs".',
+                'Say "Refactored N+1 query loop to eager JOIN FETCH" instead of "Fixed the query in code".',
+                'Say "Constructed regression canary tests in CI" instead of "Made sure it would not happen again".'
+              ],
+              defaultCounterProbe: `What automated test or lint check did you add to CI/CD to prevent junior teammates from introducing similar N+1 queries in future commits?`,
+              exemplarCounter: `We integrated QuickPerf assertion tests in our test suite, which automatically fail pull requests if an endpoint triggers more than 3 database queries per HTTP request.`
+            }
+          ];
+        }
 
         setResumeAnalysis(analysis);
         setInterviewQuestions(questions.slice(0, questionCount));
@@ -719,7 +1251,11 @@ function GprecResumeMockInterviewPortal({
   const handleStartInterview = () => {
     setCurrentQIndex(0);
     setCandidateAnswers({});
+    setCounterAnswers({});
+    setQuestionPhases({});
+    setGeneratedProbes({});
     setEvaluatedAnswers({});
+    setActiveExemplarTabs({});
     setStage('interview');
   };
 
@@ -735,7 +1271,7 @@ function GprecResumeMockInterviewPortal({
     } else {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
+      utterance.rate = speechSpeed || 1.0;
       utterance.pitch = 1.0;
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -764,25 +1300,29 @@ function GprecResumeMockInterviewPortal({
     }
   };
 
-  // Rigorous Technical Viva Rubric Evaluator (Evaluates answer substantive depth, keywords, metrics, and trade-offs)
-  const evaluateTechnicalVivaResponse = (answerText, currentQ) => {
+  // Rigorous Technical Viva Rubric Evaluator (Evaluates both initial defense and counter-interrogation)
+  const evaluateTechnicalVivaResponse = (answerText, currentQ, counterText = '') => {
     const answer = (answerText || '').trim();
-    const lower = answer.toLowerCase();
-    const words = answer.split(/\s+/).filter(Boolean);
+    const counter = (counterText || '').trim();
+    const combined = counter ? `${answer}\n\n[Counter-Defense]: ${counter}` : answer;
+    const lower = combined.toLowerCase();
+    const words = combined.split(/\s+/).filter(Boolean);
     const wordCount = words.length;
 
     // 1. Explicit Oral Defense Mode
     if (!answer || answer.includes('(Candidate answered orally)')) {
       return {
         questionId: currentQ.id,
-        score: 80,
-        accuracy: 20,
-        depth: 19,
+        score: 82,
+        accuracy: 21,
+        depth: 20,
         defensibility: 20,
         clarity: 21,
         verdict: 'Orally Defended Viva',
         critique: 'Candidate conducted an oral defense of this resume claim. Evaluator noted sound conceptual grasp of the stated technical architecture.',
-        modelAnswer: currentQ.modelAnswer
+        counterCritique: counter ? 'Sound oral defense provided during counter-interrogation.' : null,
+        modelAnswer: currentQ.modelAnswer,
+        powerPhrases: currentQ.powerPhrases || []
       };
     }
 
@@ -799,7 +1339,8 @@ function GprecResumeMockInterviewPortal({
         clarity: 3,
         verdict: 'No Substantive Technical Defense',
         critique: `Your response ("${rawExcerpt}") contains no substantive technical defense or architectural explanation (${wordCount} word${wordCount === 1 ? '' : 's'}). Senior Bar Raisers expect a concrete breakdown of component communication, database transactions, and scalability choices.`,
-        modelAnswer: currentQ.modelAnswer
+        modelAnswer: currentQ.modelAnswer,
+        powerPhrases: currentQ.powerPhrases || []
       };
     }
 
@@ -815,7 +1356,8 @@ function GprecResumeMockInterviewPortal({
         clarity: 11,
         verdict: 'Surface Level — High Rejection Risk',
         critique: `Your answer is overly brief (${wordCount} words) and lacks technical depth. Senior interviewers require you to walk through internal data flow, component lifecycles, and why you selected this stack over industry alternatives.`,
-        modelAnswer: currentQ.modelAnswer
+        modelAnswer: currentQ.modelAnswer,
+        powerPhrases: currentQ.powerPhrases || []
       };
     }
 
@@ -826,17 +1368,18 @@ function GprecResumeMockInterviewPortal({
     ];
 
     const hasKeywords = techKeywords.some(s => {
-      if (s === 'C++') return answer.includes('C++') || lower.includes('cpp');
+      if (s === 'C++') return combined.includes('C++') || lower.includes('cpp');
       return lower.includes(s.toLowerCase());
     });
 
-    const hasMetrics = /\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb))\b/i.test(answer);
-    const hasTradeoffs = /\b(trade-off|tradeoff|bottleneck|because|instead of|alternative|latency|scale|concurrency|partition|timeout|circuit|index|cache|async)\b/i.test(answer);
+    const hasMetrics = /\b(?:\d+[%xX+]|\d+,\d+|\d+\+?\s*(?:ms|users|candidates|requests|queries|seconds|lpa|rps|gb|mb|kb))\b/i.test(combined);
+    const hasTradeoffs = /\b(trade-off|tradeoff|bottleneck|because|instead of|alternative|latency|scale|concurrency|partition|timeout|circuit|index|cache|async|invalidation|stampede|p99|fallback|mutex|isolation)\b/i.test(combined);
+    const hasArchitecture = /\b(stateless|gateway|controller|connection pool|hikaricp|b\+\s*tree|replica|broker|cluster|docker|microservice|orm|acid)\b/i.test(combined);
 
-    let accuracy = 14 + (hasKeywords ? 7 : 2) + (wordCount >= 35 ? 3 : 0);
-    let depth = 12 + (hasTradeoffs ? 8 : 2) + (wordCount >= 50 ? 3 : 0);
-    let defensibility = 12 + (hasMetrics ? 8 : 2) + (wordCount >= 40 ? 3 : 0);
-    let clarity = 14 + (wordCount >= 25 && wordCount <= 160 ? 7 : 3);
+    let accuracy = 14 + (hasKeywords ? 6 : 2) + (wordCount >= 35 ? 3 : 0) + (hasArchitecture ? 2 : 0);
+    let depth = 12 + (hasTradeoffs ? 7 : 2) + (wordCount >= 50 ? 3 : 0) + (counter ? 3 : 0);
+    let defensibility = 12 + (hasMetrics ? 7 : 2) + (wordCount >= 40 ? 3 : 0) + (hasArchitecture ? 3 : 0);
+    let clarity = 14 + (wordCount >= 25 && wordCount <= 180 ? 6 : 3) + (counter ? 2 : 0);
 
     // Bounds (each out of 25)
     accuracy = Math.min(25, Math.max(6, accuracy));
@@ -850,9 +1393,16 @@ function GprecResumeMockInterviewPortal({
     if (totalScore >= 85) verdict = 'Strong Hire (Bar Raiser Cleared)';
     else if (totalScore < 65) verdict = 'Needs Architectural Refinement';
 
-    const critique = totalScore >= 80
-      ? 'Strong technical defense. You demonstrated genuine ownership of the data flow, cited specific architectural patterns, and defended your design decisions.'
-      : 'Reasonable conceptual foundation, but needs deeper technical rigor. Explicitly explain your benchmarking tools, baseline metrics, and failure recovery mechanisms.';
+    let critique = '';
+    if (totalScore >= 85) {
+      critique = counter
+        ? 'Exemplary multi-turn technical defense. You demonstrated genuine ownership of the architecture, handled the Bar Raiser counter-probe with composure, and justified trade-offs with concrete metrics.'
+        : 'Strong technical defense. You demonstrated genuine ownership of the data flow, cited specific architectural patterns, and defended your design decisions.';
+    } else if (totalScore >= 70) {
+      critique = 'Competent technical foundation. Good understanding of the stack, but could provide deeper precision on p99 tail latency, transaction isolation levels, and circuit breaker fallbacks.';
+    } else {
+      critique = 'Reasonable conceptual foundation, but needs deeper technical rigor. Explicitly explain your benchmarking tools, baseline metrics, and failure recovery mechanisms.';
+    }
 
     return {
       questionId: currentQ.id,
@@ -863,17 +1413,19 @@ function GprecResumeMockInterviewPortal({
       clarity,
       verdict,
       critique,
-      modelAnswer: currentQ.modelAnswer
+      counterDefended: Boolean(counter),
+      modelAnswer: currentQ.modelAnswer,
+      powerPhrases: currentQ.powerPhrases || []
     };
   };
 
-  // Evaluate Current Answer
-  const handleEvaluateCurrentAnswer = () => {
+  // Step 1: Submit Initial Defense & Trigger Senior Bar Raiser Counter-Interrogation Probe
+  const handleTriggerCounterProbe = () => {
     const currentQ = interviewQuestions[currentQIndex];
     const answer = (candidateAnswers[currentQIndex] || '').trim();
 
     if (!answer) {
-      if (addToast) addToast({ type: 'warning', message: 'Please provide your answer before submitting.' });
+      if (addToast) addToast({ type: 'warning', message: 'Please provide your initial technical defense before proceeding.' });
       return;
     }
 
@@ -889,14 +1441,47 @@ function GprecResumeMockInterviewPortal({
     setIsEvaluating(true);
 
     setTimeout(() => {
-      const result = evaluateTechnicalVivaResponse(answer, currentQ);
+      const probe = generateSeniorCounterProbe(currentQ, answer, resumeAnalysis?.skills);
+      setGeneratedProbes(prev => ({ ...prev, [currentQIndex]: probe }));
+      setQuestionPhases(prev => ({ ...prev, [currentQIndex]: 'counter_probe' }));
+      setIsEvaluating(false);
+
+      if (addToast) {
+        addToast({
+          type: 'info',
+          message: `Senior Bar Raiser issued Deep Probe: ${probe.focusArea}`
+        });
+      }
+    }, 350);
+  };
+
+  // Step 2: Submit Counter-Defense & Finalize Evaluation for Current Question
+  const handleFinalizeQuestionEvaluation = (skipCounter = false) => {
+    const currentQ = interviewQuestions[currentQIndex];
+    const initialAns = (candidateAnswers[currentQIndex] || '').trim();
+    const counterAns = skipCounter ? '' : (counterAnswers[currentQIndex] || '').trim();
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+
+    setIsEvaluating(true);
+
+    setTimeout(() => {
+      const result = evaluateTechnicalVivaResponse(initialAns, currentQ, counterAns);
       setEvaluatedAnswers(prev => ({ ...prev, [currentQIndex]: result }));
+      setQuestionPhases(prev => ({ ...prev, [currentQIndex]: 'completed' }));
       setIsEvaluating(false);
 
       if (addToast) {
         addToast({
           type: result.score >= 70 ? 'success' : 'warning',
-          message: `Bar Raiser evaluated Question ${currentQIndex + 1}: ${result.score}/100 (${result.verdict})`
+          message: `Question ${currentQIndex + 1} Score: ${result.score}/100 (${result.verdict})`
         });
       }
     }, 400);
@@ -907,13 +1492,17 @@ function GprecResumeMockInterviewPortal({
     if (currentQIndex < interviewQuestions.length - 1) {
       setCurrentQIndex(prev => prev + 1);
     } else {
-      // Ensure all questions have a calibrated, grounded evaluation
+      // Ensure all questions have a calibrated, grounded evaluation including counter-interrogation
       const evaluatedList = interviewQuestions.map((q, idx) => {
         const studentAns = candidateAnswers[idx] || '(Candidate answered orally)';
-        const evalObj = evaluatedAnswers[idx] || evaluateTechnicalVivaResponse(studentAns, q);
+        const counterAns = counterAnswers[idx] || '';
+        const probeObj = generatedProbes[idx] || null;
+        const evalObj = evaluatedAnswers[idx] || evaluateTechnicalVivaResponse(studentAns, q, counterAns);
         return {
           ...q,
           studentAnswer: studentAns,
+          counterProbe: probeObj?.probeText || null,
+          counterAnswer: counterAns || null,
           evaluation: evalObj
         };
       });
@@ -991,8 +1580,13 @@ function GprecResumeMockInterviewPortal({
         <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:4px;">${esc(item.question)}</div>
         <div style="font-size:11px;color:#059669;margin-top:4px;font-weight:600;">${esc(item.claimCitation)}</div>
         <div style="font-size:12px;color:#334155;margin-top:8px;background:#fff;padding:10px;border-radius:6px;border:1px solid #cbd5e1;">
-          <strong>Candidate Defense:</strong> ${esc(item.studentAnswer)}
+          <strong>Initial Candidate Defense:</strong> ${esc(item.studentAnswer)}
         </div>
+        ${item.counterProbe ? `
+        <div style="margin-top:8px;font-size:12px;color:#854d0e;background:#fefce8;padding:10px;border-radius:6px;border:1px solid #fef08a;">
+          <strong>Senior Bar Raiser Deep Probe:</strong> ${esc(item.counterProbe)}
+          ${item.counterAnswer ? `<div style="margin-top:6px;color:#0f172a;"><strong>Candidate Counter-Defense:</strong> ${esc(item.counterAnswer)}</div>` : ''}
+        </div>` : ''}
         <div style="margin-top:8px;font-size:11.5px;color:#475569;">
           <strong>Bar Raiser Evaluation:</strong> <span style="font-weight:bold;color:#4f46e5;">Score: ${item.evaluation?.score || 85}/100</span> — ${esc(item.evaluation?.critique)}
         </div>
@@ -1687,16 +2281,57 @@ function GprecResumeMockInterviewPortal({
 
             {/* Target Interview Configuration Card */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col gap-4">
-              <h3 className="text-base font-extrabold text-slate-900">2. Configure Interview persona</h3>
-              
+              <h3 className="text-base font-extrabold text-slate-900">2. Configure Interview Track & Persona</h3>
+
+              {/* Enterprise Interview Track / Round Selection */}
               <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 block">Target Interview Round & Track</label>
+                  <span className="text-[10px] font-bold text-indigo-600">Enterprise Standard</span>
+                </div>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  {GPREC_INTERVIEW_TRACKS.map(t => {
+                    const isSel = selectedTrack === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setSelectedTrack(t.id)}
+                        className={`p-3 rounded-xl text-left border cursor-pointer transition-all ${
+                          isSel
+                            ? 'bg-gradient-to-r from-indigo-50/90 to-purple-50/90 border-indigo-600 ring-2 ring-indigo-500/20 shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                            {isSel && <Check className="w-3.5 h-3.5 text-indigo-600 stroke-3" />}
+                            {t.title}
+                          </span>
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${
+                            isSel ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {t.badge}
+                          </span>
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 mt-1 leading-snug">{t.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Target Recruiter Persona */}
+              <div className="space-y-2 pt-1">
                 <label className="text-xs font-bold text-slate-700 block">Target Interviewer Persona</label>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[
                     { id: 'amazon', name: 'Amazon Bar Raiser', desc: 'Architecture, high-scale, metrics' },
                     { id: 'google', name: 'Google Staff SWE', desc: 'Distributed systems & concurrency' },
                     { id: 'microsoft', name: 'Microsoft Enterprise', desc: 'Microservices & resilience' },
-                    { id: 'tcs_prime', name: 'TCS Prime / Digital', desc: 'Core CS, DSA & project defense' }
+                    { id: 'tcs_prime', name: 'TCS Prime / Digital', desc: 'Core CS, DSA & project defense' },
+                    { id: 'zoho', name: 'Zoho Corporation', desc: 'Custom DSA, C/Java & low-level design' },
+                    { id: 'cognizant', name: 'Cognizant GenC Next', desc: 'Cloud-native, REST APIs & agile microservices' }
                   ].map(p => (
                     <button
                       key={p.id}
@@ -1704,18 +2339,19 @@ function GprecResumeMockInterviewPortal({
                       onClick={() => setSelectedPersona(p.id)}
                       className={`p-2.5 rounded-xl text-left border cursor-pointer transition-all ${
                         selectedPersona === p.id
-                          ? 'bg-purple-50 border-purple-600 text-purple-900 font-bold'
+                          ? 'bg-purple-50 border-purple-600 text-purple-900 font-bold ring-2 ring-purple-500/20'
                           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="font-extrabold">{p.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{p.desc}</div>
+                      <div className="font-extrabold truncate">{p.name}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{p.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-2">
+              {/* Number of Resume Questions */}
+              <div className="space-y-2 pt-1">
                 <label className="text-xs font-bold text-slate-700 block">Number of Resume Questions</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1882,11 +2518,16 @@ function GprecResumeMockInterviewPortal({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900">Resume Interrogation Agenda ({interviewQuestions.length} Questions)</h3>
-                  <p className="text-xs text-slate-500">Every question directly targets an architectural choice or metric from your resume.</p>
+                  <p className="text-xs text-slate-500">Grounded strictly in your project architecture, code choices, and quantified claims.</p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-black bg-purple-100 text-purple-800 uppercase">
-                  Persona: {selectedPersona.replace('_', ' ')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-indigo-100 text-indigo-800 uppercase tracking-wide">
+                    {GPREC_INTERVIEW_TRACKS.find(t => t.id === selectedTrack)?.title || 'All Rounds'}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-purple-100 text-purple-800 uppercase">
+                    {selectedPersona.replace('_', ' ')}
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -1932,33 +2573,117 @@ function GprecResumeMockInterviewPortal({
       {/* STAGE 3: LIVE MOCK INTERVIEW ROOM                                 */}
       {/* ================================================================= */}
       {stage === 'interview' && interviewQuestions[currentQIndex] && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: The Interviewer & Telemetry */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
+          {/* Left Column: The Interviewer, Persona, Waveform & Telemetry (5 cols) */}
           <div className="lg:col-span-5 flex flex-col gap-4">
             <div className="bg-gradient-to-br from-[#0B0F2A] via-[#101438] to-[#0A0D22] text-white rounded-2xl p-6 shadow-xl border border-purple-900/40 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                   Live Bar Raiser Examination
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                   Question {currentQIndex + 1} of {interviewQuestions.length}
                 </span>
               </div>
 
-              {/* AI Interviewer Avatar & Speech Wave */}
-              <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366f1] to-[#a855f7] flex items-center justify-center text-white font-black text-lg shadow-inner shrink-0">
-                  AI
+              {/* AI Interviewer Avatar, Persona & Waveform */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-inner shrink-0 transition-all ${
+                    isSpeaking
+                      ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 ring-4 ring-cyan-400/30 scale-105'
+                      : isListening
+                      ? 'bg-gradient-to-tr from-rose-500 to-amber-500 ring-4 ring-rose-400/30 animate-pulse'
+                      : 'bg-gradient-to-tr from-[#6366f1] to-[#a855f7]'
+                  }`}>
+                    {isSpeaking ? <Volume2 className="w-6 h-6 animate-pulse" /> : isListening ? <Mic className="w-6 h-6" /> : 'AI'}
+                  </div>
+                  <div>
+                    <div className="text-sm font-black text-white flex items-center gap-1.5">
+                      <span>Senior Bar Raiser</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+                        L6
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-medium">
+                      {selectedPersona.replace('_', ' ').toUpperCase()} • {GPREC_INTERVIEW_TRACKS.find(t => t.id === selectedTrack)?.badge || 'All-Round'}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-black text-white">Senior Bar Raiser Lead</div>
-                  <div className="text-[11px] text-slate-400 font-medium">{selectedPersona.replace('_', ' ').toUpperCase()} Mode</div>
+
+                {/* Speed Toggle */}
+                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSpeechSpeed(1.0)}
+                    className={`px-1.5 py-0.5 rounded cursor-pointer ${speechSpeed === 1.0 ? 'bg-cyan-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                  >
+                    1.0x
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSpeechSpeed(1.15)}
+                    className={`px-1.5 py-0.5 rounded cursor-pointer ${speechSpeed === 1.15 ? 'bg-cyan-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                  >
+                    1.15x
+                  </button>
                 </div>
               </div>
 
-              {/* Current Question */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-purple-300 uppercase">Current Question</div>
+              {/* Real-Time Waveform Visualizer */}
+              <AudioWaveVisualizer
+                isActive={isSpeaking}
+                isListening={isListening}
+                label={
+                  isListening
+                    ? "Recording your technical response (en-IN)..."
+                    : isSpeaking
+                    ? "Senior Bar Raiser is speaking..."
+                    : "Audio & Speech Engine Active"
+                }
+              />
+
+              {/* Interactive Question Progress Pills */}
+              <div className="flex items-center gap-1.5 pt-1 overflow-x-auto pb-1">
+                {interviewQuestions.map((q, idx) => {
+                  const isCur = idx === currentQIndex;
+                  const isDone = evaluatedAnswers[idx];
+                  return (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => {
+                        if (isSpeaking) {
+                          window.speechSynthesis.cancel();
+                          setIsSpeaking(false);
+                        }
+                        if (isListening && recognitionRef.current) {
+                          recognitionRef.current.stop();
+                          setIsListening(false);
+                        }
+                        setCurrentQIndex(idx);
+                      }}
+                      className={`flex-1 min-w-[28px] py-1 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all ${
+                        isCur
+                          ? 'bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 shadow-sm'
+                          : isDone
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-white/10 text-slate-400 hover:bg-white/15'
+                      }`}
+                    >
+                      {isDone ? <Check className="w-2.5 h-2.5 stroke-3" /> : idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Current Question Statement */}
+              <div className="space-y-2 pt-1">
+                <div className="text-[10px] font-black text-purple-300 uppercase tracking-wider flex items-center justify-between">
+                  <span>Current Question ({interviewQuestions[currentQIndex].type})</span>
+                  <span className="text-cyan-400 text-[10px] font-bold">180s Time Limit</span>
+                </div>
                 <p className="text-sm font-extrabold text-white leading-relaxed">
                   {interviewQuestions[currentQIndex].question}
                 </p>
@@ -1973,8 +2698,8 @@ function GprecResumeMockInterviewPortal({
                 <div>{interviewQuestions[currentQIndex].claimCitation}</div>
               </div>
 
-              {/* Action Buttons: Speak & Audio */}
-              <div className="flex items-center gap-2 pt-2">
+              {/* Action Buttons: Speak Audio & Timer */}
+              <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => handleToggleSpeakQuestion(interviewQuestions[currentQIndex].question)}
@@ -1995,10 +2720,10 @@ function GprecResumeMockInterviewPortal({
               </div>
             </div>
 
-            {/* Hint Card */}
-            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-xs space-y-1 text-amber-900">
+            {/* Preparation Hint Card */}
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-xs space-y-1.5 text-amber-900">
               <div className="font-extrabold flex items-center gap-1.5 text-amber-800">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>Interviewer Preparation Guidance</span>
               </div>
               <p className="text-[11px] text-amber-800/90 leading-relaxed">
@@ -2007,86 +2732,433 @@ function GprecResumeMockInterviewPortal({
             </div>
           </div>
 
-          {/* Right: Candidate Answer & Evaluation Console */}
+          {/* Right Column: Multi-Turn Candidate Console & Dynamic Interrogation (7 cols) */}
           <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between gap-5">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-900">Your Technical Defense</h3>
-                  <p className="text-xs text-slate-500">Provide concrete architectural details, metrics, and trade-offs.</p>
+            {/* Step Navigation Ribbon */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-xs font-extrabold">
+                <span className={`px-2.5 py-1 rounded-lg ${
+                  currentPhase === 'initial'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  1. Initial Technical Defense
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                <span className={`px-2.5 py-1 rounded-lg ${
+                  currentPhase === 'counter_probe'
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs animate-pulse'
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  2. Bar Raiser Deep Probe
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                <span className={`px-2.5 py-1 rounded-lg ${
+                  currentPhase === 'completed'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  3. Master Evaluation
+                </span>
+              </div>
+            </div>
+
+            {/* =============================================================== */}
+            {/* PHASE 1: INITIAL TECHNICAL DEFENSE                              */}
+            {/* =============================================================== */}
+            {currentPhase === 'initial' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900">Your Technical Defense</h3>
+                    <p className="text-xs text-slate-500">Provide concrete architectural details, metrics, and trade-offs.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleToggleDictation}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                      isListening
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    <span>{isListening ? 'Stop Recording' : 'Voice Dictate'}</span>
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleToggleDictation}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                    isListening
-                      ? 'bg-rose-600 text-white animate-pulse'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                  <span>{isListening ? 'Stop Recording' : 'Voice Dictate'}</span>
-                </button>
-              </div>
+                {/* 1-Click STAR & Engineering Scaffolding Ribbon */}
+                <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                    <span>1-Click Answer Scaffolding (STAR + Architecture)</span>
+                    <span className="text-indigo-600 font-semibold">Click to insert structured prompts</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleInsertScaffoldingTag('situation')}
+                      className="px-2 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 font-bold hover:border-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Situation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertScaffoldingTag('task')}
+                      className="px-2 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 font-bold hover:border-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Task
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertScaffoldingTag('action')}
+                      className="px-2 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 font-bold hover:border-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Action
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertScaffoldingTag('result')}
+                      className="px-2 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 font-bold hover:border-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Metric Result
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertScaffoldingTag('tradeoff')}
+                      className="px-2 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-slate-200 text-slate-700 font-bold hover:border-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Architectural Trade-off
+                    </button>
+                  </div>
+                </div>
 
-              <textarea
-                rows={8}
-                value={candidateAnswers[currentQIndex] || ''}
-                onChange={(e) => setCandidateAnswers({ ...candidateAnswers, [currentQIndex]: e.target.value })}
-                placeholder="Type or voice-dictate your technical answer here (Explain your architecture, why you chose the tools, and how you verified your metric claims)..."
-                className="w-full p-4 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 leading-relaxed bg-slate-50/50"
-              />
+                {/* Textarea */}
+                <textarea
+                  rows={8}
+                  value={candidateAnswers[currentQIndex] || ''}
+                  onChange={(e) => setCandidateAnswers({ ...candidateAnswers, [currentQIndex]: e.target.value })}
+                  placeholder="Type or voice-dictate your technical answer here (Explain your architecture, why you chose the tools, and how you verified your metric claims)..."
+                  className="w-full p-4 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 leading-relaxed bg-slate-50/50"
+                />
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400">
-                <span>{(candidateAnswers[currentQIndex] || '').split(/\s+/).filter(Boolean).length} words</span>
-                <span className="text-indigo-600 font-semibold">Tip: Mention exact tools, latency deltas, and failure handling.</span>
-              </div>
-
-              {/* Evaluation Feedback for Current Question */}
-              {evaluatedAnswers[currentQIndex] && (
-                <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-purple-900">
-                      Question Score: {evaluatedAnswers[currentQIndex].score} / 100 ({evaluatedAnswers[currentQIndex].verdict})
+                {/* Real-Time Live Rubric Quality Checklist */}
+                <div className="space-y-2 pt-1 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-extrabold text-slate-700">Live Rubric Defense Strength:</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${liveAnswerRubricStats.readinessColor}`}>
+                      {liveAnswerRubricStats.readinessLabel} ({liveAnswerRubricStats.wordCount} words)
                     </span>
-                    <div className="flex items-center gap-2 text-[10px] font-bold">
-                      <span className="text-indigo-700">Acc: {evaluatedAnswers[currentQIndex].accuracy}/25</span>
-                      <span className="text-cyan-700">Depth: {evaluatedAnswers[currentQIndex].depth}/25</span>
-                      <span className="text-emerald-700">Metrics: {evaluatedAnswers[currentQIndex].defensibility}/25</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10.5px]">
+                    <div className={`p-2 rounded-lg border flex items-center gap-1.5 font-bold ${
+                      liveAnswerRubricStats.hasArchitecture
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      {liveAnswerRubricStats.hasArchitecture ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <div className="w-3 h-3 rounded-full border border-slate-300" />}
+                      <span>Architecture Stack</span>
+                    </div>
+
+                    <div className={`p-2 rounded-lg border flex items-center gap-1.5 font-bold ${
+                      liveAnswerRubricStats.hasMetrics
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      {liveAnswerRubricStats.hasMetrics ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <div className="w-3 h-3 rounded-full border border-slate-300" />}
+                      <span>Quantified Metrics</span>
+                    </div>
+
+                    <div className={`p-2 rounded-lg border flex items-center gap-1.5 font-bold ${
+                      liveAnswerRubricStats.hasTradeoffs
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      {liveAnswerRubricStats.hasTradeoffs ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <div className="w-3 h-3 rounded-full border border-slate-300" />}
+                      <span>Failure & Trade-offs</span>
+                    </div>
+
+                    <div className={`p-2 rounded-lg border flex items-center gap-1.5 font-bold ${
+                      liveAnswerRubricStats.hasStar
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}>
+                      {liveAnswerRubricStats.hasStar ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <div className="w-3 h-3 rounded-full border border-slate-300" />}
+                      <span>STAR Structure</span>
                     </div>
                   </div>
-                  <p className="text-slate-700 leading-relaxed">
-                    {evaluatedAnswers[currentQIndex].critique}
+                </div>
+
+                {/* Bottom Actions for Initial Phase */}
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    disabled={isEvaluating}
+                    onClick={() => handleFinalizeQuestionEvaluation(true)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    Instant Evaluate (Skip Probe)
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isEvaluating}
+                    onClick={handleTriggerCounterProbe}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50"
+                  >
+                    {isEvaluating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Flame className="w-3.5 h-3.5 text-amber-300" />}
+                    <span>Submit Defense & Trigger Bar Raiser Probe →</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* =============================================================== */}
+            {/* PHASE 2: SENIOR BAR RAISER COUNTER-INTERROGATION (DEEP PROBE)   */}
+            {/* =============================================================== */}
+            {currentPhase === 'counter_probe' && generatedProbes[currentQIndex] && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Prominent Counter-Probe Banner */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-indigo-500/10 border-2 border-amber-400/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-amber-600" />
+                      Senior Bar Raiser Counter-Interrogation • {generatedProbes[currentQIndex].focusArea}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSpeakQuestion(generatedProbes[currentQIndex].probeText)}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 border border-amber-400/40 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Volume2 className="w-3 h-3" /> Listen Counter-Probe
+                    </button>
+                  </div>
+
+                  <p className="text-sm font-black text-slate-900 leading-relaxed">
+                    "{generatedProbes[currentQIndex].probeText}"
                   </p>
-                  <div className="pt-2 border-t border-purple-200/60 text-[11px] text-purple-950 font-medium">
-                    <strong>Exemplary Model Answer:</strong> {evaluatedAnswers[currentQIndex].modelAnswer}
+                </div>
+
+                {/* Candidate Counter-Defense Console */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-900">Your Counter-Defense</h4>
+                      <p className="text-xs text-slate-500">Defend your architectural trade-offs, p99 latencies, and failure policies under pressure.</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleDictation}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                        isListening
+                          ? 'bg-rose-600 text-white animate-pulse'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                      <span>{isListening ? 'Stop Recording' : 'Voice Dictate'}</span>
+                    </button>
+                  </div>
+
+                  {/* 1-Click Quick Tags */}
+                  <div className="flex flex-wrap gap-1.5 text-[10.5px]">
+                    <button
+                      type="button"
+                      onClick={() => handleInsertCounterTag('invalidation')}
+                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold cursor-pointer transition-colors"
+                    >
+                      + Cache Invalidation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertCounterTag('stampede')}
+                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold cursor-pointer transition-colors"
+                    >
+                      + Thundering Herd / Mutex
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertCounterTag('p99')}
+                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold cursor-pointer transition-colors"
+                    >
+                      + Tail Latency p99
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertCounterTag('fallback')}
+                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold cursor-pointer transition-colors"
+                    >
+                      + Circuit Fallback
+                    </button>
+                  </div>
+
+                  {/* Counter Textarea */}
+                  <textarea
+                    rows={6}
+                    value={counterAnswers[currentQIndex] || ''}
+                    onChange={(e) => setCounterAnswers({ ...counterAnswers, [currentQIndex]: e.target.value })}
+                    placeholder="Provide your counter-defense here (e.g. explain your cache-aside transactional invalidation, TTL jitter, and fallback payloads)..."
+                    className="w-full p-4 rounded-xl border border-amber-300/80 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 leading-relaxed bg-amber-50/20"
+                  />
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>{(counterAnswers[currentQIndex] || '').split(/\s+/).filter(Boolean).length} words</span>
+                    <span className="text-amber-700 font-bold">Defending this counter-probe earns a Senior Placement Bonus (+8 to +15 pts)</span>
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Bottom Actions */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                disabled={isEvaluating}
-                onClick={handleEvaluateCurrentAnswer}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50"
-              >
-                {isEvaluating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                <span>{evaluatedAnswers[currentQIndex] ? 'Re-Evaluate Answer' : 'Submit & Evaluate Answer'}</span>
-              </button>
+                {/* Bottom Actions for Counter Phase */}
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    disabled={isEvaluating}
+                    onClick={() => handleFinalizeQuestionEvaluation(true)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    Skip Counter-Probe → View Score
+                  </button>
 
-              <button
-                type="button"
-                onClick={handleNextQuestion}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#7c3aed] hover:opacity-95 text-white text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
-              >
-                <span>{currentQIndex < interviewQuestions.length - 1 ? 'Next Question' : 'View Final Scorecard'}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    disabled={isEvaluating}
+                    onClick={() => handleFinalizeQuestionEvaluation(false)}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-purple-600 to-indigo-600 hover:opacity-95 text-white text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-md transition-all disabled:opacity-50"
+                  >
+                    {isEvaluating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    <span>Submit Counter-Defense & Finalize (+Bonus Score)</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* =============================================================== */}
+            {/* PHASE 3: COMPLETED EVALUATION & STAFF ENGINEER EXEMPLAR          */}
+            {/* =============================================================== */}
+            {currentPhase === 'completed' && evaluatedAnswers[currentQIndex] && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Score & Verdict Banner */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-cyan-50 border border-purple-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-indigo-700">Question Evaluation Result</div>
+                      <div className="text-lg font-black text-slate-900 flex items-center gap-2">
+                        <span>Score: {evaluatedAnswers[currentQIndex].score} / 100</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                          evaluatedAnswers[currentQIndex].score >= 80 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {evaluatedAnswers[currentQIndex].verdict}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[10px] font-black">
+                      <span className="px-2 py-1 rounded-md bg-white border border-indigo-200 text-indigo-800">
+                        Acc: {evaluatedAnswers[currentQIndex].accuracy}/25
+                      </span>
+                      <span className="px-2 py-1 rounded-md bg-white border border-cyan-200 text-cyan-800">
+                        Depth: {evaluatedAnswers[currentQIndex].depth}/25
+                      </span>
+                      <span className="px-2 py-1 rounded-md bg-white border border-emerald-200 text-emerald-800">
+                        Metrics: {evaluatedAnswers[currentQIndex].defensibility}/25
+                      </span>
+                      <span className="px-2 py-1 rounded-md bg-white border border-amber-200 text-amber-800">
+                        STAR: {evaluatedAnswers[currentQIndex].clarity}/25
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 3-Tab Switcher */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-purple-200/60">
+                    {[
+                      { id: 'critique', label: 'Bar Raiser Critique' },
+                      { id: 'exemplar', label: 'Staff Engineer Exemplar' },
+                      { id: 'power_phrases', label: 'L4 ➔ L5 Power Phrases' }
+                    ].map(tab => {
+                      const activeTab = activeExemplarTabs[currentQIndex] || 'critique';
+                      const isSel = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setActiveExemplarTabs(prev => ({ ...prev, [currentQIndex]: tab.id }))}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                            isSel
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tab 1: Critique */}
+                {(activeExemplarTabs[currentQIndex] || 'critique') === 'critique' && (
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs leading-relaxed text-slate-700">
+                    <p className="font-medium">{evaluatedAnswers[currentQIndex].critique}</p>
+                    {evaluatedAnswers[currentQIndex].counterDefended && (
+                      <div className="pt-2 border-t border-slate-200 text-[11px] text-emerald-700 font-bold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Successfully defended against Bar Raiser Counter-Interrogation Deep Probe under pressure.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 2: Exemplar Model Answer */}
+                {(activeExemplarTabs[currentQIndex] || 'critique') === 'exemplar' && (
+                  <div className="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-2 text-xs leading-relaxed text-indigo-950">
+                    <div className="text-[10px] font-black uppercase text-indigo-800">Senior Staff Engineer Benchmark Answer</div>
+                    <p className="font-medium">{evaluatedAnswers[currentQIndex].modelAnswer}</p>
+                    {generatedProbes[currentQIndex] && (
+                      <div className="pt-2 border-t border-indigo-200/70 text-[11px]">
+                        <strong>Exemplar Counter-Defense:</strong> {generatedProbes[currentQIndex].exemplarCounter}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 3: Power Phrases */}
+                {(activeExemplarTabs[currentQIndex] || 'critique') === 'power_phrases' && (
+                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2 text-xs text-amber-950">
+                    <div className="text-[10px] font-black uppercase text-amber-800">Recruiter High-Conversion Vocabulary Upgrades</div>
+                    <ul className="space-y-1.5 list-disc pl-4 leading-relaxed font-medium">
+                      {(generatedProbes[currentQIndex]?.powerPhrases || [
+                        'Say "Stateless authenticated edge gateway with JWT claims" instead of "Checked user login".',
+                        'Say "Eliminated socket handshake overhead via connection pooling" instead of "Reused database connections".',
+                        'Say "Guaranteed ACID transactional semantics on mutations" instead of "Saved data safely".'
+                      ]).map((phrase, pIdx) => (
+                        <li key={pIdx}>{phrase}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Bottom Actions for Completed Phase */}
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setQuestionPhases(prev => ({ ...prev, [currentQIndex]: 'initial' }))}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Re-Attempt Defense
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNextQuestion}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#7c3aed] hover:opacity-95 text-white text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-500/20 transition-all"
+                  >
+                    <span>{currentQIndex < interviewQuestions.length - 1 ? 'Next Question →' : 'View Final Scorecard & Dossier →'}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2095,7 +3167,7 @@ function GprecResumeMockInterviewPortal({
       {/* STAGE 4: BAR RAISER SCORECARD & DIAGNOSTIC REPORT                 */}
       {/* ================================================================= */}
       {stage === 'scorecard' && finalReport && (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 animate-in fade-in duration-200">
           {/* Top KPI Report Header */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="space-y-1">
@@ -2104,14 +3176,18 @@ function GprecResumeMockInterviewPortal({
               </div>
               <h3 className="text-xl font-black text-slate-900">{finalReport.candidateName}</h3>
               <p className="text-xs text-slate-500">
-                Evaluated under {finalReport.persona.replace('_', ' ').toUpperCase()} Persona • {finalReport.date}
+                Evaluated under {finalReport.persona.replace('_', ' ').toUpperCase()} Persona • {GPREC_INTERVIEW_TRACKS.find(t => t.id === selectedTrack)?.title || 'Comprehensive'} • {finalReport.date}
               </p>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-3xl font-black text-indigo-600">{finalReport.overallScore}%</div>
-                <div className="text-xs font-extrabold text-emerald-600">{finalReport.verdict}</div>
+                <div className={`text-xs font-black ${
+                  finalReport.overallScore >= 80 ? 'text-emerald-600' : finalReport.overallScore >= 65 ? 'text-indigo-600' : 'text-amber-600'
+                }`}>
+                  {finalReport.verdict}
+                </div>
               </div>
 
               <button
@@ -2159,7 +3235,7 @@ function GprecResumeMockInterviewPortal({
 
             <div className="space-y-4">
               {(finalReport.questionsEvaluated || []).map((q, idx) => (
-                <div key={q.id} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5 text-xs">
+                <div key={q.id} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-extrabold text-indigo-700 uppercase text-[11px]">
                       Question {idx + 1} • {q.type}
@@ -2171,8 +3247,23 @@ function GprecResumeMockInterviewPortal({
                   <div className="text-[11px] font-semibold text-emerald-700">{q.claimCitation}</div>
 
                   <div className="p-3 bg-white rounded-lg border border-slate-200 text-slate-700">
-                    <strong>Your Response:</strong> {q.studentAnswer}
+                    <strong>Initial Response:</strong> {q.studentAnswer}
                   </div>
+
+                  {q.counterProbe && (
+                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-amber-950 space-y-1.5">
+                      <div className="text-[10px] font-black uppercase text-amber-800 flex items-center gap-1">
+                        <Flame className="w-3 h-3 text-amber-600" />
+                        <span>Senior Bar Raiser Deep Probe</span>
+                      </div>
+                      <div className="font-medium">"{q.counterProbe}"</div>
+                      {q.counterAnswer && (
+                        <div className="pt-1.5 border-t border-amber-200/70 text-slate-900">
+                          <strong>Candidate Counter-Defense:</strong> {q.counterAnswer}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="text-slate-600 leading-relaxed">
                     <strong>Bar Raiser Critique:</strong> {q.evaluation?.critique}
@@ -2185,7 +3276,7 @@ function GprecResumeMockInterviewPortal({
               ))}
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setStage('upload')}
@@ -2193,6 +3284,15 @@ function GprecResumeMockInterviewPortal({
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Start New Resume Interview</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActivePortalTab('ats_matcher')}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer"
+              >
+                <Target className="w-3.5 h-3.5 text-purple-600" />
+                <span>Switch to Company ATS Matcher</span>
               </button>
             </div>
           </div>
