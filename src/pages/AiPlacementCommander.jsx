@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import {Flame, Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Search, Bell, CheckCircle2, AlertTriangle, ArrowRight, Check, X,
   Code, Layers, Trophy, TrendingUp, Download, Sliders, Play, RotateCcw,
@@ -770,14 +770,6 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     }
   }, [user]);
 
-  // Interview timer countdown
-  useEffect(() => {
-    if (interviewFinished || activeNav !== 'mock_interviews') return;
-    const timer = setInterval(() => {
-      setInterviewTimeLeft(prev => (prev <= 1 ? 150 : prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [interviewFinished, activeNav, interviewStep]);
 
   const [resumeSubView, setResumeSubView] = useState('builder');
   const [projectSubView, setProjectSubView] = useState('portfolio');
@@ -861,45 +853,47 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     });
   };
 
-  // Filtered coding problems across 10,000+ catalog
-  const filteredProblems = CODING_PROBLEMS.filter(p => {
-    // Curated track filter
-    if (curatedTrackFilter === 'leetcode' && p.platform !== 'LeetCode') return false;
-    if (curatedTrackFilter === 'hackerrank' && p.platform !== 'HackerRank') return false;
-    if (curatedTrackFilter === 'codeforces' && p.platform !== 'Codeforces') return false;
-    if (curatedTrackFilter === 'faang' && p.platform !== 'FAANG Track') return false;
-    if (curatedTrackFilter === 'blind75' && (p.number > 75 && !p.isMaster)) return false;
-    if (curatedTrackFilter === 'beginner' && p.difficulty !== 'Easy') return false;
-    if (curatedTrackFilter === 'advanced' && p.difficulty !== 'Hard') return false;
+  // Filtered coding problems across 10,000+ catalog (memoized to prevent re-filtering on renders)
+  const filteredProblems = useMemo(() => {
+    return CODING_PROBLEMS.filter(p => {
+      // Curated track filter
+      if (curatedTrackFilter === 'leetcode' && p.platform !== 'LeetCode') return false;
+      if (curatedTrackFilter === 'hackerrank' && p.platform !== 'HackerRank') return false;
+      if (curatedTrackFilter === 'codeforces' && p.platform !== 'Codeforces') return false;
+      if (curatedTrackFilter === 'faang' && p.platform !== 'FAANG Track') return false;
+      if (curatedTrackFilter === 'blind75' && (p.number > 75 && !p.isMaster)) return false;
+      if (curatedTrackFilter === 'beginner' && p.difficulty !== 'Easy') return false;
+      if (curatedTrackFilter === 'advanced' && p.difficulty !== 'Hard') return false;
 
-    // Direct platform filter
-    if (codingPlatformFilter !== 'All' && p.platform !== codingPlatformFilter) return false;
+      // Direct platform filter
+      if (codingPlatformFilter !== 'All' && p.platform !== codingPlatformFilter) return false;
 
-    // Difficulty filter
-    if (codingDifficultyFilter !== 'All') {
-      const targetDiff = codingDifficultyFilter.toLowerCase();
-      const matchDiff = p.difficulty?.toLowerCase() === targetDiff || p.level?.toLowerCase() === targetDiff;
-      if (!matchDiff) return false;
-    }
+      // Difficulty filter
+      if (codingDifficultyFilter !== 'All') {
+        const targetDiff = codingDifficultyFilter.toLowerCase();
+        const matchDiff = p.difficulty?.toLowerCase() === targetDiff || p.level?.toLowerCase() === targetDiff;
+        if (!matchDiff) return false;
+      }
 
-    // Category filter
-    if (codingCategoryFilter !== 'All' && p.category !== codingCategoryFilter) return false;
+      // Category filter
+      if (codingCategoryFilter !== 'All' && p.category !== codingCategoryFilter) return false;
 
-    // Solved status filter
-    if (codingStatusFilter === 'Solved' && !solvedProblemIds.includes(p.id)) return false;
-    if (codingStatusFilter === 'Unsolved' && solvedProblemIds.includes(p.id)) return false;
+      // Solved status filter
+      if (codingStatusFilter === 'Solved' && !solvedProblemIds.includes(p.id)) return false;
+      if (codingStatusFilter === 'Unsolved' && solvedProblemIds.includes(p.id)) return false;
 
-    // Search query
-    if (codingSearchQuery.trim()) {
-      const q = codingSearchQuery.toLowerCase().trim();
-      const matchTitle = p.title?.toLowerCase().includes(q);
-      const matchCat = p.category?.toLowerCase().includes(q);
-      const matchComp = p.companyTags?.some(c => c.toLowerCase().includes(q));
-      const matchNum = String(p.number || '').includes(q);
-      if (!matchTitle && !matchCat && !matchComp && !matchNum) return false;
-    }
-    return true;
-  });
+      // Search query
+      if (codingSearchQuery.trim()) {
+        const q = codingSearchQuery.toLowerCase().trim();
+        const matchTitle = p.title?.toLowerCase().includes(q);
+        const matchCat = p.category?.toLowerCase().includes(q);
+        const matchComp = p.companyTags?.some(c => c.toLowerCase().includes(q));
+        const matchNum = String(p.number || '').includes(q);
+        if (!matchTitle && !matchCat && !matchComp && !matchNum) return false;
+      }
+      return true;
+    });
+  }, [curatedTrackFilter, codingPlatformFilter, codingDifficultyFilter, codingCategoryFilter, codingStatusFilter, solvedProblemIds, codingSearchQuery]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -1508,8 +1502,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Update Twin Scores Helper
-  const updateTwinSkill = (skillKey, delta, reason) => {
+  // Update Twin Scores Helper (stabilized with useCallback)
+  const updateTwinSkill = useCallback((skillKey, delta, reason) => {
     setTwinScores(prev => {
       const currentVal = prev[skillKey] || 0;
       const newScore = Math.min(100, Math.max(0, currentVal + delta));
@@ -1528,7 +1522,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       addToast({ message: `Placement Metric: ${skillKey.toUpperCase()} updated to ${newScore}% (${reason})`, type: 'success' });
       return nextScores;
     });
-  };
+  }, [targetRoleObj, user?.id, awardXP, addToast]);
 
   // Task Completion Handler
   const toggleMissionTask = (id) => {
@@ -2201,10 +2195,12 @@ Return ONLY a valid JSON object without markdown:
     addToast({ message: `Loaded ${company} (${role}) into AI Job Match!`, type: 'info' });
   };
 
-  // Filter Aptitude Questions
-  const filteredAptitude = aptitudeCategoryFilter === 'All' 
-    ? APTITUDE_BANK 
-    : APTITUDE_BANK.filter(q => q.category.includes(aptitudeCategoryFilter));
+  // Filter Aptitude Questions (memoized)
+  const filteredAptitude = useMemo(() => {
+    return aptitudeCategoryFilter === 'All' 
+      ? APTITUDE_BANK 
+      : APTITUDE_BANK.filter(q => q.category.includes(aptitudeCategoryFilter));
+  }, [aptitudeCategoryFilter]);
 
   const currentAptQuestion = filteredAptitude[aptitudeIndex % filteredAptitude.length] || APTITUDE_BANK[0];
 
