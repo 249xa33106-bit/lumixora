@@ -332,6 +332,112 @@ export async function bulkAddGprecScholarRolls(rawInput = '', defaultMeta = {}) 
 }
 
 /**
+ * Updates a scholar's details in the real Supabase cloud database & local roster
+ */
+export async function updateGprecScholarData(rollInput, updates = {}) {
+  const normalized = normalizeRollNumber(rollInput);
+  if (!normalized) throw new Error('Valid roll number is required.');
+
+  const rollUpper = normalized.toUpperCase();
+  const email = `${normalized}@gprec.ac.in`;
+  const name = updates.name?.trim() || `GPREC Scholar (${rollUpper})`;
+  const department = updates.department || deriveBranchFromRoll(normalized);
+  const year = updates.year || deriveYearFromRoll(normalized);
+
+  // 1. Update local custom storage
+  const existing = getStoredCustomRolls();
+  const idx = existing.findIndex(item => {
+    const r = typeof item === 'string' ? item : item.rollNumber;
+    return normalizeRollNumber(r) === normalized;
+  });
+
+  const updatedEntry = {
+    rollNumber: normalized,
+    name,
+    department,
+    year,
+    updatedAt: Date.now(),
+    addedBy: updates.addedBy || 'Founder'
+  };
+
+  if (idx >= 0) {
+    existing[idx] = { ...existing[idx], ...updatedEntry };
+  } else {
+    // If it's a built-in roll or new, record the override in custom list
+    existing.push(updatedEntry);
+  }
+  saveCustomRolls(existing);
+
+  // 2. Real Cloud Database: Supabase updates
+  try {
+    if (supabase) {
+      // Check if existing founder_notifications row exists for this roll
+      const { data: matches } = await supabase
+        .from('founder_notifications')
+        .select('id, meta')
+        .eq('type', 'gprec_whitelisted_scholar');
+
+      let found = false;
+      if (Array.isArray(matches)) {
+        for (const row of matches) {
+          const r = normalizeRollNumber(row.meta?.rollNumber || row.meta?.rollLower);
+          if (r === normalized) {
+            found = true;
+            await supabase.from('founder_notifications').update({
+              title: `GPREC Whitelisted Scholar: ${rollUpper}`,
+              message: `Founder updated scholar ${rollUpper} (${name}) details.`,
+              meta: {
+                ...(row.meta || {}),
+                rollNumber: rollUpper,
+                rollLower: normalized,
+                email,
+                name,
+                department,
+                year,
+                updatedAt: Date.now()
+              }
+            }).eq('id', row.id);
+          }
+        }
+      }
+
+      if (!found) {
+        // Insert new record in founder_notifications
+        await supabase.from('founder_notifications').insert([{
+          type: 'gprec_whitelisted_scholar',
+          title: `GPREC Whitelisted Scholar: ${rollUpper}`,
+          message: `Founder updated scholar ${rollUpper} (${name}) details.`,
+          meta: {
+            rollNumber: rollUpper,
+            rollLower: normalized,
+            email,
+            name,
+            department,
+            year,
+            addedBy: 'Founder',
+            updatedAt: Date.now()
+          },
+          read: false
+        }]);
+      }
+
+      // Also update user profile in users table
+      await supabase.from('users').update({
+        roll_number: rollUpper,
+        department,
+        branch: department,
+        year,
+        college: 'GPREC'
+      }).ilike('email', email);
+    }
+  } catch (err) {
+    console.warn('Real cloud update error:', err);
+  }
+
+  return updatedEntry;
+}
+
+/**
  * Removes a custom whitelisted roll number from real database + local storage
  */
 export async function removeGprecScholarRoll(rollInput) {

@@ -23,6 +23,7 @@ import {
   PlusCircle,
   FileText,
   KeyRound,
+  Edit3,
   X
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -37,6 +38,7 @@ import {
   addGprecScholarRoll, 
   bulkAddGprecScholarRolls, 
   removeGprecScholarRoll,
+  updateGprecScholarData,
   syncCustomRollsFromCloud
 } from '../services/gprecPlacementAuth';
 import { useToast } from '../context/ToastContext';
@@ -61,6 +63,13 @@ export default function FounderLoginAuditManager() {
   const [singleYear, setSingleYear] = useState('3rd Year');
   const [bulkInput, setBulkInput] = useState('');
   const [isSubmittingRoster, setIsSubmittingRoster] = useState(false);
+
+  // Edit Scholar State
+  const [editingScholar, setEditingScholar] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editDept, setEditDept] = useState('CSE');
+  const [editYear, setEditYear] = useState('3rd Year');
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
   // Load audit logs on mount
   const loadLogs = async (showToast = false) => {
@@ -143,6 +152,34 @@ export default function FounderLoginAuditManager() {
       addToast({ message: err.message || 'Failed to bulk add scholars.', type: 'error' });
     } finally {
       setIsSubmittingRoster(false);
+    }
+  };
+
+  const handleOpenEditModal = (scholar) => {
+    setEditingScholar(scholar);
+    setEditName(scholar.name || '');
+    setEditDept(scholar.department || 'CSE');
+    setEditYear(scholar.year || '3rd Year');
+  };
+
+  const handleSaveScholarEdit = async (e) => {
+    e.preventDefault();
+    if (!editingScholar) return;
+    setIsSubmittingEdit(true);
+    try {
+      await updateGprecScholarData(editingScholar.rawRoll || editingScholar.rollNumber, {
+        name: editName.trim(),
+        department: editDept,
+        year: editYear,
+        addedBy: 'Founder'
+      });
+      setRoster(getGprecScholarRoster());
+      addToast({ message: `Updated details for scholar ${editingScholar.rollNumber} in real database!`, type: 'success' });
+      setEditingScholar(null);
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to update scholar.', type: 'error' });
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -627,17 +664,24 @@ export default function FounderLoginAuditManager() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-right">
-                        {scholar.isCustom ? (
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() => handleRemoveScholar(scholar.rollNumber)}
-                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all cursor-pointer"
-                            title="Remove scholar from whitelist"
+                            onClick={() => handleOpenEditModal(scholar)}
+                            className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all cursor-pointer"
+                            title="Edit scholar data"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Edit3 className="w-3.5 h-3.5" />
                           </button>
-                        ) : (
-                          <span className="text-[10px] text-slate-500 italic">Built-in</span>
-                        )}
+                          {scholar.isCustom ? (
+                            <button
+                              onClick={() => handleRemoveScholar(scholar.rollNumber)}
+                              className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all cursor-pointer"
+                              title="Remove scholar from whitelist"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1022,6 +1066,118 @@ export default function FounderLoginAuditManager() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Scholar Modal */}
+      {editingScholar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-2xl bg-[#0B132B] border border-blue-500/40 p-6 shadow-2xl relative">
+            <button
+              onClick={() => setEditingScholar(null)}
+              className="absolute right-4 top-4 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-2 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400">
+                <Edit3 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white font-sora">
+                  Edit Scholar Details
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Update scholar name, department, or academic batch
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveScholarEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Roll Number
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={editingScholar.rollNumber}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm font-mono text-amber-400 font-bold uppercase tracking-wider opacity-80 cursor-not-allowed"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Institutional Email: <span className="text-slate-300 font-mono">{editingScholar.email}</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Scholar Full Name <span className="text-blue-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="e.g. GG PREETHI"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Department / Branch
+                  </label>
+                  <select
+                    value={editDept}
+                    onChange={(e) => setEditDept(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-blue-400"
+                  >
+                    <option value="CSE" className="bg-[#0B132B]">CSE</option>
+                    <option value="CSM (AI & ML)" className="bg-[#0B132B]">CSM (AI & ML)</option>
+                    <option value="ECE" className="bg-[#0B132B]">ECE</option>
+                    <option value="EEE" className="bg-[#0B132B]">EEE</option>
+                    <option value="Civil" className="bg-[#0B132B]">Civil</option>
+                    <option value="Mechanical" className="bg-[#0B132B]">Mechanical</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Academic Year / Batch
+                  </label>
+                  <select
+                    value={editYear}
+                    onChange={(e) => setEditYear(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-blue-400"
+                  >
+                    <option value="1st Year" className="bg-[#0B132B]">1st Year (2026-2030)</option>
+                    <option value="2nd Year" className="bg-[#0B132B]">2nd Year (2025-2029)</option>
+                    <option value="3rd Year" className="bg-[#0B132B]">3rd Year (2024-2028)</option>
+                    <option value="4th Year" className="bg-[#0B132B]">4th Year (2023-2027)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingScholar(null)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEdit || !editName.trim()}
+                  className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-blue-500/20"
+                >
+                  {isSubmittingEdit ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
