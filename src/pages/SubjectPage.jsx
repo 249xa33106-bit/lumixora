@@ -12,13 +12,27 @@ export default function SubjectPage({ subject, onBack, user }) {
   const [saved, setSaved] = useState(false);
   const [isFounderMode, setIsFounderMode] = useState(false);
 
-  // Find this subject's materials from the global state
+  // Find this subject's materials from the global state with intelligent fallback to curated notes
   const materialsData = useMemo(() => {
-    return hubMaterials.find(m => m.id === subject.id) || {
-      playlists: { pass: { featured: null, alternatives: [] }, complete: { featured: null, alternatives: [] }, industry: { featured: null, alternatives: [] } },
-      resources: []
+    const fromGlobal = hubMaterials.find(m => m.id === subject.id);
+    if (fromGlobal && fromGlobal.resources && fromGlobal.resources.length > 0) {
+      return fromGlobal;
+    }
+    // Fall back to subject curated notes if available
+    const fallbackResources = (subject.notes || []).map((n, idx) => ({
+      id: n.id || idx + 1,
+      label: n.title,
+      type: n.type === 'PYQ Paper' ? 'Download' : 'FileText',
+      color: n.type === 'PYQ Paper' ? 'text-brand-pink' : 'text-brand-blue',
+      bg: n.type === 'PYQ Paper' ? 'bg-brand-pink/10' : 'bg-brand-blue/10',
+      fileUrl: n.fileUrl
+    }));
+
+    return {
+      playlists: fromGlobal?.playlists || subject.playlists || { pass: { featured: null, alternatives: [] }, complete: { featured: null, alternatives: [] }, industry: { featured: null, alternatives: [] } },
+      resources: fallbackResources
     };
-  }, [hubMaterials, subject.id]);
+  }, [hubMaterials, subject]);
 
   const playlists = materialsData?.playlists || { pass: { featured: null, alternatives: [] }, complete: { featured: null, alternatives: [] }, industry: { featured: null, alternatives: [] } };
   const resources = materialsData?.resources || [];

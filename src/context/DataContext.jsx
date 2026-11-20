@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
+import { CURRICULUM_SUBJECTS } from '../data/curriculumNotesData';
 
 const DataContext = createContext();
 
@@ -7,8 +8,21 @@ export function DataProvider({ children }) {
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
   const [doubts, setDoubts] = useState([]);
-  const [hubSubjects, setHubSubjects] = useState([]);
-  const [hubMaterials, setHubMaterials] = useState([]);
+  const [hubSubjects, setHubSubjects] = useState(CURRICULUM_SUBJECTS);
+  const [hubMaterials, setHubMaterials] = useState(() => {
+    return CURRICULUM_SUBJECTS.map(sub => ({
+      id: sub.id,
+      playlists: sub.playlists || { pass: { featured: null, alternatives: [] }, complete: { featured: null, alternatives: [] }, industry: { featured: null, alternatives: [] } },
+      resources: (sub.notes || []).map((n, idx) => ({
+        id: n.id || idx + 1,
+        label: n.title,
+        type: n.type === 'PYQ Paper' ? 'Download' : 'FileText',
+        color: n.type === 'PYQ Paper' ? 'text-brand-pink' : 'text-brand-blue',
+        bg: n.type === 'PYQ Paper' ? 'bg-brand-pink/10' : 'bg-brand-blue/10',
+        fileUrl: n.fileUrl
+      }))
+    }));
+  });
   const [loading, setLoading] = useState(true);
 
   // Default Mock Data for Seeding
@@ -108,8 +122,51 @@ export function DataProvider({ children }) {
           }
         }
 
-        setHubSubjects(subjectsData);
-        setHubMaterials(materialsData);
+        // Merge Supabase subjects with CURRICULUM_SUBJECTS so every branch & semester is always populated
+        const mergedSubjectsMap = new Map();
+        CURRICULUM_SUBJECTS.forEach(sub => {
+          mergedSubjectsMap.set(String(sub.id).toLowerCase(), sub);
+        });
+        subjectsData.forEach(sub => {
+          const key = String(sub.id).toLowerCase();
+          const existing = mergedSubjectsMap.get(key);
+          if (existing) {
+            mergedSubjectsMap.set(key, { ...existing, ...sub });
+          } else {
+            mergedSubjectsMap.set(key, sub);
+          }
+        });
+        setHubSubjects(Array.from(mergedSubjectsMap.values()));
+
+        // Merge materials: Curated initial materials with any Supabase custom additions
+        const mergedMaterialsMap = new Map();
+        CURRICULUM_SUBJECTS.forEach(sub => {
+          mergedMaterialsMap.set(sub.id, {
+            id: sub.id,
+            playlists: sub.playlists || defaultMaterialsTemplate.playlists,
+            resources: (sub.notes || []).map((n, idx) => ({
+              id: n.id || idx + 1,
+              label: n.title,
+              type: n.type === 'PYQ Paper' ? 'Download' : 'FileText',
+              color: n.type === 'PYQ Paper' ? 'text-brand-pink' : 'text-brand-blue',
+              bg: n.type === 'PYQ Paper' ? 'bg-brand-pink/10' : 'bg-brand-blue/10',
+              fileUrl: n.fileUrl
+            }))
+          });
+        });
+        materialsData.forEach(m => {
+          const existing = mergedMaterialsMap.get(m.id);
+          if (existing) {
+            mergedMaterialsMap.set(m.id, {
+              ...existing,
+              ...m,
+              resources: m.resources && m.resources.length > 0 ? m.resources : existing.resources
+            });
+          } else {
+            mergedMaterialsMap.set(m.id, m);
+          }
+        });
+        setHubMaterials(Array.from(mergedMaterialsMap.values()));
       } catch (error) {
         console.error("Error fetching data from Supabase:", error);
       } finally {

@@ -3,9 +3,9 @@ import { isGprecPlacementSubdomain } from '../utils/placementSubdomain';
 import { 
   Bot, X, Send, Sparkles, Compass, ArrowRight, CornerDownLeft, 
   BookOpen, Code, GraduationCap, Briefcase, HelpCircle, Trophy, 
-  Map, Award, Rocket, CheckCircle2, RefreshCw, MessageSquare
+  Map, Award, Rocket, CheckCircle2, RefreshCw, MessageSquare,
+  Search, ArrowUpRight, FileText, CheckSquare, Layers, ShieldCheck, Gift
 } from 'lucide-react';
-import { callAICompletion } from '../services/aiService';
 
 // Comprehensive registry of all Lumixora portals with descriptions, actions, and deep search keywords
 export const PORTAL_CATALOG = [
@@ -15,6 +15,7 @@ export const PORTAL_CATALOG = [
     category: 'Academics & Core',
     description: 'Your personalized academic cockpit with streak tracking, daily roadmap, and quick stats.',
     icon: Sparkles,
+    color: 'indigo',
     keywords: ['home', 'start', 'overview', 'dashboard', 'analytics', 'streak', 'coins', 'level'],
     suggestedQueries: ['Where can I see my daily study streak?', 'Take me to main dashboard']
   },
@@ -24,6 +25,7 @@ export const PORTAL_CATALOG = [
     category: 'Academics & Core',
     description: 'Track university marks, semester-wise SGPA, cumulative CGPA, and subject credits.',
     icon: GraduationCap,
+    color: 'emerald',
     keywords: ['marks', 'sgpa', 'cgpa', 'grades', 'semester', 'percentage', 'result', 'academic score'],
     suggestedQueries: ['Calculate my SGPA/CGPA', 'Where can I see my semester marks?']
   },
@@ -31,8 +33,9 @@ export const PORTAL_CATALOG = [
     id: 'learning-hub',
     name: 'Learning & Video Hub',
     category: 'Academics & Core',
-    description: 'Curated video lectures, unit-wise notes, PPTs, and verified question banks.',
+    description: 'Curated video lectures, unit-wise notes, lecture PPTs, and verified question banks.',
     icon: BookOpen,
+    color: 'cyan',
     keywords: ['notes', 'videos', 'lectures', 'syllabus', 'study material', 'units', 'ppts', 'learning hub', 'books'],
     suggestedQueries: ['Find notes for my subjects', 'Watch video lectures for Unit 1']
   },
@@ -41,7 +44,8 @@ export const PORTAL_CATALOG = [
     name: 'All Courses & Diplomas',
     category: 'Academics & Core',
     description: 'Explore Full Stack, Cloud, AI/ML, and Robotics engineering certified courses.',
-    icon: BookOpen,
+    icon: Layers,
+    color: 'purple',
     keywords: ['courses', 'diploma', 'certificates', 'learn web dev', 'full stack', 'cloud'],
     suggestedQueries: ['Show all available engineering courses', 'Explore diploma certifications']
   },
@@ -51,6 +55,7 @@ export const PORTAL_CATALOG = [
     category: 'Academics & Core',
     description: 'Instant step-by-step LaTeX formula solutions, mathematical derivations, and concept explanations.',
     icon: HelpCircle,
+    color: 'amber',
     keywords: ['doubts', 'doubt solver', 'ask question', 'homework', 'math problem', 'derivation', 'solution'],
     suggestedQueries: ['Help me solve a math problem', 'Explain a difficult concept']
   },
@@ -60,6 +65,7 @@ export const PORTAL_CATALOG = [
     category: 'Academics & Core',
     description: 'Online quizzes, mid-term mock assessments, and company evaluation simulators.',
     icon: Award,
+    color: 'rose',
     keywords: ['tests', 'quiz', 'mock test', 'exams', 'assessment', 'mcq', 'practice test'],
     suggestedQueries: ['Take a practice test', 'Prepare for mid-term exams']
   },
@@ -67,8 +73,9 @@ export const PORTAL_CATALOG = [
     id: 'coding-practice',
     name: 'Code Arena & 30D Java',
     category: 'Coding & Tech',
-    description: 'Interactive Monaco code compiler with 30-Day Java/Python tracks, LeetCode style DSA problems.',
+    description: 'Interactive in-browser code compiler with 30-Day Java/Python tracks and LeetCode-style DSA problems.',
     icon: Code,
+    color: 'emerald',
     keywords: ['code', 'coding', 'compiler', 'dsa', 'java', 'python', 'problems', 'code arena', 'algorithms', 'data structures'],
     suggestedQueries: ['Where can I practice coding problems?', 'Open 30-Day Java track']
   },
@@ -78,6 +85,7 @@ export const PORTAL_CATALOG = [
     category: 'Career & Placement',
     description: 'Company-specific recruitment readiness for TCS, Infosys, Amazon, Wipro, and Google drives.',
     icon: Briefcase,
+    color: 'indigo',
     keywords: ['placement', 'jobs', 'companies', 'tcs', 'infosys', 'amazon', 'hiring', 'recruitment', 'package'],
     suggestedQueries: ['Prepare for TCS / Infosys placements', 'Target dream company requirements']
   },
@@ -87,6 +95,7 @@ export const PORTAL_CATALOG = [
     category: 'Career & Placement',
     description: 'Real-time two-way voice AI interviewer conducting HR, technical, and behavioral rounds.',
     icon: MessageSquare,
+    color: 'purple',
     keywords: ['interview', 'mock interview', 'voice interview', 'hr round', 'technical round', 'speech'],
     suggestedQueries: ['Start an AI voice mock interview', 'Practice behavioral HR questions']
   },
@@ -95,81 +104,189 @@ export const PORTAL_CATALOG = [
     name: 'AI Resume Builder (PDF)',
     category: 'Career & Placement',
     description: 'ATS-optimized professional resume generator with auto-formatting and instant PDF download.',
-    icon: Briefcase,
+    icon: FileText,
+    color: 'blue',
     keywords: ['resume', 'cv', 'ats', 'resume builder', 'download resume', 'job application'],
     suggestedQueries: ['Build an ATS-friendly resume', 'Export my resume to PDF']
   },
   {
-    id: 'career-roadmap',
-    name: 'Career Roadmap & Milestones',
-    category: 'Career & Placement',
-    description: 'Year-by-year engineering roadmap detailing tech stack mastery and semester milestones.',
-    icon: Map,
-    keywords: ['roadmap', 'career path', 'milestones', 'year guide', 'engineering journey'],
-    suggestedQueries: ['Show my 4-year engineering roadmap', 'What should I learn in 2nd/3rd year?']
+    id: 'attendance',
+    name: 'Attendance Tracker',
+    category: 'Academics & Core',
+    description: 'Smart attendance calculator with 75% cutoff threshold and bunkable class safety planner.',
+    icon: CheckSquare,
+    color: 'amber',
+    keywords: ['attendance', 'bunk', 'classes', 'percentage', '75 percent', 'attendance calculator', 'tracker'],
+    suggestedQueries: ['How many classes can I skip?', 'Calculate my attendance percentage']
   },
   {
-    id: 'internships',
-    name: 'Internships & Opportunities',
+    id: 'certificates',
+    name: 'Proof-of-Skill Badges & Certs',
     category: 'Career & Placement',
-    description: 'Verified internship openings, research fellowships, and stipend programs for students.',
-    icon: Briefcase,
-    keywords: ['internship', 'intern', 'stipend', 'summer internship', 'training'],
-    suggestedQueries: ['Find student internships', 'Apply for verified internships']
+    description: 'Verifiable cryptographic credential badges showcasing verified coding benchmarks.',
+    icon: ShieldCheck,
+    color: 'purple',
+    keywords: ['certificates', 'badges', 'skills', 'proof', 'credentials', 'linkedin share'],
+    suggestedQueries: ['View my verified certificates', 'How do I earn badges?']
   },
   {
     id: 'hackathons',
-    name: 'Hackathons & Competitions',
-    category: 'Community & Build',
-    description: 'Curated national & international hackathons, cash prize bounties, and team registrations.',
+    name: 'Hackathons & Internships',
+    category: 'Opportunities',
+    description: 'Browse verified national hackathons, coding contests, and student internships.',
     icon: Trophy,
-    keywords: ['hackathons', 'hackathon', 'competition', 'prizes', 'bounty', 'smart india hackathon'],
-    suggestedQueries: ['Explore upcoming hackathons', 'Join a hackathon team']
+    color: 'amber',
+    keywords: ['hackathons', 'internships', 'competitions', 'contests', 'cash prize', 'jobs', 'teams'],
+    suggestedQueries: ['Find live hackathons', 'Apply for student internships']
   },
   {
-    id: 'projects',
-    name: 'Project Build Studio',
-    category: 'Community & Build',
-    description: 'Repository of mini and major engineering projects with GitHub proof verification.',
-    icon: Rocket,
-    keywords: ['projects', 'build', 'github', 'mini project', 'major project', 'final year project'],
-    suggestedQueries: ['Find final year project ideas', 'Submit project for skill verification']
+    id: 'alumni-referrals',
+    name: 'Alumni Referrals & Off-Campus Jobs',
+    category: 'Career & Placement',
+    description: 'Connect with alumni working at Google, Microsoft, Amazon, and top startups for direct referrals.',
+    icon: ArrowUpRight,
+    color: 'cyan',
+    keywords: ['referral', 'alumni', 'off campus', 'jobs', 'connections', 'networking'],
+    suggestedQueries: ['Get employee referral', 'Browse alumni network']
   },
   {
-    id: 'community',
-    name: 'Community & Study Squads',
-    category: 'Community & Build',
-    description: 'Connect with peers, branch study squads, campus ambassadors, and collaborate.',
-    icon: Compass,
-    keywords: ['community', 'chat', 'squads', 'groups', 'peers', 'friends', 'discussion'],
-    suggestedQueries: ['Join my branch study squad', 'Ask peers in the community']
+    id: 'career-roadmap',
+    name: 'Career Roadmap & Target Roles',
+    category: 'Career & Placement',
+    description: 'Step-by-step 30-day transformation tracks for Software Engineer, AI/ML, Cloud, and Data Science.',
+    icon: Map,
+    color: 'indigo',
+    keywords: ['roadmap', 'path', 'career guide', 'what to learn', 'target role', 'skills required'],
+    suggestedQueries: ['Show Software Engineer roadmap', 'How to become an AI engineer?']
   },
   {
-    id: 'attendance',
-    name: 'Attendance Tracker',
-    category: 'Tools & Utilities',
-    description: 'Calculate 75% attendance threshold, track bunkable classes, and log daily lectures.',
-    icon: GraduationCap,
-    keywords: ['attendance', 'bunk', 'classes', '75 percent', 'attendance calculator'],
-    suggestedQueries: ['Calculate how many classes I can miss', 'Track my daily attendance']
+    id: 'student-offers',
+    name: 'Student Perks & Pro Developer Offers',
+    category: 'Campus & Perks',
+    description: 'Unlock $14,500+ in free developer packs: GitHub Copilot, JetBrains All Products, Azure $100, Figma Pro, and 590+ software perks.',
+    icon: Gift,
+    color: 'emerald',
+    keywords: ['student offers', 'student perks', 'free tools', 'discounts', 'github student pack', 'jetbrains', 'free pro', 'copilot free', 'azure credits', 'aws educate', 'figma student', 'software deals'],
+    suggestedQueries: ['Where can I get free developer tools?', 'How to claim GitHub Student Pack?', 'Free student AI tools']
   },
   {
     id: 'contribute',
-    name: 'Contribute Notes & Earn',
-    category: 'Tools & Utilities',
-    description: 'Upload handwritten notes, question papers, and earn Lumixora scholar coins and badges.',
+    name: 'Contribute Notes',
+    category: 'Support & Community',
+    description: 'Upload high-quality handwritten or typed notes and question banks to help fellow scholars.',
     icon: BookOpen,
-    keywords: ['upload notes', 'contribute', 'share notes', 'earn coins', 'submit'],
-    suggestedQueries: ['How can I upload my handwritten notes?', 'Contribute study material']
+    color: 'emerald',
+    keywords: ['contribute', 'upload notes', 'share notes', 'community', 'submit material'],
+    suggestedQueries: ['How to contribute notes?', 'Upload lecture notes']
+  },
+  {
+    id: 'contact',
+    name: 'Connect with Founder',
+    category: 'Support & Community',
+    description: 'Reach out directly to Founder Shaik Sowban for platform feedback, feature requests, or queries.',
+    icon: MessageSquare,
+    color: 'purple',
+    keywords: ['founder', 'contact', 'founder connect', 'feedback', 'shaik sowban', 'ceo'],
+    suggestedQueries: ['Message the founder', 'Give platform feedback']
+  },
+  {
+    id: 'report-bug',
+    name: 'Report Platform Issue',
+    category: 'Support & Community',
+    description: 'Found a bug or visual issue? Submit an instant report with screenshot attachments.',
+    icon: HelpCircle,
+    color: 'rose',
+    keywords: ['bug', 'issue', 'problem', 'broken', 'error', 'report issue', 'support'],
+    suggestedQueries: ['Report a bug', 'Something is not working']
   }
 ];
+
+/**
+ * Clean markdown-like text parser that renders bold, italic, and bullet points
+ * without raw asterisks or unformatted text.
+ */
+function FormattedMessage({ text }) {
+  if (!text) return null;
+
+  // Split into paragraphs / lines
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-1.5 leading-relaxed">
+      {lines.map((line, lIdx) => {
+        if (!line.trim()) return <div key={lIdx} className="h-1" />;
+
+        // Check if line is a bullet
+        const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-') || /^\*\s+/.test(line.trim());
+        const cleanLine = isBullet ? line.trim().replace(/^([•\-]|\*\s+)\s*/, '') : line;
+
+        // Clean tokenizer for **bold** and *italic*
+        const parts = [];
+        let remaining = cleanLine;
+        let pKey = 0;
+
+        while (remaining.length > 0) {
+          // Check for **bold** first
+          const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+          // Check for *italic* or *"quoted"* (not surrounded by other asterisks)
+          const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/);
+
+          let firstMatch = null;
+          let matchType = null;
+
+          if (boldMatch && (!italicMatch || boldMatch.index <= italicMatch.index)) {
+            firstMatch = boldMatch;
+            matchType = 'bold';
+          } else if (italicMatch) {
+            firstMatch = italicMatch;
+            matchType = 'italic';
+          }
+
+          if (firstMatch) {
+            if (firstMatch.index > 0) {
+              parts.push(<span key={pKey++}>{remaining.substring(0, firstMatch.index)}</span>);
+            }
+            if (matchType === 'bold') {
+              parts.push(
+                <strong key={pKey++} className="font-bold text-white tracking-wide">
+                  {firstMatch[1]}
+                </strong>
+              );
+            } else {
+              parts.push(
+                <em key={pKey++} className="italic text-indigo-300 font-medium">
+                  {firstMatch[1]}
+                </em>
+              );
+            }
+            remaining = remaining.substring(firstMatch.index + firstMatch[0].length);
+          } else {
+            parts.push(<span key={pKey++}>{remaining}</span>);
+            break;
+          }
+        }
+
+        if (isBullet) {
+          return (
+            <div key={lIdx} className="flex items-start gap-2 pl-1 text-slate-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0" />
+              <span>{parts}</span>
+            </div>
+          );
+        }
+
+        return <div key={lIdx} className="text-slate-200">{parts}</div>;
+      })}
+    </div>
+  );
+}
 
 export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, user }) {
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: `Hello ${user?.displayName?.split(' ')[0] || 'Scholar'}! 👋 I am your **Lumixora Navigator Bot**.\n\nTell me what you're trying to do (e.g. *"I want to practice coding"*, *"Where are my semester notes?"*, *"Help me prepare for an interview"*) and I'll guide you directly to the right portal with one click!`,
+      text: "Hello Scholar! 👋 I am your **Lumixora Platform Navigator**.\n\nTell me what you're trying to do (e.g. *\"Where are my semester notes?\"*, *\"I want to practice coding\"*, *\"Prepare for placements\"*) and I'll jump you directly to the right portal with one click!",
       portals: [
         PORTAL_CATALOG.find(p => p.id === 'learning-hub'),
         PORTAL_CATALOG.find(p => p.id === 'coding-practice'),
@@ -182,19 +299,30 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Auto-scroll to bottom of chat
   useEffect(() => {
     if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen]);
+  }, [messages, isOpen]);
 
+  // Keyboard shortcut listener (Escape to close)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
-  // Find relevant portals via smart fuzzy keyword matching
+  // Semantic query matcher
   const matchPortals = (query) => {
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
+    if (!q) return [];
+
     const scored = PORTAL_CATALOG.map(portal => {
       let score = 0;
       if (portal.name.toLowerCase().includes(q)) score += 10;
@@ -213,19 +341,18 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
       .map(item => item.portal);
   };
 
-  // Smart local intent solver with instant zero-millisecond responses
+  // Instant response engine
   const generateInstantReply = (query, matched) => {
     const q = query.toLowerCase().trim();
     const primary = matched[0];
 
-    // Check for conversational greetings / pleasantries
     const greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'yo', 'greetings', 'namaste'];
     if (greetings.some(g => q === g || q.startsWith(g + ' ') || q.startsWith(g + '!') || q.startsWith(g + '.'))) {
-      return `Hello there! 👋 How can I help you navigate Lumixora today? You can ask me things like:\n\n• *"Where can I find notes for Unit 2?"*\n• *"Take me to coding practice"* \n• *"Help me prepare for TCS / Infosys placements"*\n• *"How do I track my attendance?"*`;
+      return `Hello there! 👋 How can I help you navigate Lumixora today? You can ask me things like:\n\n• *"Where can I find notes for Unit 2?"*\n• *"Take me to coding practice"*\n• *"Help me prepare for TCS / Infosys placements"*\n• *"How do I track my attendance?"*`;
     }
 
     if (q === 'thanks' || q === 'thank you' || q === 'ty' || q.includes('thank you') || q.includes('thanks')) {
-      return `You're very welcome! 😊 Always here to help you get where you need on Lumixora. Let me know what you'd like to do next!`;
+      return `You're very welcome! 😊 Always here to help you get where you need on Lumixora. What would you like to explore next?`;
     }
 
     if (q.includes('who are you') || q.includes('what are you') || q.includes('what can you do')) {
@@ -235,7 +362,7 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
     if (q.includes('note') || q.includes('material') || q.includes('book') || q.includes('pdf') || q.includes('ppt') || q.includes('syllabus')) {
       return `I found your study material! 📚 Head directly over to **${primary?.name || 'Learning & Video Hub'}** where all semester notes, verified unit question banks, and lecture PPTs are organized for your branch.`;
     }
-    if (q.includes('code') || q.includes('dsa') || q.includes('java') || q.includes('python') || q.includes('practice') || q.includes('arena') || q.includes('problem 36') || q.includes('story')) {
+    if (q.includes('code') || q.includes('dsa') || q.includes('java') || q.includes('python') || q.includes('practice') || q.includes('arena')) {
       return `Time to build your coding muscle! 💻 Jump straight into **${primary?.name || 'Code Arena'}** for story-based programming quests, Monaco in-browser compiler, and 30-Day Java/Python tracks.`;
     }
     if (q.includes('placement') || q.includes('job') || q.includes('company') || q.includes('tcs') || q.includes('infosys') || q.includes('amazon') || q.includes('hiring')) {
@@ -261,7 +388,7 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
     }
 
     if (matched.length > 0 && primary) {
-      return `Here is the best portal for your request: **${primary.name}** — ${primary.description}`;
+      return `Here is the best portal for your request: **${primary.name}**\n\n${primary.description}`;
     }
 
     return `I couldn't find a direct portal match for "${query}". Try asking about notes, coding practice, mock interview, placement commander, or attendance!`;
@@ -275,18 +402,12 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
 
-    // Check if greeting or casual query
     const qLower = userQuery.toLowerCase().trim();
     const isGreeting = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'yo', 'thanks', 'thank you'].some(g => qLower === g || qLower.startsWith(g + ' ') || qLower.startsWith(g + '!'));
 
-    // 1. Match high-relevance portals locally
     const matched = isGreeting ? [] : matchPortals(userQuery);
     const resolvedPortals = matched.length > 0 ? matched : [];
 
-    // 2. Generate INSTANT response immediately (Zero Lag - 0ms)
-    const instantReply = generateInstantReply(userQuery, matched);
-    
-    // Add realistic 200ms natural typing feel without hanging on slow external API
     setIsTyping(true);
     setTimeout(() => {
       setMessages(prev => [
@@ -294,12 +415,12 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
         {
           id: Date.now() + 1,
           sender: 'bot',
-          text: instantReply,
+          text: generateInstantReply(userQuery, matched),
           portals: resolvedPortals
         }
       ]);
       setIsTyping(false);
-    }, 220);
+    }, 180);
   };
 
   const handlePortalClick = (portalId) => {
@@ -314,110 +435,111 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
   if (!isOpen || isGprecPlacementSubdomain()) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-end sm:justify-center p-2 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-end sm:justify-center p-2 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in font-sans">
       <div 
-        className="relative w-full max-w-lg bg-[#0A0E1A] border border-cyan-500/30 rounded-3xl shadow-[0_0_60px_rgba(6,182,212,0.2)] overflow-hidden flex flex-col h-[85vh] sm:h-[620px] transition-all"
+        className="relative w-full max-w-lg bg-[#0d111c] border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] sm:h-[640px] transition-all"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-4 sm:p-5 bg-[#0e1424] border-b border-white/10 flex items-center justify-between">
+        {/* Modern Header */}
+        <div className="p-4 sm:p-5 bg-[#090d16] border-b border-slate-800/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#101A35] border border-cyan-500/40 p-1 flex items-center justify-center shadow-md relative">
-              <img 
-                src="/lumixora_logo_icon.png" 
-                alt="Lumixora Bot" 
-                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" 
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#00B987] border-2 border-[#0A0E1A] animate-pulse" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center shadow-inner relative shrink-0">
+              <Bot className="w-5 h-5 text-indigo-400" />
+              <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute top-1.5 right-1.5 animate-pulse" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#090d16] animate-pulse" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <span>Lumixora Navigator Bot</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  AI Guide
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-white tracking-tight">
+                  Lumixora Navigator
+                </h3>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800/50">
+                  AI Copilot
                 </span>
-              </h3>
-              <p className="text-[11px] text-gray-400 font-medium">
-                Instant portal finder & platform assistant
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                Instant portal finder & smart platform guide
               </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
             title="Close Navigator (Esc)"
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Quick Suggestion Pills */}
-        <div className="px-4 py-2.5 bg-black/40 border-b border-white/5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {/* Quick Suggestion Chips */}
+        <div className="px-4 py-2.5 bg-slate-950/80 border-b border-slate-800/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 select-none">
           {[
-            '📝 Find Notes & Lectures',
-            '💻 Practice Coding / DSA',
-            '🎯 Placement Commander',
-            '🎤 AI Mock Interview',
-            '📊 Check SGPA / CGPA',
-            '📄 Resume Builder'
-          ].map((pill, idx) => (
+            { label: '🎁 Free Student Perks', q: 'student offers' },
+            { label: 'Find Notes & Lectures', q: 'notes' },
+            { label: 'Practice Coding / DSA', q: 'coding' },
+            { label: 'Placement Commander', q: 'placement' },
+            { label: 'AI Mock Interview', q: 'interview' },
+            { label: 'Check SGPA / CGPA', q: 'sgpa' },
+            { label: 'Resume Builder', q: 'resume' }
+          ].map((chip, idx) => (
             <button
               key={idx}
-              onClick={() => handleSend(pill.replace(/^[^\s]+\s/, ''))}
-              className="text-[11px] font-medium px-3 py-1 rounded-full bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/30 text-gray-300 whitespace-nowrap transition-all cursor-pointer shrink-0"
+              onClick={() => handleSend(chip.q)}
+              className="text-[11px] font-medium px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-950/60 hover:text-indigo-200 border border-slate-800 hover:border-indigo-500/40 text-slate-300 whitespace-nowrap transition-all cursor-pointer shrink-0"
             >
-              {pill}
+              {chip.label}
             </button>
           ))}
         </div>
 
         {/* Chat History */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#070A12]/90">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#0a0e18] custom-scrollbar">
           {messages.map((m) => (
             <div 
               key={m.id} 
-              className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
+              className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'} animate-fade-in`}
             >
               <div 
-                className={`max-w-[88%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                className={`max-w-[90%] sm:max-w-[85%] p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                   m.sender === 'user'
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-br-none shadow-md font-medium'
-                    : 'bg-[#121829] text-gray-200 border border-white/10 rounded-bl-none shadow-sm'
+                    ? 'bg-indigo-600 text-white rounded-br-xs shadow-md font-medium'
+                    : 'bg-slate-900/90 text-slate-200 border border-slate-800 rounded-bl-xs shadow-sm'
                 }`}
               >
-                <div className="whitespace-pre-wrap">{m.text}</div>
+                <FormattedMessage text={m.text} />
 
                 {/* Attached Interactive Portal Cards */}
                 {m.portals && m.portals.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
-                    <span className="text-[10px] uppercase font-black tracking-wider text-cyan-400 block">
-                      ⚡ Click to open required portal:
+                  <div className="mt-3.5 pt-3.5 border-t border-slate-800 space-y-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400 block flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" /> Recommended Portals (Click to open):
                     </span>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {m.portals.map((portal) => {
                         const IconComponent = portal.icon || Compass;
                         return (
                           <button
                             key={portal.id}
                             onClick={() => handlePortalClick(portal.id)}
-                            className="w-full p-2.5 rounded-xl bg-black/40 hover:bg-cyan-950/40 border border-white/10 hover:border-cyan-500/40 flex items-center justify-between text-left transition-all group cursor-pointer"
+                            className="w-full p-3 rounded-xl bg-slate-950/80 hover:bg-indigo-950/40 border border-slate-800/80 hover:border-indigo-500/40 flex items-center justify-between text-left transition-all group cursor-pointer shadow-xs"
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                              <div className="w-9 h-9 rounded-xl bg-indigo-600/15 border border-indigo-500/30 text-indigo-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                                 <IconComponent className="w-4 h-4" />
                               </div>
-                              <div className="truncate">
-                                <span className="text-xs font-bold text-white block group-hover:text-cyan-300 transition-colors">
+                              <div className="min-w-0 flex-1">
+                                <span className="text-xs font-bold text-white block group-hover:text-indigo-300 transition-colors truncate">
                                   {portal.name}
                                 </span>
-                                <span className="text-[10px] text-gray-400 block truncate">
+                                <span className="text-[11px] text-slate-400 block line-clamp-2 leading-snug mt-0.5">
                                   {portal.description}
                                 </span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-1 text-cyan-400 text-xs font-bold shrink-0 ml-2 group-hover:translate-x-1 transition-transform">
-                              <span>Go</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600/15 group-hover:bg-indigo-600 text-indigo-300 group-hover:text-white text-xs font-semibold shrink-0 transition-all border border-indigo-500/30">
+                              <span>Open</span>
+                              <ArrowUpRight className="w-3.5 h-3.5" />
                             </div>
                           </button>
                         );
@@ -430,12 +552,12 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
           ))}
 
           {isTyping && (
-            <div className="flex justify-start">
-              <div className="p-3 bg-[#121829] border border-white/10 rounded-2xl rounded-bl-none text-xs text-gray-400 flex items-center gap-1.5 shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" />
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]" />
-                <span className="w-2 h-2 rounded-full bg-purple-500 animate-bounce [animation-delay:0.4s]" />
-                <span className="ml-1 text-[11px] font-medium text-gray-400">Finding best portal...</span>
+            <div className="flex justify-start animate-fade-in">
+              <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl rounded-bl-xs text-xs text-slate-400 flex items-center gap-2 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" />
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce [animation-delay:0.2s]" />
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-bounce [animation-delay:0.4s]" />
+                <span className="ml-1 text-[11px] font-medium text-slate-400">Finding best portal...</span>
               </div>
             </div>
           )}
@@ -443,26 +565,30 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Bar */}
+        {/* Modern Bottom Input Bar */}
         <form 
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();
           }}
-          className="p-3 bg-[#0e1424] border-t border-white/10 flex items-center gap-2"
+          className="p-3 sm:p-4 bg-[#090d16] border-t border-slate-800/80 flex items-center gap-2 shrink-0"
         >
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your question or where you want to go..."
-            className="flex-1 px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
-          />
+          <div className="flex-1 relative flex items-center">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Search portals, notes, code arena, placement..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-medium"
+            />
+          </div>
           <button
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="p-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 disabled:opacity-40 text-white transition-all cursor-pointer shadow-md shadow-cyan-600/20"
+            className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white transition-all cursor-pointer shadow-sm disabled:cursor-not-allowed shrink-0"
+            title="Send (Enter)"
           >
             <Send className="w-4 h-4" />
           </button>

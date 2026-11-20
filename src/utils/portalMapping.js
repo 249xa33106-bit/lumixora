@@ -28,6 +28,7 @@ export const ALL_PORTALS = [
 
   // Campus & Opportunities
   { id: 'marketplace', label: 'Campus P2P Marketplace', category: 'social', tags: ['marketplace', 'store', 'buy', 'sell', 'drafter', 'calculator', 'books', 'p2p', 'campus', 'stationery', 'used'] },
+  { id: 'student-offers', label: 'Student Perks & Pro Offers', category: 'social', tags: ['perks', 'offers', 'tools', 'free', 'github', 'discounts', 'software', 'developer-pack', 'student-offers'] },
   { id: 'clubs', label: 'Student Clubs & Societies', category: 'social', tags: ['clubs', 'cad', 'societies', 'student-body', 'events', 'activities', 'membership'] },
   { id: 'projects', label: 'Community Project Showcase', category: 'social', tags: ['projects', 'showcase', 'portfolio', 'build', 'github', 'community', 'web3', 'ai'] },
   { id: 'hackathons', label: 'Hackathons & Internships', category: 'social', tags: ['projects', 'coding', 'internship', 'competition'] },
@@ -51,9 +52,13 @@ export function analyzeAndRecommendPortals({
 } = {}) {
   const recommended = new Set();
 
-  // 1. Core anchors for all students
+  // 1. Core anchors for all students (always default enabled)
   recommended.add('dashboard');
+  recommended.add('student-offers');
   recommended.add('community');
+  recommended.add('contribute');
+  recommended.add('contact');
+  recommended.add('report-bug');
 
   const goalLower = (careerGoal || '').toLowerCase();
   const yearLower = (year || '').toLowerCase();

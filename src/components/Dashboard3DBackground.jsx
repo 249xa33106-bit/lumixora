@@ -180,58 +180,6 @@ export default function Dashboard3DBackground({ showParticleText = false }) {
     const bgParticles = new THREE.Points(bgGeo, bgMat);
     scene.add(bgParticles);
 
-    // ─── 4. VIBRANT FLOATING 3D WIREFRAME GEMS ───────────────────────────────
-    const floatingGroup = new THREE.Group();
-    scene.add(floatingGroup);
-
-    // 1. Icosahedron (Teal Cyber Crystal)
-    const icoGeo = new THREE.IcosahedronGeometry(12, 1);
-    const icoMat = new THREE.MeshBasicMaterial({
-      color: 0x00f5d4,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.4
-    });
-    const icoMesh = new THREE.Mesh(icoGeo, icoMat);
-    icoMesh.position.set(-48, 8, -18);
-    floatingGroup.add(icoMesh);
-
-    // 2. Torus Knot (Electric Purple Loop)
-    const torusGeo = new THREE.TorusKnotGeometry(10, 2.2, 80, 16);
-    const torusMat = new THREE.MeshBasicMaterial({
-      color: 0xa855f7,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.35
-    });
-    const torusMesh = new THREE.Mesh(torusGeo, torusMat);
-    torusMesh.position.set(50, -20, -22);
-    floatingGroup.add(torusMesh);
-
-    // 3. Octahedron (Rose Ruby)
-    const octaGeo = new THREE.OctahedronGeometry(9, 0);
-    const octaMat = new THREE.MeshBasicMaterial({
-      color: 0xf43f5e,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.45
-    });
-    const octaMesh = new THREE.Mesh(octaGeo, octaMat);
-    octaMesh.position.set(28, 30, -30);
-    floatingGroup.add(octaMesh);
-
-    // 4. Dodecahedron (Azure Star)
-    const dodecaGeo = new THREE.DodecahedronGeometry(9, 0);
-    const dodecaMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.38
-    });
-    const dodecaMesh = new THREE.Mesh(dodecaGeo, dodecaMat);
-    dodecaMesh.position.set(-34, -28, -18);
-    floatingGroup.add(dodecaMesh);
-
     // ─── 5. MOUSE PARALLAX ───────────────────────────────────────────────────
     let mouseX = 0;
     let mouseY = 0;
@@ -283,23 +231,6 @@ export default function Dashboard3DBackground({ showParticleText = false }) {
       bgParticles.rotation.y = elapsedTime * 0.03;
       bgParticles.rotation.x = Math.sin(elapsedTime * 0.02) * 0.08;
 
-      // Animate floating wireframes
-      icoMesh.rotation.x += 0.007;
-      icoMesh.rotation.y += 0.009;
-      icoMesh.position.y = 8 + Math.sin(elapsedTime * 0.8) * 4;
-
-      torusMesh.rotation.x += 0.006;
-      torusMesh.rotation.y += 0.008;
-      torusMesh.position.y = -20 + Math.cos(elapsedTime * 0.7) * 5;
-
-      octaMesh.rotation.x += 0.01;
-      octaMesh.rotation.z += 0.008;
-      octaMesh.position.y = 30 + Math.sin(elapsedTime * 1.1) * 3;
-
-      dodecaMesh.rotation.y += 0.008;
-      dodecaMesh.rotation.x += 0.006;
-      dodecaMesh.position.y = -28 + Math.cos(elapsedTime * 0.9) * 4;
-
       renderer.render(scene, camera);
     };
 
@@ -327,14 +258,6 @@ export default function Dashboard3DBackground({ showParticleText = false }) {
       if (textMat) textMat.dispose();
       bgGeo.dispose();
       bgMat.dispose();
-      icoGeo.dispose();
-      icoMat.dispose();
-      torusGeo.dispose();
-      torusMat.dispose();
-      octaGeo.dispose();
-      octaMat.dispose();
-      dodecaGeo.dispose();
-      dodecaMat.dispose();
       particleTexture.dispose();
       renderer.dispose();
     };

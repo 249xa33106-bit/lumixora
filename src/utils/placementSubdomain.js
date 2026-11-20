@@ -208,6 +208,7 @@ export function isAllowedGprecPlacementTab(tab) {
     'certificates', 'proof-of-skill', 'badges', 'credentials', 'verify', 'verify-cert', 'cert-verify',
     'alumni', 'alumni-referrals', 'alumni-bridge', 'referrals',
     'career-roadmap', 'career-roles',
+    'student-offers', 'student-perks', 'perks', 'offers',
     'internships', 'internship',
     'founder-portal', 'founder', 'founder-audit', 'logins',
     'contact', 'report-bug'

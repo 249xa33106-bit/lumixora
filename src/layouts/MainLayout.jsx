@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import GlobalSearchModal from '../components/GlobalSearchModal';
 import PlatformNavigatorChatbot from '../components/PlatformNavigatorChatbot';
 import Realistic3DLogo from '../components/Realistic3DLogo';
+import ScholarAvatar, { detectGenderFromName } from '../components/ScholarAvatar';
 import { ALL_PORTALS, GPREC_PORTALS } from '../utils/portalMapping';
 import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, isAllowedGprecPlacementTab } from '../utils/placementSubdomain';
 import { 
@@ -250,6 +251,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
   const [editSection, setEditSection] = useState('A');
   const [editQualification, setEditQualification] = useState('B.Tech');
   const [editPlace, setEditPlace] = useState('Kurnool');
+  const [editGender, setEditGender] = useState('male');
   const [editMobileNumber, setEditMobileNumber] = useState('');
   const [editCgpa, setEditCgpa] = useState('9.0');
   const [editCareerGoal, setEditCareerGoal] = useState('Placement');
@@ -373,6 +375,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       department: 'CSE',
       branch: 'CSE',
       place: 'Kurnool, AP', 
+      gender: localStorage.getItem('lumixora_student_gender') || detectGenderFromName(name) || 'male',
       year: '1st Year', 
       sem: '1',
       sec: 'A',
@@ -402,6 +405,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             if (lowerK === 'department') metadata.department = rawJson[k];
             if (lowerK === 'branch') metadata.branch = rawJson[k];
             if (lowerK === 'place') metadata.place = rawJson[k];
+            if (lowerK === 'gender' || lowerK === 'sex') metadata.gender = rawJson[k];
             if (lowerK === 'year') metadata.year = rawJson[k];
             if (lowerK === 'sem' || lowerK === 'semester') metadata.sem = rawJson[k];
             if (lowerK === 'sec' || lowerK === 'section') metadata.sec = rawJson[k];
@@ -432,6 +436,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       if (user.sec || user.section) metadata.sec = user.sec || user.section;
       if (user.qualification) metadata.qualification = user.qualification;
       if (user.place) metadata.place = user.place;
+      if (user.gender) metadata.gender = user.gender;
       if (user.mobileNumber || user.phone) metadata.mobileNumber = user.mobileNumber || user.phone;
       if (user.cgpa) metadata.cgpa = user.cgpa;
       if (user.careerGoal) metadata.careerGoal = user.careerGoal;
@@ -459,13 +464,21 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     setEditSection(prof.sec || user?.sec || user?.section || 'A');
     setEditQualification(prof.qualification || user?.qualification || 'B.Tech');
     setEditPlace(prof.place || user?.place || 'Kurnool');
+    setEditGender(prof.gender || localStorage.getItem('lumixora_student_gender') || detectGenderFromName(prof.name) || 'male');
     setEditMobileNumber(prof.mobileNumber || user?.mobileNumber || user?.phone || '');
     setEditCgpa(prof.cgpa || user?.cgpa || '9.0');
     setEditCareerGoal(prof.careerGoal || user?.careerGoal || 'Placement');
     setEditInterests(Array.isArray(user?.interests) ? user.interests : (Array.isArray(prof.interests) ? prof.interests : []));
     const isGprecUser = isGprecPlacementSubdomain(user);
     const rawPortals = Array.isArray(user?.activePortals) ? user.activePortals : (Array.isArray(prof.activePortals) ? prof.activePortals : []);
-    setEditActivePortals(isGprecUser ? rawPortals.filter(id => isAllowedGprecPlacementTab(id)) : rawPortals);
+    const defaultSupport = isGprecUser ? ['contact', 'report-bug'] : ['contribute', 'contact', 'report-bug'];
+    const defaultPortals = isGprecUser
+      ? ['ai-commander', 'interview', 'coding-practice', ...defaultSupport]
+      : ['dashboard', 'learning-hub', 'doubts', 'ai-commander', 'interview', 'coding-practice', ...defaultSupport];
+    const initialPortals = rawPortals.length > 0 
+      ? Array.from(new Set([...rawPortals, ...defaultSupport]))
+      : defaultPortals;
+    setEditActivePortals(isGprecUser ? initialPortals.filter(id => isAllowedGprecPlacementTab(id)) : initialPortals);
     setEditLearningStyle(prof.learningStyle || user?.learningStyle || 'Practical');
     setEditWeakSubjects(prof.weakSubjects || user?.weakSubjects || 'None');
     setEditLeetcode(localStorage.getItem('lumixora_leetcode_user') || prof.leetcodeUser || '');
@@ -779,7 +792,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         }
       }
 
-      // Save platform handles to localStorage for 100% persistent retention on refresh
+      // Save platform handles & gender to localStorage for 100% persistent retention on refresh
+      localStorage.setItem('lumixora_student_gender', editGender);
       localStorage.setItem('lumixora_leetcode_user', editLeetcode.trim());
       localStorage.setItem('lumixora_hackerrank_user', editHackerrank.trim());
       localStorage.setItem('lumixora_github_user', editGithub.trim());
@@ -797,12 +811,17 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       const cleanLearning = editLearningStyle || 'Practical';
       const cleanWeak = editWeakSubjects.trim() || 'None';
 
+      const finalActivePortals = isGprecPlacementSubdomain(user) 
+        ? Array.from(new Set([...editActivePortals.filter(id => isAllowedGprecPlacementTab(id)), 'contact', 'report-bug']))
+        : Array.from(new Set([...editActivePortals, 'contribute', 'contact', 'report-bug']));
+
       const packedMetadata = {
         qualification: cleanQualification,
         college: cleanCollege,
         department: cleanDept,
         branch: cleanDept,
         place: cleanPlace,
+        gender: editGender,
         year: editYear,
         sem: editSemester,
         sec: editSection,
@@ -811,7 +830,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         cgpa: cleanCgpa,
         careerGoal: cleanGoal,
         interests: editInterests,
-        activePortals: isGprecPlacementSubdomain(user) ? editActivePortals.filter(id => isAllowedGprecPlacementTab(id)) : editActivePortals,
+        activePortals: finalActivePortals,
         onboardingCompleted: true,
         learningStyle: cleanLearning,
         weakSubjects: cleanWeak,
@@ -827,6 +846,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         name: cleanName,
         displayName: cleanName,
         full_name: cleanName,
+        gender: editGender,
         rollNumber: cleanRollNumber,
         roll_number: cleanRollNumber,
         department: cleanDept,
@@ -846,7 +866,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         cgpa: cleanCgpa,
         careerGoal: cleanGoal,
         interests: editInterests,
-        activePortals: editActivePortals,
+        activePortals: finalActivePortals,
         onboardingCompleted: true,
         learningStyle: cleanLearning,
         weakSubjects: cleanWeak,
@@ -1323,15 +1343,14 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
               onClick={openProfileModal}
               className="flex items-center gap-3 p-1 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-brand-teal transition-all cursor-pointer"
             >
-              <div className={`w-9 h-9 rounded-xl overflow-hidden border ${frameConfig.border || 'border-white/10'} shadow-sm relative shrink-0`}>
-                {profile.avatarUrl && profile.avatarUrl !== '/lumixora_logo.jpg' ? (
-                  <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-tr from-brand-teal via-[#0d9488] to-brand-blue flex items-center justify-center font-black text-white text-xs shadow-inner">
-                    {getScholarInitials(user?.name || user?.displayName)}
-                  </div>
-                )}
-              </div>
+              <ScholarAvatar
+                avatarUrl={profile.avatarUrl}
+                gender={profile.gender}
+                name={profile.name}
+                className="w-9 h-9"
+                rounded="rounded-xl"
+                border={frameConfig.border || 'border-white/10'}
+              />
             </button>
           </div>
         </header>
@@ -1441,15 +1460,14 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
             {/* Modal Header */}
             <div className="flex items-start justify-between pb-5 border-b border-slate-800/80 relative z-10 shrink-0">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center font-bold text-slate-200 text-sm shrink-0 overflow-hidden shadow-inner">
-                  {avatarUrl || (profile.avatarUrl && profile.avatarUrl !== '/lumixora_logo.jpg') ? (
-                    <img src={avatarUrl || profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-sm">
-                      {getScholarInitials(editName || user?.name || user?.displayName)}
-                    </div>
-                  )}
-                </div>
+                <ScholarAvatar
+                  avatarUrl={avatarUrl || profile.avatarUrl}
+                  gender={editGender || profile.gender}
+                  name={editName || profile.name}
+                  className="w-12 h-12"
+                  rounded="rounded-xl"
+                  border="border border-slate-700/80"
+                />
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-lg font-bold text-white tracking-tight">
@@ -1458,6 +1476,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 text-[11px] font-semibold border border-emerald-800/40">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                       Verified Scholar
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-950/60 text-indigo-300 text-[11px] font-semibold border border-indigo-800/40">
+                      {(editGender || profile.gender) === 'female' ? '👩 3D Female Scholar' : (editGender || profile.gender) === 'tech' ? '⚡ Tech Crest' : '👨 3D Male Scholar'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
@@ -1768,39 +1789,78 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
 
               {profileModalTab === 'settings' && (
                 <form onSubmit={handleSaveProfile} className="space-y-4 animate-fade-in">
-                  <div className="flex flex-col items-center gap-3 mb-4">
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-teal group shadow-lg">
-                      {avatarUrl || (profile.avatarUrl && profile.avatarUrl !== '/lumixora_logo.jpg') ? (
-                        <img src={avatarUrl || profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-tr from-brand-teal via-[#0d9488] to-brand-blue flex items-center justify-center font-black text-white text-2xl shadow-inner select-none">
-                          {getScholarInitials(editName || user?.name || user?.displayName)}
-                        </div>
-                      )}
-                      <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
-                        <Camera className="w-6 h-6 text-white" />
+                  <div className="flex flex-col items-center gap-3 mb-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <div className="relative group">
+                      <ScholarAvatar
+                        avatarUrl={avatarUrl || profile.avatarUrl}
+                        gender={editGender}
+                        name={editName || profile.name}
+                        className="w-20 h-20"
+                        rounded="rounded-2xl"
+                        border="border-2 border-indigo-500/40"
+                        showRing={true}
+                      />
+                      <label 
+                        className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer text-white"
+                        title="Upload Custom Photo"
+                      >
+                        <Camera className="w-6 h-6" />
                         <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                       </label>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <label className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold text-gray-300 hover:text-white cursor-pointer flex items-center gap-1.5 transition-all">
-                        <Camera className="w-3.5 h-3.5 text-brand-teal" />
+
+                    {/* Gender & Avatar Quick Selector */}
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setEditGender('male'); setAvatarUrl(''); setImageFile(null); }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          !avatarUrl && editGender === 'male'
+                            ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400'
+                            : 'bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span>👨 3D Male Scholar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => { setEditGender('female'); setAvatarUrl(''); setImageFile(null); }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          !avatarUrl && editGender === 'female'
+                            ? 'bg-purple-600 text-white shadow-sm ring-1 ring-purple-400'
+                            : 'bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span>👩 3D Female Scholar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => { setEditGender('tech'); setAvatarUrl(''); setImageFile(null); }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          !avatarUrl && editGender === 'tech'
+                            ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                            : 'bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <span>⚡ Tech Crest</span>
+                      </button>
+
+                      <label className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        avatarUrl 
+                          ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400' 
+                          : 'bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}>
+                        <Camera className="w-3.5 h-3.5 text-indigo-400" />
                         <span>Upload Photo</span>
                         <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                       </label>
-                      {(avatarUrl || (profile.avatarUrl && profile.avatarUrl !== '/lumixora_logo.jpg')) && (
-                        <button
-                          type="button"
-                          onClick={() => { setAvatarUrl(''); setImageFile(null); }}
-                          className="px-3 py-1.5 rounded-xl bg-brand-teal/15 hover:bg-brand-teal/25 border border-brand-teal/30 text-[10px] font-bold text-brand-teal cursor-pointer flex items-center gap-1.5 transition-all"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Use Name Avatar ({getScholarInitials(editName || user?.name)})</span>
-                        </button>
-                      )}
                     </div>
-                    <span className="text-[10px] text-gray-400">Personalized initial avatar automatically generates from your name</span>
+
+                    <span className="text-[11px] text-slate-400">
+                      {avatarUrl ? 'Custom photo uploaded' : `Active Avatar: ${editGender === 'female' ? '3D Female Scholar' : editGender === 'tech' ? 'Lumixora Tech Crest' : '3D Male Scholar'}`}
+                    </span>
                   </div>
 
                   {/* Section 1: Basic Identity */}
@@ -1857,7 +1917,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Year</label>
                         <select
@@ -1893,6 +1953,18 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                           placeholder="e.g. A"
                           className="w-full bg-[#111118] border border-white/10 rounded-xl px-2.5 py-2 text-xs text-gray-200 uppercase text-center focus:outline-none focus:border-brand-teal transition-all font-bold"
                         />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1">Gender</label>
+                        <select
+                          value={editGender}
+                          onChange={(e) => setEditGender(e.target.value)}
+                          className="w-full bg-[#111118] border border-indigo-500/30 rounded-xl px-2.5 py-2 text-xs text-indigo-200 focus:outline-none focus:border-indigo-400 transition-all cursor-pointer font-medium"
+                        >
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="tech">Tech Emblem</option>
+                        </select>
                       </div>
                     </div>
 
@@ -2060,78 +2132,87 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                 const isGprecSub = isGprecPlacementSubdomain(user);
                 const activePortalsList = isGprecSub ? GPREC_PORTALS : ALL_PORTALS;
                 return (
-                <div className="space-y-5 animate-fade-in">
-                  <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-black text-cyan-300 uppercase tracking-wider">
-                        {isGprecSub ? 'Customize GPREC Placement Modules' : 'Customize Your Visible Portals'}
-                      </h4>
-                      <p className="text-[11px] text-gray-300 mt-0.5">
-                        {isGprecSub 
-                          ? 'Choose which official placement modules appear in your sidebar. Unrelated portals are disabled on GPREC.'
-                          : 'Choose which modules appear in your sidebar. Unchecked portals can always be revealed anytime using the "Show All" toggle in the sidebar.'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 ml-4">
-                      <button
-                        type="button"
-                        onClick={() => setEditActivePortals(activePortalsList.map(p => p.id))}
-                        className="text-[10px] font-bold text-cyan-400 hover:underline"
-                      >
-                        Select All
-                      </button>
-                      <span className="text-gray-600">|</span>
-                      <button
-                        type="button"
-                        onClick={() => setEditActivePortals(isGprecSub ? ['ai-commander', 'interview', 'coding-practice'] : ['dashboard', 'community'])}
-                        className="text-[10px] font-bold text-gray-400 hover:text-white"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {activePortalsList.map(portal => {
-                      const isChecked = editActivePortals.includes(portal.id);
-                      return (
-                        <div
-                          key={portal.id}
-                          onClick={() => {
-                            setEditActivePortals(prev => 
-                              prev.includes(portal.id) 
-                                ? prev.filter(id => id !== portal.id) 
-                                : [...prev, portal.id]
-                            );
-                          }}
-                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                            isChecked
-                              ? 'bg-cyan-500/10 border-cyan-500/40 text-white'
-                              : 'bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'
-                          }`}
+                  <div className="space-y-4 animate-fade-in">
+                    {/* Header info */}
+                    <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between gap-3">
+                      <div>
+                        <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
+                          {isGprecSub ? 'Customize GPREC Placement Modules' : 'Customize Visible Portals'}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          {isGprecSub 
+                            ? 'Select which official placement modules appear in your sidebar.'
+                            : 'Choose which portals appear in your sidebar. All tools remain accessible anytime via Spotlight (Ctrl+K).'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setEditActivePortals(activePortalsList.map(p => p.id))}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 text-xs font-medium border border-indigo-500/30 transition-colors cursor-pointer"
                         >
-                          <span className="text-xs font-bold">{portal.label}</span>
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {}}
-                            className="w-4 h-4 rounded text-cyan-500 focus:ring-0 cursor-pointer pointer-events-none"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                          Select All
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditActivePortals(isGprecSub 
+                            ? ['ai-commander', 'interview', 'coding-practice', 'contact', 'report-bug'] 
+                            : ['dashboard', 'learning-hub', 'doubts', 'ai-commander', 'interview', 'coding-practice', 'contribute', 'contact', 'report-bug']
+                          )}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
 
-                  <button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={handleSaveProfile}
-                    className="w-full py-3.5 rounded-xl font-bold text-xs tracking-wide bg-gradient-to-r from-cyan-400 to-blue-600 text-black hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
-                  >
-                    {isSaving ? <span>Saving Live Portals...</span> : <span>Save Workspace Portals</span>}
-                  </button>
-                </div>
-              );
+                    {/* Portals Checklist Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
+                      {activePortalsList.map(portal => {
+                        const isChecked = editActivePortals.includes(portal.id);
+                        return (
+                          <div
+                            key={portal.id}
+                            onClick={() => {
+                              setEditActivePortals(prev => 
+                                prev.includes(portal.id) 
+                                  ? prev.filter(id => id !== portal.id) 
+                                  : [...prev, portal.id]
+                              );
+                            }}
+                            className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all select-none ${
+                              isChecked
+                                ? 'bg-indigo-950/30 border-indigo-500/40 text-slate-100 shadow-xs'
+                                : 'bg-slate-950/40 border-slate-800/60 text-slate-400 hover:bg-slate-900/60 hover:text-slate-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${isChecked ? 'bg-indigo-400 shadow-xs' : 'bg-slate-600'}`} />
+                              <span className="text-xs font-semibold truncate">{portal.label}</span>
+                            </div>
+
+                            {/* Modern Toggle Pill */}
+                            <div className={`w-8 h-4.5 rounded-full p-0.5 transition-colors shrink-0 flex items-center ${
+                              isChecked ? 'bg-indigo-600 justify-end' : 'bg-slate-800 justify-start'
+                            }`}>
+                              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-xs" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Save Button */}
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={handleSaveProfile}
+                      className="w-full py-3 rounded-xl font-semibold text-xs tracking-wide bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-3"
+                    >
+                      {isSaving ? <span>Saving Settings...</span> : <span>Save Workspace Portals</span>}
+                    </button>
+                  </div>
+                );
               })()}
             </div>
           </div>

@@ -35,6 +35,7 @@ import FounderLoginModal from './components/FounderLoginModal';
 import { recordSessionHeartbeat } from './services/userActivityLogService';
 const TestPortal = lazy(() => import('./pages/TestPortal'));
 const AttendancePortal = lazy(() => import('./pages/AttendancePortal'));
+const StudentOffersPortal = lazy(() => import('./pages/StudentOffersPortal'));
 const Marketplace = lazy(() => import('./pages/Marketplace'));
 const CareerRoadmap = lazy(() => import('./pages/CareerRoadmap'));
 const SimulationPortal = lazy(() => import('./pages/SimulationPortal'));
@@ -1506,6 +1507,14 @@ function App() {
         return <ClubsPortal user={user} setActiveTab={handleTabChange} />;
       case 'marketplace':
         return <Marketplace user={user} setActiveTab={handleTabChange} />;
+      case 'student-offers':
+      case 'student-perks':
+      case 'perks':
+      case 'offers':
+      case 'tools':
+      case 'developer-pack':
+      case 'student-discounts':
+        return <StudentOffersPortal user={user} setActiveTab={handleTabChange} />;
       case 'community':
         return <ClubsPortal user={user} setActiveTab={handleTabChange} />;
       case 'verify':
