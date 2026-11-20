@@ -7,11 +7,11 @@ import {
   Mail, Trophy, Code, Clock, AlertTriangle, Users, Film, Shield, 
   Target, ClipboardList, ShoppingCart, MessageCircle, Map, 
   Activity, Power, Cpu, ShieldCheck, Rocket, Video, Search, Briefcase,
-  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom,
-  Eye, EyeOff, Sliders, Radio
+  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom, Gift,
+  Eye, EyeOff, Sliders, Radio, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp }) {
+export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp, isCollapsed = false, onToggleCollapse }) {
   const isGprecSubdomain = isGprecPlacementSubdomain(user);
   const isTpo = isTpoSubdomain();
   const userEmail = (user?.email || '').toLowerCase().trim();
@@ -26,7 +26,24 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const isIntern = user?.role === 'intern' || userEmail.includes('intern');
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
-  const [collapsedSections, setCollapsedSections] = useState({});
+  const [collapsedSections, setCollapsedSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_sidebar_collapsed_sections');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    // Default smart collapse: keep Academics & Learning + Career open, collapse social & support
+    return { social: true, support: true };
+  });
+
+  const toggleSection = (sectionKey) => {
+    setCollapsedSections(prev => {
+      const updated = { ...prev, [sectionKey]: !prev[sectionKey] };
+      try {
+        localStorage.setItem('lumixora_sidebar_collapsed_sections', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
+  };
   const [showAllPortals, setShowAllPortals] = useState(false);
 
   // Active portals configured in live user preferences (if empty/unspecified or founder, all are allowed)
@@ -40,10 +57,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     }
     return null;
   }, [user?.activePortals, isFounder, isTeammate, isFaculty, isGprecSubdomain]);
-
-  const toggleSection = (sectionKey) => {
-    setCollapsedSections(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
-  };
 
   // GPREC Placement Suite dedicated menu items
   const isOfficerOrFaculty = isFaculty || isFounder || user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
@@ -97,51 +110,45 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const menuSections = isTpo ? tpoSections : isGprecSubdomain ? gprecSections : [
     ...(isIntern ? [{
       key: 'intern',
-      title: '💼 Intern Workspace Hub',
+      title: '💼 Intern Workspace',
       items: [
-        { id: 'intern-portal', label: 'Intern Workspace', icon: Briefcase, badge: 'Active ⚡' },
-        { id: 'internships', label: 'Application Status', icon: Trophy, badge: 'Track' },
+        { id: 'intern-portal', label: 'Intern Workspace', icon: Briefcase },
+        { id: 'internships', label: 'Application Status', icon: Trophy },
       ]
     }] : []),
     ...(isFounder || isTeammate || isFaculty ? [{
       key: 'admin',
-      title: '🛡️ Command & Administration',
+      title: '🛡️ Command & Ops',
       items: [
-        ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield, badge: 'Secure' }] : []),
-        ...(isFounder || isTeammate ? [{ id: 'intern-portal', label: 'Interns & Tasks Hub', icon: Users, badge: 'Review 💼' }] : []),
-        ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles, badge: 'Team ⚡' }] : []),
-        ...(isFaculty ? [{ id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap, badge: 'FACULTY 🎓' }] : []),
+        ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield }] : []),
+        ...(isFounder || isTeammate ? [{ id: 'intern-portal', label: 'Interns & Tasks Hub', icon: Users }] : []),
+        ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles }] : []),
+        ...(isFaculty ? [{ id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap }] : []),
       ]
     }] : []),
     {
       key: 'academics',
-      title: '🎓 Academics & Learning',
+      title: '🎓 Learning & Academics',
       items: [
-        { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard },
-        { id: 'learning-hub', label: 'Notes & Video Hub', icon: BookOpen },
+        { id: 'dashboard', label: 'Omiverse Hub', icon: LayoutDashboard },
+        { id: 'learning-hub', label: 'Notes & Curriculum', icon: BookOpen },
         { id: 'doubts', label: 'AI Doubt Solver', icon: HelpCircle },
         { id: 'my-academics', label: 'My Academics (SGPA)', icon: GraduationCap },
         { id: 'courses', label: 'Courses & Diplomas', icon: BookOpen },
         { id: 'test-portal', label: 'Tests & Assessments', icon: Target },
         { id: 'boloclass', label: 'BoloClass AI', icon: Brain },
-        { id: 'simulations', label: 'Interactive Simulations', icon: Atom },
+        { id: 'simulations', label: 'Interactive 3D Labs', icon: Atom },
         { id: 'attendance', label: 'Attendance Tracker', icon: ClipboardList },
       ]
     },
     {
-      key: 'speakverse_hub',
-      title: '🎙️ SpeakVerse™ Flagship',
-      items: [
-        { id: 'speakverse', label: 'SpeakVerse AI', icon: Mic, badge: 'AI' },
-      ]
-    },
-    {
       key: 'career',
-      title: '🚀 Placement & Career',
+      title: '🚀 Career & Placements',
       items: [
         { id: 'ai-commander', label: 'Placement Commander', icon: Cpu },
-        { id: 'interview', label: 'AI Mock Interviews', icon: Mic, badge: 'LIVE' },
-        { id: 'tech-pulse', label: 'TechPulse & Jobs', icon: Radio },
+        { id: 'speakverse', label: 'SpeakVerse™ AI', icon: Mic },
+        { id: 'interview', label: 'AI Mock Interviews', icon: Video },
+        { id: 'tech-pulse', label: 'TechPulse Radar', icon: Radio },
         { id: 'coding-practice', label: 'Code Arena & DSA', icon: Code },
         { id: 'certificates', label: 'Skill Certifications', icon: Award },
         { id: 'internships', label: 'Student Internships', icon: Briefcase },
@@ -153,6 +160,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       key: 'social',
       title: '🌐 Campus & Community',
       items: [
+        { id: 'student-offers', label: 'Student Perks & Offers', icon: Gift },
         { id: 'marketplace', label: 'Campus Marketplace', icon: ShoppingCart },
         { id: 'clubs', label: 'Clubs & Societies', icon: Users },
         { id: 'projects', label: 'Project Showcase', icon: Rocket },
@@ -161,7 +169,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     },
     {
       key: 'support',
-      title: '🛠️ Settings & Help',
+      title: '🛠️ Support & Settings',
       items: [
         { id: 'contribute', label: 'Contribute Notes', icon: UploadCloud },
         { id: 'contact', label: 'Founder Connect', icon: Mail },
@@ -180,7 +188,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         ...sec,
         items: sec.items.filter(item => {
           // Always keep dashboard, community, and support
-          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'support' || sec.key === 'admin' || sec.key === 'intern') {
+          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin' || sec.key === 'intern') {
             return true;
           }
           return userActivePortals.has(item.id);
@@ -230,7 +238,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
 
       {/* Sidebar Container */}
       <aside className={`fixed top-0 left-0 bottom-0 w-[260px] bg-[#070b14] border-r border-white/10 z-50 flex flex-col transition-transform duration-300 ease-in-out select-none shadow-2xl ${
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        isOpen ? 'translate-x-0' : (isCollapsed ? '-translate-x-full' : '-translate-x-full lg:translate-x-0')
       }`}>
         
         {/* Brand Header */}
@@ -255,12 +263,27 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="lg:hidden p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Desktop Collapse Button */}
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="hidden lg:flex w-8 h-8 rounded-xl items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all cursor-pointer group"
+              title="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4 group-hover:scale-105 transition-transform" />
+            </button>
+
+            {/* Mobile Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
+              title="Close sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Quick Menu Search & Personalized Toggle */}

@@ -12,7 +12,7 @@ import {
   Bot, Award, HelpCircle, BookOpen, CheckSquare, UserCheck, Rocket, FileText,
   Building2, Check, Plus, Layers, Trophy, CheckCircle2, TrendingUp, Download, 
   FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders,
-  MessageSquare, MessageCircle
+  MessageSquare, MessageCircle, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -52,6 +52,23 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
   const [showCountdown, setShowCountdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('lumixora_sidebar_collapsed') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('lumixora_sidebar_collapsed', String(next));
+      } catch (_) {}
+      return next;
+    });
+  };
   const [cursorGlowEnabled, setCursorGlowEnabled] = useState(() => {
     try {
       const userActive = localStorage.getItem('lumixora_companion_v2_active');
@@ -964,17 +981,29 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen w-full lg:pl-[250px] bg-[var(--bg-main)]">
+      <div className={`flex-1 flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${sidebarCollapsed ? "lg:pl-0" : "lg:pl-[260px]"} bg-[var(--bg-main)]`}>
         {/* Top Header Bar (Fixed & pinned at top on all scrolls) */}
-        <header className="fixed top-0 right-0 left-0 lg:left-[250px] h-16 lg:h-20 bg-[var(--bg-sidebar)]/95 backdrop-blur-xl text-[var(--text-main)] border-b border-[var(--border-color)] px-4 lg:px-6 flex items-center justify-between z-40 shadow-sm transition-all">
+        <header className={`fixed top-0 right-0 left-0 ${sidebarCollapsed ? "lg:left-0" : "lg:left-[260px]"} h-16 lg:h-20 bg-[var(--bg-sidebar)]/95 backdrop-blur-xl text-[var(--text-main)] border-b border-[var(--border-color)] px-4 lg:px-6 flex items-center justify-between z-40 shadow-sm transition-all duration-300 ease-in-out`}>
           {/* Left: Hamburger + Back Button + Welcome */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Mobile Hamburger */}
             <button 
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden w-10 h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:text-brand-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer"
+              type="button"
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(!sidebarOpen);
+                } else {
+                  toggleSidebarCollapsed();
+                }
+              }}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="w-10 h-10 rounded-2xl bg-[var(--bg-card)]/90 hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-main)] hover:text-brand-primary transition-all cursor-pointer shadow-xs group"
             >
-              <Menu className="w-5 h-5" />
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="w-5 h-5 group-hover:scale-105 transition-transform" />
+              ) : (
+                <PanelLeftClose className="w-5 h-5 group-hover:scale-105 transition-transform" />
+              )}
             </button>
 
             {/* Native App Back Button */}
