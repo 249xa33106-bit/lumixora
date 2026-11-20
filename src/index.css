@@ -995,6 +995,68 @@ html {
     color: #0f172a !important;
     border: 1px solid #cbd5e1 !important;
   }
+
+  /* 8. SUBJECT STUDY GUIDE / NOTES CLEAN PRINTING (A4 MULTI-PAGE HIGH CONTRAST) */
+  #study-guide-reading-pane {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #study-guide-reading-pane,
+  #study-guide-reading-pane * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    text-shadow: none !important;
+  }
+
+  #study-guide-reading-pane h1,
+  #study-guide-reading-pane h2,
+  #study-guide-reading-pane h3,
+  #study-guide-reading-pane h4 {
+    color: #002b49 !important;
+    -webkit-text-fill-color: #002b49 !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  #study-guide-reading-pane .border,
+  #study-guide-reading-pane .border-b,
+  #study-guide-reading-pane .border-t {
+    border-color: #cbd5e1 !important;
+  }
+
+  #study-guide-reading-pane [class*="innerPanel"],
+  #study-guide-reading-pane .p-5,
+  #study-guide-reading-pane .p-4,
+  #study-guide-reading-pane .p-3 {
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #study-guide-reading-pane pre,
+  #study-guide-reading-pane code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
 }
 
 
