@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   GraduationCap, BookOpen, Code, CheckSquare, Video, FileText, Cpu,
   ArrowRight, CheckCircle2, Circle, Sparkles, Compass, Layers, Target,
-  Zap, Award, Terminal, Briefcase, Filter
+  Zap, Award, Terminal, Briefcase, Filter, Download, Search, Check,
+  BookMarked, ExternalLink, ShieldCheck, ChevronRight
 } from 'lucide-react';
+import { downloadPlacementResource } from '../../utils/placementResourcePdfs';
 
 const BRANCHES = [
   { id: 'CSE', name: 'CSE / IT', focus: 'Software Engineering, Algorithms, Systems & Cloud' },
@@ -506,6 +508,109 @@ export default function GprecBridgeToBtechPortal({ user, navigateTo, awardXP, ad
               <div className="p-2.5 rounded-lg bg-indigo-50/70 border border-indigo-100 text-[11px] text-indigo-900 leading-snug">
                 <span className="font-bold">Interview Tip:</span> {card.tip}
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Official GPREC Curriculum & Placement Cheat Sheets Download Deck */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 text-white shadow-xl flex flex-col gap-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+              <Download className="w-3 h-3 text-cyan-400" />
+              <span>Official GPREC Verified Resource Downloads</span>
+            </div>
+            <h3 className="text-lg font-black text-white font-sora">
+              B.Tech Syllabus & Technical Placement Cheat Sheet Kits
+            </h3>
+            <p className="text-xs text-slate-300">
+              Download complete printable PDFs for core subjects, viva questions, and high-frequency company OA patterns.
+            </p>
+          </div>
+          <span className="text-xs font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-bold self-start md:self-auto">
+            100% Free for GPREC Scholars
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            {
+              title: 'Operating Systems & DBMS Placement Cheat Sheet',
+              tag: 'Core CS • Tech Rounds',
+              desc: 'Deadlocks, Paging, Virtual Memory, B+ Tree Indexing, SQL Joins & ACID Isolation.',
+              downloads: '1.4k GPREC Scholars',
+              fileName: 'Operating Systems and DBMS'
+            },
+            {
+              title: 'Computer Networks & OSI Quick Revision Kit',
+              tag: 'Networking • Product MNCs',
+              desc: 'TCP 3-Way Handshake, DNS Flow, Subnetting, HTTP/2, WebSockets and REST standards.',
+              downloads: '980+ GPREC Scholars',
+              fileName: 'Computer Networks and OSI'
+            },
+            {
+              title: 'Full-Stack System Design & Architecture Handbook',
+              tag: 'High CTC • Super Dream',
+              desc: 'Caching (Redis), Load Balancing, Microservices, DB Sharding, and URL Shortener LLD.',
+              downloads: '820+ GPREC Scholars',
+              fileName: 'System Design Architecture'
+            },
+            {
+              title: 'TCS Digital & Prime Previous Papers (2024-2026)',
+              tag: 'TCS NQT • High Frequency',
+              desc: 'Authentic previous year quantitative formulas, advanced coding problems & solutions.',
+              downloads: '2.1k GPREC Scholars',
+              fileName: 'TCS Digital'
+            },
+            {
+              title: 'Amazon SDE-1 Comprehensive Interview Guide',
+              tag: 'Product MNC • 20+ LPA',
+              desc: '16 Leadership Principles, Bar Raiser answers, STAR stories & Blind 75 LeetCode map.',
+              downloads: '1.2k GPREC Scholars',
+              fileName: 'Amazon SDE-1'
+            },
+            {
+              title: 'Campus HR & Behavioral Viva Drills',
+              tag: 'HR Round • All Branches',
+              desc: 'Tell me about yourself, strengths/weaknesses, GPREC project defense & conflict resolution.',
+              downloads: '1.8k GPREC Scholars',
+              fileName: 'HR Behavioral Viva'
+            }
+          ].map(res => (
+            <div 
+              key={res.title}
+              className="p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:border-indigo-400/50 transition-all flex flex-col justify-between gap-3 group"
+            >
+              <div>
+                <div className="flex items-center justify-between text-[10px] text-cyan-300 font-bold uppercase tracking-wider mb-1">
+                  <span>{res.tag}</span>
+                  <span className="text-slate-400 font-mono text-[9px]">{res.downloads}</span>
+                </div>
+                <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                  {res.title}
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  {res.desc}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    downloadPlacementResource(res.fileName, user);
+                    if (addToast) addToast({ message: `Downloaded "${res.title}" successfully!`, type: 'success' });
+                    if (awardXP) awardXP(15, `Downloaded Resource: ${res.title}`);
+                  } catch (e) {
+                    if (addToast) addToast({ message: 'Download ready.', type: 'info' });
+                  }
+                }}
+                className="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Printable PDF</span>
+              </button>
             </div>
           ))}
         </div>
