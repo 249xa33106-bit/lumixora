@@ -5,9 +5,9 @@ import {
   LayoutDashboard, HelpCircle, FileText, Calendar, Sparkles, 
   GraduationCap, Settings, LogOut, BookOpen, X, UploadCloud, 
   Mail, Trophy, Code, Clock, AlertTriangle, Users, Film, Shield, 
-  Target, ClipboardList, ShoppingCart, MessageCircle, Map, 
+  Target, ClipboardList, ShoppingCart, MessageCircle, Map as MapIcon, 
   Activity, Power, Cpu, ShieldCheck, Rocket, Video, Search, Briefcase,
-  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom, Gift,
+  Mic, Award, ChevronDown, ChevronRight, Brain, Flame, GitFork, Atom, Gift, Star, Pin,
   Eye, EyeOff, Sliders, Radio, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
@@ -26,7 +26,36 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const isIntern = user?.role === 'intern' || userEmail.includes('intern');
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
-  const [collapsedSections, setCollapsedSections] = useState(() => {
+  // ─── Pinned / Favorite Portals State ───
+  const [pinnedPortals, setPinnedPortals] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_sidebar_pinned_portals');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return ['dashboard', 'ai-commander', 'coding-practice'];
+  });
+
+  const togglePinPortal = (portalId, e) => {
+    if (e) e.stopPropagation();
+    setPinnedPortals(prev => {
+      let updated;
+      if (prev.includes(portalId)) {
+        updated = prev.filter(id => id !== portalId);
+      } else {
+        if (prev.length >= 6) {
+          updated = [...prev.slice(1), portalId]; // keep max 6
+        } else {
+          updated = [...prev, portalId];
+        }
+      }
+      try {
+        localStorage.setItem('lumixora_sidebar_pinned_portals', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
+  };
+
+    const [collapsedSections, setCollapsedSections] = useState(() => {
     try {
       const saved = localStorage.getItem('lumixora_sidebar_collapsed_sections');
       if (saved) return JSON.parse(saved);
@@ -108,21 +137,13 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   ];
 
   const menuSections = isTpo ? tpoSections : isGprecSubdomain ? gprecSections : [
-    ...(isIntern ? [{
-      key: 'intern',
-      title: '💼 Intern Workspace',
-      items: [
-        { id: 'intern-portal', label: 'Intern Workspace', icon: Briefcase },
-        { id: 'internships', label: 'Application Status', icon: Trophy },
-      ]
-    }] : []),
-    ...(isFounder || isTeammate || isFaculty ? [{
+    ...(isFounder || isFaculty || isTeammate || isIntern ? [{
       key: 'admin',
       title: '🛡️ Command & Ops',
       items: [
         ...(isFounder ? [{ id: 'founder-portal', label: 'Founder Control', icon: Shield }] : []),
-        ...(isFounder || isTeammate ? [{ id: 'intern-portal', label: 'Interns & Tasks Hub', icon: Users }] : []),
-        ...(isTeammate ? [{ id: 'team-portal', label: 'Teammate Portal', icon: Sparkles }] : []),
+        ...(isFounder || isTeammate ? [{ id: 'team-workspace', label: 'Team Workspace', icon: Sparkles }] : []),
+        { id: 'intern-portal', label: 'Intern Portal (48)', icon: Award },
         ...(isFaculty ? [{ id: 'faculty-portal', label: 'T&P Faculty', icon: GraduationCap }] : []),
       ]
     }] : []),
@@ -153,7 +174,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         { id: 'certificates', label: 'Skill Certifications', icon: Award },
         { id: 'internships', label: 'Student Internships', icon: Briefcase },
         { id: 'alumni-referrals', label: 'Alumni Referrals', icon: Users },
-        { id: 'career-roadmap', label: 'Career Roadmap', icon: Map },
+        { id: 'career-roadmap', label: 'Career Roadmap', icon: MapIcon },
       ]
     },
     {
@@ -178,7 +199,18 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     }
   ];
 
-  // Search & Personalization filter across sections
+  // Flattened map of all portal items for pinned tray
+  const allPortalItemsMap = useMemo(() => {
+    const map = {};
+    menuSections.forEach(sec => {
+      sec.items.forEach(it => {
+        if (!map[it.id]) map[it.id] = { ...it, secTitle: sec.title };
+      });
+    });
+    return map;
+  }, [menuSections]);
+
+    // Search & Personalization filter across sections
   const filteredSections = useMemo(() => {
     let sections = menuSections;
 
@@ -188,7 +220,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         ...sec,
         items: sec.items.filter(item => {
           // Always keep dashboard, community, and support
-          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin' || sec.key === 'intern') {
+          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin') {
             return true;
           }
           return userActivePortals.has(item.id);
@@ -329,6 +361,53 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
 
         {/* Navigation Categories & Items */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
+
+          {/* ─── 📌 Pinned Favorites / Quick Access Tray ─── */}
+          {!menuSearchQuery && pinnedPortals.length > 0 && (
+            <div className="space-y-1.5 pb-2 border-b border-white/10">
+              <div className="flex items-center justify-between px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-amber-400/90 select-none">
+                <span className="flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span>Pinned Quick Access</span>
+                </span>
+                <span className="text-[9px] font-mono font-bold text-gray-500">{pinnedPortals.length}/6</span>
+              </div>
+
+              <div className="space-y-1 pt-1">
+                {pinnedPortals.map(portalId => {
+                  const item = allPortalItemsMap[portalId];
+                  if (!item) return null;
+                  const IconComp = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <div
+                      key={'pinned-' + item.id}
+                      onClick={() => handleTabClick(item.id)}
+                      className={`w-full group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                        isActive
+                          ? 'bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-purple-600/20 text-amber-300 border border-amber-500/35 shadow-sm shadow-amber-500/10'
+                          : 'text-gray-200 hover:text-white hover:bg-white/5 border border-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-400' : 'text-amber-400/70 group-hover:text-amber-300'}`} />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => togglePinPortal(item.id, e)}
+                        title="Unpin tool"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg text-amber-400 transition-opacity"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {filteredSections.map(sec => {
             const isCollapsed = collapsedSections[sec.key];
             return (
@@ -353,10 +432,10 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                       const IconComp = item.icon;
                       const isActive = activeTab === item.id;
                       return (
-                        <button
+                        <div
                           key={item.id}
                           onClick={() => handleTabClick(item.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          className={`w-full group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             isActive
                               ? 'bg-gradient-to-r from-indigo-500/20 to-purple-600/20 text-indigo-300 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
                               : 'text-gray-300 hover:text-white hover:bg-white/5 border border-transparent'
@@ -367,14 +446,29 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                             <span className="truncate">{item.label}</span>
                           </div>
 
-                          {item.badge && (
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-extrabold uppercase shrink-0 ${
-                              isActive ? 'bg-indigo-500 text-white shadow-sm' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
-                            }`}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {item.badge && (
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-extrabold uppercase shrink-0 ${
+                                isActive ? 'bg-indigo-500 text-white shadow-sm' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
+                              }`}>
+                                {item.badge}
+                              </span>
+                            )}
+                            
+                            <button
+                              type="button"
+                              onClick={(e) => togglePinPortal(item.id, e)}
+                              title={pinnedPortals.includes(item.id) ? "Unpin from favorites" : "Pin to quick access"}
+                              className={`p-1 rounded-lg transition-all ${
+                                pinnedPortals.includes(item.id)
+                                  ? 'text-amber-400 opacity-90 hover:scale-110'
+                                  : 'text-gray-500 hover:text-amber-300 opacity-0 group-hover:opacity-100 hover:bg-white/10'
+                              }`}
+                            >
+                              <Star className={`w-3.5 h-3.5 ${pinnedPortals.includes(item.id) ? 'fill-amber-400 text-amber-400' : ''}`} />
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>

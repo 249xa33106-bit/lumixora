@@ -64,6 +64,13 @@ export async function notifyFounder({ type, userName, userEmail, role, college, 
         clickUrl = 'https://lumixora.in/#intern-portal';
         break;
 
+      case 'LEAD_EVALUATION':
+        title = `Lead Evaluated: ${userName}`;
+        message = `Candidate: ${userName} (${role || 'Intern'})\nEvaluation: ${meta || 'Evaluated'}\nTime: ${timestampStr}`;
+        tags = 'star,award,check';
+        clickUrl = 'https://lumixora.in/#intern-portal';
+        break;
+
       case 'PAYMENT':
         title = `Fee Payment Received: Rs ${meta || '399'}`;
         message = `User: ${userName}\nEmail: ${userEmail}\nAmount: Rs ${meta || '399'}\nTime: ${timestampStr}`;

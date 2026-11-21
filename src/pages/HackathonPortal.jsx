@@ -5,7 +5,7 @@ import {
   ArrowRight, ShieldCheck, Flame, Share2, MessageSquare, Lightbulb, 
   Send, UserPlus, X, Globe, Award, Laptop, Rocket, Zap, MessageCircle, 
   Briefcase, Check, UserCheck, ChevronRight, Phone, Mail, Code2, Building2,
-  DollarSign, FileText, Layers, TrendingUp, GraduationCap
+  DollarSign, FileText, Layers, TrendingUp, GraduationCap, Gift
 } from 'lucide-react';
 import { 
   DEFAULT_HACKATHONS, 
@@ -680,6 +680,41 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             </button>
           </div>
         </div>
+      </div>
+
+      {/* ── 🎁 Student Perks & Free Cloud/Domain Resources for Hackathons ── */}
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-purple-950/50 to-slate-950/80 p-4 sm:p-5 backdrop-blur-xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 shrink-0">
+            <Gift className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                Hackathon Sponsor Resources
+              </span>
+              <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> 100% Free For Students
+              </span>
+            </div>
+            <h3 className="text-sm sm:text-base font-extrabold text-white mt-1">
+              Need free cloud hosting, AI APIs or domains for your hackathon prototype?
+            </h3>
+            <p className="text-xs text-gray-300 mt-0.5 max-w-2xl">
+              Grab <span className="text-brand-teal font-bold">$100 AWS / DigitalOcean credits</span>, free <span className="text-brand-teal font-bold">.tech / .live domains</span>, JetBrains Pro IDEs, and GitHub Copilot access through our verified Student Perks Hub.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            if (setActiveTab) setActiveTab('student-offers');
+          }}
+          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-400 hover:to-pink-400 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+        >
+          <span>Claim Hackathon Perks</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* ── Direct Hackathon Aggregators Quick Launch Bar ────────────── */}

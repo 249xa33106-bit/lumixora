@@ -978,6 +978,8 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
         onClose={() => setSidebarOpen(false)} 
         onLogout={onLogout}
         onExitApp={onExitApp}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
       />
 
       {/* Main Content Area */}

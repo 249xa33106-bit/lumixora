@@ -166,6 +166,12 @@ export default function LandingPage({ onLoginClick }) {
   };
 
   const handleAuth = (type = 'student') => {
+    if (type === 'intern') {
+      try {
+        localStorage.removeItem('lumixora_intern_active_session');
+        sessionStorage.removeItem('lumixora_intern_active_session');
+      } catch (e) {}
+    }
     if (typeof onLoginClick === 'function') {
       onLoginClick(type);
     }

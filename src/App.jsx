@@ -48,6 +48,7 @@ const HackathonPortal = lazy(() => import('./pages/HackathonPortal'));
 const GrievancePortal = lazy(() => import('./pages/GrievancePortal'));
 const ProjectShowcase = lazy(() => import('./pages/ProjectShowcase'));
 const ResumeCreator = lazy(() => import('./pages/ResumeCreator'));
+const TeamWorkspacePortal = lazy(() => import('./pages/TeamWorkspacePortal'));
 const OurTeamPortal = lazy(() => import('./pages/OurTeamPortal'));
 const AlumniReferralBridge = lazy(() => import('./pages/AlumniReferralBridge'));
 const CompanyPlacementPapers = lazy(() => import('./pages/CompanyPlacementPapers'));
@@ -65,6 +66,7 @@ const BoloClassPortal = lazy(() => import('./pages/BoloClassPortal'));
 // RelayPortal removed
 const InternshipPortal = lazy(() => import('./pages/InternshipPortal'));
 const InternWorkspacePortal = lazy(() => import('./pages/InternWorkspacePortal'));
+const LumixoraInternPortal = lazy(() => import('./pages/LumixoraInternPortal'));
 // ProjectVerse removed
 import StudentOnboardingModal from './components/StudentOnboardingModal';
 import CursorCompanionModal from './components/CursorCompanionModal';
@@ -554,7 +556,7 @@ function App() {
           const email = (user?.email || '').toLowerCase().trim();
           const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
           const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
-          const rootTab = isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard');
+          const rootTab = isF ? 'founder-portal' : 'dashboard';
 
           if (activeTab !== rootTab) {
             handleTabChange(rootTab);
@@ -610,15 +612,30 @@ function App() {
     const email = (user?.email || '').toLowerCase().trim();
     const isF = user?.role === 'founder' || email === 'founder@lumixora.com' ;
     const isTeammate = user?.role === 'teammate' || user?.role === 'team' || user?.role === 'team_member' || email.endsWith('@lumixora.com');
+    const isIntern = user?.role === 'intern' || user?.isIntern || Boolean(user?.internRoleId);
     const isTpoSub = isTpoSubdomain();
     const isGprecSub = isGprecPlacementSubdomain();
     const isOfficer = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
-    const defaultHomeTab = isGprecSub 
-      ? 'ai-commander' 
-      : ((isTpoSub || isOfficer) ? 'tpo-dashboard' : (isF ? 'founder-portal' : (isTeammate ? 'team-portal' : 'dashboard')));
+    const defaultHomeTab = isIntern
+      ? 'intern-portal'
+      : (isGprecSub 
+        ? 'ai-commander' 
+        : ((isTpoSub || isOfficer) ? 'tpo-dashboard' : (isF ? 'founder-portal' : 'dashboard')));
+
+    if (isIntern) {
+      if (activeTab !== 'intern-portal') {
+        setActiveTab('intern-portal');
+        window.location.hash = 'intern-portal';
+      }
+    }
 
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1); // remove '#'
+      if (isIntern) {
+        setActiveTab('intern-portal');
+        window.location.hash = 'intern-portal';
+        return;
+      }
       if (hash) {
         const parts = hash.split('/');
         const tab = parts[0];
@@ -652,7 +669,7 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
@@ -1443,7 +1460,9 @@ function App() {
       case 'intern-portal':
       case 'interns':
       case 'intern-workspace':
-        return <InternWorkspacePortal user={user} setActiveTab={handleTabChange} onLogin={handleLogin} />;
+      case 'intern-hub':
+      case 'intern-cohort':
+        return <LumixoraInternPortal user={user} setActiveTab={handleTabChange} />;
       case 'learning-hub':
       case 'learning':
       case 'resource-academy':
@@ -1524,14 +1543,17 @@ function App() {
         const certHash = window.location.hash.substring(1);
         const certIdFromHash = certHash.split('/')[1] || '';
         return <PublicCertificateVerification certId={certIdFromHash} onBack={() => handleTabChange('dashboard')} />;
+      case 'team-workspace':
+      case 'team-os':
+      case 'team-portal':
+      case 'teammate-portal':
+        return <TeamWorkspacePortal user={user} setActiveTab={handleTabChange} />;
       case 'our-team':
       case 'team':
       case 'team-leads':
       case 'lumixora-team':
       case 'team-members':
       case 'core-team':
-      case 'team-portal':
-      case 'teammate-portal':
         return <OurTeamPortal user={user} setActiveTab={handleTabChange} />;
       case 'tpo-dashboard':
       case 'tpo-analytics':
@@ -1787,17 +1809,25 @@ function App() {
 
     
 
-    // Direct standalone public access to LUMIXORA INTERN WORKSPACE & SUBPORTAL
-    if (lowerHash.includes('intern-portal') || lowerHash.includes('intern-workspace') || lowerHash.includes('interns')) {
+    // Direct standalone public access to LUMIXORA INTERN PORTAL & UNIQUE LOGIN SYSTEM
+    if (lowerHash.includes('intern-portal') || lowerHash.includes('intern-workspace') || lowerHash.includes('interns') || lowerHash.includes('intern-hub') || lowerHash.includes('intern-login')) {
       return (
         <ThemeProvider>
           <ToastProvider>
-            <div className="min-h-screen bg-[#070913] text-slate-100 p-2 md:p-6 space-y-4">
-              <div className="max-w-7xl mx-auto space-y-4">
-                <InternWorkspacePortal 
-                  user={user || { name: 'Lumixora Intern', email: 'intern@lumixora.in', role: 'intern' }} 
+            <div className="min-h-screen bg-[#06080e] text-slate-100 p-2 md:p-6 space-y-4">
+              <div className="max-w-[1720px] mx-auto space-y-4">
+                <LumixoraInternPortal 
+                  user={user} 
                   setActiveTab={handleTabChange} 
-                  onLogin={handleLogin}
+                  onBackHome={() => {
+                    try {
+                      localStorage.removeItem('lumixora_intern_active_session');
+                      sessionStorage.removeItem('lumixora_intern_active_session');
+                    } catch (e) {}
+                    window.location.hash = '';
+                    handleTabChange('dashboard');
+                  }}
+                  forceLogin={lowerHash.includes('intern-login')}
                 />
               </div>
             </div>
@@ -1825,6 +1855,46 @@ function App() {
 
 
     if (showLogin) {
+      if (showLogin === 'intern') {
+        return (
+          <ThemeProvider>
+            <ToastProvider>
+              <CursorGlow />
+              <button 
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('lumixora_intern_active_session');
+                    sessionStorage.removeItem('lumixora_intern_active_session');
+                  } catch (e) {}
+                  setShowLogin(null);
+                }} 
+                className="fixed top-6 right-6 z-[99999] group px-4 py-2 bg-zinc-950/80 hover:bg-zinc-900 text-zinc-300 hover:text-white text-xs font-mono font-semibold rounded-full backdrop-blur-2xl transition-all border border-white/20 flex items-center gap-2 shadow-2xl cursor-pointer"
+                title="Return to Lumixora Home"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
+                <span>Back to Home</span>
+              </button>
+              <div className="min-h-screen bg-[#06080e] text-slate-100 p-2 md:p-6 space-y-4">
+                <div className="max-w-[1720px] mx-auto space-y-4">
+                  <LumixoraInternPortal 
+                    user={user} 
+                    setActiveTab={handleTabChange} 
+                    onBackHome={() => {
+                      try {
+                        localStorage.removeItem('lumixora_intern_active_session');
+                        sessionStorage.removeItem('lumixora_intern_active_session');
+                      } catch (e) {}
+                      setShowLogin(null);
+                    }} 
+                    forceLogin={true} 
+                  />
+                </div>
+              </div>
+              {renderUpdateModal()}
+            </ToastProvider>
+          </ThemeProvider>
+        );
+      }
       return (
         <ThemeProvider>
           <ToastProvider>
@@ -2000,7 +2070,19 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            {isGprecPlacementSubdomain() ? (
+            {(user?.role === 'intern' || user?.isIntern) ? (
+              <div className="min-h-screen bg-[#06080e] text-slate-100 p-2 md:p-6 space-y-4">
+                <div className="max-w-[1720px] mx-auto space-y-4">
+                  <Suspense fallback={<PortalFallback />}>
+                    <LumixoraInternPortal 
+                      user={user} 
+                      setActiveTab={handleTabChange} 
+                      onLogout={handleLogout} 
+                    />
+                  </Suspense>
+                </div>
+              </div>
+            ) : isGprecPlacementSubdomain() ? (
               <Suspense fallback={<PortalFallback />}>
                 <AiPlacementCommander 
                   user={user} 
