@@ -186,12 +186,12 @@ export default function CertificateRenderer({
           </svg>
         </div>
 
-        {/* ── Official 3D Lumixora Icon Watermark (Clean, Subtle, Non-Intrusive) ── */}
+        {/* ── Official Lumixora "L" Icon Watermark (Subtle, Clean & Crisp) ── */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
           <img 
-            src="/lumixora_isolated_3d_icon.png" 
-            alt="Lumixora 3D Icon" 
-            className="w-[360px] sm:w-[440px] md:w-[500px] max-w-none object-contain opacity-[0.08] pointer-events-none"
+            src="/lumixora_watermark_l_only.png" 
+            alt="Lumixora L Watermark" 
+            className="w-[230px] sm:w-[280px] md:w-[330px] max-w-none object-contain opacity-[0.11] pointer-events-none"
           />
         </div>
 
