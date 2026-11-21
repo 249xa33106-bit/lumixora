@@ -186,6 +186,16 @@ export default function CertificateRenderer({
           </svg>
         </div>
 
+        {/* ── Background Subtle 3D Logo Watermark (Zero Black Artifacts, Ultra-Clean Double Exposed) ── */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+          <img
+            src="/lumixora_isolated_3d_icon.png"
+            alt="Lumixora Watermark"
+            className="w-[280px] sm:w-[360px] md:w-[440px] max-h-[75%] object-contain opacity-[0.14] sm:opacity-[0.16] filter drop-shadow-sm pointer-events-none"
+            style={{ mixBlendMode: 'multiply' }}
+          />
+        </div>
+
 
         {/* ── TOP HEADER (Logo + Subtitle Left, LEARN • BUILD • GROW Right) ── */}
         <div className="flex items-center justify-between relative z-10 w-full mb-3">
