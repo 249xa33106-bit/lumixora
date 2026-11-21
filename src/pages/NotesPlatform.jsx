@@ -482,109 +482,129 @@ export default function NotesPlatform({ user, setActiveTab }) {
       {/* SUBPORTAL 1: SEMESTER PAPERS & NOTES */}
       {subPortal === 'semester' && (
         <>
-          {/* Search and Filters Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl">
-        <div className="flex flex-wrap items-center gap-2">
-          
-          {/* View Toggle (Library vs Trash) - Founders Only */}
-          {user?.role === 'founder' && (
-            <div className="flex items-center bg-black/20 p-1 rounded-xl mr-2">
-              <button
-                onClick={() => setViewMode('library')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${viewMode === 'library' ? 'bg-brand-teal text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
-              >
-                Library
-              </button>
-              <button
-                onClick={() => setViewMode('trash')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 ${viewMode === 'trash' ? 'bg-red-500/20 text-red-400 shadow-lg' : 'text-gray-400 hover:text-white'}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Trash
-              </button>
-            </div>
-          )}
+          {/* Search and Filters Header — Design B: Compact Dropdowns Bar (Matches LearningHub) */}
+          <div className="bg-[#0e1422]/95 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-xl">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              
+              {/* Left Side: Compact Dropdown Selectors & Founder View Mode */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* View Toggle (Library vs Trash) - Founders Only */}
+                {user?.role === 'founder' && (
+                  <div className="flex items-center bg-black/40 border border-white/10 p-1 rounded-xl">
+                    <button
+                      onClick={() => setViewMode('library')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'library' ? 'bg-brand-teal text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      Library
+                    </button>
+                    <button
+                      onClick={() => setViewMode('trash')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === 'trash' ? 'bg-red-500/20 text-red-400 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Trash
+                    </button>
+                  </div>
+                )}
 
-          {/* Branch and Semester Filters */}
-          <div className="flex flex-col gap-2 w-full md:w-auto">
-            <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar w-full max-w-[600px]">
-              {branches.map((sub) => (
+                {/* Branch Select Dropdown */}
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-3 py-2 rounded-xl shadow-xs">
+                  <span className="text-[11px] text-gray-400 font-medium">Branch:</span>
+                  <select
+                    value={filterBranch}
+                    onChange={(e) => setFilterBranch(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-teal-300 focus:outline-none cursor-pointer pr-1"
+                  >
+                    {branches.map(b => (
+                      <option key={b} value={b} className="bg-[#111827] text-white">
+                        {b === 'All' ? 'All Branches' : b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Semester Select Dropdown */}
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-3 py-2 rounded-xl shadow-xs">
+                  <span className="text-[11px] text-gray-400 font-medium">Sem:</span>
+                  <select
+                    value={filterSem}
+                    onChange={(e) => setFilterSem(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-teal-300 focus:outline-none cursor-pointer pr-1"
+                  >
+                    {semesters.map(s => (
+                      <option key={s} value={s} className="bg-[#111827] text-white">
+                        {s === 'All' ? 'All Semesters' : s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Reset Filters indicator if active */}
+                {(filterBranch !== 'All' || filterSem !== 'All') && (
+                  <button
+                    onClick={() => { setFilterBranch('All'); setFilterSem('All'); }}
+                    className="text-[10px] text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer font-medium"
+                    title="Reset to All"
+                  >
+                    Reset ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Right Side: AI Quick Triggers & Full-Size Search Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                {/* AI Audio Podcast Button */}
                 <button
-                  key={sub}
-                  onClick={() => setFilterBranch(sub)}
-                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
-                    filterBranch === sub 
-                      ? 'bg-brand-blue text-black font-bold shadow-sm' 
-                      : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
-                  }`}
+                  onClick={() => {
+                    setPodcastTopic(filterBranch !== 'All' ? `${filterBranch} Core Curriculum (${filterSem})` : 'Operating Systems: Process Synchronization & Deadlocks');
+                    setPodcastSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
+                    setShowPodcastModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
+                  title="Generate 5-min NotebookLM-style Audio Recap"
                 >
-                  {sub}
+                  <Headphones className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="font-bold">AI Audio Podcast</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/30 font-bold">AUDIO</span>
                 </button>
-              ))}
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar w-full max-w-[600px]">
-              {semesters.map((sem) => (
+
+                {/* Exam Predictor Button */}
                 <button
-                  key={sem}
-                  onClick={() => setFilterSem(sem)}
-                  className={`px-3 py-1.5 shrink-0 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
-                    filterSem === sem 
-                      ? 'bg-brand-orange text-black font-bold shadow-sm' 
-                      : 'bg-white/5 border border-white/5 hover:border-white/10 text-gray-400'
-                  }`}
+                  onClick={() => {
+                    setExamTopic(filterBranch !== 'All' ? `${filterBranch} - ${filterSem} Core Paper` : 'Operating Systems & DBMS Core Theory');
+                    setExamSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
+                    setShowExamPredictorModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-500/15 to-amber-500/15 border border-rose-500/30 hover:border-rose-400 text-rose-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
+                  title="Predict High-Probability 2M, 5M & 10M Exam Questions"
                 >
-                  {sem}
+                  <Target className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+                  <span className="font-bold">Exam Predictor</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-200 border border-rose-500/30 font-bold">96% YIELD</span>
                 </button>
-              ))}
+
+                {/* Search Input — Generous width, never truncated! */}
+                <div className="relative w-full sm:w-64">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search notes, formulas..."
+                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-teal/50 transition-colors"
+                  />
+                  <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-gray-500" />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-2.5 top-2.5 text-xs text-gray-400 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Right Section: AI Podcast & Exam Predictor Quick Triggers + Search */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
-          {/* Quick Podcast Button */}
-          <button
-            onClick={() => {
-              setPodcastTopic(filterBranch !== 'All' ? `${filterBranch} Core Curriculum (${filterSem})` : 'Operating Systems: Process Synchronization & Deadlocks');
-              setPodcastSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
-              setShowPodcastModal(true);
-            }}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
-            title="Generate 5-min NotebookLM-style Audio Recap"
-          >
-            <Headphones className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span className="font-bold">AI Audio Podcast</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/30 font-bold">AUDIO</span>
-          </button>
-
-          {/* Quick Exam Predictor Button */}
-          <button
-            onClick={() => {
-              setExamTopic(filterBranch !== 'All' ? `${filterBranch} - ${filterSem} Core Paper` : 'Operating Systems & DBMS Core Theory');
-              setExamSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
-              setShowExamPredictorModal(true);
-            }}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-500/15 to-amber-500/15 border border-rose-500/30 hover:border-rose-400 text-rose-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
-            title="Predict High-Probability 2M, 5M & 10M Exam Questions"
-          >
-            <Target className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
-            <span className="font-bold">Exam Predictor</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-200 border border-rose-500/30 font-bold">96% YIELD</span>
-          </button>
-
-          {/* Search Input */}
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search notes, formulas..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs"
-            />
-            <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
-          </div>
-        </div>
-      </div>
 
       {/* Main Grid: Upload Area + Notes Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
