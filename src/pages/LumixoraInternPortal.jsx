@@ -136,6 +136,21 @@ export const REAL_48_INTERNS = realInternsData;
 export const REAL_SELECTED_INTERNS = realInternsData;
 export const GENERATED_48_INTERNS = realInternsData;
 
+// Check if identifier or email belongs to Founder Shaik Sowban (Dedicated for Intern Portal)
+export const isInternPortalFounder = (emailOrId = '') => {
+  if (!emailOrId || typeof emailOrId !== 'string') return false;
+  const clean = emailOrId.toLowerCase().trim();
+  return (
+    clean === '249xa33106@gprec.ac.in' ||
+    clean === '249xa33106' ||
+    clean === 'founder@lumixora.com' ||
+    clean === 'founder@lumixora.in' ||
+    clean === 'founder' ||
+    clean === 'lmx-founder' ||
+    clean === 'shaik sowban'
+  );
+};
+
 export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, forceLogin = false }) {
   // Certificate Theme Switcher
   const [certTheme, setCertTheme] = useState('executive_ivory');
@@ -150,17 +165,17 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       } catch (_) {}
       return null;
     }
-    // If authenticated via main auth as Founder Shaik Sowban
-    if (user?.role === 'founder' || isFounderEmail(user?.email)) {
+    // If authenticated via main auth as Founder Shaik Sowban (Supports 249xa33106@gprec.ac.in as founder mail in intern portal)
+    if (user?.role === 'founder' || isFounderEmail(user?.email) || isInternPortalFounder(user?.email) || isInternPortalFounder(user?.id)) {
       return {
         id: 'LMX-FOUNDER-001',
-        name: user.name || 'Shaik Sowban',
-        roleId: user.internRoleId || 'software_testing',
+        name: user?.name || 'Shaik Sowban',
+        roleId: user?.internRoleId || 'software_testing',
         roleTitle: 'Founder & Chief Architect',
         college: 'Lumixora HQ (Executive Command)',
         branch: 'Chief Architect',
         lead: 'Shaik Sowban',
-        email: user.email || 'founder@lumixora.com',
+        email: user?.email || '249xa33106@gprec.ac.in',
         isFounder: true
       };
     }
@@ -341,14 +356,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       return;
     }
 
-    // Allow Founder Shaik Sowban Full Command Access
-    const isFounderAttempt = 
-      isFounderEmail(loginId.trim()) || 
-      cleanId === 'FOUNDER' || 
-      cleanId === 'LMX-FOUNDER' || 
-      cleanId === 'SHAIK SOWBAN' ||
-      cleanId === 'FOUNDER@LUMIXORA.COM' ||
-      cleanId === 'FOUNDER@LUMIXORA.IN';
+    // Allow Founder Shaik Sowban Full Command Access (Supports 249xa33106@gprec.ac.in as founder mail in intern portal)
+    const isFounderAttempt = isInternPortalFounder(loginId);
 
     if (isFounderAttempt) {
       const founderValidPass = ['FOUNDER2026', 'LUMIXORA2026', 'LMX@2026', 'SOWBAN2026', 'PASS2026', 'INTERN2026', 'LMX@BATCH01'];
@@ -370,7 +379,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         college: 'Lumixora HQ (Executive Command)',
         branch: 'Chief Architect',
         lead: 'Shaik Sowban',
-        email: 'founder@lumixora.com',
+        email: '249xa33106@gprec.ac.in',
         isFounder: true
       };
 
@@ -466,18 +475,12 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       return;
     }
 
-    const isFounderAttempt = 
-      isFounderEmail(loginId.trim()) || 
-      clean === 'FOUNDER' || 
-      clean === 'LMX-FOUNDER' || 
-      clean === 'SHAIK SOWBAN' ||
-      clean === 'FOUNDER@LUMIXORA.COM' ||
-      clean === 'FOUNDER@LUMIXORA.IN';
+    const isFounderAttempt = isInternPortalFounder(loginId);
 
     if (isFounderAttempt) {
       setSendingPasscode(true);
       const res = await sendInternPasscodeEmail({
-        email: 'founder@lumixora.com',
+        email: '249xa33106@gprec.ac.in',
         name: 'Shaik Sowban',
         internId: 'LMX-FOUNDER-001',
         roleTitle: 'Founder & Chief Architect',
@@ -488,7 +491,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       setSendingPasscode(false);
 
       if (res.success) {
-        setPasscodeSuccess('Founder passcode successfully sent to founder@lumixora.com!');
+        setPasscodeSuccess('Founder passcode successfully sent to 249xa33106@gprec.ac.in!');
       } else {
         setLoginError(`Email delivery notice: ${res.error || 'Failed to dispatch email'}.`);
       }
