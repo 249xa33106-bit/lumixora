@@ -4,33 +4,9 @@ import { Award, Check, Sparkles, ShieldCheck, Settings, Lightbulb, TrendingUp, C
 export const CERTIFICATE_STYLES = [
   {
     id: 'official_lumixora',
-    name: '🌟 Official Lumixora Gold & Navy',
-    badge: 'Official Issuer Template (Exact Match)',
+    name: '🌟 Official Lumixora Certificate',
+    badge: 'Official Issuer Template',
     desc: 'Official Lumixora Certificate with navy & gold geometric angles, Cinzel typography, and gold medallion seal'
-  },
-  {
-    id: 'executive_ivory',
-    name: '🏛️ Executive Corporate Gold',
-    badge: 'Industry Standard (Recommended)',
-    desc: 'Crisp luxury ivory parchment, 24K gold border, formal serif typography & corporate seal'
-  },
-  {
-    id: 'gold_midnight',
-    name: '👑 Royal Midnight Gold',
-    badge: 'Dark Luxury Prestige',
-    desc: 'Deep midnight obsidian with 24K polished gold border, golden typography & 3D medal seal'
-  },
-  {
-    id: 'sapphire_executive',
-    name: '💎 Modern Executive Sapphire',
-    badge: 'Enterprise Corporate',
-    desc: 'Deep royal sapphire & titanium silver with clean architectural Swiss precision'
-  },
-  {
-    id: 'classic_parchment',
-    name: '📜 Imperial University Heritage',
-    badge: 'Academic Parchment',
-    desc: 'Traditional warm cream diploma with classical serif calligraphy & corporate council seal'
   }
 ];
 
@@ -221,7 +197,7 @@ export default function CertificateRenderer({
         {/* ── TOP HEADER (Logo + Subtitle Left, LEARN • BUILD • GROW Right) ── */}
         <div className="flex items-center justify-between relative z-10 w-full mb-3">
           {/* Left: Brand Identity */}
-          <div className="flex flex-col items-start pl-6 sm:pl-14 md:pl-20 text-left">
+          <div className="flex flex-col items-start pl-14 sm:pl-24 md:pl-32 text-left">
             <div className="flex items-center">
               <span className="text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.04em] text-[#0b1a30] font-sora">
                 L<span className="relative inline-block">U<span className="absolute -top-1 left-1/2 -translate-x-1/2 text-[#c59b27] text-xs sm:text-sm font-black">✦</span></span>MIXORA
@@ -292,7 +268,7 @@ export default function CertificateRenderer({
         {/* ── WISHES RIBBON ── */}
         <div className="my-2.5 sm:my-3 relative z-10 flex justify-center">
           <div className="inline-flex items-center px-6 sm:px-9 py-1 rounded-full bg-[#0b1a30] text-[#f3d068] border border-[#d4af37] text-[10.5px] sm:text-xs font-medium italic shadow-sm">
-            We wish them all the best for their future endeavors.
+            {cert.wishesText || 'We wish them all the best for their future endeavors.'}
           </div>
         </div>
 

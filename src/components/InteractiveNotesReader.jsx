@@ -4,13 +4,15 @@ import {
   Play, Square, Sun, Moon, Coffee, Maximize2, Minimize2, PanelLeftClose,
   PanelLeft, Code2, Sparkles, Clock, AlertTriangle, Lightbulb, GraduationCap,
   Building2, Terminal, RotateCcw, X, ExternalLink, CheckSquare, HelpCircle,
-  PlayCircle, Award, ArrowRight
+  PlayCircle, Award, ArrowRight, Headphones, Target
 } from 'lucide-react';
 import {
   buildAudioScripts,
   resolveVoiceAndSpeech,
   playSynthesizedNarration
 } from '../utils/teluguAudioEngine.js';
+import SyllabusPodcastModal from './SyllabusPodcastModal';
+import ExamPredictorModal from './ExamPredictorModal';
 
 export default function InteractiveNotesReader({
   course,
@@ -55,6 +57,10 @@ export default function InteractiveNotesReader({
   const [activeSpeechText, setActiveSpeechText] = useState('');
   const [browserVoices, setBrowserVoices] = useState([]);
   const activeNarrationRef = useRef(null);
+
+  // ── 🎙️ AI Podcast & 🎯 Exam Predictor Modals State ──
+  const [showReaderPodcastModal, setShowReaderPodcastModal] = useState(false);
+  const [showReaderExamPredictorModal, setShowReaderExamPredictorModal] = useState(false);
 
   // ── ❯❯ Lumixora "Try it Yourself" Interactive Code Playground State ──
   const [playgroundModal, setPlaygroundModal] = useState(null); // { title, language, code, originalCode, output, activeTab: 'output' | 'preview' }
@@ -522,6 +528,28 @@ Exit Code: 0 (Execution successful).`;
           >
             {isSidebarCollapsed ? <PanelLeft className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
             <span className="hidden md:inline">{isSidebarCollapsed ? 'Show TOC' : 'Hide TOC'}</span>
+          </button>
+
+          {/* AI Audio Podcast Recap Pill */}
+          <button
+            type="button"
+            onClick={() => setShowReaderPodcastModal(true)}
+            title="Listen to Syllabus AI Podcast Recap"
+            className="px-2.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+          >
+            <Headphones className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden sm:inline">AI Podcast</span>
+          </button>
+
+          {/* Exam Predictor Pill */}
+          <button
+            type="button"
+            onClick={() => setShowReaderExamPredictorModal(true)}
+            title="View Predicted Exam Questions & Model Answers"
+            className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+          >
+            <Target className="w-3.5 h-3.5 text-rose-300" />
+            <span className="hidden sm:inline">Exam Predictor</span>
           </button>
 
           {/* Font Size Adjusters */}
@@ -1323,6 +1351,22 @@ Exit Code: 0 (Execution successful).`;
           </div>
         </div>
       )}
+
+      {/* Syllabus-to-Podcast AI Audio Overview Modal */}
+      <SyllabusPodcastModal
+        isOpen={showReaderPodcastModal}
+        onClose={() => setShowReaderPodcastModal(false)}
+        initialTopic={currentChapter?.title || course?.title || 'Engineering Architecture'}
+        initialSubject={course?.category || course?.title || 'Computer Science'}
+      />
+
+      {/* High-Probability Exam Question Predictor Modal */}
+      <ExamPredictorModal
+        isOpen={showReaderExamPredictorModal}
+        onClose={() => setShowReaderExamPredictorModal(false)}
+        initialTopic={currentChapter?.title || course?.title || 'Engineering Architecture'}
+        initialSubject={course?.category || course?.title || 'Computer Science'}
+      />
 
     </div>
   );

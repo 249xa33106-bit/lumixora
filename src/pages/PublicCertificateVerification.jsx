@@ -82,6 +82,12 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
               (i.email && i.email.toUpperCase() === certId.toUpperCase())
             );
             if (internMatch) {
+              let customCert = null;
+              try {
+                const customKey = localStorage.getItem(`lumixora_custom_cert_details_${internMatch.id}`) || localStorage.getItem('lumixora_custom_cert_details_global');
+                if (customKey) customCert = JSON.parse(customKey);
+              } catch (_) {}
+
               let savedSubs = [];
               try {
                 const local = localStorage.getItem(`lumixora_intern_submissions_${internMatch.id}`);
@@ -374,27 +380,6 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
             {/* TAB 1: VISUAL CERTIFICATE CANVAS */}
             {activeTab === 'certificate' && (
               <div className="space-y-4">
-                {/* Theme Switcher Bar */}
-                <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-400 font-bold">Diploma Theme:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {CERTIFICATE_STYLES.map((st) => (
-                      <button
-                        key={st.id}
-                        onClick={() => setCertTheme(st.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                          certTheme === st.id
-                            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black shadow'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <span>{st.icon}</span>
-                        <span className="hidden sm:inline">{st.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* THE MASTER CERTIFICATE CANVAS */}
                 <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl p-2 bg-black/60">
                   <CertificateRenderer

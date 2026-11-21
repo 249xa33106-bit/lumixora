@@ -1,6 +1,8 @@
 import AdvancedDocumentViewerModal from '../components/AdvancedDocumentViewerModal';
+import SyllabusPodcastModal from '../components/SyllabusPodcastModal';
+import ExamPredictorModal from '../components/ExamPredictorModal';
 import React, { useState, useEffect } from 'react';
-import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw, Building2 } from 'lucide-react';
+import { FileText, Search, Upload, Plus, Download, Sparkles, Eye, X, BookOpen, Brain, ListCollapse, AlertTriangle, Loader2, Edit3, Trash2, RefreshCw, Building2, Headphones, Target } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { useGamification } from '../context/GamificationContext';
@@ -34,6 +36,27 @@ export default function NotesPlatform({ user, setActiveTab }) {
   const [editForm, setEditForm] = useState({ title: '', branch: 'CSE', semester: 'Sem 1', fileUrl: '' });
   const [noteOpenTime, setNoteOpenTime] = useState(null);
   const [activeNoteForTimeTracking, setActiveNoteForTimeTracking] = useState(null);
+
+  // ── 🎙️ AI Podcast & 🎯 Exam Predictor Modals State ──
+  const [showPodcastModal, setShowPodcastModal] = useState(false);
+  const [podcastTopic, setPodcastTopic] = useState('Operating Systems');
+  const [podcastSubject, setPodcastSubject] = useState('Computer Science');
+
+  const [showExamPredictorModal, setShowExamPredictorModal] = useState(false);
+  const [examTopic, setExamTopic] = useState('Operating Systems');
+  const [examSubject, setExamSubject] = useState('Computer Science');
+
+  const handleOpenPodcast = (note) => {
+    setPodcastTopic(note.title || 'Engineering Core');
+    setPodcastSubject(note.subject || 'Computer Science');
+    setShowPodcastModal(true);
+  };
+
+  const handleOpenExamPredictor = (note) => {
+    setExamTopic(note.title || 'Engineering Core');
+    setExamSubject(note.subject || 'Computer Science');
+    setShowExamPredictorModal(true);
+  };
 
   useEffect(() => {
     if (activeNoteForEnhance?.aiEnhancement?.status === 'complete') {
@@ -517,16 +540,49 @@ export default function NotesPlatform({ user, setActiveTab }) {
           </div>
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full md:w-72">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search notes, formulas..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs"
-          />
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
+        {/* Right Section: AI Podcast & Exam Predictor Quick Triggers + Search */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+          {/* Quick Podcast Button */}
+          <button
+            onClick={() => {
+              setPodcastTopic(filterBranch !== 'All' ? `${filterBranch} Core Curriculum (${filterSem})` : 'Operating Systems: Process Synchronization & Deadlocks');
+              setPodcastSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
+              setShowPodcastModal(true);
+            }}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
+            title="Generate 5-min NotebookLM-style Audio Recap"
+          >
+            <Headphones className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+            <span className="font-bold">AI Audio Podcast</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/30 font-bold">AUDIO</span>
+          </button>
+
+          {/* Quick Exam Predictor Button */}
+          <button
+            onClick={() => {
+              setExamTopic(filterBranch !== 'All' ? `${filterBranch} - ${filterSem} Core Paper` : 'Operating Systems & DBMS Core Theory');
+              setExamSubject(filterBranch !== 'All' ? filterBranch : 'Computer Science');
+              setShowExamPredictorModal(true);
+            }}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-500/15 to-amber-500/15 border border-rose-500/30 hover:border-rose-400 text-rose-300 hover:text-white font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group shrink-0"
+            title="Predict High-Probability 2M, 5M & 10M Exam Questions"
+          >
+            <Target className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+            <span className="font-bold">Exam Predictor</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-200 border border-rose-500/30 font-bold">96% YIELD</span>
+          </button>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search notes, formulas..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-xs"
+            />
+            <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
+          </div>
         </div>
       </div>
 
@@ -648,6 +704,24 @@ export default function NotesPlatform({ user, setActiveTab }) {
                   title="Enhance notes with Vyomra AI"
                 >
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                </button>
+
+                {/* AI Audio Podcast Recap */}
+                <button 
+                  onClick={() => handleOpenPodcast(note)}
+                  className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all duration-300 flex items-center justify-center cursor-pointer"
+                  title="Listen to Syllabus AI Podcast Recap"
+                >
+                  <Headphones className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Exam Predictor */}
+                <button 
+                  onClick={() => handleOpenExamPredictor(note)}
+                  className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-black transition-all duration-300 flex items-center justify-center cursor-pointer"
+                  title="Predict High-Probability Exam Questions"
+                >
+                  <Target className="w-3.5 h-3.5" />
                 </button>
 
                 {/* View Original PDF Button */}
@@ -959,6 +1033,22 @@ export default function NotesPlatform({ user, setActiveTab }) {
         title={previewNoteTitle}
         subject={{ name: previewNoteTitle }}
         user={user}
+      />
+
+      {/* Syllabus-to-Podcast AI Audio Overview Modal */}
+      <SyllabusPodcastModal
+        isOpen={showPodcastModal}
+        onClose={() => setShowPodcastModal(false)}
+        initialTopic={podcastTopic}
+        initialSubject={podcastSubject}
+      />
+
+      {/* High-Probability Exam Question Predictor Modal */}
+      <ExamPredictorModal
+        isOpen={showExamPredictorModal}
+        onClose={() => setShowExamPredictorModal(false)}
+        initialTopic={examTopic}
+        initialSubject={examSubject}
       />
 </div>
   );
