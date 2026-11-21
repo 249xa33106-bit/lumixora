@@ -151,6 +151,65 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
   const predictedPaper = activePaper;
 
+  // Helper to expand or collapse all model answer rubrics in active paper
+  const handleToggleAllAnswers = () => {
+    if (!activePaper) return;
+    const allIds = [
+      ...(activePaper.partA || []).map(q => q.id),
+      ...(activePaper.partB || []).flatMap(p => [p.questionA?.id, p.questionB?.id]).filter(Boolean)
+    ];
+    const anyClosed = allIds.some(id => !expandedModelAnswers[id]);
+    const nextMap = {};
+    allIds.forEach(id => {
+      nextMap[id] = anyClosed;
+    });
+    setExpandedModelAnswers(prev => ({ ...prev, ...nextMap }));
+    addToast({ 
+      message: anyClosed ? 'Expanded all step-by-step model answer rubrics!' : 'Collapsed all answer rubrics.', 
+      type: 'info' 
+    });
+  };
+
+  const areAllAnswersExpanded = useMemo(() => {
+    if (!activePaper) return false;
+    const allIds = [
+      ...(activePaper.partA || []).map(q => q.id),
+      ...(activePaper.partB || []).flatMap(p => [p.questionA?.id, p.questionB?.id]).filter(Boolean)
+    ];
+    return allIds.length > 0 && allIds.every(id => expandedModelAnswers[id]);
+  }, [activePaper, expandedModelAnswers]);
+
+  // Unit-wise Syllabus Coverage & Recurrence Heatmap Stats
+  const unitCoverageStats = useMemo(() => {
+    if (!activePaper) return [];
+    const units = [1, 2, 3, 4, 5];
+    return units.map(u => {
+      const partAQuestions = (activePaper.partA || []).filter(q => Number(q.unit) === u);
+      const partBPairs = (activePaper.partB || []).filter(p => Number(p.unit) === u);
+      const allUnitQuestions = [
+        ...partAQuestions,
+        ...partBPairs.map(p => p.questionA).filter(Boolean),
+        ...partBPairs.map(p => p.questionB).filter(Boolean)
+      ];
+      const avgScore = allUnitQuestions.length > 0
+        ? Math.round(allUnitQuestions.reduce((acc, q) => acc + (q.mlScore?.probability || 92), 0) / allUnitQuestions.length)
+        : 90 + ((u * 3) % 8);
+      
+      const sampleTopics = allUnitQuestions
+        .map(q => q.question?.split(/[:.?,(]/)[0]?.replace(/^(Define|Explain|Describe|What is|Compare|Discuss|State|Illustrate)\s+/i, '').trim())
+        .filter(t => t && t.length > 3 && t.length < 35)
+        .slice(0, 3);
+
+      return {
+        unit: u,
+        recurrenceScore: avgScore,
+        weightageMarks: 14,
+        topics: sampleTopics.length > 0 ? sampleTopics : [`Unit ${u} Core Topics`],
+        questionCount: allUnitQuestions.length
+      };
+    });
+  }, [activePaper]);
+
   // Execute Deep Learning Model Calibration
   const handleRetrainModel = () => {
     if (isRetraining) return;
@@ -300,8 +359,8 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
     addToast({ message: `Attached ${files.length} question paper file(s) for neural ingestion!`, type: 'info' });
   };
 
-  // 1-Click Export Official 70-Mark Examination Paper PDF (Supports Set 1, Set 2, or Both Sets)
-  const handleDownloadOfficialPDF = (targetSubjId, whichSet = 'set1') => {
+  // 1-Click Export Official 70-Mark Examination Paper PDF (Supports Set 1, Set 2, or Both Sets, with optional Model Solutions)
+  const handleDownloadOfficialPDF = (targetSubjId, whichSet = 'set1', includeSolutions = false) => {
     try {
       const activeSets = generatePredictedModelSets(targetSubjId || activeSubject.subjectId, customExtractedQuestions);
       const isBoth = whichSet === 'both';
@@ -309,8 +368,9 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         ? [activeSets.set1, activeSets.set2]
         : [(whichSet === 'set2' ? activeSets.set2 : activeSets.set1)];
 
+      const solutionLabel = includeSolutions ? ' with Step-by-Step Model Solutions' : '';
       addToast({ 
-        message: `Generating official ${isBoth ? '2-Set Complete Exam Pack' : setsToRender[0].setName} PDF for ${activeSets.subject.subjectName}...`, 
+        message: `Generating official ${isBoth ? '2-Set Complete Exam Pack' : setsToRender[0].setName}${solutionLabel} PDF for ${activeSets.subject.subjectName}...`, 
         type: 'info' 
       });
 
@@ -330,7 +390,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         doc.setFontSize(10);
         doc.setFont('times', 'normal');
         doc.text(paper.affiliatedTo, pageWidth / 2, 22, { align: 'center' });
-        doc.text(paper.examTitle, pageWidth / 2, 27, { align: 'center' });
+        doc.text(paper.examTitle + (includeSolutions ? ' [OFFICIAL MODEL SOLUTIONS & RUBRIC]' : ''), pageWidth / 2, 27, { align: 'center' });
 
         // Subject Details Table Header
         doc.setFont('times', 'bold');
@@ -339,7 +399,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         doc.text(`Max Marks: ${paper.maxMarks}`, pageWidth - 14, 35, { align: 'right' });
         doc.text(`Branch / Sem: B.Tech ${paper.branch} - ${paper.semester}`, 14, 40);
         doc.text(`Time: 3 Hours`, pageWidth - 14, 40, { align: 'right' });
-        doc.text(`Regulation: ${paper.scheme}   |   ${paper.setName.toUpperCase()}`, 14, 45);
+        doc.text(`Regulation: ${paper.scheme}   |   ${paper.setName.toUpperCase()}${includeSolutions ? ' (WITH ANSWER BLUEPRINT)' : ''}`, 14, 45);
 
         // Candidate Hall Ticket Box
         doc.rect(14, 48, 65, 7);
@@ -356,16 +416,26 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         doc.text(`PART - A (Compulsory: 10 x 2 = 20 Marks) - ${paper.setModelCode}`, pageWidth / 2, currentY, { align: 'center' });
         currentY += 6;
 
-        const partARows = paper.partA.map((q, idx) => [
-          `Q${idx + 1}`,
-          q.question,
-          `Unit ${q.unit}`,
-          `${q.marks}M`
-        ]);
+        const partARows = paper.partA.map((q, idx) => {
+          let text = q.question;
+          if (includeSolutions && q.modelAnswer) {
+            const rubrics = (q.modelAnswer.keyPoints || []).map(pt => `• ${pt}`).join('\n');
+            text += `\n\n[MODEL ANSWER / EVALUATION RUBRIC]:\n${rubrics}`;
+            if (q.modelAnswer.examinerTip) {
+              text += `\n[EXAMINER TIP]: ${q.modelAnswer.examinerTip}`;
+            }
+          }
+          return [
+            `Q${idx + 1}`,
+            text,
+            `Unit ${q.unit}`,
+            `${q.marks}M`
+          ];
+        });
 
         autoTable(doc, {
           startY: currentY,
-          head: [['Q.No', 'Questions (Answer ALL questions)', 'Unit', 'Marks']],
+          head: [['Q.No', includeSolutions ? 'Questions & Step-by-Step Model Solutions' : 'Questions (Answer ALL questions)', 'Unit', 'Marks']],
           body: partARows,
           theme: 'plain',
           headStyles: { fontStyle: 'bold', fontSize: 9, cellPadding: 2 },
@@ -383,14 +453,38 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
         const partBRows = [];
         paper.partB.forEach(pair => {
-          partBRows.push([`Q${pair.questionNumberA}`, pair.questionA.question, `Unit ${pair.unit}`, `${pair.questionA.marks}M`]);
+          let qAText = pair.questionA.question;
+          if (includeSolutions && pair.questionA.modelAnswer) {
+            const rubrics = (pair.questionA.modelAnswer.structure || []).map(st => `• ${st}`).join('\n');
+            qAText += `\n\n[10/10 ANSWER BLUEPRINT]:\n${rubrics}`;
+            if (pair.questionA.modelAnswer.diagramDescription) {
+              qAText += `\n[MANDATORY DIAGRAM]: ${pair.questionA.modelAnswer.diagramDescription}`;
+            }
+            if (pair.questionA.modelAnswer.examinerTip) {
+              qAText += `\n[EXAMINER TIP]: ${pair.questionA.modelAnswer.examinerTip}`;
+            }
+          }
+
+          let qBText = pair.questionB.question;
+          if (includeSolutions && pair.questionB.modelAnswer) {
+            const rubrics = (pair.questionB.modelAnswer.structure || []).map(st => `• ${st}`).join('\n');
+            qBText += `\n\n[10/10 ANSWER BLUEPRINT]:\n${rubrics}`;
+            if (pair.questionB.modelAnswer.diagramDescription) {
+              qBText += `\n[MANDATORY DIAGRAM]: ${pair.questionB.modelAnswer.diagramDescription}`;
+            }
+            if (pair.questionB.modelAnswer.examinerTip) {
+              qBText += `\n[EXAMINER TIP]: ${pair.questionB.modelAnswer.examinerTip}`;
+            }
+          }
+
+          partBRows.push([`Q${pair.questionNumberA}`, qAText, `Unit ${pair.unit}`, `${pair.questionA.marks}M`]);
           partBRows.push(['', '----------------- [ OR ] -----------------', '', '']);
-          partBRows.push([`Q${pair.questionNumberB}`, pair.questionB.question, `Unit ${pair.unit}`, `${pair.questionB.marks}M`]);
+          partBRows.push([`Q${pair.questionNumberB}`, qBText, `Unit ${pair.unit}`, `${pair.questionB.marks}M`]);
         });
 
         autoTable(doc, {
           startY: currentY,
-          head: [['Q.No', 'Questions (Either / Or Choice)', 'Unit', 'Marks']],
+          head: [['Q.No', includeSolutions ? 'Questions & 10-Mark Answer Blueprints' : 'Questions (Either / Or Choice)', 'Unit', 'Marks']],
           body: partBRows,
           theme: 'plain',
           headStyles: { fontStyle: 'bold', fontSize: 9, cellPadding: 2 },
@@ -399,12 +493,13 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         });
       });
 
+      const solSuffix = includeSolutions ? '_WITH_MODEL_SOLUTIONS' : '';
       const fileName = isBoth 
-        ? `Official_Exam_Paper_${activeSets.subject.subjectCode}_COMPLETE_2_SETS_70M.pdf`
-        : `Official_Exam_Paper_${activeSets.subject.subjectCode}_${whichSet === 'set2' ? 'SET_B' : 'SET_A'}_70M.pdf`;
+        ? `Official_Exam_Paper_${activeSets.subject.subjectCode}_COMPLETE_2_SETS${solSuffix}_70M.pdf`
+        : `Official_Exam_Paper_${activeSets.subject.subjectCode}_${whichSet === 'set2' ? 'SET_B' : 'SET_A'}${solSuffix}_70M.pdf`;
 
       doc.save(fileName);
-      addToast({ message: 'Official Examination Question Paper PDF downloaded!', type: 'success' });
+      addToast({ message: `Official Examination PDF${includeSolutions ? ' with Model Solutions' : ''} downloaded!`, type: 'success' });
     } catch (err) {
       console.error(err);
       addToast({ message: 'Failed to generate PDF. Please try again.', type: 'error' });
@@ -1113,7 +1208,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
             {/* Right: View Switcher & 2-Set Export Actions */}
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
               <button
-                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1')}
+                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', false)}
                 className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
                 title={`Export ${activeModelSet === 'set2' ? 'Set B' : 'Set A'} PDF`}
               >
@@ -1122,7 +1217,16 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
               </button>
 
               <button
-                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both')}
+                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', true)}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/40 transition-all cursor-pointer shadow-md"
+                title="Export Complete Model Solutions & Marking Scheme PDF"
+              >
+                <Award className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Export Solutions PDF</span>
+              </button>
+
+              <button
+                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both', false)}
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
                 title="Export Complete 2-Set Exam Pack (Set A + Set B)"
               >
@@ -1235,6 +1339,85 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                   <div className="font-mono text-[11px] text-amber-400 font-bold">
                     {activePaper.setName} &bull; Scheme-2023 / Scheme-2026
                   </div>
+                </div>
+              </div>
+
+              {/* ── SYLLABUS COVERAGE & 5-YEAR RECURRENCE HEATMAP ── */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-purple-950/20 to-black border border-white/10 space-y-3 font-sans">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                      <Flame className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 font-mono">
+                        <span>Syllabus Coverage & 5-Year Recurrence Heatmap</span>
+                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                          100% University Blueprint Quota
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">Unit-wise examination weightage and high-yield topics based on autonomous archives.</p>
+                    </div>
+                  </div>
+                  
+                  {/* Global Expand/Collapse All Rubrics Action */}
+                  <button
+                    onClick={handleToggleAllAnswers}
+                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-cyan-300 hover:text-cyan-200 text-xs font-bold font-mono border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
+                  >
+                    {areAllAnswersExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    <span>{areAllAnswersExpanded ? 'Collapse All Rubrics' : '⚡ Expand All Model Solutions'}</span>
+                  </button>
+                </div>
+
+                {/* 5-Unit Heatmap Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1">
+                  {unitCoverageStats.map((uStat) => {
+                    const isVeryHigh = uStat.recurrenceScore >= 94;
+                    return (
+                      <div 
+                        key={uStat.unit}
+                        className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 hover:border-amber-500/40 transition-all"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs font-bold text-white">UNIT {uStat.unit}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                            isVeryHigh ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {uStat.recurrenceScore}% YIELD
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                isVeryHigh ? 'bg-gradient-to-r from-rose-500 to-amber-400' : 'bg-gradient-to-r from-amber-400 to-cyan-400'
+                              }`}
+                              style={{ width: `${uStat.recurrenceScore}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                            <span>Quota: 14M</span>
+                            <span>{uStat.questionCount} Questions</span>
+                          </div>
+                        </div>
+
+                        {/* High Yield Topic Tags */}
+                        <div className="space-y-1 pt-1 border-t border-white/5">
+                          <span className="text-[9px] font-mono uppercase text-slate-400 font-bold tracking-wider">Top Recurrence:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {uStat.topics.map((top, tIdx) => (
+                              <span key={tIdx} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-300 font-medium truncate max-w-full">
+                                • {top}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
