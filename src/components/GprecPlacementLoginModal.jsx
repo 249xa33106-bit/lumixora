@@ -356,14 +356,14 @@ export default function GprecPlacementLoginModal({
             <form onSubmit={handleRollSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-[#475569] block">
-                  College Roll Number
+                  College Roll Number or Faculty Email
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={rollNumber}
-                    onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                    placeholder="e.g. 249XA33106"
+                    onChange={(e) => setRollNumber(e.target.value)}
+                    placeholder="e.g. 249XA33106 or srikanth.csm@gprec.ac.in"
                     className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-sm font-mono font-bold tracking-wider uppercase outline-none transition-all"
                     autoFocus
                     required
@@ -371,7 +371,7 @@ export default function GprecPlacementLoginModal({
                   <ShieldCheck className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-1/2 -translate-y-1/2" />
                 </div>
                 <p className="text-[11px] text-[#64748B] leading-normal">
-                  Registered GPREC placement candidate roll numbers only.
+                  Registered GPREC placement candidate roll numbers or official faculty emails.
                 </p>
               </div>
 

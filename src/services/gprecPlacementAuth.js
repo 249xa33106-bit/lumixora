@@ -478,21 +478,26 @@ export async function removeGprecScholarRoll(rollInput) {
 }
 
 /**
- * Validates if the given roll number is approved for the GPREC Placement Suite.
+ * Validates if the given roll number or faculty email is approved for the GPREC Placement Suite.
  */
 export function isAllowedGprecRoll(rollNumber = '') {
   const normalized = normalizeRollNumber(rollNumber);
   if (!normalized) return false;
+  // Allow official placement faculty/coordinators to pass verification directly via their email
+  if (normalized === 'srikanth.csm@gprec.ac.in' || normalized === 'dean.placements@gprec.ac.in') {
+    return true;
+  }
   const allowed = getAllowedGprecRollNumbers();
   return allowed.includes(normalized);
 }
 
 /**
- * Resolves the institutional email address from roll number
+ * Resolves the institutional email address from roll number or email input
  */
 export function getGprecEmailFromRoll(rollNumber = '') {
   const normalized = normalizeRollNumber(rollNumber);
   if (!normalized) return '';
+  if (normalized.includes('@')) return normalized;
   return `${normalized}@gprec.ac.in`;
 }
 
@@ -585,24 +590,30 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
   }
 
   const rollUpper = normalized.toUpperCase();
-  const scholarName = `GPREC Scholar (${rollUpper})`;
-  const department = normalized.includes('05') ? 'CSE' : (normalized.includes('33') ? 'CSM' : (normalized.includes('04') ? 'ECE' : 'CSE'));
+  const isFacultyUser = normalized === 'srikanth.csm@gprec.ac.in' || normalized === 'dean.placements@gprec.ac.in';
+  const scholarName = isFacultyUser
+    ? (normalized.includes('srikanth') ? 'Srikanth (CSM TPO Coordinator)' : 'Dean Placements (GPREC)')
+    : `GPREC Scholar (${rollUpper})`;
+  const department = isFacultyUser ? 'CSM & T&P Cell' : (normalized.includes('05') ? 'CSE' : (normalized.includes('33') ? 'CSM' : (normalized.includes('04') ? 'ECE' : 'CSE')));
 
   // Construct verified user object (zero fee check, fully unlocked)
   const userProfile = {
-    id: `gprec_${normalized}`,
-    uid: `gprec_${normalized}`,
+    id: `gprec_${normalized.replace(/[^a-zA-Z0-9]/g, '_')}`,
+    uid: `gprec_${normalized.replace(/[^a-zA-Z0-9]/g, '_')}`,
     email,
     name: scholarName,
-    displayName: scholarName,
-    rollNumber: rollUpper,
-    role: 'student',
+    displayName: isFacultyUser ? (normalized.includes('srikanth') ? 'Srikanth CSM' : 'Dean Placements') : scholarName,
+    rollNumber: isFacultyUser ? 'FACULTY' : rollUpper,
+    role: isFacultyUser ? 'faculty' : 'student',
+    isOfficer: isFacultyUser,
+    isDean: normalized === 'dean.placements@gprec.ac.in',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
     collegeCode: 'GPREC',
     department,
-    year: normalized.startsWith('259') ? '2nd Year' : (normalized.startsWith('249') ? '3rd Year' : '4th Year'),
-    batchYear: normalized.startsWith('259') ? '2025-2029' : '2022-2026',
-    batch: normalized.startsWith('259') ? '2025-2029' : '2022-2026',
+    designation: isFacultyUser ? (normalized.includes('srikanth') ? 'Faculty Placement Coordinator - CSM' : 'Dean - Corporate Relations & Placements') : undefined,
+    year: isFacultyUser ? 'Faculty' : (normalized.startsWith('259') ? '2nd Year' : (normalized.startsWith('249') ? '3rd Year' : '4th Year')),
+    batchYear: isFacultyUser ? 'Faculty' : (normalized.startsWith('259') ? '2025-2029' : '2022-2026'),
+    batch: isFacultyUser ? 'Faculty' : (normalized.startsWith('259') ? '2025-2029' : '2022-2026'),
     emailVerified: true,
     is_approved: true,
     isApproved: true,
