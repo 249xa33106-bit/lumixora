@@ -22,6 +22,7 @@ import {
 import CertificateRenderer, { CERTIFICATE_STYLES } from '../components/CertificateRenderer';
 import LetterOfRecommendation from '../components/LetterOfRecommendation';
 import realInternsBatch01 from '../data/realInternsBatch01.json';
+import { INTERN_ROLES } from './LumixoraInternPortal';
 
 export default function PublicCertificateVerification({ certId: propCertId, onBack }) {
   const [certId, setCertId] = useState(() => {
@@ -46,7 +47,7 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
   const [cert, setCert] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchedId, setSearchedId] = useState('');
-  const [certTheme, setCertTheme] = useState('executive_ivory');
+  const [certTheme, setCertTheme] = useState('official_lumixora');
   const [activeTab, setActiveTab] = useState('certificate'); // 'certificate' | 'ledger' | 'lor'
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -81,9 +82,38 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
               (i.email && i.email.toUpperCase() === certId.toUpperCase())
             );
             if (internMatch) {
+              let savedSubs = [];
+              try {
+                const local = localStorage.getItem(`lumixora_intern_submissions_${internMatch.id}`);
+                if (local) savedSubs = JSON.parse(local);
+              } catch (e) {}
+
+              const roleConfig = INTERN_ROLES.find(r => r.id === internMatch.roleId) || 
+                                 INTERN_ROLES.find(r => (internMatch.roleTitle || '').toLowerCase().includes(r.id.toLowerCase())) || 
+                                 INTERN_ROLES[0];
+
+              const displayTasks = savedSubs.length > 0 ? savedSubs : (roleConfig?.deliverables || []).map((d, idx) => ({
+                id: d.id,
+                title: d.title,
+                week: d.week || `Week ${idx + 1}`,
+                track: internMatch.roleTitle,
+                submissionDate: '2026-11-20',
+                submissionDay: 'Verified',
+                hoursSpent: 20,
+                score: 98,
+                description: d.description || `Completed ${d.title} as part of Lumixora Batch 01.`,
+                driveUrl: d.driveUrl || 'https://drive.google.com/drive/folders/lumixora-batch01-proof',
+                githubUrl: d.githubUrl || 'https://github.com/lumixora',
+                pdfUrl: d.pdfUrl || 'https://lumixora.in/docs/proof-of-work-attestation.pdf'
+              }));
+
+              const firstWithGithub = displayTasks.find(t => t.githubUrl || t.prUrl);
+              const firstWithDrive = displayTasks.find(t => t.driveUrl);
+              const firstWithPdf = displayTasks.find(t => t.pdfUrl);
+
               setCert({
-                id: `LMX-POS-2026-${(internMatch.refId || internMatch.id).replace(/[^a-zA-Z0-9]/g, '')}`,
-                title: 'Certificate of Internship Completion & Proof of Skill',
+                id: `LMX-INT-2026-${(internMatch.refId || internMatch.id).replace(/[^a-zA-Z0-9]/g, '')}`,
+                title: 'Certificate of Internship Completion',
                 isInternship: true,
                 internName: internMatch.name,
                 issuedTo: internMatch.name,
@@ -91,25 +121,28 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
                 rollNumber: internMatch.refId || internMatch.id,
                 college: internMatch.college || 'G. Pulla Reddy Engineering College (Autonomous)',
                 track: internMatch.roleTitle,
+                domain: internMatch.roleTitle,
                 category: internMatch.roleTitle,
                 duration: '6-Week Intensive Engineering Internship (Batch 01)',
-                startDate: 'November 15, 2026',
-                endDate: 'December 30, 2026',
+                startDate: '15 Nov 2026',
+                endDate: '30 Dec 2026',
                 hoursLogged: 120,
                 score: '98% Distinction',
                 grade: 'Elite Distinction (A+ Grade)',
                 verificationHash: `sha256:${(internMatch.id || '').toLowerCase()}c92a4e8f1b6d0e37a8c4f5291b8e0347a5f69201`,
                 founderSignatureName: 'Shaik Sowban',
-                founderRole: 'Founder & CEO',
-                signer2Name: (internMatch.lead || 'Track Lead').split('&')[0].trim(),
-                signer2Role: 'Track Lead',
+                founderRole: 'Founder, CEO & Tech Lead',
+                signer2Name: 'Team Lumixora',
+                signer2Role: 'Product Development Team',
                 signer2Org: 'Lumixora Engineering Council',
+                tasks: displayTasks,
+                githubUrl: firstWithGithub?.githubUrl || firstWithGithub?.prUrl || '',
+                driveUrl: firstWithDrive?.driveUrl || '',
+                pdfUrl: firstWithPdf?.pdfUrl || '',
                 skills: [
-                  'Production Architecture & QA',
-                  'Automated AI Pre-Audits',
-                  'Git Pull Request Reviews',
-                  'Boundary Value Analysis',
-                  'Real-Time Telemetry Systems'
+                  'Product Testing',
+                  'Quality Analysis',
+                  'Innovation Mindset'
                 ]
               });
             } else {
@@ -529,6 +562,31 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
                               <GithubIcon className="w-3.5 h-3.5 text-cyan-400" />
                               <span>View GitHub PR / Repo</span>
                               <ExternalLink className="w-3 h-3 text-slate-500" />
+                            </a>
+                          )}
+
+                          {task.driveUrl && (
+                            <a
+                              href={task.driveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-xs font-bold transition-all border border-blue-500/30 flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <span>📁 View Google Drive Work</span>
+                              <ExternalLink className="w-3 h-3 text-blue-400" />
+                            </a>
+                          )}
+
+                          {task.pdfUrl && (
+                            <a
+                              href={task.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold transition-all border border-rose-500/30 flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-rose-400" />
+                              <span>View PDF Report</span>
+                              <ExternalLink className="w-3 h-3 text-rose-400" />
                             </a>
                           )}
 

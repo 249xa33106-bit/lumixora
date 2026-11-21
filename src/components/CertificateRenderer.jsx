@@ -1,7 +1,13 @@
 import React from 'react';
-import { Award, Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { Award, Check, Sparkles, ShieldCheck, Settings, Lightbulb, TrendingUp, CheckCircle, ExternalLink } from 'lucide-react';
 
 export const CERTIFICATE_STYLES = [
+  {
+    id: 'official_lumixora',
+    name: '🌟 Official Lumixora Gold & Navy',
+    badge: 'Official Issuer Template (Exact Match)',
+    desc: 'Official Lumixora Certificate with navy & gold geometric angles, Cinzel typography, and gold medallion seal'
+  },
   {
     id: 'executive_ivory',
     name: '🏛️ Executive Corporate Gold',
@@ -116,10 +122,299 @@ export default function CertificateRenderer({
 
   // Normalize style ID
   let activeStyle = styleId;
+  if (!styleId || styleId === 'official_lumixora' || styleId === 'official') activeStyle = 'official_lumixora';
   if (styleId === 'classic_ivory' || styleId === 'parchment' || styleId === 'ivory') activeStyle = 'executive_ivory';
   if (styleId === 'cyber' || styleId === 'cyber_neon' || styleId === 'obsidian') activeStyle = 'gold_midnight';
   if (styleId === 'sapphire') activeStyle = 'sapphire_executive';
   if (styleId === 'classic') activeStyle = 'classic_parchment';
+
+  // Domain title formatting
+  let displayDomain = cert.domain || cert.track || cert.category || 'Product Testing';
+  if (displayDomain.toLowerCase().includes('test') || displayDomain.toLowerCase().includes('qa')) {
+    displayDomain = 'Product Testing';
+  } else if (displayDomain.toLowerCase().includes('research') || displayDomain.toLowerCase().includes('intel')) {
+    displayDomain = 'Research & Product Intelligence';
+  } else if (displayDomain.toLowerCase().includes('market') || displayDomain.toLowerCase().includes('brand')) {
+    displayDomain = 'Growth Marketing & Brand Strategy';
+  } else if (displayDomain.toLowerCase().includes('content') || displayDomain.toLowerCase().includes('media')) {
+    displayDomain = 'Content Creation & Visual Media';
+  }
+
+  // Dates formatting
+  const formattedStartDate = cert.startDate || '1 Nov 2025';
+  const formattedEndDate = cert.endDate || '30 Nov 2025';
+
+  // 3 Competency tags based on domain
+  let comp1 = 'Product Testing';
+  let comp2 = 'Quality Analysis';
+  let comp3 = 'Innovation Mindset';
+
+  if (displayDomain.includes('Research')) {
+    comp1 = 'Market Research';
+    comp2 = 'Competitive Intelligence';
+    comp3 = 'Innovation Mindset';
+  } else if (displayDomain.includes('Marketing')) {
+    comp1 = 'Growth Marketing';
+    comp2 = 'Brand Strategy';
+    comp3 = 'Innovation Mindset';
+  } else if (displayDomain.includes('Content')) {
+    comp1 = 'Visual Media';
+    comp2 = 'Content Creation';
+    comp3 = 'Innovation Mindset';
+  }
+
+  // Proof of work links
+  const tasks = Array.isArray(cert.tasks) ? cert.tasks : [];
+  const githubLink = cert.githubUrl || (tasks.find(t => t.githubUrl || t.prUrl)?.githubUrl || tasks.find(t => t.githubUrl || t.prUrl)?.prUrl) || '';
+  const driveLink = cert.driveUrl || (tasks.find(t => t.driveUrl)?.driveUrl) || '';
+  const pdfLink = cert.pdfUrl || (tasks.find(t => t.pdfUrl)?.pdfUrl) || '';
+  const demoLink = cert.demoUrl || (tasks.find(t => t.demoUrl || t.liveDemoUrl)?.demoUrl || tasks.find(t => t.demoUrl || t.liveDemoUrl)?.liveDemoUrl) || '';
+  const hasProofOfWork = Boolean(githubLink || driveLink || pdfLink || demoLink);
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 🌟 OFFICIAL LUMIXORA CERTIFICATE (Exact Match to Official Template)
+  // ════════════════════════════════════════════════════════════════════════════
+  if (activeStyle === 'official_lumixora') {
+    return (
+      <div
+        ref={certRef}
+        id="printable-certificate"
+        className="w-full max-w-5xl mx-auto rounded-xl relative shadow-[0_20px_70px_rgba(0,0,0,0.25)] flex flex-col justify-between text-center select-none p-6 sm:p-8 md:p-12 transition-all duration-300 bg-white text-[#0f172a] border border-[#d4af37] min-h-[580px] sm:min-h-[640px] md:min-h-[680px] overflow-hidden"
+        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      >
+        {/* ── Top-Left Geometric Navy & Gold Cuts ── */}
+        <div className="absolute top-0 left-0 w-36 sm:w-52 md:w-64 h-36 sm:h-52 md:h-64 pointer-events-none z-0">
+          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            {/* Dark Navy Triangle */}
+            <polygon points="0,0 180,0 0,220" fill="#0b1a30" />
+            {/* Inner Gold Diagonal Line */}
+            <polygon points="180,0 190,0 0,232 0,220" fill="#d4af37" />
+            {/* Outer Accent Gold Strip */}
+            <polygon points="205,0 215,0 0,260 0,250" fill="#c59b27" opacity="0.9" />
+            {/* Secondary Floating Gold Accent Slash */}
+            <line x1="28" y1="215" x2="215" y2="28" stroke="#f3d068" strokeWidth="2.5" />
+          </svg>
+        </div>
+
+        {/* ── Bottom-Right Geometric Navy & Gold Cuts ── */}
+        <div className="absolute bottom-0 right-0 w-36 sm:w-52 md:w-64 h-36 sm:h-52 md:h-64 pointer-events-none z-0">
+          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            {/* Dark Navy Triangle */}
+            <polygon points="240,240 60,240 240,20" fill="#0b1a30" />
+            {/* Inner Gold Diagonal Line */}
+            <polygon points="60,240 50,240 240,8 240,20" fill="#d4af37" />
+            {/* Outer Accent Gold Strip */}
+            <polygon points="35,240 25,240 240,-10 240,0" fill="#c59b27" opacity="0.9" />
+            {/* Secondary Floating Gold Accent Slash */}
+            <line x1="212" y1="25" x2="25" y2="212" stroke="#f3d068" strokeWidth="2.5" />
+          </svg>
+        </div>
+
+        {/* ── Right Background Translucent Watermark Star/Logo ── */}
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 opacity-[0.05] pointer-events-none select-none z-0">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            <path d="M100 0 L115 85 L200 100 L115 115 L100 200 L85 115 L0 100 L85 85 Z" fill="#0b1a30" />
+            <path d="M60 40 L60 160 L140 160 L140 135 L90 135 L90 40 Z" fill="#0b1a30" />
+          </svg>
+        </div>
+
+        {/* ── TOP HEADER (Logo + Subtitle Left, LEARN • BUILD • GROW Right) ── */}
+        <div className="flex items-center justify-between relative z-10 w-full mb-3">
+          {/* Left: Brand Identity */}
+          <div className="flex flex-col items-start pl-6 sm:pl-14 md:pl-20 text-left">
+            <div className="flex items-center">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.04em] text-[#0b1a30] font-sora">
+                L<span className="relative inline-block">U<span className="absolute -top-1 left-1/2 -translate-x-1/2 text-[#c59b27] text-xs sm:text-sm font-black">✦</span></span>MIXORA
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="h-[1px] w-5 sm:w-7 bg-slate-400"></span>
+              <span className="text-[9.5px] sm:text-[11px] font-medium tracking-wide text-slate-700">A Product of Vyomra</span>
+              <span className="h-[1px] w-5 sm:w-7 bg-slate-400"></span>
+            </div>
+          </div>
+
+          {/* Right: Tagline */}
+          <div className="text-right pr-4 sm:pr-8">
+            <span className="text-[9px] sm:text-[11px] md:text-xs font-bold tracking-[0.25em] text-slate-700 uppercase">
+              LEARN &nbsp;•&nbsp; BUILD &nbsp;•&nbsp; GROW
+            </span>
+          </div>
+        </div>
+
+        {/* ── CERTIFICATE TITLE ── */}
+        <div className="space-y-1.5 relative z-10 my-1 sm:my-2">
+          <h2 
+            className="text-2xl sm:text-3xl md:text-[2.5rem] font-bold tracking-[0.08em] text-[#0f2347] uppercase"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            INTERNSHIP CERTIFICATE
+          </h2>
+          {/* Centered Gold Star Accent */}
+          <div className="flex items-center justify-center gap-2 pt-0.5">
+            <span className="h-[1.5px] w-10 sm:w-16 bg-[#d4af37]"></span>
+            <span className="text-[#c59b27] text-sm">✦</span>
+            <span className="h-[1.5px] w-10 sm:w-16 bg-[#d4af37]"></span>
+          </div>
+        </div>
+
+        {/* ── RECIPIENT INTRODUCTION ── */}
+        <p className="text-xs sm:text-sm font-medium text-slate-700 relative z-10 mt-1">
+          This is to certify that
+        </p>
+
+        {/* ── RECIPIENT NAME (Flowing Calligraphy) ── */}
+        <div className="my-1 sm:my-2 relative z-10">
+          <span 
+            className="text-3xl sm:text-4xl md:text-5xl text-[#0b1a30] select-none block leading-tight font-normal"
+            style={{ fontFamily: "'Great Vibes', cursive" }}
+          >
+            {recipient}
+          </span>
+        </div>
+
+        {/* ── CERTIFICATION STATEMENT ── */}
+        <div className="max-w-2xl mx-auto space-y-1 text-slate-800 text-xs sm:text-sm leading-relaxed relative z-10 font-normal px-2">
+          <p>
+            has successfully completed their internship at <strong className="font-bold text-slate-950">Lumixora</strong>,
+          </p>
+          <p>
+            a product of Vyomra, in the domain of <strong className="font-bold text-slate-950">{displayDomain}</strong>.
+          </p>
+          <p>
+            During the period from [ <strong className="font-bold text-slate-950">{formattedStartDate}</strong> ] to [ <strong className="font-bold text-slate-950">{formattedEndDate}</strong> ],
+          </p>
+          <p>
+            the intern demonstrated dedication, enthusiasm and a strong willingness to learn.
+          </p>
+        </div>
+
+        {/* ── WISHES RIBBON ── */}
+        <div className="my-2.5 sm:my-3 relative z-10 flex justify-center">
+          <div className="inline-flex items-center px-6 sm:px-9 py-1 rounded-full bg-[#0b1a30] text-[#f3d068] border border-[#d4af37] text-[10.5px] sm:text-xs font-medium italic shadow-sm">
+            We wish them all the best for their future endeavors.
+          </div>
+        </div>
+
+        {/* ── THREE COMPETENCIES ── */}
+        <div className="max-w-lg mx-auto grid grid-cols-3 divide-x divide-slate-300 py-1 relative z-10 my-1 w-full">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2 text-left">
+            <Settings className="w-4 h-4 text-slate-900 shrink-0" />
+            <span className="text-[10.5px] sm:text-xs font-bold text-slate-900 leading-tight">{comp1}</span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2 text-left">
+            <Lightbulb className="w-4 h-4 text-slate-900 shrink-0" />
+            <span className="text-[10.5px] sm:text-xs font-bold text-slate-900 leading-tight">{comp2}</span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 px-2 text-left">
+            <TrendingUp className="w-4 h-4 text-slate-900 shrink-0" />
+            <span className="text-[10.5px] sm:text-xs font-bold text-slate-900 leading-tight">{comp3}</span>
+          </div>
+        </div>
+
+        {/* ── VERIFIED PROOF OF WORK LINKS BADGE STRIP (If Submitted) ── */}
+        {hasProofOfWork && (
+          <div className="max-w-xl mx-auto my-1.5 py-1 px-3 rounded-lg bg-amber-500/10 border border-[#d4af37]/40 flex items-center justify-center gap-2 flex-wrap text-left relative z-10">
+            <span className="text-[9px] font-mono font-bold text-[#854d0e] uppercase flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-emerald-600" />
+              Verified Work:
+            </span>
+            {githubLink && (
+              <a href={githubLink} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-slate-900 text-white text-[8px] font-bold flex items-center gap-1 hover:bg-black transition-all">
+                <span>GitHub Repo</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+            {driveLink && (
+              <a href={driveLink} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-blue-600 text-white text-[8px] font-bold flex items-center gap-1 hover:bg-blue-700 transition-all">
+                <span>Google Drive</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+            {pdfLink && (
+              <a href={pdfLink} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 rounded bg-rose-600 text-white text-[8px] font-bold flex items-center gap-1 hover:bg-rose-700 transition-all">
+                <span>PDF Report</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* ── SIGNATURES, 3D GOLD MEDALLION & QR CODE ── */}
+        <div className="grid grid-cols-4 items-end pt-3 relative z-10 gap-2 sm:gap-4 mt-auto">
+          {/* Left Signature: Shaik Sowban */}
+          <div className="flex flex-col items-center sm:items-start text-left">
+            <div className="h-7 sm:h-9 flex items-center">
+              <span className="text-xl sm:text-2xl text-slate-900 select-none block" style={{ fontFamily: "'Great Vibes', cursive" }}>
+                Shaik Sowban
+              </span>
+            </div>
+            <div className="w-full border-t border-slate-400 pt-1">
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 leading-tight">Shaik Sowban</p>
+              <p className="text-[8px] sm:text-[9px] text-slate-600 leading-tight">Founder, CEO & Tech Lead</p>
+              <p className="text-[7.5px] sm:text-[8px] text-slate-500 leading-tight">Lumixora</p>
+            </div>
+          </div>
+
+          {/* Center: 3D Gold Ribbon Medallion Seal */}
+          <div className="flex flex-col items-center justify-center relative">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
+              {/* Blue Ribbon Tails hanging below */}
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-0">
+                <div className="w-3.5 h-6 bg-[#0b1a30] transform -rotate-12 [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)] border-t border-[#d4af37]" />
+                <div className="w-3.5 h-6 bg-[#0b1a30] transform rotate-12 [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)] border-t border-[#d4af37]" />
+              </div>
+              {/* Gold Medallion Body */}
+              <div className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#8e6c15] via-[#d4af37] to-[#fae588] p-[2.5px] shadow-lg flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#ffd700] via-[#f5d77f] to-[#c59b27] flex flex-col items-center justify-center text-center p-0.5 border border-[#8e6c15]">
+                  <span className="text-base sm:text-lg font-black text-[#0b1a30] leading-none font-sora">L</span>
+                  <span className="text-[5px] sm:text-[6px] font-bold text-[#0b1a30] tracking-tighter">★ ★ ★</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Signature: Team Lumixora */}
+          <div className="flex flex-col items-center sm:items-start text-left">
+            <div className="h-7 sm:h-9 flex items-center">
+              <span className="text-xl sm:text-2xl text-slate-900 select-none block" style={{ fontFamily: "'Great Vibes', cursive" }}>
+                Shaarfam
+              </span>
+            </div>
+            <div className="w-full border-t border-slate-400 pt-1">
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 leading-tight">Team Lumixora</p>
+              <p className="text-[8px] sm:text-[9px] text-slate-600 leading-tight">Product Development Team</p>
+            </div>
+          </div>
+
+          {/* Far Right: QR Code */}
+          <div className="flex flex-col items-center sm:items-end text-center sm:text-right pr-1 sm:pr-2">
+            <div className="p-1 bg-white rounded-md border border-slate-300 shadow-sm shrink-0">
+              {qrCodeDataUrl ? (
+                <img src={qrCodeDataUrl} alt="Verify QR" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
+              ) : (
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 flex items-center justify-center text-[8px] font-mono">QR</div>
+              )}
+            </div>
+            <div className="mt-1 leading-tight">
+              <p className="text-[8px] sm:text-[9px] font-bold text-slate-900">Verify Certificate</p>
+              <p className="text-[7px] sm:text-[8px] font-mono text-slate-600">lumixora.in/verify</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── FOOTER: INNOVATION TODAY. IMPACT TOMORROW. ── */}
+        <div className="pt-2.5 border-t border-slate-200 flex items-center justify-between text-left relative z-10 mt-2">
+          <span className="text-[8.5px] sm:text-[10px] font-bold tracking-[0.2em] text-slate-700 uppercase">
+            INNOVATION TODAY. &nbsp;IMPACT TOMORROW.
+          </span>
+          <span className="text-[7.5px] sm:text-[8.5px] font-mono text-slate-500 uppercase">
+            ID: {cert.id || 'LMX-B01'}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // 1. 🏛️ EXECUTIVE CORPORATE GOLD (Crisp Ivory Luxury Light - Industry Standard)

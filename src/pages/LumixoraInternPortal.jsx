@@ -38,11 +38,78 @@ export const INTERN_ROLES = [
     branch: 'B.Tech • 3rd Year',
     summary: 'Ensuring zero-defect production reliability via automated E2E tests, API validation, and cross-browser regression suites.',
     deliverables: [
-      { id: 'st-d1', sprint: 'Sprint 1', title: 'Master Test Plan & Severity 1-4 Bug Matrix', status: 'pending', dueDate: '2026-11-25', score: null, feedback: null },
-      { id: 'st-d2', sprint: 'Sprint 1', title: 'Cross-Browser UI/UX Bug Audit Report', status: 'pending', dueDate: '2026-11-28', score: null, feedback: null },
-      { id: 'st-d3', sprint: 'Sprint 2', title: 'Automated REST API Test Suite (Postman/Playwright)', status: 'pending', dueDate: '2026-12-05', score: null, feedback: null },
-      { id: 'st-d4', sprint: 'Sprint 2', title: 'Concurrent Load Stress & Network Throttling Report', status: 'pending', dueDate: '2026-12-10', score: null, feedback: null },
-      { id: 'st-d5', sprint: 'Sprint 3', title: 'Capstone: Comprehensive QA Sign-Off & Attestation Package', status: 'pending', dueDate: '2026-12-18', score: null, feedback: null }
+      { 
+        id: 'st-w1', 
+        week: 'Week 1', 
+        sprint: 'Week 1', 
+        title: 'Master Test Plan, Test Strategy & S1-S4 Severity Bug Matrix', 
+        description: 'Comprehensive QA test plan covering core functional modules, boundary conditions, edge cases, and severity-priority classification matrix.',
+        submissionRequirements: 'PDF Test Plan Document, Google Drive Test Matrix, or GitHub Repo with markdown test suite',
+        status: 'pending', 
+        dueDate: '2026-11-25', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'st-w2', 
+        week: 'Week 2', 
+        sprint: 'Week 2', 
+        title: 'Cross-Browser UI/UX & Mobile Breakpoint Bug Audit Report', 
+        description: 'Deep audit across Chromium, WebKit, Gecko, and responsive mobile breakpoints (375px to 1440px) identifying rendering defects and layout shifts.',
+        submissionRequirements: 'PDF Bug Audit Report or Google Drive Spreadsheet with annotated screenshots and reproduction steps',
+        status: 'pending', 
+        dueDate: '2026-12-02', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'st-w3', 
+        week: 'Week 3', 
+        sprint: 'Week 3', 
+        title: 'REST API Test Automation & Regression Suite', 
+        description: 'Automated Postman/Newman or Playwright API test collection validating endpoint status codes, JSON schema schemas, auth tokens, and response latencies.',
+        submissionRequirements: 'GitHub Repository containing automated test scripts, Postman collection JSON, or Google Drive documentation',
+        status: 'pending', 
+        dueDate: '2026-12-09', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'st-w4', 
+        week: 'Week 4', 
+        sprint: 'Week 4', 
+        title: 'Performance, Load & Network Throttling Stress Report', 
+        description: 'Simulating concurrent users, Slow 3G throttling, Lighthouse performance auditing, and asset payload optimization benchmarks.',
+        submissionRequirements: 'PDF Performance Benchmark Dossier or Google Drive report link',
+        status: 'pending', 
+        dueDate: '2026-12-16', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'st-w5', 
+        week: 'Week 5', 
+        sprint: 'Week 5', 
+        title: 'Security Edge Cases, Auth Validation & Input Boundary Testing', 
+        description: 'Verifying session isolation, token expiry handling, XSS/injection input sanitation boundaries, and unauthorized route access blocks.',
+        submissionRequirements: 'PDF Security QA Findings or GitHub repository with security regression test suite',
+        status: 'pending', 
+        dueDate: '2026-12-23', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'st-w6', 
+        week: 'Week 6', 
+        sprint: 'Week 6', 
+        title: 'Capstone: Zero-Defect QA Sign-Off & Attestation Dossier', 
+        description: 'Complete end-to-end production readiness sign-off package, test coverage metrics, pass-rate graphs, and official lead sign-off.',
+        submissionRequirements: 'Final PDF Capstone Report, Google Drive Archive, and GitHub Repository',
+        status: 'pending', 
+        dueDate: '2026-12-30', 
+        score: null, 
+        feedback: null 
+      }
     ]
   },
   {
@@ -66,11 +133,78 @@ export const INTERN_ROLES = [
     branch: 'B.Tech CSE (AIML) • 3rd Year',
     summary: 'Conducting in-depth EdTech market intelligence, competitive moats analysis, and prospective student field interviews.',
     deliverables: [
-      { id: 'rs-d1', sprint: 'Sprint 1', title: 'Market Landscape & Top 10 EdTech Competitor Matrix', status: 'pending', dueDate: '2026-11-25', score: null, feedback: null },
-      { id: 'rs-d2', sprint: 'Sprint 1', title: 'Student & Faculty Persona Mapping Framework', status: 'pending', dueDate: '2026-11-28', score: null, feedback: null },
-      { id: 'rs-d3', sprint: 'Sprint 2', title: '20+ Student Campus Field Interviews Synthesis', status: 'pending', dueDate: '2026-12-05', score: null, feedback: null },
-      { id: 'rs-d4', sprint: 'Sprint 2', title: 'AI Placement Commander Feature Gap & Moat Analysis', status: 'pending', dueDate: '2026-12-10', score: null, feedback: null },
-      { id: 'rs-d5', sprint: 'Sprint 3', title: 'Capstone: Market Research Whitepaper & GTM Strategic Brief', status: 'pending', dueDate: '2026-12-18', score: null, feedback: null }
+      { 
+        id: 'rs-w1', 
+        week: 'Week 1', 
+        sprint: 'Week 1', 
+        title: 'EdTech Ecosystem & Top 10 Competitor Moat Matrix', 
+        description: 'Granular comparison of top 10 EdTech platforms across feature capabilities, pricing models, retention loops, and technological moats.',
+        submissionRequirements: 'PDF Research Deck or Google Drive Spreadsheet / Document',
+        status: 'pending', 
+        dueDate: '2026-11-25', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'rs-w2', 
+        week: 'Week 2', 
+        sprint: 'Week 2', 
+        title: 'Student & Faculty User Persona Mapping Framework', 
+        description: 'Deep qualitative analysis of engineering student pain points, placement anxiety triggers, faculty workflow friction, and willingness to pay.',
+        submissionRequirements: 'PDF Persona Dossier or Google Drive Presentation',
+        status: 'pending', 
+        dueDate: '2026-12-02', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'rs-w3', 
+        week: 'Week 3', 
+        sprint: 'Week 3', 
+        title: 'Campus Field Interviews & 25+ Student Survey Synthesis', 
+        description: 'Direct on-campus and virtual field research interviewing 25+ engineering undergraduates on preparation habits and feature demand.',
+        submissionRequirements: 'Google Drive Interview Transcripts / Raw Audio notes & PDF Synthesis Summary',
+        status: 'pending', 
+        dueDate: '2026-12-09', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'rs-w4', 
+        week: 'Week 4', 
+        sprint: 'Week 4', 
+        title: 'AI Placement Preparation Feature Gap & Moat Analysis', 
+        description: 'Analyzing competitor placement portals vs Lumixora AI Placement Commander, highlighting critical differentiator features and roadmap opportunities.',
+        submissionRequirements: 'PDF Feature Gap Analysis or Google Drive Doc',
+        status: 'pending', 
+        dueDate: '2026-12-16', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'rs-w5', 
+        week: 'Week 5', 
+        sprint: 'Week 5', 
+        title: 'Institutional Go-to-Market (GTM) Strategy & Pricing Model', 
+        description: 'Developing B2B college partnership proposals, TPO engagement strategies, student subscription economics, and university adoption tiers.',
+        submissionRequirements: 'PDF Strategic GTM Brief or Google Drive Presentation',
+        status: 'pending', 
+        dueDate: '2026-12-23', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'rs-w6', 
+        week: 'Week 6', 
+        sprint: 'Week 6', 
+        title: 'Capstone: Comprehensive EdTech Market Whitepaper & Strategic Brief', 
+        description: 'Final published market intelligence paper synthesising research findings, competitive advantages, and executive product recommendations.',
+        submissionRequirements: 'Final PDF Research Whitepaper and Google Drive Master Dossier',
+        status: 'pending', 
+        dueDate: '2026-12-30', 
+        score: null, 
+        feedback: null 
+      }
     ]
   },
   {
@@ -94,11 +228,78 @@ export const INTERN_ROLES = [
     branch: 'B.Tech CSM • 3rd Year',
     summary: 'Driving viral campus loops, student ambassador network expansion, launch funnels, and organic community blitz.',
     deliverables: [
-      { id: 'mk-d1', sprint: 'Sprint 1', title: 'Brand Tone of Voice & Campus Ambassador Playbook', status: 'pending', dueDate: '2026-11-25', score: null, feedback: null },
-      { id: 'mk-d2', sprint: 'Sprint 1', title: 'Multi-Channel Launch Funnel & Micro-Content Schedule', status: 'pending', dueDate: '2026-11-28', score: null, feedback: null },
-      { id: 'mk-d3', sprint: 'Sprint 2', title: 'Live Campus Ambassador Challenge & Blitz Report', status: 'pending', dueDate: '2026-12-05', score: null, feedback: null },
-      { id: 'mk-d4', sprint: 'Sprint 2', title: 'Conversion Funnel Drop-Off & Organic Growth Analytics', status: 'pending', dueDate: '2026-12-10', score: null, feedback: null },
-      { id: 'mk-d5', sprint: 'Sprint 3', title: 'Capstone: Growth Marketing Portfolio & Attribution Review', status: 'pending', dueDate: '2026-12-18', score: null, feedback: null }
+      { 
+        id: 'mk-w1', 
+        week: 'Week 1', 
+        sprint: 'Week 1', 
+        title: 'Brand Messaging Architecture, Tone of Voice & Style Guide', 
+        description: 'Defining Lumixora brand positioning, value propositions, high-converting taglines, messaging pillars, and student-facing communication rules.',
+        submissionRequirements: 'PDF Brand Guidelines Document or Google Drive Slide Deck',
+        status: 'pending', 
+        dueDate: '2026-11-25', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'mk-w2', 
+        week: 'Week 2', 
+        sprint: 'Week 2', 
+        title: 'Campus Ambassador Playbook & Viral Student Squad Mechanics', 
+        description: 'End-to-end operational playbook for recruiting, incentivizing, and managing student ambassadors across engineering colleges.',
+        submissionRequirements: 'PDF Ambassador Playbook or Google Drive Doc',
+        status: 'pending', 
+        dueDate: '2026-12-02', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'mk-w3', 
+        week: 'Week 3', 
+        sprint: 'Week 3', 
+        title: 'Multi-Channel Launch Funnel & Micro-Content Editorial Calendar', 
+        description: 'Content calendar covering 30 days of LinkedIn thought leadership, Instagram tech reels, student placement wins, and community announcements.',
+        submissionRequirements: 'Google Drive Content Calendar Spreadsheet and PDF Copy Samples',
+        status: 'pending', 
+        dueDate: '2026-12-09', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'mk-w4', 
+        week: 'Week 4', 
+        sprint: 'Week 4', 
+        title: 'Live Campus Ambassador Challenge & Organic Community Blitz', 
+        description: 'Executing an active viral campus contest (e.g. hackathon signups or placement mock trials) measuring engagement and referral coefficients.',
+        submissionRequirements: 'PDF Campaign Execution Report or Google Drive Analytics Dashboard',
+        status: 'pending', 
+        dueDate: '2026-12-16', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'mk-w5', 
+        week: 'Week 5', 
+        sprint: 'Week 5', 
+        title: 'Conversion Funnel Drop-Off Audit & User Acquisition Analytics', 
+        description: 'Analyzing user signup conversion, onboarding drop-offs, organic referral velocity, and cost-of-acquisition optimization strategies.',
+        submissionRequirements: 'PDF Growth Analytics Report or Google Drive Spreadsheet',
+        status: 'pending', 
+        dueDate: '2026-12-23', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'mk-w6', 
+        week: 'Week 6', 
+        sprint: 'Week 6', 
+        title: 'Capstone: Growth Marketing Portfolio & Campaign Attribution Review', 
+        description: 'Comprehensive portfolio of all campaigns run, total impressions generated, student signups attributed, and strategic growth recommendations.',
+        submissionRequirements: 'Final PDF Marketing Portfolio, Google Drive Master Folder, and Live Campaign Links',
+        status: 'pending', 
+        dueDate: '2026-12-30', 
+        score: null, 
+        feedback: null 
+      }
     ]
   },
   {
@@ -122,11 +323,78 @@ export const INTERN_ROLES = [
     branch: 'B.Tech • 3rd Year',
     summary: 'Crafting high-impact product explainer videos, technical storytelling, Figma design carousels, and student UI walkthroughs.',
     deliverables: [
-      { id: 'cc-d1', sprint: 'Sprint 1', title: 'Visual Identity System & Brand Asset Guidelines', status: 'pending', dueDate: '2026-11-25', score: null, feedback: null },
-      { id: 'cc-d2', sprint: 'Sprint 1', title: 'Product Explainer Video Storyboard & Script Drafts', status: 'pending', dueDate: '2026-11-28', score: null, feedback: null },
-      { id: 'cc-d3', sprint: 'Sprint 2', title: 'Interactive Social Carousel & Feature Release Teasers', status: 'pending', dueDate: '2026-12-05', score: null, feedback: null },
-      { id: 'cc-d4', sprint: 'Sprint 2', title: 'High-Definition Product Walkthrough Video (Loom/YouTube)', status: 'pending', dueDate: '2026-12-10', score: null, feedback: null },
-      { id: 'cc-d5', sprint: 'Sprint 3', title: 'Capstone: Complete Multimedia Storytelling Suite & Release Pack', status: 'pending', dueDate: '2026-12-18', score: null, feedback: null }
+      { 
+        id: 'cc-w1', 
+        week: 'Week 1', 
+        sprint: 'Week 1', 
+        title: 'Visual Identity System, Color Palette & Social Asset Guidelines', 
+        description: 'Designing modular social templates, banner kits, YouTube/Reels thumbnail frameworks, and Figma design system components.',
+        submissionRequirements: 'Figma Prototype Link, Google Drive Asset Folder, or PDF Brand Asset Kit',
+        status: 'pending', 
+        dueDate: '2026-11-25', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'cc-w2', 
+        week: 'Week 2', 
+        sprint: 'Week 2', 
+        title: 'Product Explainer Video Storyboard, Screenplay & Script Drafts', 
+        description: 'Drafting 60-second and 3-minute video scripts detailing Lumixora value propositions, screen recordings, motion cues, and call-to-actions.',
+        submissionRequirements: 'PDF Storyboard / Script or Google Drive Doc',
+        status: 'pending', 
+        dueDate: '2026-12-02', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'cc-w3', 
+        week: 'Week 3', 
+        sprint: 'Week 3', 
+        title: 'High-Converting Educational Social Carousels & Infographics', 
+        description: 'Creating 5 publication-ready multi-slide carousels (Figma/Canva) explaining tech interview patterns, resume tips, and platform walkthroughs.',
+        submissionRequirements: 'Google Drive Folder with high-res PNG/PDF exports and Figma Link',
+        status: 'pending', 
+        dueDate: '2026-12-09', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'cc-w4', 
+        week: 'Week 4', 
+        sprint: 'Week 4', 
+        title: '4K Product Feature Walkthrough Video Production', 
+        description: 'Recording and editing a polished product walkthrough video with dynamic transitions, captions, zoom callouts, and voiceover.',
+        submissionRequirements: 'Loom Video Link, YouTube Unlisted Link, or Google Drive MP4 Video',
+        status: 'pending', 
+        dueDate: '2026-12-16', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'cc-w5', 
+        week: 'Week 5', 
+        sprint: 'Week 5', 
+        title: 'Short-Form Viral Product Teasers & Feature Highlights (Reels/Shorts)', 
+        description: 'Editing 3-5 vertical short-form reels (1080x1920) optimized for Instagram & YouTube Shorts with engaging hooks and sound design.',
+        submissionRequirements: 'Google Drive Folder containing vertical MP4 clips & caption copy',
+        status: 'pending', 
+        dueDate: '2026-12-23', 
+        score: null, 
+        feedback: null 
+      },
+      { 
+        id: 'cc-w6', 
+        week: 'Week 6', 
+        sprint: 'Week 6', 
+        title: 'Capstone: Complete Multimedia Storytelling Suite & Release Pack', 
+        description: 'Master creative archive containing all production assets, final renders, Figma source files, promotional campaigns, and brand library.',
+        submissionRequirements: 'Google Drive Master Creative Archive, Figma Source Link, and Final PDF Portfolio',
+        status: 'pending', 
+        dueDate: '2026-12-30', 
+        score: null, 
+        feedback: null 
+      }
     ]
   }
 ];
@@ -152,8 +420,8 @@ export const isInternPortalFounder = (emailOrId = '') => {
 };
 
 export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, forceLogin = false }) {
-  // Certificate Theme Switcher
-  const [certTheme, setCertTheme] = useState('executive_ivory');
+  // Certificate Theme Switcher (Official Lumixora Template by Default)
+  const [certTheme, setCertTheme] = useState('official_lumixora');
 
   // Intern Session State (Strict Authentication Gate)
   const [session, setSession] = useState(() => {
@@ -218,15 +486,17 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const [selectedEvalDeliverable, setSelectedEvalDeliverable] = useState(null);
   const [selectedEvalIntern, setSelectedEvalIntern] = useState(null);
 
-  // Submit Deliverable Form State
+  // Submit Deliverable Form State (Supports PDF, Google Drive, and GitHub)
   const [selectedDeliverableId, setSelectedDeliverableId] = useState('');
   const [submissionData, setSubmissionData] = useState({
     title: '',
-    prUrl: '',
+    driveUrl: '',
+    githubUrl: '',
+    pdfUrl: '',
     demoUrl: '',
     loomUrl: '',
     notes: '',
-    hours: 12
+    hours: 20
   });
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState(false);
   const [aiAuditing, setAiAuditing] = useState(false);
@@ -246,7 +516,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
 
   useEffect(() => {
     if (session) {
-      const verifyUrl = `https://lumixora.in/#verify/${session.id}`;
+      // Direct Public Verification Link (Zero Login Required)
+      const verifyUrl = `https://lumixora.in/verify?id=${session.id}`;
       QRCode.toDataURL(verifyUrl, {
         width: 320,
         margin: 1,
@@ -279,23 +550,27 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     }
   }, [session?.id]);
 
-  // Real Submissions Handler
+  // Real Submissions Handler with PDF, Google Drive & GitHub Support
   const handleDeliverableSubmit = (e) => {
     e.preventDefault();
     if (!selectedDeliverableId) {
-      alert('Please choose a milestone deliverable from the dropdown.');
+      alert('Please choose a weekly task deliverable from the dropdown.');
       return;
     }
 
+    const matchedDeliv = activeRole.deliverables.find(d => d.id === selectedDeliverableId);
     const newSub = {
       id: `sub-${Date.now()}`,
       deliverableId: selectedDeliverableId,
-      deliverableTitle: submissionData.title || 'Sprint Deliverable',
-      prUrl: submissionData.prUrl,
-      demoUrl: submissionData.demoUrl,
-      loomUrl: submissionData.loomUrl,
+      deliverableTitle: submissionData.title || matchedDeliv?.title || 'Weekly Task Deliverable',
+      week: matchedDeliv?.week || 'Week 1',
+      driveUrl: (submissionData.driveUrl || '').trim(),
+      githubUrl: (submissionData.githubUrl || submissionData.prUrl || '').trim(),
+      pdfUrl: (submissionData.pdfUrl || '').trim(),
+      demoUrl: (submissionData.demoUrl || '').trim(),
+      loomUrl: (submissionData.loomUrl || '').trim(),
       notes: submissionData.notes,
-      score: aiAuditReport ? aiAuditReport.score : 'Pending Lead Review',
+      score: aiAuditReport ? aiAuditReport.score : '98/100',
       status: 'submitted',
       submittedAt: new Date().toISOString().split('T')[0]
     };
@@ -304,6 +579,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     setSubmissions(updated);
     try {
       localStorage.setItem(`lumixora_intern_submissions_${session.id}`, JSON.stringify(updated));
+      localStorage.setItem(`lumixora_intern_tasks_${session.id}`, JSON.stringify(updated));
     } catch (_) {}
 
     // Instant Mobile Notification to Founder Shaik Sowban
@@ -1096,11 +1372,11 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       {/* ── WORKSPACE TABS BAR ── */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar border-b border-white/10 text-xs">
         {[
-          { id: 'roadmap', label: 'My Sprint Deliverables (5)', icon: Layers },
-          { id: 'submit', label: '+ Submit Deliverable', icon: Send },
+          { id: 'roadmap', label: 'Weekly Tasks & Curriculum', icon: Layers },
+          { id: 'submit', label: '+ Submit Work (PDF / Drive / GitHub)', icon: Send },
           { id: 'standup', label: 'Daily 60s Check-in', icon: Clock },
           { id: 'cohort', label: 'All 48 Cohort Interns', icon: Users },
-          { id: 'certificate', label: 'Verifiable Proof of Skill', icon: Award }
+          { id: 'certificate', label: 'Official Completion Certificate', icon: Award }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1275,24 +1551,24 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       )}
 
       {/* ───────────────────────────────────────────────────────────────────────────── */}
-      {/* VIEW 2: SUBMIT DELIVERABLE WITH AI PRE-AUDIT                                  */}
+      {/* VIEW 2: SUBMIT WEEKLY WORK (PDF, GOOGLE DRIVE, GITHUB REPO)                   */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'submit' && (
         <div className="max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-[#0c101d] border border-white/10 shadow-2xl space-y-6 animate-fade-in">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <Send className="w-5 h-5 text-cyan-400" />
-              <span>Submit Deliverable for Mentor Review</span>
+              <span>Submit Weekly Work (Proof of Work)</span>
             </h3>
             <p className="text-xs text-gray-400 mt-1">
-              Submissions are audited against the <span className="text-cyan-300 font-bold">{activeRole.title}</span> cohort quality rubric before sign-off.
+              Submit your work via <strong className="text-white">PDF Document, Google Drive Link, or GitHub Repository</strong>. All submitted links will be permanently embedded in your <strong className="text-cyan-300">Official Completion Certificate</strong> and verifiable via QR Code.
             </p>
           </div>
 
           {isSubmittedSuccess && (
             <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-bounce">
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              <span>Deliverable submitted successfully! Forwarded to {activeRole.leadName} for final attestation.</span>
+              <span>Deliverable submitted successfully! Proof-of-Work links embedded into your Completion Certificate.</span>
             </div>
           )}
 
@@ -1302,7 +1578,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
           >
             <div>
               <label className="text-xs font-bold text-gray-300 block mb-1">
-                Select Task Milestone
+                Select Weekly Task
               </label>
               <select
                 value={selectedDeliverableId}
@@ -1311,67 +1587,100 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                   const found = activeRole.deliverables.find(d => d.id === e.target.value);
                   if (found) setSubmissionData(prev => ({ ...prev, title: found.title }));
                 }}
-                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-cyan-400"
               >
-                <option value="">-- Choose Deliverable --</option>
+                <option value="">-- Choose Weekly Task --</option>
                 {activeRole.deliverables.map(d => (
-                  <option key={d.id} value={d.id}>{d.sprint} — {d.title}</option>
+                  <option key={d.id} value={d.id}>{d.week || d.sprint} — {d.title}</option>
                 ))}
               </select>
             </div>
 
+            {/* Google Drive Link */}
+            <div>
+              <label className="text-xs font-bold text-gray-300 block mb-1 flex items-center justify-between">
+                <span>📁 Google Drive Link (Folder, Docs, Slides, or Sheets)</span>
+                <span className="text-[10px] text-gray-400 font-normal">Ensure link sharing is set to view</span>
+              </label>
+              <input
+                type="url"
+                placeholder="https://drive.google.com/drive/folders/..."
+                value={submissionData.driveUrl || ''}
+                onChange={e => setSubmissionData(prev => ({ ...prev, driveUrl: e.target.value }))}
+                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
+              />
+            </div>
+
+            {/* GitHub Repo / PR Link */}
+            <div>
+              <label className="text-xs font-bold text-gray-300 block mb-1 flex items-center justify-between">
+                <span>🐙 GitHub Repository or Pull Request Link</span>
+                <span className="text-[10px] text-gray-400 font-normal">For code, test suites, or markdown documentation</span>
+              </label>
+              <input
+                type="url"
+                placeholder="https://github.com/..."
+                value={submissionData.githubUrl || submissionData.prUrl || ''}
+                onChange={e => setSubmissionData(prev => ({ ...prev, githubUrl: e.target.value, prUrl: e.target.value }))}
+                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
+              />
+            </div>
+
+            {/* PDF Report Link */}
+            <div>
+              <label className="text-xs font-bold text-gray-300 block mb-1 flex items-center justify-between">
+                <span>📄 PDF Document Link / Cloud Report URL</span>
+                <span className="text-[10px] text-gray-400 font-normal">Direct link to your compiled PDF report or summary</span>
+              </label>
+              <input
+                type="url"
+                placeholder="https://.../weekly-report.pdf or Drive PDF link"
+                value={submissionData.pdfUrl || ''}
+                onChange={e => setSubmissionData(prev => ({ ...prev, pdfUrl: e.target.value }))}
+                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
+              />
+            </div>
+
+            {/* Live Demo & Loom Walkthrough (Optional) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-gray-300 block mb-1">
-                  GitHub Pull Request / Repository URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://github.com/..."
-                  value={submissionData.prUrl}
-                  onChange={e => setSubmissionData(prev => ({ ...prev, prUrl: e.target.value }))}
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1">
-                  Live Demo / Figma / Report URL
+                  🌐 Live Demo / Figma Prototype (Optional)
                 </label>
                 <input
                   type="url"
                   placeholder="https://..."
-                  value={submissionData.demoUrl}
+                  value={submissionData.demoUrl || ''}
                   onChange={e => setSubmissionData(prev => ({ ...prev, demoUrl: e.target.value }))}
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">
+                  🎥 Loom Video Walkthrough (Optional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://loom.com/share/..."
+                  value={submissionData.loomUrl || ''}
+                  onChange={e => setSubmissionData(prev => ({ ...prev, loomUrl: e.target.value }))}
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
                 />
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-gray-300 block mb-1">
-                Loom Video Walkthrough URL (Recommended)
-              </label>
-              <input
-                type="url"
-                placeholder="https://loom.com/share/..."
-                value={submissionData.loomUrl}
-                onChange={e => setSubmissionData(prev => ({ ...prev, loomUrl: e.target.value }))}
-                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-gray-300 block mb-1">
-                Technical Notes & AI Prompt Exploration
+                Technical Notes & Summary of Completed Work
               </label>
               <textarea
                 rows={3}
                 required
-                placeholder="Document test coverage %, bugs discovered, qualitative survey insights, or campaign reach..."
-                value={submissionData.notes}
+                placeholder="Briefly describe what you built, tested, researched, or designed this week..."
+                value={submissionData.notes || ''}
                 onChange={e => setSubmissionData(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full bg-black/50 border border-white/15 rounded-xl p-3 text-xs text-white outline-none"
+                className="w-full bg-black/50 border border-white/15 rounded-xl p-3 text-xs text-white outline-none focus:border-cyan-400"
               />
             </div>
 
@@ -1652,8 +1961,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
           <div className="rounded-3xl overflow-hidden shadow-2xl">
             <CertificateRenderer
               cert={{
-                id: `LMX-POS-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
-                title: 'Certificate of Internship Completion & Proof of Skill',
+                id: `LMX-INT-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+                title: 'Certificate of Internship Completion',
                 isInternship: true,
                 internName: session.name,
                 issuedTo: session.name,
@@ -1661,25 +1970,29 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                 rollNumber: session.id,
                 college: session.college || 'G. Pulla Reddy Engineering College (Autonomous)',
                 track: activeRole.title,
+                domain: activeRole.title,
                 category: activeRole.title,
                 duration: '6-Week Intensive Engineering Internship (Batch 01)',
-                startDate: 'November 15, 2026',
-                endDate: 'December 30, 2026',
+                startDate: '15 Nov 2026',
+                endDate: '30 Dec 2026',
                 hoursLogged: 120,
                 score: '98% Distinction',
                 grade: 'Elite Distinction (A+ Grade)',
                 verificationHash: certSha256,
                 founderSignatureName: 'Shaik Sowban',
-                founderRole: 'Founder & CEO',
-                signer2Name: activeRole.leadName.split('&')[0].trim(),
-                signer2Role: activeRole.leadRole.split('&')[0].trim() || 'Track Lead',
+                founderRole: 'Founder, CEO & Tech Lead',
+                signer2Name: 'Team Lumixora',
+                signer2Role: 'Product Development Team',
                 signer2Org: 'Lumixora Engineering Council',
+                tasks: submissions,
+                githubUrl: submissions.find(s => s.githubUrl)?.githubUrl || '',
+                driveUrl: submissions.find(s => s.driveUrl)?.driveUrl || '',
+                pdfUrl: submissions.find(s => s.pdfUrl)?.pdfUrl || '',
+                demoUrl: submissions.find(s => s.demoUrl)?.demoUrl || '',
                 skills: [
-                  'Production Architecture & QA',
-                  'Automated AI Pre-Audits',
-                  'Git Pull Request Reviews',
-                  'Boundary Value Analysis',
-                  'Real-Time Telemetry Systems'
+                  'Product Testing',
+                  'Quality Analysis',
+                  'Innovation Mindset'
                 ]
               }}
               studentName={session.name}
@@ -1699,7 +2012,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
             <div className="flex items-center gap-2 flex-wrap">
               {/* 1-Click LinkedIn Add to Profile */}
               <a
-                href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Lumixora Certified ' + activeRole.title)}&organizationName=Lumixora&issueYear=2026&issueMonth=12&certUrl=${encodeURIComponent('https://lumixora.in/#verify/' + session.id)}&certId=${encodeURIComponent(session.id)}`}
+                href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Lumixora Certified ' + activeRole.title)}&organizationName=Lumixora&issueYear=2026&issueMonth=12&certUrl=${encodeURIComponent('https://lumixora.in/verify?id=' + session.id)}&certId=${encodeURIComponent(session.id)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3.5 py-2 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-[#0A66C2]/20 cursor-pointer"
@@ -1712,7 +2025,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
               {/* Online Verification Link */}
               <button
                 onClick={() => {
-                  const url = `https://lumixora.in/#verify/${session.id}`;
+                  const url = `https://lumixora.in/verify?id=${session.id}`;
                   window.open(url, '_blank');
                 }}
                 className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
@@ -1724,7 +2037,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
               {/* Copy Direct Link */}
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://lumixora.in/#verify/${session.id}`);
+                  navigator.clipboard.writeText(`https://lumixora.in/verify?id=${session.id}`);
                   setCopiedLink(true);
                   setTimeout(() => setCopiedLink(false), 2000);
                 }}
