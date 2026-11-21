@@ -7,7 +7,7 @@ import {Flame, Home, Briefcase, Zap, Video, BarChart2, BookOpen, Settings,
   Mic, MicOff, Volume2, VolumeX, FileText, Calendar, Filter, Sparkles,
   Compass, AlertCircle, Cpu, Brain, CheckSquare, Target, User, LogOut,
   Send, HelpCircle, MessageSquare, Activity, Radio, GraduationCap,
-  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info, Moon, Star, PanelLeftClose, PanelLeftOpen, Building2 } from 'lucide-react';
+  ChevronLeft, Lightbulb, Terminal, Sun, Rocket, Info, Moon, Star, PanelLeftClose, PanelLeftOpen, Building2, Users } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,

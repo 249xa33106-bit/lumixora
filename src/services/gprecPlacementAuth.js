@@ -16,7 +16,8 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '249xa33091',
   '259xa05013',
   '269x105013',
-  '249xa05086'
+  '249xa05086',
+  '249xa33092'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
@@ -200,11 +201,18 @@ export function getGprecScholarRoster() {
   // 1. Built-in core cohorts
   GPREC_ALLOWED_ROLL_NUMBERS.forEach(r => {
     const customMeta = customMap.get(r);
+    let scholarName = customMeta?.name;
+    if (!scholarName) {
+      if (r === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
+      else if (r === '249xa05086') scholarName = 'GG PREETHI';
+      else if (r === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
+      else scholarName = `GPREC Scholar (${r.toUpperCase()})`;
+    }
     fullList.push({
       rollNumber: r.toUpperCase(),
       rawRoll: r,
       email: `${r}@gprec.ac.in`,
-      name: customMeta?.name || (r === '249xa33106' ? 'Founder Scholar (249XA33106)' : `GPREC Scholar (${r.toUpperCase()})`),
+      name: scholarName,
       department: customMeta?.department || deriveBranchFromRoll(r),
       year: customMeta?.year || deriveYearFromRoll(r),
       status: 'Active',
