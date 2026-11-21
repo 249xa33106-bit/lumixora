@@ -357,19 +357,14 @@ export default function HackathonPitchDeckModal({
   const [markdownViewMode, setMarkdownViewMode] = useState('rich'); // 'rich' or 'source'
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Fallback initial data
-  const initialData = useMemo(() => {
+  // AI-generated custom deck override (null until user triggers AI generation)
+  const [aiCustomDeck, setAiCustomDeck] = useState(null);
+
+  // Computed deck data: AI generated if available, otherwise rich domain template
+  const deckData = useMemo(() => {
+    if (aiCustomDeck) return aiCustomDeck;
     return generateHighImpactDeckData(hackathon, projectTitle, trackTheme, techStack);
-  }, [hackathon, projectTitle, trackTheme, techStack]);
-
-  // Structured deck data (slides, qas, fullMarkdown)
-  const [deckData, setDeckData] = useState(initialData);
-
-  // Update deck data if inputs change before generation
-  useEffect(() => {
-    const updated = generateHighImpactDeckData(hackathon, projectTitle, trackTheme, techStack);
-    setDeckData(updated);
-  }, [hackathon, projectTitle, trackTheme, techStack]);
+  }, [aiCustomDeck, hackathon, projectTitle, trackTheme, techStack]);
 
   if (!hackathon) return null;
 
@@ -480,13 +475,13 @@ Output in clean, structured Markdown using this exact format:
 
       if (response && response.trim().length > 150) {
         const parsed = parsePitchDeckContent(response, fallback);
-        setDeckData(parsed);
+        setAiCustomDeck(parsed);
       } else {
-        setDeckData(fallback);
+        setAiCustomDeck(fallback);
       }
     } catch (err) {
       console.warn('AI deck generation failed, using rich fallback:', err);
-      setDeckData(fallback);
+      setAiCustomDeck(fallback);
     } finally {
       setIsGenerating(false);
     }
