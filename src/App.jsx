@@ -669,13 +669,15 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
             setActiveTab('test-portal');
           } else if (['internship', 'internship-portal', 'apply-internship'].includes(tab)) {
             setActiveTab('internships');
+          } else if (['notes-contribute', 'contribute-notes'].includes(tab)) {
+            setActiveTab('contribute');
           } else if (['intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
             setActiveTab('intern-portal');
           } else {
@@ -1478,6 +1480,8 @@ function App() {
       case 'simulation':
         return <SimulationPortal />;
       case 'contribute':
+      case 'notes-contribute':
+      case 'contribute-notes':
         return <ContributeNotes user={user} setActiveTab={handleTabChange} />;
       case 'contact':
         return <ContactUs user={user} />;
