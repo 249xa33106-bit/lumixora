@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import { CURRICULUM_SUBJECTS } from '../data/curriculumNotesData';
+import { ALL_CURATED_NOTES } from '../data/allCuratedNotes';
 
 const DataContext = createContext();
 
 export function DataProvider({ children }) {
   const [tasks, setTasks] = useState([]);
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState(ALL_CURATED_NOTES);
   const [doubts, setDoubts] = useState([]);
   const [hubSubjects, setHubSubjects] = useState(CURRICULUM_SUBJECTS);
   const [hubMaterials, setHubMaterials] = useState(() => {
@@ -100,7 +101,9 @@ export function DataProvider({ children }) {
             lastEdited: n.last_edited
           };
         });
-        setNotes(formattedNotes);
+        const existingNoteIds = new Set(formattedNotes.map(n => n.id));
+        const extraCurated = ALL_CURATED_NOTES.filter(cn => !existingNoteIds.has(cn.id));
+        setNotes([...formattedNotes, ...extraCurated]);
         setDoubts(doubtsSnap || []);
 
         let subjectsData = subjectsSnap || [];

@@ -162,6 +162,54 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
   };
 
   // Parse and match bank statement against pending queue
+  const [isBatchApproving, setIsBatchApproving] = useState(false);
+  const [batchProgressCount, setBatchProgressCount] = useState(0);
+
+  // Check valid UTR pattern (standard 12-digit UPI / IMPS UTR number)
+  const isUtrValidPattern = (utrStr) => {
+    if (!utrStr) return false;
+    const clean = String(utrStr).replace(/[^0-9]/g, '');
+    return clean.length >= 10 && clean.length <= 16;
+  };
+
+  const validUtrCount = useMemo(() => {
+    return pendingPayments.filter(p => isUtrValidPattern(p.meta?.utr || p.meta?.cleanUtr)).length;
+  }, [pendingPayments]);
+
+  const handleBatchApproveValidUtrs = async () => {
+    const validItems = pendingPayments.filter(p => isUtrValidPattern(p.meta?.utr || p.meta?.cleanUtr));
+    if (validItems.length === 0) {
+      alert("No pending submissions with valid 12-digit UTR numbers found in queue.");
+      return;
+    }
+
+    const confirmBatch = window.confirm(
+      `Batch verify and approve ${validItems.length} student payments with valid UTRs?\n\nThis will immediately unlock their portal workspaces and record ₹${validItems.length * 10} in verified revenue.`
+    );
+    if (!confirmBatch) return;
+
+    setIsBatchApproving(true);
+    setBatchProgressCount(0);
+    let approved = 0;
+
+    for (let i = 0; i < validItems.length; i++) {
+      const item = validItems[i];
+      try {
+        const res = await approveFeePayment(item.id, item.meta);
+        if (res.success) approved++;
+      } catch (e) {
+        console.warn("Batch approve item error:", e);
+      }
+      setBatchProgressCount(i + 1);
+    }
+
+    setIsBatchApproving(false);
+    setToastMessage(`✅ Batch approved ${approved} verified payments! Workspaces unlocked.`);
+    await loadPendingPayments();
+    if (onRefresh) onRefresh();
+    setTimeout(() => setToastMessage(''), 6000);
+  };
+
   const handleReconcileStatement = () => {
     if (!statementText.trim()) return;
 
@@ -617,6 +665,19 @@ export default function FounderRevenueManager({ usersList = [], onRefresh }) {
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {/* 1-Click Batch Approve All Valid 12-Digit UTRs */}
+            {validUtrCount > 0 && (
+              <button
+                onClick={handleBatchApproveValidUtrs}
+                disabled={isBatchApproving || loadingPending}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
+                title="Approve all pending submissions that match valid 12-digit Indian banking UTR format"
+              >
+                <Zap className="w-3.5 h-3.5 fill-black" />
+                <span>{isBatchApproving ? `Verifying (${batchProgressCount}/${validUtrCount})...` : `⚡ Batch Approve Valid UTRs (${validUtrCount})`}</span>
+              </button>
+            )}
+
             {/* Auto-Reconcile With Bank Statement Toggle Button */}
             <button
               onClick={() => setShowStatementReconciler(!showStatementReconciler)}

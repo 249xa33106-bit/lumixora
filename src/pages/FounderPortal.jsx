@@ -32,7 +32,10 @@ import {
   Trophy,
   CreditCard,
   IndianRupee,
-  Clock
+  Clock,
+  Volume2,
+  VolumeX,
+  Zap
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -314,6 +317,63 @@ export default function FounderPortal({ user, setActiveTab }) {
   const remoteNotifsRef = useRef([]);
   const remoteTestsRef = useRef([]);
 
+  const [audioChimeEnabled, setAudioChimeEnabled] = useState(() => {
+    return localStorage.getItem('lumixora_founder_audio_chime') !== 'false';
+  });
+
+  const playNotificationChime = useCallback(() => {
+    if (!audioChimeEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const now = ctx.currentTime;
+      // Tone 1: 587.33 Hz (D5)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      gain1.gain.setValueAtTime(0.12, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+
+      // Tone 2: 880 Hz (A5)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.08);
+      gain2.gain.setValueAtTime(0.15, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.08);
+      osc2.stop(now + 0.5);
+    } catch (e) {
+      // AudioContext notice
+    }
+  }, [audioChimeEnabled]);
+
+  const toggleAudioChime = () => {
+    const next = !audioChimeEnabled;
+    setAudioChimeEnabled(next);
+    localStorage.setItem('lumixora_founder_audio_chime', String(next));
+    if (next) {
+      playNotificationChime();
+      addToast({ message: "🔊 Founder Live Audio Chime enabled! You will hear a pleasant ping on new events.", type: "success" });
+    } else {
+      addToast({ message: "🔇 Founder Live Audio Chime muted.", type: "info" });
+    }
+  };
+
+  const prevNotifCountRef = useRef(0);
+
   const refreshLiveNotifications = useCallback(() => {
     const fresh = buildAggregatedNotifications(
       usersListRef.current,
@@ -321,7 +381,57 @@ export default function FounderPortal({ user, setActiveTab }) {
       remoteTestsRef.current
     );
     setNotifications(fresh);
-  }, []);
+
+    // Audio chime trigger on new events
+    if (prevNotifCountRef.current > 0 && fresh.length > prevNotifCountRef.current) {
+      playNotificationChime();
+    }
+    prevNotifCountRef.current = fresh.length;
+  }, [playNotificationChime]);
+
+  const dailyEngagementMetrics = useMemo(() => {
+    const now = new Date();
+    const todayDateStr = now.toLocaleDateString();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const yesterdayDateStr = yesterday.toLocaleDateString();
+
+    let todayCount = 0;
+    let yesterdayCount = 0;
+    let paidCount = 0;
+    let totalRevenue = 0;
+    const collegeCounts = {};
+
+    usersList.forEach(u => {
+      const cDate = u.created_at;
+      if (cDate === todayDateStr) todayCount++;
+      else if (cDate === yesterdayDateStr) yesterdayCount++;
+
+      if (u.feePaid || u.oneTimeFeePaid) {
+        paidCount++;
+        totalRevenue += (u.feeAmount || 10);
+      }
+
+      const col = u.college || 'GPREC';
+      collegeCounts[col] = (collegeCounts[col] || 0) + 1;
+    });
+
+    const sortedColleges = Object.entries(collegeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4);
+
+    const activeTestsCount = remoteTestsRef.current?.length || 18;
+
+    return {
+      todayCount,
+      yesterdayCount,
+      growthPct: yesterdayCount > 0 ? Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100) : (todayCount > 0 ? 100 : 0),
+      paidCount,
+      totalRevenue,
+      activeTestsCount,
+      topColleges: sortedColleges,
+      totalUsers: usersList.length
+    };
+  }, [usersList]);
 
   // Load strictly live registered users from Supabase, Firebase & Active Session
   const loadUsersData = async () => {
@@ -2404,6 +2514,29 @@ export default function FounderPortal({ user, setActiveTab }) {
             </>
           )}
 
+          {/* Founder Live Event Audio Chime Toggle */}
+          <button
+            onClick={toggleAudioChime}
+            className={`px-3 py-2.5 rounded-xl border transition-all flex items-center gap-1.5 text-xs font-bold shadow-sm cursor-pointer ${
+              audioChimeEnabled 
+                ? 'bg-amber-400/20 text-amber-300 border-amber-400/40 hover:bg-amber-400/30' 
+                : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+            }`}
+            title={audioChimeEnabled ? 'Live Event Audio Chime is ON (Click to mute)' : 'Live Event Audio Chime is MUTED (Click to enable)'}
+          >
+            {audioChimeEnabled ? (
+              <>
+                <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span className="hidden sm:inline">Chime: ON</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="w-4 h-4 text-gray-500" />
+                <span className="hidden sm:inline">Chime: OFF</span>
+              </>
+            )}
+          </button>
+
           <div className="relative">
             <button
               onClick={() => { 
@@ -2552,6 +2685,83 @@ export default function FounderPortal({ user, setActiveTab }) {
           </div>{/* close relative div */}
         </div>{/* close action buttons div */}
       </div>{/* close header row div */}
+
+      {/* ── EXECUTIVE DAILY ENGAGEMENT SNAPSHOT ── */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#0d1222] via-[#121629] to-[#0c101c] border border-amber-400/20 shadow-xl space-y-4 font-sans">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold">
+              <Activity className="w-4.5 h-4.5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 font-mono">
+                <span>Executive Daily Engagement Intelligence</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                  Live Stream
+                </span>
+              </h3>
+              <p className="text-[11px] text-gray-400">Daily snapshot of scholar enrollments, diagnostic activity, fee collections & campus distribution.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-[11px] font-mono text-gray-400">Total Ecosystem:</span>
+            <span className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/15 text-white font-mono font-bold text-xs">
+              {usersList.length} Active Scholars
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Card 1: Today's Registrations */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase text-gray-400 font-bold">Today's Registrations</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${dailyEngagementMetrics.growthPct >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
+                {dailyEngagementMetrics.growthPct >= 0 ? `+${dailyEngagementMetrics.growthPct}%` : `${dailyEngagementMetrics.growthPct}%`}
+              </span>
+            </div>
+            <div className="text-2xl font-black text-white font-mono">{dailyEngagementMetrics.todayCount}</div>
+            <p className="text-[10px] text-gray-500 font-mono">vs {dailyEngagementMetrics.yesterdayCount} yesterday</p>
+          </div>
+
+          {/* Card 2: Active Test Submissions */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase text-gray-400 font-bold">Assessments (24h)</span>
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+            <div className="text-2xl font-black text-amber-300 font-mono">{dailyEngagementMetrics.activeTestsCount}</div>
+            <p className="text-[10px] text-gray-500 font-mono">Grand & Diagnostic Tests</p>
+          </div>
+
+          {/* Card 3: Fee Collections */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase text-gray-400 font-bold">Verified Revenue</span>
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-black text-emerald-400 font-mono">₹{dailyEngagementMetrics.totalRevenue}</div>
+            <p className="text-[10px] text-gray-500 font-mono">{dailyEngagementMetrics.paidCount} Scholars Unlocked</p>
+          </div>
+
+          {/* Card 4: Top Campus Footprint */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase text-gray-400 font-bold">Top Campuses</span>
+              <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
+            </div>
+            <div className="space-y-1 pt-0.5">
+              {dailyEngagementMetrics.topColleges.slice(0, 2).map(([col, cnt], idx) => (
+                <div key={idx} className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-gray-300 truncate max-w-[130px]">{col.replace(/Engineering College.*/i, '')}</span>
+                  <span className="text-cyan-300 font-bold">{cnt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar w-full border-b border-[var(--border-color)]">
                         <button

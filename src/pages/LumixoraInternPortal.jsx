@@ -1619,13 +1619,13 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         </div>
 
         <div className="p-4 rounded-2xl bg-[#0b0e19] border border-white/10 flex items-center justify-between">
-          <div>
+          <div className="min-w-0 pr-2">
             <span className="text-[11px] text-gray-400 font-bold block">Current Sprint</span>
-            <span className={`text-xl font-black ${roleAllottedTasks.length > 0 ? 'text-emerald-400' : 'text-gray-400'}`}>
+            <span className={`text-base sm:text-lg font-black whitespace-nowrap block truncate ${roleAllottedTasks.length > 0 ? 'text-emerald-400' : 'text-gray-400'}`}>
               {roleAllottedTasks.length > 0 ? (roleAllottedTasks[roleAllottedTasks.length - 1]?.week || 'Week 1') : 'No Tasks Yet'}
             </span>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold shrink-0">
             <Calendar className="w-4 h-4" />
           </div>
         </div>
@@ -2413,41 +2413,43 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
           <div className="rounded-3xl overflow-hidden shadow-2xl">
             <CertificateRenderer
               cert={{
-                id: `LMX-INT-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+                id: customCertDetails?.certId || `LMX-INT-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
                 title: 'Certificate of Internship Completion',
                 isInternship: true,
-                internName: session.name,
-                issuedTo: session.name,
-                studentName: session.name,
-                rollNumber: session.id,
+                internName: customCertDetails?.studentName || session.name,
+                issuedTo: customCertDetails?.studentName || session.name,
+                studentName: customCertDetails?.studentName || session.name,
+                rollNumber: customCertDetails?.rollNumber || session.id,
                 college: session.college || 'G. Pulla Reddy Engineering College (Autonomous)',
-                track: activeRole.title,
-                domain: activeRole.title,
-                category: activeRole.title,
+                track: customCertDetails?.domain || activeRole.title,
+                domain: customCertDetails?.domain || activeRole.title,
+                category: customCertDetails?.domain || activeRole.title,
                 duration: '6-Week Intensive Engineering Internship (Batch 01)',
-                startDate: '15 Nov 2026',
-                endDate: '30 Dec 2026',
+                startDate: customCertDetails?.startDate || '15 Nov 2026',
+                endDate: customCertDetails?.endDate || '30 Dec 2026',
                 hoursLogged: 120,
                 score: '98% Distinction',
                 grade: 'Elite Distinction (A+ Grade)',
                 verificationHash: certSha256,
-                founderSignatureName: 'Shaik Sowban',
-                founderRole: 'Founder, CEO & Tech Lead',
-                signer2Name: 'Team Lumixora',
-                signer2Role: 'Product Development Team',
+                wishesText: customCertDetails?.wishesText || 'We wish them all the best for their future endeavors.',
+                statementText: customCertDetails?.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+                founderSignatureName: customCertDetails?.founderSignatureName || 'Shaik Sowban',
+                founderRole: customCertDetails?.founderRole || 'Founder, CEO & Tech Lead',
+                signer2Name: customCertDetails?.signer2Name || 'Team Lumixora',
+                signer2Role: customCertDetails?.signer2Role || 'Product Development Team',
                 signer2Org: 'Lumixora Engineering Council',
                 tasks: submissions,
-                githubUrl: submissions.find(s => s.githubUrl)?.githubUrl || '',
-                driveUrl: submissions.find(s => s.driveUrl)?.driveUrl || '',
-                pdfUrl: submissions.find(s => s.pdfUrl)?.pdfUrl || '',
+                githubUrl: customCertDetails?.githubUrl || submissions.find(s => s.githubUrl)?.githubUrl || '',
+                driveUrl: customCertDetails?.driveUrl || submissions.find(s => s.driveUrl)?.driveUrl || '',
+                pdfUrl: customCertDetails?.pdfUrl || submissions.find(s => s.pdfUrl)?.pdfUrl || '',
                 demoUrl: submissions.find(s => s.demoUrl)?.demoUrl || '',
                 skills: [
-                  'Product Testing',
-                  'Quality Analysis',
-                  'Innovation Mindset'
+                  customCertDetails?.comp1 || 'Product Testing',
+                  customCertDetails?.comp2 || 'Quality Analysis',
+                  customCertDetails?.comp3 || 'Innovation Mindset'
                 ]
               }}
-              studentName={session.name}
+              studentName={customCertDetails?.studentName || session.name}
               collegeName={session.college}
               styleId={certTheme}
               qrCodeDataUrl={certQrUrl}

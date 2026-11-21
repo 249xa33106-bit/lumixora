@@ -15,6 +15,7 @@ import {
   generateFullPredictedExamPaper, 
   generatePredictedModelSets, 
   parseSubmittedPaperText, 
+  detectSubjectFromText,
   ML_MODEL_WEIGHTS, 
   computeMLPredictionScore 
 } from '../services/mlPaperPredictorEngine';
@@ -267,33 +268,22 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
     let parsedQuestions = [];
     if (submissionMode === 'paste' && pastedPaperText.trim()) {
-      parsedQuestions = parseSubmittedPaperText(pastedPaperText, activeSubject);
+      const detectedSubjId = detectSubjectFromText(pastedPaperText, '', HUGE_EXAM_DATASET);
+      if (detectedSubjId && detectedSubjId !== activeSubject.subjectId) {
+        setSelectedSubjectId(detectedSubjId);
+      }
+      const targetSubj = (detectedSubjId ? HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId) : null) || activeSubject;
+      parsedQuestions = parseSubmittedPaperText(pastedPaperText, targetSubj, '');
     } else if (submissionMode === 'upload' && uploadedPaperFiles.length > 0) {
-      parsedQuestions = uploadedPaperFiles.flatMap((f, fIdx) => {
-        if (f.text) return parseSubmittedPaperText(f.text, activeSubject);
-        return [
-          {
-            id: `upload-${fIdx}-q1`,
-            unit: (fIdx % 5) + 1,
-            marks: 2,
-            category: 'Part A (Compulsory)',
-            question: `Explain core operational principles and boundary conditions of Unit ${(fIdx % 5) + 1} from submitted paper [${f.name}].`,
-            frequencyYears: [`Submitted: ${f.name}`],
-            recurrenceCount: 5
-          },
-          {
-            id: `upload-${fIdx}-q2`,
-            unit: (fIdx % 5) + 1,
-            marks: 10,
-            category: 'Part B (10 Marks)',
-            question: `Derive mathematical formulations, system schematics, and algorithmic procedures for Unit ${(fIdx % 5) + 1} from submitted paper [${f.name}].`,
-            frequencyYears: [`Submitted: ${f.name}`],
-            recurrenceCount: 5
-          }
-        ];
+      parsedQuestions = uploadedPaperFiles.flatMap((f) => {
+        if (f.text && f.text.trim().length > 10) {
+          const detectedSubjId = detectSubjectFromText(f.text, f.name, HUGE_EXAM_DATASET);
+          const targetSubj = (detectedSubjId ? HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId) : null) || activeSubject;
+          return parseSubmittedPaperText(f.text, targetSubj, f.name);
+        }
+        return [];
       });
     } else {
-      // Ingest selected drive papers
       parsedQuestions = [];
     }
 
@@ -340,23 +330,75 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
     addToast({ message: 'Loaded authentic previous autonomous examination paper sample!', type: 'info' });
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    files.forEach(file => {
-      const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
-      if (isText) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setUploadedPaperFiles(prev => [...prev, { name: file.name, size: (file.size / 1024).toFixed(1) + ' KB', text: event.target.result }]);
-        };
-        reader.readAsText(file);
-      } else {
-        setUploadedPaperFiles(prev => [...prev, { name: file.name, size: (file.size / 1024).toFixed(1) + ' KB', text: null }]);
+    addToast({ message: `Extracting full text and diagrams from ${files.length} document(s)...`, type: 'info' });
+
+    let detectedSubject = null;
+    const processedFiles = [];
+
+    for (const file of files) {
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const isText = file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt') || file.name.toLowerCase().endsWith('.md');
+      let extractedText = '';
+
+      if (isPdf) {
+        try {
+          const [pdfjsLib, { default: pdfjsWorker }] = await Promise.all([
+            import('pdfjs-dist'),
+            import('pdfjs-dist/build/pdf.worker.mjs?url')
+          ]);
+          pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          
+          for (let p = 1; p <= Math.min(pdf.numPages, 50); p++) {
+            const page = await pdf.getPage(p);
+            const content = await page.getTextContent();
+            extractedText += content.items.map(it => it.str).join(' ') + '\n';
+          }
+        } catch (pdfErr) {
+          console.error('Error extracting text from PDF:', pdfErr);
+        }
+      } else if (isText) {
+        try {
+          extractedText = await file.text();
+        } catch (txtErr) {
+          console.error('Error reading text file:', txtErr);
+        }
       }
-    });
-    addToast({ message: `Attached ${files.length} question paper file(s) for neural ingestion!`, type: 'info' });
+
+      // Run automatic subject detection on extracted contents & filename
+      const detectedSubjId = detectSubjectFromText(extractedText, file.name, HUGE_EXAM_DATASET);
+      if (detectedSubjId) {
+        detectedSubject = HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId);
+      }
+
+      processedFiles.push({
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB',
+        text: extractedText,
+        isPdf
+      });
+    }
+
+    setUploadedPaperFiles(prev => [...prev, ...processedFiles]);
+
+    // If a subject was detected and it differs from current activeSubject, auto-switch context!
+    if (detectedSubject && detectedSubject.subjectId !== activeSubject.subjectId) {
+      setSelectedSubjectId(detectedSubject.subjectId);
+      addToast({
+        message: `🎯 Auto-detected ${detectedSubject.subjectName} from [${files[0].name}]! Switched subject context automatically.`,
+        type: 'success'
+      });
+    } else {
+      addToast({
+        message: `Attached & parsed ${files.length} question paper file(s) for neural ingestion!`,
+        type: 'success'
+      });
+    }
   };
 
   // 1-Click Export Official 70-Mark Examination Paper PDF (Supports Set 1, Set 2, or Both Sets, with optional Model Solutions)

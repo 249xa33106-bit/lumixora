@@ -256,64 +256,290 @@ export function computeMLPredictionScore(question, subject) {
 }
 
 /**
- * Parses raw text extracted from previous question papers (or pasted by user).
- * Identifies question boundaries, estimates mark allocations (2M vs 10M),
- * and maps questions into syllabus units 1-5 via semantic keyword matching.
+ * Auto-detects the engineering subject from document text and file name
+ * by evaluating domain-specific keyword densities across all 24 subjects.
  */
-export function parseSubmittedPaperText(rawText, subject) {
-  if (!rawText || typeof rawText !== 'string') return [];
-  
-  const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
-  const questions = [];
-  let currentQ = '';
-  let currentMarks = 2;
+export function detectSubjectFromText(rawText = '', fileName = '', dataset = HUGE_EXAM_DATASET) {
+  const combined = ((fileName || '') + ' ' + (rawText ? rawText.slice(0, 15000) : '')).toLowerCase();
 
-  lines.forEach((line) => {
-    // Check if line starts with a question identifier: 1., Q1, (a), (b), etc.
-    const isNewQuestion = /^(Q[0-9]+|[0-9]+[\.\)]|\([a-j0-9]+\)|[a-j][\.\)])/i.test(line);
+  const SUBJECT_RULES = [
+    {
+      id: 'cvip',
+      name: 'Computer Vision & Image Processing',
+      keywords: ['cvip', 'computer vision', 'image processing', 'stereo vision', 'epipolar', 'disparity', 'camera calibration', 'point cloud', 'structure from motion', 'sfm', 'harris corner', 'sift', 'surf', 'optical flow', 'histogram equalization', 'wiener filter', 'hough transform', 'canny edge', 'morphological', 'dilation', 'erosion']
+    },
+    {
+      id: 'os',
+      name: 'Operating Systems & System Programming',
+      keywords: ['operating system', 'ossp', 'deadlock', 'banker\'s algorithm', 'cpu scheduling', 'round robin', 'shortest job first', 'paging', 'segmentation', 'virtual memory', 'page replacement', 'thrashing', 'disk scheduling', 'fcfs', 'sstf', 'semaphore', 'critical section', 'peterson\'s', 'fork()', 'exec()']
+    },
+    {
+      id: 'dcd',
+      name: 'Digital Circuits and Design',
+      keywords: ['digital circuits and design', 'dcd', 'digital logic design', 'dld', 'k-map', 'karnaugh map', 'boolean algebra', 'combinational logic', 'multiplexer', 'demultiplexer', 'flip-flop', 'flip flop', 'jk flip', 'ripple counter', 'synchronous counter', 'bcd to excess', 'ttl', 'cmos logic', 'full adder', 'half adder']
+    },
+    {
+      id: 'adsa',
+      name: 'Advanced Data Structures & Algorithms',
+      keywords: ['adsa', 'advanced data structures', 'avl tree', 'red-black tree', 'splay tree', 'binomial heap', 'fibonacci heap', 'amortized analysis', 'master theorem', 'disjoint set', 'b-tree', 'b+ tree', 'kruskal', 'prim\'s', 'dijkstra', 'bellman-ford', 'asymptotic notation']
+    },
+    {
+      id: 'dbms',
+      name: 'Database Management Systems',
+      keywords: ['dbms', 'database management', 'relational algebra', 'er model', 'entity relationship', 'sql', 'normalization', '1nf', '2nf', '3nf', 'bcnf', 'lossless join', 'functional dependency', 'acid properties', 'serializability', 'two-phase locking', '2pl', 'aries recovery', 'b+ tree index']
+    },
+    {
+      id: 'dlco',
+      name: 'Digital Logic & Computer Organization',
+      keywords: ['dlco', 'computer organization', 'booth\'s algorithm', 'carry look-ahead', 'cache memory', 'direct mapping', 'associative mapping', 'instruction cycle', 'microprogrammed control', 'pipelining hazard', 'interrupt handling', 'dma controller']
+    },
+    {
+      id: 'ml',
+      name: 'Machine Learning',
+      keywords: ['machine learning', 'linear regression', 'logistic regression', 'gradient descent', 'support vector machine', 'svm', 'decision tree', 'random forest', 'naive bayes', 'k-means', 'backpropagation', 'multilayer perceptron', 'cross-validation', 'roc-auc']
+    },
+    {
+      id: 'dmgt',
+      name: 'Discrete Mathematics & Graph Theory',
+      keywords: ['discrete mathematics', 'dmgt', 'graph theory', 'propositional logic', 'tautology', 'recurrence relations', 'generating functions', 'planar graph', 'eulerian graph', 'hamiltonian', 'isomorphism', 'pigeonhole principle', 'poset', 'hasse diagram']
+    },
+    {
+      id: 'dti',
+      name: 'Design Thinking & Innovation',
+      keywords: ['design thinking', 'dti', 'empathize', 'ideate', 'prototype', 'journey mapping', 'pov statement', 'convergent thinking', 'divergent thinking', 'scamper', 'minimum viable product', 'mvp']
+    },
+    {
+      id: 'oopj',
+      name: 'Object Oriented Programming through Java',
+      keywords: ['oopj', 'java', 'object oriented programming', 'polymorphism', 'inheritance', 'encapsulation', 'abstract class', 'interface', 'multithreading', 'thread lifecycle', 'exception handling', 'garbage collection', 'jvm', 'collection framework']
+    },
+    {
+      id: 'pas',
+      name: 'Probability and Statistics',
+      keywords: ['probability and statistics', 'pas', 'bayes theorem', 'binomial distribution', 'poisson distribution', 'normal distribution', 'sampling theory', 't-test', 'f-test', 'chi-square', 'anova', 'regression analysis', 'correlation coefficient']
+    },
+    {
+      id: 'ot',
+      name: 'Optimization Techniques',
+      keywords: ['optimization techniques', 'operations research', 'simplex method', 'big-m method', 'two-phase simplex', 'duality theory', 'transportation problem', 'vogels approximation', 'assignment problem', 'hungarian method', 'dynamic programming']
+    },
+    {
+      id: 'bcme',
+      name: 'Basic Civil & Mechanical Engineering',
+      keywords: ['basic civil', 'mechanical engineering', 'bcme', 'surveying', 'chain surveying', 'building materials', 'cement', 'concrete', 'refrigeration', 'cop', 'ic engines', 'four stroke', 'two stroke', 'boilers', 'lathe machine', 'welding']
+    },
+    {
+      id: 'beee',
+      name: 'Basic Electrical & Electronics Engineering',
+      keywords: ['basic electrical', 'beee', 'bee', 'kirchhoff', 'kvl', 'kcl', 'thevenin', 'norton', 'superposition', 'dc motor', 'transformer', 'emf equation', 'p-n junction', 'diode rectifier', 'bjt', 'ce configuration']
+    },
+    {
+      id: 'chy',
+      name: 'Engineering Chemistry',
+      keywords: ['engineering chemistry', 'chy', 'hardness of water', 'edta method', 'ion exchange', 'calgon', 'corrosion', 'galvanic cell', 'sacrificial anode', 'polymers', 'bakelite', 'lubricants', 'refractories', 'calorific value']
+    },
+    {
+      id: 'ce',
+      name: 'Communicative English',
+      keywords: ['communicative english', 'grammar', 'reading comprehension', 'phonetics', 'vowel sounds', 'consonant sounds', 'formal letter', 'resume writing', 'report writing', 'technical vocabulary', 'collocations']
+    },
+    {
+      id: 'ds',
+      name: 'Data Structures',
+      keywords: ['data structures', 'linked list', 'singly linked', 'doubly linked', 'stack', 'queue', 'circular queue', 'binary search tree', 'bst', 'tree traversals', 'inorder', 'preorder', 'postorder', 'hashing', 'quick sort', 'merge sort']
+    },
+    {
+      id: 'devc',
+      name: 'Differential Equations and Vector Calculus',
+      keywords: ['differential equations', 'vector calculus', 'devc', 'm2', 'first order ode', 'exact differential', 'cauchy-euler', 'laplace transform', 'inverse laplace', 'gradient', 'divergence', 'curl', 'green\'s theorem', 'stokes theorem', 'gauss divergence']
+    },
+    {
+      id: 'eg',
+      name: 'Engineering Graphics & Modeling',
+      keywords: ['engineering graphics', 'eg', 'egm', 'orthographic projection', 'isometric projection', 'first angle projection', 'scales', 'conic sections', 'ellipse', 'parabola', 'projection of points', 'projection of lines', 'sections of solids']
+    },
+    {
+      id: 'ep',
+      name: 'Engineering Physics / Applied Physics',
+      keywords: ['engineering physics', 'applied physics', 'ep', 'wave optics', 'interference', 'diffraction', 'grating', 'polarization', 'lasers', 'ruby laser', 'he-ne laser', 'optical fibers', 'numerical aperture', 'schrodinger wave equation', 'semiconductor']
+    },
+    {
+      id: 'inp',
+      name: 'Introduction to Programming through C',
+      keywords: ['introduction to programming', 'inp', 'pps', 'c programming', 'data types', 'operators', 'loops', 'for loop', 'while loop', 'functions', 'recursion', 'pointers', 'pointer arithmetic', 'structures', 'unions', 'file handling']
+    },
+    {
+      id: 'mefa',
+      name: 'Managerial Economics and Financial Analysis',
+      keywords: ['managerial economics', 'mefa', 'demand analysis', 'law of demand', 'elasticity of demand', 'production function', 'cobb-douglas', 'isoquants', 'cost concepts', 'break-even analysis', 'bea', 'monopoly', 'perfect competition', 'financial statements']
+    },
+    {
+      id: 'cn',
+      name: 'Computer Networks',
+      keywords: ['computer networks', 'osi reference model', 'tcp/ip model', 'framing', 'error detection', 'crc', 'hamming code', 'sliding window', 'go-back-n', 'selective repeat', 'csma/cd', 'dijkstra routing', 'distance vector', 'ipv4', 'ipv6', 'subnetting']
+    },
+    {
+      id: 'adcm',
+      name: 'Analog & Digital Communication',
+      keywords: ['analog and digital communication', 'adcm', 'amplitude modulation', 'am', 'frequency modulation', 'fm', 'superheterodyne', 'sampling theorem', 'pcm', 'pulse code modulation', 'dm', 'delta modulation', 'ask', 'fsk', 'psk', 'qam', 'noise figure']
+    }
+  ];
+
+  let bestSubjectId = null;
+  let maxMatchScore = 0;
+
+  SUBJECT_RULES.forEach(rule => {
+    let score = 0;
+    const lowerName = (fileName || '').toLowerCase();
     
-    // Check for marks in brackets or parentheses: [2M], (10 Marks), etc.
-    const marksMatch = line.match(/\[([0-9]+)\s*M\]|\(([0-9]+)\s*Marks?\)/i);
-    const lineMarks = marksMatch ? parseInt(marksMatch[1] || marksMatch[2], 10) : null;
+    // Explicit subject ID match in filename
+    if (lowerName.includes(rule.id)) score += 20;
 
-    if (isNewQuestion) {
-      if (currentQ.length > 15) {
-        questions.push({ text: currentQ, marks: currentMarks });
+    rule.keywords.forEach(kw => {
+      if (lowerName.includes(kw)) score += 12;
+      if (combined.includes(kw)) {
+        score += kw.length > 5 ? 4 : 2;
       }
-      currentQ = line.replace(/^(Q[0-9]+|[0-9]+[\.\)]|\([a-j0-9]+\)|[a-j][\.\)])\s*/i, '');
-      currentMarks = lineMarks || (line.length > 70 ? 10 : 2);
-    } else {
-      if (currentQ) {
-        currentQ += ' ' + line;
-        if (lineMarks) currentMarks = lineMarks;
-      } else {
-        currentQ = line;
-        if (lineMarks) currentMarks = lineMarks;
-      }
+    });
+
+    if (score > maxMatchScore) {
+      maxMatchScore = score;
+      bestSubjectId = rule.id;
     }
   });
 
-  if (currentQ.length > 15) {
-    questions.push({ text: currentQ, marks: currentMarks });
+  return maxMatchScore >= 6 ? bestSubjectId : null;
+}
+
+/**
+ * Parses raw text extracted from previous question papers, notes, or uploaded documents.
+ * Identifies question boundaries, distinguishes 2M vs 10M questions, extracts document-level
+ * syllabus unit numbers (e.g. Unit 3), and maps questions to syllabus units.
+ */
+export function parseSubmittedPaperText(rawText, subject, fileName = '') {
+  if (!rawText || typeof rawText !== 'string') return [];
+  
+  // 1. Detect document-level Unit from title / filename (e.g., "UNIT – III: 3D Vision" -> Unit 3, "UNIT 1 CVIP.pdf" -> Unit 1)
+  let docUnit = null;
+  const unitMatch = (fileName + '\n' + rawText.slice(0, 3000)).match(/UNIT\s*[-–—:]*\s*(?:([IVX]+)|([1-5]))\b/i);
+  if (unitMatch) {
+    const romanMap = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5 };
+    if (unitMatch[1]) {
+      docUnit = romanMap[unitMatch[1].toUpperCase()] || null;
+    } else if (unitMatch[2]) {
+      docUnit = parseInt(unitMatch[2], 10);
+    }
   }
 
-  // Map each question to the most appropriate Unit 1 to 5 based on keywords
-  const units = subject?.syllabusUnits || [];
-  return questions.map((q, idx) => {
-    let bestUnit = (idx % 5) + 1;
-    let maxMatch = 0;
+  const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+  const questions = [];
+  let currentSectionMarks = null;
 
-    units.forEach(u => {
-      const titleWords = (u.title || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
-      let matchCount = 0;
-      titleWords.forEach(w => {
-        if (q.text.toLowerCase().includes(w)) matchCount++;
-      });
-      if (matchCount > maxMatch) {
-        maxMatch = matchCount;
-        bestUnit = u.unit;
+  // Filter out chaff lines (ChatGPT prompt, URLs, timestamps, headers)
+  const isChaff = (line) => {
+    return (
+      /^NOTES FOR EXAM/i.test(line) ||
+      /^ChatGPT said/i.test(line) ||
+      /^https?:\/\//i.test(line) ||
+      /^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(line) ||
+      /^PART\s*[-–—]\s*[A-Z]/i.test(line) ||
+      /^LAST-MINUTE REVISION/i.test(line) ||
+      /^High-priority preparation/i.test(line) ||
+      /^These questions cover/i.test(line) ||
+      /^These diagrams are/i.test(line) ||
+      /^\d+\/\d+$/.test(line) ||
+      line.length < 8
+    );
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Detect section header marks
+    if (/LONG-ANSWER/i.test(line) || /8\s*[-–—]\s*10\s*MARKS/i.test(line)) {
+      currentSectionMarks = 10;
+      continue;
+    }
+    if (/SHORT-ANSWER/i.test(line) || /2\s*[-–—]\s*5\s*MARKS/i.test(line)) {
+      currentSectionMarks = 2;
+      continue;
+    }
+
+    if (isChaff(line)) continue;
+
+    // Detect if line is a question
+    const numMatch = line.match(/^(?:Q(?:uestion)?\s*[0-9]+|[0-9]+[\.\)]|\([a-z0-9]+\))\s*(.+)/i);
+    const verbMatch = /^(?:Explain|Describe|Derive|Define|What is|State|Differentiate|Compare|Calculate|Find|Determine|Solve|Discuss|Illustrate)\b/i.test(line);
+
+    if (numMatch || verbMatch) {
+      let qText = numMatch ? numMatch[1].trim() : line.trim();
+
+      // Check if question continues onto next line
+      if (i + 1 < lines.length && !isChaff(lines[i + 1])) {
+        const nextLine = lines[i + 1];
+        const nextIsNew = /^(?:Q(?:uestion)?\s*[0-9]+|[0-9]+[\.\)]|\([a-z0-9]+\))\s*/i.test(nextLine) ||
+                          /^(?:Explain|Describe|Derive|Define|What is|State|Differentiate|Compare|Calculate|Find|Determine|Solve|Discuss|Illustrate)\b/i.test(nextLine);
+        if (!nextIsNew && !/LONG-ANSWER|SHORT-ANSWER|PART\s*[-–—]/i.test(nextLine)) {
+          qText += ' ' + nextLine;
+          i++; // consumed next line
+        }
+      }
+
+      // Determine marks
+      let marks = currentSectionMarks;
+      if (!marks) {
+        const marksExplicit = qText.match(/\[([0-9]+)\s*M\]|\(([0-9]+)\s*Marks?\)/i);
+        if (marksExplicit) {
+          marks = parseInt(marksExplicit[1] || marksExplicit[2], 10);
+        } else {
+          // Heuristic: short definitions (<65 chars, Define, What is) -> 2M; long/derivation/numerical -> 10M
+          const isShortDef = qText.length < 65 && /^(?:Define|What is|State|List)\b/i.test(qText);
+          marks = isShortDef ? 2 : 10;
+        }
+      }
+
+      if (qText.length > 10) {
+        questions.push({ text: qText, marks: marks === 10 ? 10 : 2 });
+      }
+    }
+  }
+
+  // Fallback: If no structured questions found, extract key topic sentences
+  if (questions.length === 0 && rawText.length > 100) {
+    const topicMatches = rawText.match(/(?:[A-Z][a-zA-Z0-9\s]{3,35})(?=\s*[-–—:]|\s*\n)/g) || [];
+    const validTopics = topicMatches
+      .map(t => t.trim())
+      .filter(t => t.length > 5 && t.length < 40 && !/chatgpt|exam|preparation|unit|part/i.test(t))
+      .slice(0, 6);
+
+    validTopics.forEach((t, idx) => {
+      if (idx % 2 === 0) {
+        questions.push({ text: `Explain the working principle, system architecture, and mathematical formulation of ${t} with a neat diagram.`, marks: 10 });
+      } else {
+        questions.push({ text: `Define ${t}. Explain its core operational criteria and governing parameters.`, marks: 2 });
       }
     });
+  }
+
+  // Map each question to the appropriate Unit
+  const units = subject?.syllabusUnits || [];
+  return questions.map((q, idx) => {
+    let bestUnit = docUnit || ((idx % 5) + 1);
+    
+    if (!docUnit) {
+      let maxMatch = 0;
+      units.forEach(u => {
+        const titleWords = (u.title || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
+        let matchCount = 0;
+        titleWords.forEach(w => {
+          if (q.text.toLowerCase().includes(w)) matchCount++;
+        });
+        if (matchCount > maxMatch) {
+          maxMatch = matchCount;
+          bestUnit = u.unit;
+        }
+      });
+    }
 
     return {
       id: `custom-q-${idx + 1}`,
@@ -342,6 +568,10 @@ export function parseSubmittedPaperText(rawText, subject) {
 
 function createFallback2M(subject, unit, variant, setNum) {
   const unitTitle = subject.syllabusUnits?.find(u => u.unit === unit)?.title || `Unit ${unit}`;
+  const terms = unitTitle.replace('&', ',').replace('/', ',').replace('(', ',').replace(')', ',').split(',').map(t => t.trim()).filter(Boolean);
+  const term1 = terms[0] || `${unitTitle} Concepts`;
+  const term2 = terms[1] || `${unitTitle} Principles`;
+
   if (setNum === 2) {
     return {
       id: `${subject.subjectId}-s2-u${unit}-q2${variant}`,
@@ -349,8 +579,8 @@ function createFallback2M(subject, unit, variant, setNum) {
       marks: 2,
       category: 'Part A (Compulsory - Set B)',
       question: variant === 'a'
-        ? `Distinguish between two fundamental operational principles of ${unitTitle} with an illustrative example.`
-        : `State the mathematical formulation or governing performance metric used in ${unitTitle}. Explain its variables.`,
+        ? `Distinguish between two fundamental operational principles of ${term1} with an illustrative example.`
+        : `State the mathematical formulation or governing performance metric used in ${term2}. Explain its variables.`,
       modelAnswer: {
         keyPoints: [
           'Clear comparative differentiation with parameter specifications (1 Mark)',
@@ -366,8 +596,8 @@ function createFallback2M(subject, unit, variant, setNum) {
     marks: 2,
     category: 'Part A (Compulsory - Set A)',
     question: variant === 'a'
-      ? `Define foundational principles and governing parameters of ${unitTitle}.`
-      : `State mathematical formulation and core industrial relevance of ${unitTitle}.`,
+      ? `Define foundational principles and governing parameters of ${term1}.`
+      : `State mathematical formulation and core industrial relevance of ${term2}.`,
     modelAnswer: {
       keyPoints: [
         'Standard formal definition with symbolic notation (1 Mark)',
@@ -380,6 +610,10 @@ function createFallback2M(subject, unit, variant, setNum) {
 
 function createFallback10M(subject, unit, variant, setNum) {
   const unitTitle = subject.syllabusUnits?.find(u => u.unit === unit)?.title || `Unit ${unit}`;
+  const terms = unitTitle.replace('&', ',').replace('/', ',').replace('(', ',').replace(')', ',').split(',').map(t => t.trim()).filter(Boolean);
+  const term1 = terms[0] || `${unitTitle} Architecture`;
+  const term2 = terms[1] || `${unitTitle} Optimization`;
+
   if (setNum === 2) {
     return {
       id: `${subject.subjectId}-s2-u${unit}-q10${variant}`,
@@ -387,15 +621,15 @@ function createFallback10M(subject, unit, variant, setNum) {
       marks: 10,
       category: variant === 'a' ? 'Part B (10 Marks - Set B Option A)' : 'Part B (10 Marks - Set B Option B [OR])',
       question: variant === 'a'
-        ? `Analyze the detailed operational mechanism, algorithmic procedures, and mathematical modeling of ${unitTitle}. Derive the governing equations with step-by-step illustrations.`
-        : `Evaluate the design trade-offs, state transition models, and optimization strategies in ${unitTitle}. Compare two alternative standard approaches with a benchmark matrix.`,
+        ? `Explain the functional architecture, mathematical derivations, and algorithmic execution in ${term1}. Provide step-by-step illustrations.`
+        : `Analyze comparative design trade-offs, state machine models, and performance benchmarks in ${term2}. Compare two alternative standard approaches.`,
       modelAnswer: {
         structure: [
           '1. System Block Diagram & Functional Architecture (3 Marks)',
           '2. Detailed Algorithmic Execution / Mathematical Modeling (4 Marks)',
           '3. Practical Numerical Example / Real-World Engineering Deployment (3 Marks)'
         ],
-        diagramDescription: `Comprehensive architectural schematic and state transition diagram for ${unitTitle}`,
+        diagramDescription: `Comprehensive architectural schematic and state transition diagram for ${term1}`,
         examinerTip: 'Draw clear pencil diagrams with component labels and box the final numerical solution.'
       }
     };
@@ -406,15 +640,15 @@ function createFallback10M(subject, unit, variant, setNum) {
     marks: 10,
     category: variant === 'a' ? 'Part B (10 Marks - Set A Option A)' : 'Part B (10 Marks - Set A Option B [OR])',
     question: variant === 'a'
-      ? `Explain system architecture, mathematical derivations, and algorithmic execution in ${unitTitle}.`
-      : `Analyze comparative design trade-offs, state machine models, and performance benchmarks in ${unitTitle}.`,
+      ? `Explain system architecture, mathematical derivations, and algorithmic execution in ${term1}.`
+      : `Analyze comparative design trade-offs, state machine models, and performance benchmarks in ${term2}.`,
     modelAnswer: {
       structure: [
         '1. Functional Architecture & System Schematic (3 Marks)',
         '2. Algorithmic Steps / Mathematical Formulation (4 Marks)',
         '3. Practical Engineering Application & Case Study (3 Marks)'
       ],
-      diagramDescription: `Architectural schematic and module data flow for ${unitTitle}`,
+      diagramDescription: `Architectural schematic and module data flow for ${term1}`,
       examinerTip: 'Structure comparative answers in neat tabular format with parameter metrics.'
     }
   };

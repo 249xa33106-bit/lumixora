@@ -15,6 +15,7 @@ import mermaid from 'mermaid';
 // Use the legacy worker which is compatible with Vite's standard bundler config for ES modules
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import CompanyPlacementPapers from './CompanyPlacementPapers';
+import { ALL_CURATED_NOTES } from '../data/allCuratedNotes';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 mermaid.initialize({ startOnLoad: false, theme: 'dark' });
@@ -421,7 +422,17 @@ export default function NotesPlatform({ user, setActiveTab }) {
     setIsEditingNote(null);
   };
 
-  const filteredNotes = (notes || []).filter((n) => {
+  // Combine Supabase cloud notes with master verified curriculum & drive notes
+  const combinedNotes = React.useMemo(() => {
+    const existingIds = new Set((notes || []).map(n => n.id));
+    const existingTitles = new Set((notes || []).map(n => n.title?.toLowerCase().trim()));
+    const extraCurated = ALL_CURATED_NOTES.filter(cn => 
+      !existingIds.has(cn.id) && !existingTitles.has(cn.title?.toLowerCase().trim())
+    );
+    return [...(notes || []), ...extraCurated];
+  }, [notes]);
+
+  const filteredNotes = (combinedNotes || []).filter((n) => {
     if (!n) return false;
     // Exclude code arena custom problems
     if (n.type === 'code_arena_problem' || n.category === 'code_arena_problem') return false;
@@ -430,18 +441,30 @@ export default function NotesPlatform({ user, setActiveTab }) {
     if (viewMode === 'library' && isTrash) return false;
     if (viewMode === 'trash' && !isTrash) return false;
 
-    const matchesSearch = n.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const query = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || 
+                          n.title.toLowerCase().includes(query) ||
+                          (n.subjectName && n.subjectName.toLowerCase().includes(query)) ||
+                          (n.subjectCode && n.subjectCode.toLowerCase().includes(query)) ||
+                          (n.unit && n.unit.toLowerCase().includes(query));
     
-    let noteBranch = n.subject;
-    let noteSem = 'Sem 1';
+    let noteBranch = n.branch || n.subject;
+    let noteSem = n.semester || 'Sem 1';
     if (n.subject && n.subject.includes(' - ')) {
       const parts = n.subject.split(' - ');
       noteBranch = parts[0];
       noteSem = parts[1] || 'Sem 1';
     }
 
-    const matchesBranch = filterBranch === 'All' || noteBranch === filterBranch;
-    const matchesSem = filterSem === 'All' || noteSem === filterSem;
+    const matchesBranch = filterBranch === 'All' 
+      || noteBranch === filterBranch
+      || (n.branchesApplicable && n.branchesApplicable.includes(filterBranch))
+      || (n.branch && n.branch === filterBranch);
+
+    const matchesSem = filterSem === 'All' 
+      || noteSem === filterSem
+      || (n.semestersApplicable && n.semestersApplicable.includes(filterSem))
+      || (n.semester && n.semester === filterSem);
     
     return matchesSearch && matchesBranch && matchesSem;
   });
@@ -747,7 +770,10 @@ export default function NotesPlatform({ user, setActiveTab }) {
                 {/* View Original PDF Button */}
                 {note.fileUrl && (
                   <button 
-                    onClick={() => setPreviewUrl(getEmbedUrl(note.fileUrl))}
+                    onClick={() => {
+                      setPreviewNoteTitle(note.title);
+                      setPreviewUrl(getEmbedUrl(note.fileUrl));
+                    }}
                     className="p-2 rounded-lg bg-brand-blue/10 border border-white/10 text-brand-blue hover:bg-brand-blue hover:text-black transition-all duration-300 flex items-center justify-center cursor-pointer"
                     title="View Original Document"
                   >
