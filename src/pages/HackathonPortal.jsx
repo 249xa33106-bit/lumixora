@@ -25,6 +25,8 @@ import { collection, onSnapshot, addDoc, setDoc, doc, deleteDoc, serverTimestamp
 import { useToast } from '../context/ToastContext';
 import { callAICompletion } from '../services/aiService';
 import { cloudSync } from '../services/cloudSyncService';
+import HackathonDeadlinesRadar from '../components/HackathonDeadlinesRadar';
+import HackathonPitchDeckModal from '../components/HackathonPitchDeckModal';
 
 export default function HackathonPortal({ user, setActiveTab }) {
   const { addToast } = useToast();
@@ -33,6 +35,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
 
   // Global Tab Mode: 'hackathons', 'internships', 'squads', 'bookmarked'
   const [activeTabMode, setActiveTabMode] = useState('hackathons');
+  const [pitchDeckHackathon, setPitchDeckHackathon] = useState(null);
   
   // ── 1. HACKATHONS STATE ───────────────────────────────────────────
   const [hackathons, setHackathons] = useState(DEFAULT_HACKATHONS);
@@ -510,7 +513,7 @@ export default function HackathonPortal({ user, setActiveTab }) {
     const userProfileSummary = `Scholar: ${cleanUserName}, College: ${userCollege}, Branch: ${user?.department || 'CSE'}, Role: ${user?.role || 'Student'}`;
     const openSquadsSnippet = squadPosts.slice(0, 8).map((sq, i) => `${i+1}. [${sq.hackathonTitle}] Team: "${sq.teamName || 'Squad'}" needs: ${sq.requiredRoles} | Skills: ${sq.skillsRequired} | College: ${sq.authorCollege}`).join('\n');
 
-    const prompt = `You are Vyomra AI Squad Formation Engine.
+    const prompt = `You are Lumixora AI Squad Formation Engine.
 Based on the student's profile:
 ${userProfileSummary}
 
@@ -529,7 +532,7 @@ Analyze compatibility and provide a top 3 smart match recommendations in Markdow
       });
       setAiMatchResult(response);
     } catch (err) {
-      setAiMatchResult(`### 🤖 AI Smart Match Analysis\n\n**1. Smart India Hackathon (95% Match)**\n* Reason: Strong complementary skill match for rapid MVP prototyping.\n* Suggested Pitch: *"Hi! I saw your SIH squad on Vyomra. I can handle full frontend architecture & deployment."*`);
+      setAiMatchResult(`### 🤖 AI Smart Match Analysis\n\n**1. Smart India Hackathon (95% Match)**\n* Reason: Strong complementary skill match for rapid MVP prototyping.\n* Suggested Pitch: *"Hi! I saw your SIH squad on Lumixora. I can handle full frontend architecture & deployment."*`);
     } finally {
       setAiMatching(false);
     }
@@ -600,61 +603,60 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-16 animate-fade-in text-[var(--text-main)] px-4 sm:px-6">
       
-      {/* ── Top Hero Showcase ────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-10 border border-white/10 bg-gradient-to-br from-purple-950/40 via-indigo-950/30 to-black/80 backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-teal/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-brand-purple/20 rounded-full blur-3xl pointer-events-none" />
+      {/* ── Top Hero Showcase (Minimalist Monochrome & Silver: Apple / Vercel Pro) ── */}
+      <div className="relative overflow-hidden rounded-2xl p-6 sm:p-10 border border-white/10 bg-[#090D14] shadow-2xl">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black uppercase tracking-widest shadow-sm">
-              <Sparkles className="w-4 h-4" /> Global Innovation & Career Launchpad
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-mono uppercase tracking-widest shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-zinc-400" /> Engineering Opportunities & Innovation Hub
             </div>
             
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
               Hackathons, SDE Internships & <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-teal via-brand-blue to-brand-purple">
-                Elite Hiring Radar
+              <span className="text-zinc-400">
+                Elite Engineering Opportunities
               </span>
             </h1>
 
-            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+            <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
               Discover verified high-stipend software engineering internships (Google, Amazon, Goldman Sachs, DE Shaw), 25+ national hackathons (SIH, Flipkart, ETHIndia), and form multi-campus squads across GPREC & Ashoka College.
             </p>
 
             {/* Quick Metrics Bar */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2.5">
-                <Briefcase className="w-5 h-5 text-brand-teal" />
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2.5">
+                <Briefcase className="w-4 h-4 text-zinc-300" />
                 <div>
-                  <span className="block text-xs text-gray-400 uppercase font-bold tracking-wider">Top Tier Internships</span>
-                  <span className="text-base font-black text-white">{allInternships.filter(i => i.status !== 'Closed').length} Live Hiring <span className="text-xs font-normal text-gray-400">({allInternships.filter(i => i.status === 'Closed').length} Closed)</span></span>
+                  <span className="block text-[10px] text-zinc-400 uppercase font-mono font-bold tracking-wider">Top Tier Internships</span>
+                  <span className="text-sm font-black font-mono text-white">{allInternships.filter(i => i.status !== 'Closed').length} Live Hiring <span className="text-[11px] font-normal text-zinc-500">({allInternships.filter(i => i.status === 'Closed').length} Closed)</span></span>
                 </div>
               </div>
 
-              <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2.5">
-                <Flame className="w-5 h-5 text-amber-400" />
+              <div className="px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2.5">
+                <Flame className="w-4 h-4 text-zinc-300" />
                 <div>
-                  <span className="block text-xs text-gray-400 uppercase font-bold tracking-wider">Active Hackathons</span>
-                  <span className="text-base font-black text-white">{allHackathons.filter(h => h.status !== 'Closed').length} Live Tracks <span className="text-xs font-normal text-gray-400">({allHackathons.filter(h => h.status === 'Closed').length} Closed)</span></span>
+                  <span className="block text-[10px] text-zinc-400 uppercase font-mono font-bold tracking-wider">Active Hackathons</span>
+                  <span className="text-sm font-black font-mono text-white">{allHackathons.filter(h => h.status !== 'Closed').length} Live Tracks <span className="text-[11px] font-normal text-zinc-500">({allHackathons.filter(h => h.status === 'Closed').length} Closed)</span></span>
                 </div>
               </div>
 
-              <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2.5">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
+              <div className="px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2.5">
+                <DollarSign className="w-4 h-4 text-zinc-300" />
                 <div>
-                  <span className="block text-xs text-gray-400 uppercase font-bold tracking-wider">Max Stipend Pool</span>
-                  <span className="text-base font-black text-emerald-400">Up to ₹2,00,000/mo</span>
+                  <span className="block text-[10px] text-zinc-400 uppercase font-mono font-bold tracking-wider">Max Stipend Pool</span>
+                  <span className="text-sm font-black font-mono text-white">Up to ₹2,00,000/mo</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full sm:w-auto shrink-0">
+          <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setActiveTabMode('internships')}
-              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-teal/20 hover:scale-[1.02] transition-all cursor-pointer"
+              className="px-5 py-3 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
             >
               <Briefcase className="w-4 h-4" /> Browse Elite Internships
             </button>
@@ -664,9 +666,9 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 setActiveTabMode('squads');
                 setSquadViewTab('teams');
               }}
-              className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white border border-white/15 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/15 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Users className="w-4 h-4 text-purple-400" /> 🔍 Advanced Team Search
+              <Users className="w-4 h-4 text-zinc-400" /> 🔍 Advanced Team Search
             </button>
 
             <button
@@ -674,34 +676,40 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 setCreateType('hackathon');
                 setIsCreateModalOpen(true);
               }}
-              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:opacity-95 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-amber-400/20 hover:scale-[1.02]"
+              className="px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/15 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> + Post College Hackathon / Fest
+              <Plus className="w-4 h-4 text-zinc-400" /> + Post College Hackathon / Fest
             </button>
           </div>
         </div>
       </div>
 
+      {/* ── ⏱️ Urgent Application Deadlines Countdown Radar Ticker ────── */}
+      <HackathonDeadlinesRadar 
+        hackathons={allHackathons} 
+        onSelectPitchDeck={(h) => setPitchDeckHackathon(h)} 
+      />
+
       {/* ── 🎁 Student Perks & Free Cloud/Domain Resources for Hackathons ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-purple-950/50 to-slate-950/80 p-4 sm:p-5 backdrop-blur-xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#090D14] p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 shrink-0">
-            <Gift className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-zinc-200 shrink-0">
+            <Gift className="w-5 h-5 text-zinc-300" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-zinc-300 border border-white/10">
                 Hackathon Sponsor Resources
               </span>
-              <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 font-mono">
                 <CheckCircle2 className="w-3 h-3" /> 100% Free For Students
               </span>
             </div>
             <h3 className="text-sm sm:text-base font-extrabold text-white mt-1">
               Need free cloud hosting, AI APIs or domains for your hackathon prototype?
             </h3>
-            <p className="text-xs text-gray-300 mt-0.5 max-w-2xl">
-              Grab <span className="text-brand-teal font-bold">$100 AWS / DigitalOcean credits</span>, free <span className="text-brand-teal font-bold">.tech / .live domains</span>, JetBrains Pro IDEs, and GitHub Copilot access through our verified Student Perks Hub.
+            <p className="text-xs text-zinc-400 mt-0.5 max-w-2xl">
+              Grab <span className="text-white font-bold">$100 AWS / DigitalOcean credits</span>, free <span className="text-white font-bold">.tech / .live domains</span>, JetBrains Pro IDEs, and GitHub Copilot access through our verified Student Perks Hub.
             </p>
           </div>
         </div>
@@ -710,7 +718,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
           onClick={() => {
             if (setActiveTab) setActiveTab('student-offers');
           }}
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-400 hover:to-pink-400 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <span>Claim Hackathon Perks</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -751,13 +759,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
       {/* ── Top Level View Mode (Hackathons vs Internships vs Squads vs Watchlist) ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-2 bg-white/[0.03] p-1 rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTabMode('hackathons')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTabMode === 'hackathons'
-                ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-md scale-[1.02]'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-white text-black shadow-md scale-[1.01]'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <Trophy className="w-4 h-4" /> 🏆 Hackathons & Challenges ({allHackathons.length})
@@ -765,10 +773,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
           <button
             onClick={() => setActiveTabMode('internships')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTabMode === 'internships'
-                ? 'bg-gradient-to-r from-brand-teal to-brand-blue text-black shadow-md scale-[1.02]'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-white text-black shadow-md scale-[1.01]'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <Briefcase className="w-4 h-4" /> 💼 Elite SDE Internships ({allInternships.length})
@@ -776,10 +784,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
           <button
             onClick={() => setActiveTabMode('squads')}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTabMode === 'squads'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-white text-black shadow-md'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <Users className="w-4 h-4" /> 👥 Team Search & Squad Matcher ({squadPosts.length + freeAgents.length})
@@ -787,10 +795,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
           <button
             onClick={() => setActiveTabMode('bookmarked')}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
               activeTabMode === 'bookmarked'
                 ? 'bg-white text-black shadow-md'
-                : 'text-gray-400 hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <Bookmark className="w-4 h-4" /> Saved ({bookmarkedIds.length})
@@ -801,13 +809,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
         {activeTabMode === 'hackathons' && (
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search hackathons, stack, host..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0E131F] border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-white/30 transition-colors"
               />
             </div>
             <button
@@ -815,7 +823,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 setCreateType('hackathon');
                 setIsCreateModalOpen(true);
               }}
-              className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Post Hackathon
             </button>
@@ -824,13 +832,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
         {activeTabMode === 'internships' && (
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
             <input
               type="text"
               value={internshipSearchQuery}
               onChange={(e) => setInternshipSearchQuery(e.target.value)}
               placeholder="Search companies, skills, roles..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-brand-teal transition-colors"
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0E131F] border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-white/30 transition-colors"
             />
           </div>
         )}
@@ -847,10 +855,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       selectedCategory === cat
-                        ? 'bg-amber-400 text-black shadow-sm scale-[1.02]'
-                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5'
+                        ? 'bg-white text-black shadow-sm font-black'
+                        : 'bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/[0.06] border border-white/5'
                     }`}
                   >
                     {cat}
@@ -858,8 +866,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 ))}
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0 bg-white/5 p-1 rounded-xl border border-white/10">
-                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider px-2">Status:</span>
+              <div className="flex items-center gap-1.5 shrink-0 bg-[#0E131F] p-1 rounded-xl border border-white/10">
+                <span className="text-[11px] text-zinc-400 font-mono uppercase tracking-wider px-2">Status:</span>
                 {[
                   { id: 'Live', label: '🟢 Live Only' },
                   { id: 'All', label: 'All' },
@@ -870,10 +878,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   <button
                     key={st.id}
                     onClick={() => setSelectedStatus(st.id)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       selectedStatus === st.id
-                        ? 'bg-amber-400 text-black shadow-sm font-black'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-white text-black shadow-sm font-black'
+                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {st.label}
@@ -882,13 +890,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Mode:</span>
+                <span className="text-xs text-zinc-400 font-mono uppercase tracking-wider">Mode:</span>
                 {HACKATHON_MODES.map((m) => (
                   <button
                     key={m}
                     onClick={() => setSelectedMode(m)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      selectedMode === m ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      selectedMode === m ? 'bg-white text-black' : 'bg-white/[0.03] text-zinc-400 hover:text-white'
                     }`}
                   >
                     {m}
@@ -898,13 +906,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-              <span className="text-[11px] text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap mr-1">Host / Platform:</span>
+              <span className="text-[11px] text-zinc-500 font-mono uppercase tracking-wider whitespace-nowrap mr-1">Host / Platform:</span>
               {HACKATHON_PLATFORMS.map((plat) => (
                 <button
                   key={plat}
                   onClick={() => setSelectedPlatform(plat)}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
-                    selectedPlatform === plat ? 'bg-purple-600 text-white font-bold shadow-sm' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    selectedPlatform === plat ? 'bg-white text-black font-bold shadow-sm' : 'bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/[0.06]'
                   }`}
                 >
                   {plat}
@@ -913,7 +921,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             </div>
           </div>
 
-          {/* Hackathons Cards Grid */}
+          {/* Hackathons Cards Grid (Apple / Vercel Pro Minimalist Monochrome) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredHackathons.map((h) => {
               const isBookmarked = bookmarkedIds.includes(h.id);
@@ -922,7 +930,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
               return (
                 <div
                   key={h.id}
-                  className="glass-panel rounded-3xl border border-white/10 hover:border-amber-400/50 hover:bg-white/[0.04] transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-lg relative"
+                  className="rounded-2xl border border-white/10 hover:border-white/25 bg-[#090D14] transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-xl relative"
                 >
                   <div className="relative h-44 w-full overflow-hidden bg-black/40">
                     <img
@@ -933,27 +941,25 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         e.target.src = 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80';
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f18] via-transparent to-black/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#090D14] via-transparent to-black/40" />
 
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase backdrop-blur-md shadow-md ${
-                          h.mode === 'Online' ? 'bg-blue-500/80 text-white' : h.mode === 'Offline' ? 'bg-purple-500/80 text-white' : 'bg-emerald-500/80 text-white'
-                        }`}>
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase bg-black/70 border border-white/15 text-zinc-200">
                           {h.mode}
                         </span>
 
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase backdrop-blur-md shadow-md flex items-center gap-1 ${
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase flex items-center gap-1.5 ${
                           h.status === 'Closed'
                             ? 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
                             : h.status === 'Closing Soon'
-                            ? 'bg-amber-500/90 text-black border border-amber-300 animate-pulse font-extrabold'
+                            ? 'bg-amber-400 text-black border border-amber-300 font-black animate-pulse'
                             : h.status === 'Upcoming'
-                            ? 'bg-blue-900/80 text-cyan-300 border border-cyan-500/30'
-                            : 'bg-emerald-500/90 text-black border border-emerald-300 font-extrabold'
+                            ? 'bg-zinc-800 text-zinc-300 border border-white/10'
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            h.status === 'Closed' ? 'bg-rose-400' : h.status === 'Closing Soon' ? 'bg-amber-900' : 'bg-white'
+                            h.status === 'Closed' ? 'bg-rose-400' : h.status === 'Closing Soon' ? 'bg-black' : h.status === 'Upcoming' ? 'bg-zinc-400' : 'bg-emerald-400'
                           }`} />
                           {h.status === 'Closed' ? 'Closed' : h.status === 'Closing Soon' ? 'Closing Soon' : h.status === 'Upcoming' ? 'Upcoming' : 'Live'}
                         </span>
@@ -961,8 +967,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                       <button
                         onClick={() => toggleBookmark(h.id)}
-                        className={`p-2 rounded-xl backdrop-blur-md transition-colors shrink-0 ${
-                          isBookmarked ? 'bg-amber-400 text-black' : 'bg-black/60 text-white hover:bg-black/80'
+                        className={`p-2 rounded-xl backdrop-blur-md transition-colors shrink-0 cursor-pointer ${
+                          isBookmarked ? 'bg-white text-black' : 'bg-black/70 text-zinc-300 hover:text-white border border-white/10'
                         }`}
                       >
                         {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
@@ -970,7 +976,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                     </div>
 
                     <div className="absolute bottom-3 left-3">
-                      <span className="px-2.5 py-1 rounded-lg bg-black/70 border border-white/10 text-amber-300 text-[11px] font-bold">
+                      <span className="px-2.5 py-1 rounded-md bg-black/80 border border-white/15 text-zinc-200 text-[11px] font-mono font-semibold">
                         {h.category}
                       </span>
                     </div>
@@ -978,19 +984,19 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 mb-1 flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5 text-gray-400" />
+                      <p className="text-xs font-semibold text-zinc-400 mb-1 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-zinc-400" />
                         <span>{h.organizer}</span>
                       </p>
-                      <h3 className="text-lg font-black text-white group-hover:text-amber-300 transition-colors line-clamp-1 mb-2">
+                      <h3 className="text-lg font-black text-white group-hover:text-zinc-200 transition-colors line-clamp-1 mb-2">
                         {h.title}
                       </h3>
-                      <p className="text-gray-400 text-xs line-clamp-2 leading-relaxed mb-3">
+                      <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed mb-3">
                         {h.description}
                       </p>
                       <div className="flex flex-wrap gap-1.5 mb-4">
                         {(h.tags || []).slice(0, 3).map((t, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-gray-300 font-medium">
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-zinc-300 font-mono">
                             #{t}
                           </span>
                         ))}
@@ -999,34 +1005,34 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                     <div className="pt-3 border-t border-white/5 space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400 flex items-center gap-1">
-                          <Trophy className="w-3.5 h-3.5 text-amber-400" /> Prize Pool:
+                        <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                          <Trophy className="w-3.5 h-3.5 text-zinc-400" /> Prize Pool:
                         </span>
-                        <span className="font-extrabold text-emerald-400">{h.prizePool}</span>
+                        <span className="font-extrabold font-mono text-white">{h.prizePool}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400 flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-purple-400" /> Team Size:
+                        <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                          <Users className="w-3.5 h-3.5 text-zinc-400" /> Team Size:
                         </span>
-                        <span className="font-semibold text-gray-200">{h.teamSize}</span>
+                        <span className="font-semibold text-zinc-200">{h.teamSize}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-cyan-400" /> Deadline:
+                        <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                          <Clock className="w-3.5 h-3.5 text-zinc-400" /> Deadline:
                         </span>
                         <div className="text-right">
-                          <span className={`font-bold block ${
+                          <span className={`font-mono font-bold block ${
                             h.status === 'Closed'
                               ? 'text-rose-400 line-through'
                               : isUrgent
                               ? 'text-amber-400 font-black animate-pulse'
-                              : 'text-gray-200'
+                              : 'text-zinc-200'
                           }`}>
                             {h.deadline}
                           </span>
                           {h.remainingText && (
-                            <span className={`text-[10px] font-semibold ${
-                              h.status === 'Closed' ? 'text-rose-400/80' : isUrgent ? 'text-amber-300 font-black' : 'text-gray-400'
+                            <span className={`text-[10px] font-mono ${
+                              h.status === 'Closed' ? 'text-rose-400/80' : isUrgent ? 'text-amber-300 font-black' : 'text-zinc-400'
                             }`}>
                               ({h.remainingText})
                             </span>
@@ -1036,16 +1042,14 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                     </div>
                   </div>
 
+                  {/* Actions Bar */}
                   <div className="p-4 bg-white/[0.02] border-t border-white/5 flex items-center gap-2">
                     <button
-                      onClick={() => {
-                        setAiSelectedHackathon(h);
-                        setIsAiModalOpen(true);
-                      }}
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-amber-400/20 text-amber-300 border border-white/10 transition-all"
-                      title="AI Project Pitch & Ideator"
+                      onClick={() => setPitchDeckHackathon(h)}
+                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 transition-all cursor-pointer"
+                      title="AI Pitch Deck & Judge Defense Generator"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 text-amber-300" />
                     </button>
 
                     <button
@@ -1054,14 +1058,14 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         setSquadViewTab('teams');
                         setSquadHackathonFilter(h.title);
                       }}
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-purple-600/20 text-purple-300 border border-white/10 transition-all"
+                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 transition-all cursor-pointer"
                       title="Find Teammates for this Hackathon"
                     >
-                      <UserPlus className="w-4 h-4" />
+                      <UserPlus className="w-4 h-4 text-zinc-300" />
                     </button>
 
                     {h.status === 'Closed' ? (
-                      <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                      <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-zinc-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
                         <span>Registration Closed</span>
                       </span>
                     ) : (
@@ -1069,7 +1073,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         href={h.applyUrl || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
                       >
                         <span>Apply Official</span>
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1083,7 +1087,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
         </div>
       )}
 
-      {/* ── SECTION 2: ELITE INTERNSHIPS VIEW ────────────────────────── */}
+      {/* ── SECTION 2: ELITE INTERNSHIPS VIEW (Minimalist Monochrome & Silver) ── */}
       {activeTabMode === 'internships' && (
         <div className="space-y-6">
           {/* Domain & Batch Filters */}
@@ -1094,10 +1098,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   <button
                     key={dom}
                     onClick={() => setSelectedDomain(dom)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       selectedDomain === dom
-                        ? 'bg-brand-teal text-black shadow-sm scale-[1.02]'
-                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5'
+                        ? 'bg-white text-black shadow-sm font-black'
+                        : 'bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/[0.06] border border-white/5'
                     }`}
                   >
                     {dom}
@@ -1105,8 +1109,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 ))}
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0 bg-white/5 p-1 rounded-xl border border-white/10">
-                <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider px-2">Status:</span>
+              <div className="flex items-center gap-1.5 shrink-0 bg-[#0E131F] p-1 rounded-xl border border-white/10">
+                <span className="text-[11px] text-zinc-400 font-mono uppercase tracking-wider px-2">Status:</span>
                 {[
                   { id: 'Live', label: '🟢 Live Hiring' },
                   { id: 'All', label: 'All' },
@@ -1117,10 +1121,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   <button
                     key={st.id}
                     onClick={() => setInternshipStatusFilter(st.id)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       internshipStatusFilter === st.id
-                        ? 'bg-brand-teal text-black shadow-sm font-black'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-white text-black shadow-sm font-black'
+                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {st.label}
@@ -1129,13 +1133,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Eligible Batch:</span>
+                <span className="text-xs text-zinc-400 font-mono uppercase tracking-wider">Eligible Batch:</span>
                 {INTERNSHIP_BATCHES.map((b) => (
                   <button
                     key={b}
                     onClick={() => setSelectedBatch(b)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      selectedBatch === b ? 'bg-white text-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      selectedBatch === b ? 'bg-white text-black' : 'bg-white/[0.03] text-zinc-400 hover:text-white'
                     }`}
                   >
                     {b}
@@ -1147,10 +1151,10 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
           {/* Internships Grid */}
           {filteredInternships.length === 0 ? (
-            <div className="text-center py-16 glass-panel rounded-3xl border border-white/10 space-y-4">
-              <Briefcase className="w-12 h-12 text-gray-600 mx-auto" />
+            <div className="text-center py-16 rounded-2xl bg-[#090D14] border border-white/10 space-y-4">
+              <Briefcase className="w-12 h-12 text-zinc-600 mx-auto" />
               <h3 className="text-xl font-bold text-white">No Internships Match Your Filter</h3>
-              <p className="text-gray-400 text-xs max-w-md mx-auto">
+              <p className="text-zinc-400 text-xs max-w-md mx-auto">
                 Try selecting "All Domains" or "All Batches" to explore all available tech internships.
               </p>
             </div>
@@ -1162,40 +1166,40 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 return (
                   <div
                     key={intern.id}
-                    className="glass-panel rounded-3xl border border-white/10 hover:border-brand-teal/50 hover:bg-white/[0.04] transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-lg"
+                    className="rounded-2xl border border-white/10 hover:border-white/25 bg-[#090D14] transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-xl"
                   >
                     <div className="p-6 space-y-4">
                       {/* Top Company Row */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform shrink-0">
+                          <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform shrink-0">
                             {intern.logo || '🏢'}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-extrabold text-white group-hover:text-brand-teal transition-colors">
+                              <h4 className="text-sm font-extrabold text-white group-hover:text-zinc-200 transition-colors">
                                 {intern.company}
                               </h4>
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                              <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider ${
                                 intern.status === 'Closed'
                                   ? 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
                                   : intern.status === 'Closing Soon'
                                   ? 'bg-amber-400 text-black border border-amber-300 font-extrabold animate-pulse'
                                   : intern.status === 'Upcoming'
-                                  ? 'bg-blue-900/80 text-cyan-300 border border-cyan-500/30'
+                                  ? 'bg-zinc-800 text-zinc-300 border border-white/10'
                                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                               }`}>
                                 {intern.status === 'Closed' ? 'Closed' : intern.status === 'Closing Soon' ? 'Closing Soon' : intern.status === 'Upcoming' ? 'Upcoming' : 'Live'}
                               </span>
                             </div>
-                            <span className="text-[11px] text-gray-400 font-medium">📍 {intern.location}</span>
+                            <span className="text-[11px] text-zinc-400 font-medium">📍 {intern.location}</span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => toggleBookmark(intern.id)}
-                          className={`p-2 rounded-xl backdrop-blur-md transition-colors ${
-                            isBookmarked ? 'bg-amber-400 text-black' : 'bg-white/5 text-gray-400 hover:text-white'
+                          className={`p-2 rounded-xl backdrop-blur-md transition-colors cursor-pointer ${
+                            isBookmarked ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white border border-white/10'
                           }`}
                         >
                           {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
@@ -1207,44 +1211,44 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         <h3 className="text-base font-black text-white line-clamp-1 mb-1">
                           {intern.title}
                         </h3>
-                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
                           {intern.description}
                         </p>
                       </div>
 
                       {/* Key Meta Badges */}
-                      <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                      <div className="p-3.5 rounded-xl bg-[#0E131F] border border-white/5 space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-400 flex items-center gap-1">
-                            <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> Stipend:
+                          <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                            <DollarSign className="w-3.5 h-3.5 text-zinc-400" /> Stipend:
                           </span>
-                          <span className="font-black text-emerald-400">{intern.stipend}</span>
+                          <span className="font-black font-mono text-white">{intern.stipend}</span>
                         </div>
 
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-400 flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-cyan-400" /> Duration:
+                          <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                            <Clock className="w-3.5 h-3.5 text-zinc-400" /> Duration:
                           </span>
-                          <span className="font-semibold text-gray-200">{intern.duration}</span>
+                          <span className="font-semibold text-zinc-200">{intern.duration}</span>
                         </div>
 
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-400 flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-amber-400" /> Deadline:
+                          <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                            <Calendar className="w-3.5 h-3.5 text-zinc-400" /> Deadline:
                           </span>
                           <div className="text-right">
-                            <span className={`font-bold ${
+                            <span className={`font-mono font-bold ${
                               intern.status === 'Closed'
                                 ? 'text-rose-400 line-through'
                                 : intern.status === 'Closing Soon'
                                 ? 'text-amber-400 animate-pulse font-black'
-                                : 'text-gray-200'
+                                : 'text-zinc-200'
                             }`}>
                               {intern.deadline || 'Rolling'}
                             </span>
                             {intern.remainingText && (
-                              <span className={`text-[10px] ml-1 font-semibold ${
-                                intern.status === 'Closed' ? 'text-rose-400/80' : intern.status === 'Closing Soon' ? 'text-amber-300 font-black' : 'text-gray-400'
+                              <span className={`text-[10px] ml-1 font-mono ${
+                                intern.status === 'Closed' ? 'text-rose-400/80' : intern.status === 'Closing Soon' ? 'text-amber-300 font-black' : 'text-zinc-400'
                               }`}>
                                 ({intern.remainingText})
                               </span>
@@ -1253,17 +1257,17 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                         </div>
 
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-400 flex items-center gap-1">
-                            <GraduationCap className="w-3.5 h-3.5 text-purple-400" /> Batches:
+                          <span className="text-zinc-400 flex items-center gap-1 font-mono">
+                            <GraduationCap className="w-3.5 h-3.5 text-zinc-400" /> Batches:
                           </span>
-                          <span className="font-bold text-purple-300">{(intern.batches || []).join(', ')}</span>
+                          <span className="font-mono text-zinc-300">{(intern.batches || []).join(', ')}</span>
                         </div>
                       </div>
 
                       {/* Skills Tags */}
                       <div className="flex flex-wrap gap-1.5">
                         {(intern.skills || []).slice(0, 4).map((sk, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-gray-300 font-mono">
+                          <span key={idx} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-zinc-300 font-mono">
                             {sk}
                           </span>
                         ))}
@@ -1277,15 +1281,15 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                           setAiSelectedInternship(intern);
                           setIsInternshipAiModalOpen(true);
                         }}
-                        className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-brand-teal/20 text-brand-teal border border-white/10 text-xs font-bold flex items-center gap-1.5 transition-all"
+                        className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                         title="AI Recruiter Pitch & Cover Letter"
                       >
-                        <Sparkles className="w-4 h-4" />
+                        <Sparkles className="w-4 h-4 text-amber-300" />
                         <span className="hidden sm:inline">AI Pitch Kit</span>
                       </button>
 
                       {intern.status === 'Closed' ? (
-                        <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                        <span className="flex-1 py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-zinc-400 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
                           <span>Applications Closed</span>
                         </span>
                       ) : (
@@ -1293,7 +1297,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                           href={intern.applyUrl || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-md"
+                          className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
                         >
                           <span>Apply Official</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1311,16 +1315,18 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── SECTION 3: ADVANCED SQUAD MATCHER ────────────────────────── */}
       {activeTabMode === 'squads' && (
         <div className="space-y-6">
-          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-black/60 shadow-xl space-y-6">
+          <div className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-[#090D14] shadow-xl space-y-6 relative">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-black uppercase tracking-wider">
-                  <Users className="w-3.5 h-3.5" /> Multi-Campus Squad Intelligence Engine
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-mono uppercase tracking-wider">
+                  <Users className="w-3.5 h-3.5 text-zinc-400" /> Multi-Campus Squad Intelligence Engine
                 </div>
                 <h2 className="text-2xl sm:text-4xl font-black text-white">
                   Advanced Team Search & Recruitment
                 </h2>
-                <p className="text-gray-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                <p className="text-zinc-400 text-xs sm:text-sm max-w-2xl leading-relaxed">
                   Connect complementary skillsets across GPREC & Ashoka College. Recruit developers, UI/UX designers, and ML engineers or join an active squad with 1 click.
                 </p>
               </div>
@@ -1328,23 +1334,23 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
               <div className="flex flex-wrap gap-2.5">
                 <button
                   onClick={() => setIsSquadModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-xs flex items-center gap-1.5 shadow-md hover:scale-[1.02] transition-transform cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" /> + Post Open Squad
                 </button>
 
                 <button
                   onClick={() => setIsFreeAgentModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/15 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <UserCheck className="w-4 h-4" /> + Join as Free Agent
+                  <UserCheck className="w-4 h-4 text-zinc-300" /> + Join as Free Agent
                 </button>
 
                 <button
                   onClick={handleRunAiSmartMatch}
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-brand-teal border border-brand-teal/40 font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/15 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4" /> AI Smart Match
+                  <Sparkles className="w-4 h-4 text-amber-300" /> AI Smart Match
                 </button>
               </div>
             </div>
@@ -1352,8 +1358,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             <div className="flex items-center gap-2 border-t border-white/10 pt-4 overflow-x-auto custom-scrollbar">
               <button
                 onClick={() => setSquadViewTab('teams')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
-                  squadViewTab === 'teams' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-400 hover:text-white bg-white/5'
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  squadViewTab === 'teams' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-white bg-white/[0.03]'
                 }`}
               >
                 <Users className="w-3.5 h-3.5" /> 🛡️ Open Squads Seeking Members ({squadPosts.length})
@@ -1361,8 +1367,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
               <button
                 onClick={() => setSquadViewTab('freeAgents')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
-                  squadViewTab === 'freeAgents' ? 'bg-brand-teal text-black shadow-md font-black' : 'text-gray-400 hover:text-white bg-white/5'
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  squadViewTab === 'freeAgents' ? 'bg-white text-black shadow-md font-black' : 'text-zinc-400 hover:text-white bg-white/[0.03]'
                 }`}
               >
                 <UserCheck className="w-3.5 h-3.5" /> 🌟 Free Agent Talent Pool ({freeAgents.length})
@@ -1373,8 +1379,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   setSquadViewTab('aiMatch');
                   if (!aiMatchResult) handleRunAiSmartMatch();
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
-                  squadViewTab === 'aiMatch' ? 'bg-gradient-to-r from-brand-pink to-brand-purple text-white shadow-md' : 'text-gray-400 hover:text-white bg-white/5'
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  squadViewTab === 'aiMatch' ? 'bg-white text-black shadow-md font-bold' : 'text-zinc-400 hover:text-white bg-white/[0.03]'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" /> 🤖 AI Squad Matcher
@@ -1383,16 +1389,16 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
           </div>
 
           {/* Squad Filters */}
-          <div className="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
+          <div className="p-5 rounded-2xl bg-[#090D14] border border-white/10 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative md:col-span-1">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                 <input
                   type="text"
                   value={squadSearchQuery}
                   onChange={(e) => setSquadSearchQuery(e.target.value)}
                   placeholder="Search by skill, role, team, college..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0E131F] border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
@@ -1431,55 +1437,55 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredSquadPosts.map((sq) => {
                 const waLink = sq.contactWhatsapp 
-                  ? `https://wa.me/${sq.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${sq.authorName}, I saw your squad post on Vyomra for "${sq.hackathonTitle}". I'd love to join your team!`)}`
+                  ? `https://wa.me/${sq.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${sq.authorName}, I saw your squad post on Lumixora for "${sq.hackathonTitle}". I'd love to join your team!`)}`
                   : null;
 
                 return (
                   <div
                     key={sq.id}
-                    className="glass-panel p-6 rounded-3xl border border-white/10 hover:border-purple-500/50 hover:bg-white/[0.04] transition-all flex flex-col justify-between space-y-4 group shadow-lg"
+                    className="p-6 rounded-2xl border border-white/10 hover:border-white/25 bg-[#090D14] transition-all flex flex-col justify-between space-y-4 group shadow-xl"
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <span className="px-2.5 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-[10px] font-black uppercase tracking-wider">
+                          <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300 text-[10px] font-mono font-bold uppercase tracking-wider">
                             🏆 {sq.hackathonTitle}
                           </span>
-                          <h3 className="text-lg font-black text-white mt-2 group-hover:text-purple-300 transition-colors">
+                          <h3 className="text-lg font-black text-white mt-2 group-hover:text-zinc-200 transition-colors">
                             {sq.teamName ? `Team: ${sq.teamName}` : `Squad by ${sq.authorName}`}
                           </h3>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-black text-purple-300 shrink-0">
-                          ⚡ {sq.teamSize}
+                        <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs font-mono font-bold text-zinc-300 shrink-0">
+                          {sq.teamSize}
                         </span>
                       </div>
 
-                      <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
+                      <div className="p-3.5 rounded-xl bg-[#0E131F] border border-white/5 space-y-1.5">
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-400 font-semibold shrink-0">🎯 Roles:</span>
-                          <span className="font-extrabold text-amber-300">{sq.requiredRoles}</span>
+                          <span className="text-zinc-400 font-mono font-semibold shrink-0">🎯 Roles:</span>
+                          <span className="font-extrabold text-white">{sq.requiredRoles}</span>
                         </div>
                         {sq.skillsRequired && (
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="text-gray-400 font-semibold shrink-0">🛠️ Skills:</span>
-                            <span className="text-gray-300 font-mono text-[11px]">{sq.skillsRequired}</span>
+                            <span className="text-zinc-400 font-mono font-semibold shrink-0">🛠️ Skills:</span>
+                            <span className="text-zinc-300 font-mono text-[11px]">{sq.skillsRequired}</span>
                           </div>
                         )}
                       </div>
 
-                      <p className="text-gray-300 text-xs leading-relaxed line-clamp-3">
+                      <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">
                         {sq.description || 'Looking for skilled developers and UI/UX designers to collaborate, prototype, and submit a winning hackathon solution.'}
                       </p>
                     </div>
 
                     <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-purple-600/30 border border-purple-500/30 flex items-center justify-center font-black text-brand-teal text-sm">
+                        <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-white text-sm">
                           {sq.authorName?.[0] || 'S'}
                         </div>
                         <div>
                           <span className="block font-bold text-white text-xs">{sq.authorName}</span>
-                          <span className="text-[11px] text-gray-400">🏛️ {sq.authorCollege}</span>
+                          <span className="text-[11px] text-zinc-400 font-mono">🏛️ {sq.authorCollege}</span>
                         </div>
                       </div>
 
@@ -1488,7 +1494,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                           href={waLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                          className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                         >
                           <Phone className="w-3.5 h-3.5" />
                           <span>WhatsApp</span>
@@ -1496,7 +1502,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                       ) : (
                         <a
                           href={`mailto:${sq.contactEmail || sq.authorEmail}`}
-                          className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
+                          className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/15 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Mail className="w-3.5 h-3.5" />
                           <span>Email Lead</span>
@@ -1513,42 +1519,42 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredFreeAgents.map((fa) => {
                 const waLink = fa.contactWhatsapp 
-                  ? `https://wa.me/${fa.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${fa.authorName}, I saw your Free Agent profile on Vyomra. We would love to invite you to our hackathon team!`)}`
+                  ? `https://wa.me/${fa.contactWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${fa.authorName}, I saw your Free Agent profile on Lumixora. We would love to invite you to our hackathon team!`)}`
                   : null;
 
                 return (
                   <div
                     key={fa.id}
-                    className="glass-panel p-6 rounded-3xl border border-white/10 hover:border-brand-teal/50 transition-all flex flex-col justify-between space-y-4 group shadow-md"
+                    className="p-6 rounded-2xl border border-white/10 hover:border-white/25 bg-[#090D14] transition-all flex flex-col justify-between space-y-4 group shadow-xl"
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-10 h-10 rounded-2xl bg-brand-teal/20 border border-brand-teal/30 flex items-center justify-center font-black text-brand-teal text-base">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-white text-base">
                             {fa.authorName?.[0] || 'S'}
                           </div>
                           <div>
                             <h3 className="font-extrabold text-white text-sm">{fa.authorName}</h3>
-                            <span className="text-[11px] text-gray-400">🏛️ {fa.authorCollege}</span>
+                            <span className="text-[11px] text-zinc-400 font-mono">🏛️ {fa.authorCollege}</span>
                           </div>
                         </div>
-                        <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-extrabold text-emerald-400">
+                        <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono font-bold text-emerald-400">
                           🟢 Available
                         </span>
                       </div>
 
-                      <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
-                        <p className="text-xs font-bold text-brand-teal">
+                      <div className="p-3 rounded-xl bg-[#0E131F] border border-white/5 space-y-1.5">
+                        <p className="text-xs font-bold text-white">
                           🚀 {fa.primaryRole}
                         </p>
-                        <p className="text-[11px] text-gray-300 font-mono line-clamp-2">
+                        <p className="text-[11px] text-zinc-300 font-mono line-clamp-2">
                           🛠️ {fa.skillsText}
                         </p>
                       </div>
 
                       {fa.targetHackathons && (
-                        <p className="text-[11px] text-gray-400">
-                          🎯 <strong className="text-gray-300">Targeting:</strong> {fa.targetHackathons}
+                        <p className="text-[11px] text-zinc-400 font-mono">
+                          🎯 <strong className="text-zinc-300">Targeting:</strong> {fa.targetHackathons}
                         </p>
                       )}
                     </div>
@@ -1559,7 +1565,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                           href={fa.portfolioLink.startsWith('http') ? fa.portfolioLink : `https://${fa.portfolioLink}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-brand-teal hover:underline flex items-center gap-1 font-semibold"
+                          className="text-xs text-zinc-300 hover:text-white hover:underline flex items-center gap-1 font-mono font-semibold"
                         >
                           <Code2 className="w-3.5 h-3.5" /> Portfolio
                         </a>
@@ -1570,7 +1576,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                           href={waLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-1.5 rounded-xl bg-brand-teal hover:bg-brand-teal/90 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-sm"
+                          className="px-4 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                         >
                           <UserPlus className="w-3.5 h-3.5" /> Recruit to Team
                         </a>
@@ -1583,13 +1589,13 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
           )}
 
           {squadViewTab === 'aiMatch' && (
-            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6">
+            <div className="p-6 sm:p-8 rounded-2xl bg-[#090D14] border border-white/10 space-y-6 shadow-xl">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl sm:text-2xl font-black text-white">
                     Personalized Squad Recommendations for {cleanUserName}
                   </h3>
-                  <p className="text-gray-400 text-xs">
+                  <p className="text-zinc-400 text-xs">
                     AI analyzes your branch ({user?.department || 'CSE'}), campus ({userCollege}), and current team gaps to match you with top squads.
                   </p>
                 </div>
@@ -1597,16 +1603,16 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 <button
                   onClick={handleRunAiSmartMatch}
                   disabled={aiMatching}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-pink to-brand-purple text-white font-extrabold text-xs flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer shadow-lg shrink-0"
+                  className="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shrink-0 disabled:opacity-50"
                 >
-                  {aiMatching ? <Sparkles className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                  {aiMatching ? <Sparkles className="w-4 h-4 animate-spin text-black" /> : <Zap className="w-4 h-4 text-black" />}
                   <span>{aiMatching ? 'Matching Algorithms...' : 'Re-Run AI Match'}</span>
                 </button>
               </div>
 
               {aiMatchResult && (
-                <div className="p-6 rounded-2xl bg-black/50 border border-brand-pink/30 space-y-4">
-                  <div className="text-gray-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-mono bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                <div className="p-5 rounded-2xl bg-[#0E131F] border border-white/10 space-y-4">
+                  <div className="text-zinc-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-sans bg-white/[0.02] p-4 rounded-xl border border-white/5">
                     {aiMatchResult}
                   </div>
                 </div>
@@ -1619,54 +1625,54 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── MODAL 1: AI Internship Recruiter Pitch & Cover Letter ──────── */}
       {isInternshipAiModalOpen && aiSelectedInternship && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={(e) => { if (e.target === e.currentTarget) setIsInternshipAiModalOpen(false); }}
         >
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-panel p-6 sm:p-8 rounded-3xl border border-white/15 bg-gradient-to-b from-[#111122] to-[#0c0c14] shadow-2xl custom-scrollbar space-y-6">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/15 bg-[#090D14] p-6 sm:p-8 text-white shadow-2xl custom-scrollbar space-y-6">
             <button
               onClick={() => setIsInternshipAiModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-teal/10 border border-brand-teal/30 text-brand-teal text-xs font-black uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" /> AI Recruiter Application Kit
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-mono uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-zinc-400" /> AI Recruiter Application Kit
               </div>
               <h2 className="text-2xl font-black text-white">
-                Application Kit for <span className="text-brand-teal">{aiSelectedInternship.company}</span>
+                Application Kit for <span className="text-zinc-300">{aiSelectedInternship.company}</span>
               </h2>
-              <p className="text-gray-400 text-xs">
+              <p className="text-zinc-400 text-xs font-mono">
                 Role: {aiSelectedInternship.title} | Stipend: {aiSelectedInternship.stipend}
               </p>
             </div>
 
             <div className="space-y-4 pt-2">
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Your Core Skills & Projects</label>
+                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Your Core Skills & Projects</label>
                 <input
                   type="text"
                   value={aiInternSkills}
                   onChange={(e) => setAiInternSkills(e.target.value)}
                   placeholder="e.g. Java, Python, React, Data Structures, FastAPI"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <button
                 onClick={handleGenerateInternshipPitch}
                 disabled={aiInternGenerating}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-50"
               >
                 {aiInternGenerating ? (
                   <>
-                    <Sparkles className="w-4 h-4 animate-spin" />
+                    <Sparkles className="w-4 h-4 animate-spin text-black" />
                     <span>Synthesizing Tailored Pitch & Technical Questions...</span>
                   </>
                 ) : (
                   <>
-                    <Briefcase className="w-4 h-4" />
+                    <Briefcase className="w-4 h-4 text-black" />
                     <span>Generate Cold Email, Resume Bullets & Top 5 Questions</span>
                   </>
                 )}
@@ -1674,8 +1680,8 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             </div>
 
             {aiInternResult && (
-              <div className="p-5 rounded-2xl bg-black/50 border border-brand-teal/30 space-y-3">
-                <div className="text-gray-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-mono bg-white/[0.02] p-4 rounded-xl border border-white/5">
+              <div className="p-5 rounded-2xl bg-[#0E131F] border border-white/10 space-y-3">
+                <div className="text-zinc-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-sans bg-white/[0.02] p-4 rounded-xl border border-white/5">
                   {aiInternResult}
                 </div>
               </div>
@@ -1687,61 +1693,61 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── MODAL 2: AI Hackathon Co-Pilot & Project Ideator ─────────── */}
       {isAiModalOpen && aiSelectedHackathon && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={(e) => { if (e.target === e.currentTarget) setIsAiModalOpen(false); }}
         >
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-panel p-6 sm:p-8 rounded-3xl border border-white/15 bg-gradient-to-b from-[#111122] to-[#0c0c14] shadow-2xl custom-scrollbar space-y-6">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/15 bg-[#090D14] p-6 sm:p-8 text-white shadow-2xl custom-scrollbar space-y-6">
             <button
               onClick={() => setIsAiModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" /> Vyomra AI Hackathon Co-Pilot
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-xs font-mono uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Lumixora AI Hackathon Co-Pilot
               </div>
               <h2 className="text-2xl font-black text-white">
-                Winning Project Ideator for <span className="text-amber-300">{aiSelectedHackathon.title}</span>
+                Winning Strategy for <span className="text-zinc-300">{aiSelectedHackathon.title}</span>
               </h2>
             </div>
 
             <div className="space-y-4 pt-2">
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Target Track / Theme</label>
+                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Target Track / Theme</label>
                 <input
                   type="text"
                   value={aiTargetTrack}
                   onChange={(e) => setAiTargetTrack(e.target.value)}
                   placeholder="e.g. Generative AI in Healthcare, Smart Campus"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Your Team's Preferred Tech Stack</label>
+                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase font-mono tracking-wider">Your Team's Preferred Tech Stack</label>
                 <input
                   type="text"
                   value={aiTechStack}
                   onChange={(e) => setAiTechStack(e.target.value)}
                   placeholder="e.g. React, Node.js, Python, Supabase, Tailwind, Gemini"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <button
                 onClick={handleGenerateAiIdea}
                 disabled={aiGenerating}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-50"
               >
                 {aiGenerating ? 'Generating Strategy...' : 'Generate Winning Pitch & Roadmap'}
               </button>
             </div>
 
             {aiResult && (
-              <div className="p-5 rounded-2xl bg-black/50 border border-amber-400/30 space-y-3">
-                <div className="text-gray-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-mono bg-white/[0.02] p-4 rounded-xl border border-white/5">
+              <div className="p-5 rounded-2xl bg-[#0E131F] border border-white/10 space-y-3">
+                <div className="text-zinc-200 text-xs leading-relaxed space-y-2 whitespace-pre-wrap font-sans bg-white/[0.02] p-4 rounded-xl border border-white/5">
                   {aiResult}
                 </div>
               </div>
@@ -1753,74 +1759,74 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── MODAL 3: Create Squad Post Modal ────────────────────────── */}
       {isSquadModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={(e) => { if (e.target === e.currentTarget) setIsSquadModalOpen(false); }}
         >
-          <div className="relative w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl border border-white/15 bg-gradient-to-b from-[#111122] to-[#0c0c14] shadow-2xl space-y-6">
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-[#090D14] p-6 sm:p-8 text-white shadow-2xl space-y-6">
             <button
               onClick={() => setIsSquadModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <h2 className="text-2xl font-black text-white flex items-center gap-2">
-              <Users className="w-6 h-6 text-brand-teal" /> Post Open Squad Requirement
+              <Users className="w-6 h-6 text-zinc-300" /> Post Open Squad Requirement
             </h2>
 
             <form onSubmit={handlePostSquad} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Target Hackathon</label>
+                <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">Target Hackathon</label>
                 <input
                   type="text"
                   required
                   value={squadForm.hackathonTitle}
                   onChange={(e) => setSquadForm(prev => ({ ...prev, hackathonTitle: e.target.value }))}
                   placeholder="e.g. Smart India Hackathon (SIH)"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1.5">Roles Needed</label>
+                  <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">Roles Needed</label>
                   <input
                     type="text"
                     required
                     value={squadForm.requiredRoles}
                     onChange={(e) => setSquadForm(prev => ({ ...prev, requiredRoles: e.target.value }))}
                     placeholder="e.g. UI/UX Designer & Python Dev"
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1.5">WhatsApp Number</label>
+                  <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">WhatsApp Number</label>
                   <input
                     type="text"
                     required
                     value={squadForm.contactWhatsapp}
                     onChange={(e) => setSquadForm(prev => ({ ...prev, contactWhatsapp: e.target.value }))}
                     placeholder="e.g. 919346476055"
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Description & Project Plan</label>
+                <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">Description & Project Plan</label>
                 <textarea
                   rows={3}
                   value={squadForm.description}
                   onChange={(e) => setSquadForm(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Describe your idea or team workflow..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                className="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
               >
                 <Send className="w-4 h-4" /> Publish Squad Requirement
               </button>
@@ -1832,61 +1838,61 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── MODAL 4: Free Agent Profile Modal ────────────────────────── */}
       {isFreeAgentModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={(e) => { if (e.target === e.currentTarget) setIsFreeAgentModalOpen(false); }}
         >
-          <div className="relative w-full max-w-lg glass-panel p-6 sm:p-8 rounded-3xl border border-white/15 bg-gradient-to-b from-[#111122] to-[#0c0c14] shadow-2xl space-y-6">
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-[#090D14] p-6 sm:p-8 text-white shadow-2xl space-y-6">
             <button
               onClick={() => setIsFreeAgentModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <h2 className="text-2xl font-black text-white flex items-center gap-2">
-              <UserCheck className="w-6 h-6 text-brand-teal" /> Join as Free Agent
+              <UserCheck className="w-6 h-6 text-zinc-300" /> Join as Free Agent
             </h2>
 
             <form onSubmit={handlePostFreeAgent} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Primary Role</label>
+                <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">Primary Role</label>
                 <input
                   type="text"
                   required
                   value={freeAgentForm.primaryRole}
                   onChange={(e) => setFreeAgentForm(prev => ({ ...prev, primaryRole: e.target.value }))}
                   placeholder="e.g. Frontend Developer (React / Next.js)"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">Top Skills</label>
+                <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">Top Skills</label>
                 <input
                   type="text"
                   required
                   value={freeAgentForm.skillsText}
                   onChange={(e) => setFreeAgentForm(prev => ({ ...prev, skillsText: e.target.value }))}
                   placeholder="e.g. React, Tailwind, Python, FastAPI"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-300 mb-1.5">WhatsApp Number</label>
+                <label className="block text-xs font-bold uppercase font-mono text-zinc-300 mb-1.5">WhatsApp Number</label>
                 <input
                   type="text"
                   required
                   value={freeAgentForm.contactWhatsapp}
                   onChange={(e) => setFreeAgentForm(prev => ({ ...prev, contactWhatsapp: e.target.value }))}
                   placeholder="e.g. 919346476055"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-white/30"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                className="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
               >
                 <UserCheck className="w-4 h-4" /> Publish Free Agent Profile
               </button>
@@ -1898,30 +1904,30 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
       {/* ── MODAL 5: Post Opportunity / Campus Hackathon / Internship ── */}
       {isCreateModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           onClick={(e) => { if (e.target === e.currentTarget) setIsCreateModalOpen(false); }}
         >
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-panel p-6 sm:p-8 rounded-3xl border border-white/15 bg-gradient-to-b from-[#111122] to-[#0c0c14] shadow-2xl custom-scrollbar space-y-6">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/15 bg-[#090D14] p-6 sm:p-8 text-white shadow-2xl custom-scrollbar space-y-6">
             <button
               onClick={() => setIsCreateModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-5 right-5 text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-1">
               <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                <Plus className="w-6 h-6 text-brand-teal" /> Post Opportunity / Campus Event
+                <Plus className="w-6 h-6 text-zinc-300" /> Post Opportunity / Campus Event
               </h2>
-              <p className="text-gray-400 text-xs">
-                Publish internal college hackathons, technical fest challenges, or campus hiring drives to Vyomra.
+              <p className="text-zinc-400 text-xs">
+                Publish internal college hackathons, technical fest challenges, or campus hiring drives to Lumixora.
               </p>
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setCreateType('hackathon')}
                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                    createType === 'hackathon' ? 'bg-amber-400 text-black shadow-md scale-[1.02]' : 'bg-white/5 text-gray-400 hover:text-white'
+                    createType === 'hackathon' ? 'bg-white text-black shadow-md font-bold' : 'bg-white/5 text-zinc-400 hover:text-white'
                   }`}
                 >
                   🏆 Campus Hackathon / Fest
@@ -1930,7 +1936,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                   type="button"
                   onClick={() => setCreateType('internship')}
                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                    createType === 'internship' ? 'bg-brand-teal text-black shadow-md scale-[1.02]' : 'bg-white/5 text-gray-400 hover:text-white'
+                    createType === 'internship' ? 'bg-white text-black shadow-md font-bold' : 'bg-white/5 text-zinc-400 hover:text-white'
                   }`}
                 >
                   💼 SDE Internship
@@ -2115,7 +2121,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:opacity-95 transition-opacity"
+                  className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
                 >
                   <Plus className="w-4 h-4" /> Publish College Hackathon
                 </button>
@@ -2145,7 +2151,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                       required
                       value={newInternship.company}
                       onChange={(e) => setNewInternship(prev => ({ ...prev, company: e.target.value }))}
-                      placeholder="e.g. Vyomra Labs / Partner Startup"
+                      placeholder="e.g. Lumixora Labs / Partner Startup"
                       className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-brand-teal"
                     />
                   </div>
@@ -2239,7 +2245,7 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-brand-teal to-brand-blue text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:opacity-95 transition-opacity"
+                  className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
                 >
                   <Plus className="w-4 h-4" /> Publish Internship Drive
                 </button>
@@ -2247,6 +2253,15 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
             )}
           </div>
         </div>
+      )}
+
+      {/* ── MODAL 5: AI Winning Pitch Deck & Judge Defense Generator ── */}
+      {pitchDeckHackathon && (
+        <HackathonPitchDeckModal
+          hackathon={pitchDeckHackathon}
+          onClose={() => setPitchDeckHackathon(null)}
+          user={user}
+        />
       )}
 
     </div>
