@@ -13,6 +13,7 @@ export const ALL_PORTALS = [
   { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', category: 'academics', tags: ['academics', 'grades', 'cgpa'] },
   { id: 'doubts', label: 'Doubt Solver (AI 24/7)', category: 'academics', tags: ['academics', 'exams', 'doubts', 'ai'] },
   { id: 'learning-hub', label: 'Learning & Video Hub', category: 'academics', tags: ['academics', 'notes', 'videos', 'study'] },
+  { id: 'previous-papers', label: 'Previous Papers & ML Predictor', category: 'academics', tags: ['academics', 'exams', 'predictor', 'ml', 'previous-papers', 'papers', 'all'] },
   { id: 'test-portal', label: 'Tests & Assessment Hub', category: 'academics', tags: ['academics', 'exams', 'assessment', 'placement'] },
   { id: 'attendance', label: 'Attendance Tracker', category: 'academics', tags: ['academics', 'college', 'tracking'] },
 

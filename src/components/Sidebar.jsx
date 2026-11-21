@@ -15,6 +15,7 @@ import {
 const TAB_TO_WORKSPACE = {
   'dashboard': 'academics',
   'learning-hub': 'academics',
+  'previous-papers': 'academics',
   'doubts': 'academics',
   'my-academics': 'academics',
   'courses': 'academics',
@@ -204,6 +205,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       items: [
         { id: 'dashboard', label: 'Omiverse Hub', icon: LayoutDashboard },
         { id: 'learning-hub', label: 'Notes & Curriculum', icon: BookOpen },
+        { id: 'previous-papers', label: 'Previous Papers & Predictor', icon: FileText, badge: 'ML 🧠' },
         { id: 'doubts', label: 'AI Doubt Solver', icon: HelpCircle },
         { id: 'my-academics', label: 'My Academics (SGPA)', icon: GraduationCap },
         { id: 'courses', label: 'Courses & Diplomas', icon: BookOpen },
@@ -279,8 +281,8 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       sections = sections.map(sec => ({
         ...sec,
         items: sec.items.filter(item => {
-          // Always keep dashboard, community, and support
-          if (item.id === 'dashboard' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin') {
+          // Always keep dashboard, previous-papers, community, and support
+          if (item.id === 'dashboard' || item.id === 'previous-papers' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin') {
             return true;
           }
           return userActivePortals.has(item.id);

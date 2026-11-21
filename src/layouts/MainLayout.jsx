@@ -33,6 +33,7 @@ const QUICK_FEATURES = [
   { id: 'dashboard', label: 'Omiverse Hub', icon: Home, highlight: true },
   { id: 'coding-practice', label: 'Codeverse', icon: Code, highlight: true },
   { id: 'learning-hub', label: 'Learnverse', icon: BookOpen },
+  { id: 'previous-papers', label: 'Papers & Predictor', icon: FileText, highlight: true },
   { id: 'projects', label: 'Buildverse', icon: Rocket },
   { id: 'ai-commander', label: 'Placement', icon: Briefcase },
   { id: 'resume', label: 'AI Resume PDF', icon: FileText },
@@ -491,7 +492,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     const defaultSupport = isGprecUser ? ['contact', 'report-bug'] : ['contribute', 'contact', 'report-bug'];
     const defaultPortals = isGprecUser
       ? ['ai-commander', 'interview', 'coding-practice', ...defaultSupport]
-      : ['dashboard', 'learning-hub', 'doubts', 'ai-commander', 'interview', 'coding-practice', ...defaultSupport];
+      : ['dashboard', 'learning-hub', 'previous-papers', 'doubts', 'ai-commander', 'interview', 'coding-practice', ...defaultSupport];
     const initialPortals = rawPortals.length > 0 
       ? Array.from(new Set([...rawPortals, ...defaultSupport]))
       : defaultPortals;
@@ -2188,7 +2189,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
                           type="button"
                           onClick={() => setEditActivePortals(isGprecSub 
                             ? ['ai-commander', 'interview', 'coding-practice', 'contact', 'report-bug'] 
-                            : ['dashboard', 'learning-hub', 'doubts', 'ai-commander', 'interview', 'coding-practice', 'contribute', 'contact', 'report-bug']
+                            : ['dashboard', 'learning-hub', 'previous-papers', 'doubts', 'ai-commander', 'interview', 'coding-practice', 'contribute', 'contact', 'report-bug']
                           )}
                           className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
                         >

@@ -51,6 +51,7 @@ const ResumeCreator = lazy(() => import('./pages/ResumeCreator'));
 const TeamWorkspacePortal = lazy(() => import('./pages/TeamWorkspacePortal'));
 const OurTeamPortal = lazy(() => import('./pages/OurTeamPortal'));
 const AlumniReferralBridge = lazy(() => import('./pages/AlumniReferralBridge'));
+const PreviousPapersPortal = lazy(() => import('./pages/PreviousPapersPortal'));
 const CompanyPlacementPapers = lazy(() => import('./pages/CompanyPlacementPapers'));
 const AptitudeArena = lazy(() => import('./components/AptitudeArena'));
 import PlatformTourModal from './components/PlatformTourModal';
@@ -1299,9 +1300,10 @@ function App() {
         case 'assignments':
         case 'tests-assignments':
           return <TestPortal user={user} setActiveTab={handleTabChange} />;
+        case 'previous-papers':
         case 'company-papers':
         case 'placement-papers':
-          return <CompanyPlacementPapers user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
+          return <PreviousPapersPortal user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
         case 'aptitude-arena':
         case 'aptitude':
           return <AptitudeArena user={user} isFounder={user?.role === "founder"} />;
@@ -1415,10 +1417,11 @@ function App() {
         return <DoubtSolving user={user} />;
       case 'notes':
         return <NotesPlatform user={user} setActiveTab={handleTabChange} />;
+      case 'previous-papers':
       case 'drive-papers':
       case 'placement-papers':
       case 'company-papers':
-        return <CompanyPlacementPapers user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
+        return <PreviousPapersPortal user={user} setActiveTab={handleTabChange} setSelectedProblem={setSelectedProblem} />;
       case 'videos':
       case 'video-lectures':
       case 'video-portal':
