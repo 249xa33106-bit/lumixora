@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
+import {
+  PlusCircle, Trash2, Edit3, X,
   Award, CheckCircle2, Clock, Calendar, FileText, Send, Link2, 
   Sparkles, Shield, User, Users, ArrowLeft, ArrowRight, ExternalLink, Copy, Check,
   AlertCircle, Lock, ChevronRight, Video, Download, RefreshCw,
@@ -16,28 +17,9 @@ import { notifyFounder, sendInternPasscodeEmail } from '../services/founderNotif
 import { isFounderEmail } from '../utils/authSecurity';
 
 // ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
-export const INTERN_ROLES = [
-  {
-    id: 'software_testing',
-    title: 'Software Testing & QA',
-    shortTitle: 'Software Testing',
-    count: 5,
-    color: 'emerald',
-    accent: '#10b981',
-    badge: '5 Interns Selected',
-    borderClass: 'border-emerald-500/30',
-    bgBadge: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
-    gradient: 'from-emerald-500 to-teal-600',
-    leadName: 'Shaik Sowban',
-    leadRole: 'Founder & Chief Architect',
-    leadAvatar: '/founder_sowban.png',
-    leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-1726',
-    demoName: 'Bosle TulasiLakshmi',
-    college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    branch: 'B.Tech • 3rd Year',
-    summary: 'Ensuring zero-defect production reliability via automated E2E tests, API validation, and cross-browser regression suites.',
-    deliverables: [
+// ── Suggested Curricular Templates for Founder to Import On-Demand ──
+export const RECOMMENDED_ROLE_TEMPLATES = {
+  software_testing: [
       { 
         id: 'st-w1', 
         week: 'Week 1', 
@@ -110,29 +92,8 @@ export const INTERN_ROLES = [
         score: null, 
         feedback: null 
       }
-    ]
-  },
-  {
-    id: 'research',
-    title: 'Research & Competitive Intelligence',
-    shortTitle: 'Research',
-    count: 6,
-    color: 'cyan',
-    accent: '#06b6d4',
-    badge: '6 Interns Selected',
-    borderClass: 'border-cyan-500/30',
-    bgBadge: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30',
-    gradient: 'from-cyan-500 to-blue-600',
-    leadName: 'Shaik Sowban',
-    leadRole: 'Founder & Chief Architect',
-    leadAvatar: '/founder_sowban.png',
-    leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-4783',
-    demoName: 'Lakshmi Kushala',
-    college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    branch: 'B.Tech CSE (AIML) • 3rd Year',
-    summary: 'Conducting in-depth EdTech market intelligence, competitive moats analysis, and prospective student field interviews.',
-    deliverables: [
+    ],
+  research: [
       { 
         id: 'rs-w1', 
         week: 'Week 1', 
@@ -205,29 +166,8 @@ export const INTERN_ROLES = [
         score: null, 
         feedback: null 
       }
-    ]
-  },
-  {
-    id: 'marketing',
-    title: 'Growth Marketing & Brand Strategy',
-    shortTitle: 'Marketing',
-    count: 6,
-    color: 'violet',
-    accent: '#8b5cf6',
-    badge: '6 Interns Selected',
-    borderClass: 'border-violet-500/30',
-    bgBadge: 'bg-violet-500/15 text-violet-300 border border-violet-500/30',
-    gradient: 'from-purple-500 to-indigo-600',
-    leadName: 'Shaik Sowban',
-    leadRole: 'Founder & Chief Architect',
-    leadAvatar: '/founder_sowban.png',
-    leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-4734',
-    demoName: 'Mohammed Nazia Tehaseen',
-    college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    branch: 'B.Tech CSM • 3rd Year',
-    summary: 'Driving viral campus loops, student ambassador network expansion, launch funnels, and organic community blitz.',
-    deliverables: [
+    ],
+  marketing: [
       { 
         id: 'mk-w1', 
         week: 'Week 1', 
@@ -300,29 +240,8 @@ export const INTERN_ROLES = [
         score: null, 
         feedback: null 
       }
-    ]
-  },
-  {
-    id: 'content_creation',
-    title: 'Content Creation & Visual Media',
-    shortTitle: 'Content Creation',
-    count: 3,
-    color: 'pink',
-    accent: '#ec4899',
-    badge: '3 Interns Selected',
-    borderClass: 'border-pink-500/30',
-    bgBadge: 'bg-pink-500/15 text-pink-300 border border-pink-500/30',
-    gradient: 'from-pink-500 to-rose-600',
-    leadName: 'Shaik Sowban',
-    leadRole: 'Founder & Chief Architect',
-    leadAvatar: '/founder_sowban.png',
-    leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-5958',
-    demoName: 'MODALLA SUCHARITHA REDDY',
-    college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    branch: 'B.Tech • 3rd Year',
-    summary: 'Crafting high-impact product explainer videos, technical storytelling, Figma design carousels, and student UI walkthroughs.',
-    deliverables: [
+    ],
+  content_creation: [
       { 
         id: 'cc-w1', 
         week: 'Week 1', 
@@ -396,10 +315,101 @@ export const INTERN_ROLES = [
         feedback: null 
       }
     ]
+};
+
+// ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
+// Allotted tasks start at ZERO ([]) until Founder Shaik Sowban posts tasks
+export const INTERN_ROLES = [
+  {
+    id: 'software_testing',
+    title: 'Software Testing & QA',
+    shortTitle: 'Software Testing',
+    count: 5,
+    color: 'emerald',
+    accent: '#10b981',
+    badge: '5 Interns Selected',
+    borderClass: 'border-emerald-500/30',
+    bgBadge: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+    gradient: 'from-emerald-500 to-teal-600',
+    leadName: 'Shaik Sowban',
+    leadRole: 'Founder & Chief Architect',
+    leadAvatar: '/founder_sowban.png',
+    leadEmail: 'founder@lumixora.com',
+    demoId: 'LMX-B01-1726',
+    demoName: 'Bosle TulasiLakshmi',
+    college: 'G. Pulla Reddy Engineering College (Autonomous)',
+    branch: 'B.Tech • 3rd Year',
+    summary: 'Ensuring zero-defect production reliability via automated E2E tests, API validation, and cross-browser regression suites.',
+    deliverables: []
+  },
+  {
+    id: 'research',
+    title: 'Research & Competitive Intelligence',
+    shortTitle: 'Research',
+    count: 6,
+    color: 'cyan',
+    accent: '#06b6d4',
+    badge: '6 Interns Selected',
+    borderClass: 'border-cyan-500/30',
+    bgBadge: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30',
+    gradient: 'from-cyan-500 to-blue-600',
+    leadName: 'Shaik Sowban',
+    leadRole: 'Founder & Chief Architect',
+    leadAvatar: '/founder_sowban.png',
+    leadEmail: 'founder@lumixora.com',
+    demoId: 'LMX-B01-4783',
+    demoName: 'Lakshmi Kushala',
+    college: 'G. Pulla Reddy Engineering College (Autonomous)',
+    branch: 'B.Tech CSE (AIML) • 3rd Year',
+    summary: 'Conducting in-depth EdTech market intelligence, competitive moats analysis, and prospective student field interviews.',
+    deliverables: []
+  },
+  {
+    id: 'marketing',
+    title: 'Growth Marketing & Brand Strategy',
+    shortTitle: 'Marketing',
+    count: 6,
+    color: 'violet',
+    accent: '#8b5cf6',
+    badge: '6 Interns Selected',
+    borderClass: 'border-violet-500/30',
+    bgBadge: 'bg-violet-500/15 text-violet-300 border border-violet-500/30',
+    gradient: 'from-purple-500 to-indigo-600',
+    leadName: 'Shaik Sowban',
+    leadRole: 'Founder & Chief Architect',
+    leadAvatar: '/founder_sowban.png',
+    leadEmail: 'founder@lumixora.com',
+    demoId: 'LMX-B01-4734',
+    demoName: 'Mohammed Nazia Tehaseen',
+    college: 'G. Pulla Reddy Engineering College (Autonomous)',
+    branch: 'B.Tech CSM • 3rd Year',
+    summary: 'Driving viral campus loops, student ambassador network expansion, launch funnels, and organic community blitz.',
+    deliverables: []
+  },
+  {
+    id: 'content_creation',
+    title: 'Content Creation & Visual Media',
+    shortTitle: 'Content Creation',
+    count: 3,
+    color: 'pink',
+    accent: '#ec4899',
+    badge: '3 Interns Selected',
+    borderClass: 'border-pink-500/30',
+    bgBadge: 'bg-pink-500/15 text-pink-300 border border-pink-500/30',
+    gradient: 'from-pink-500 to-rose-600',
+    leadName: 'Shaik Sowban',
+    leadRole: 'Founder & Chief Architect',
+    leadAvatar: '/founder_sowban.png',
+    leadEmail: 'founder@lumixora.com',
+    demoId: 'LMX-B01-5958',
+    demoName: 'MODALLA SUCHARITHA REDDY',
+    college: 'G. Pulla Reddy Engineering College (Autonomous)',
+    branch: 'B.Tech • 3rd Year',
+    summary: 'Crafting high-impact product explainer videos, technical storytelling, Figma design carousels, and student UI walkthroughs.',
+    deliverables: []
   }
 ];
 
-// The Real 20 Selected Batch 01 Cohort Interns (Direct from Verified Applications Database)
 export const REAL_48_INTERNS = realInternsData;
 export const REAL_SELECTED_INTERNS = realInternsData;
 export const GENERATED_48_INTERNS = realInternsData;
@@ -514,6 +524,35 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const [certQrUrl, setCertQrUrl] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Real Allotted Weekly Tasks (Default is empty [] because Founder has not posted tasks yet)
+  const [allottedTasks, setAllottedTasks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_cohort_allotted_tasks');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  });
+
+  // Persist allotted tasks to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('lumixora_cohort_allotted_tasks', JSON.stringify(allottedTasks));
+    } catch (e) {}
+  }, [allottedTasks]);
+
+  // Founder Shaik Sowban Task Modal State
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [taskForm, setTaskForm] = useState({
+    id: '',
+    roleId: '',
+    week: 'Week 1',
+    sprint: 'Week 1',
+    title: '',
+    description: '',
+    submissionRequirements: 'Google Drive Link, GitHub Repository, or PDF Report',
+    dueDate: '2026-11-28'
+  });
+
   useEffect(() => {
     if (session) {
       // Direct Public Verification Link (Zero Login Required)
@@ -550,6 +589,90 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     }
   }, [session?.id]);
 
+  
+  
+
+    // Active role config (with track curriculum switcher)
+  const activeRole = useMemo(() => {
+    if (viewingRoleId) {
+      return INTERN_ROLES.find(r => r.id === viewingRoleId) || INTERN_ROLES[0];
+    }
+    if (!session) return INTERN_ROLES[0];
+    return INTERN_ROLES.find(r => r.id === session.roleId) || INTERN_ROLES[0];
+  }, [session, viewingRoleId]);
+
+  // Check if active session belongs to Founder Shaik Sowban
+  const isFounder = useMemo(() => {
+    return isInternPortalFounder(session?.email) || isInternPortalFounder(session?.id) || session?.isFounder === true;
+  }, [session]);
+
+  // Tasks allotted specifically for the active track
+  const roleAllottedTasks = useMemo(() => {
+    return allottedTasks.filter(t => t.roleId === activeRole.id || t.roleId === 'all');
+  }, [allottedTasks, activeRole.id]);
+
+  // Handlers for Founder Task Management
+  const handleSaveAllottedTask = (e) => {
+    e.preventDefault();
+    if (!taskForm.title.trim()) return;
+    const taskId = taskForm.id || `task-${Date.now()}`;
+    const targetRoleId = taskForm.roleId || activeRole.id;
+    const newTask = {
+      ...taskForm,
+      id: taskId,
+      roleId: targetRoleId,
+      sprint: taskForm.week || 'Week 1',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    setAllottedTasks(prev => {
+      const existingIdx = prev.findIndex(t => t.id === taskId);
+      if (existingIdx >= 0) {
+        const updated = [...prev];
+        updated[existingIdx] = newTask;
+        return updated;
+      }
+      return [...prev, newTask];
+    });
+    setTaskModalOpen(false);
+    setTaskForm({
+      id: '',
+      roleId: activeRole.id,
+      week: 'Week 1',
+      sprint: 'Week 1',
+      title: '',
+      description: '',
+      submissionRequirements: 'Google Drive Link, GitHub Repository, or PDF Report',
+      dueDate: '2026-11-28'
+    });
+  };
+
+  const handleDeleteTask = (taskId) => {
+    if (window.confirm('Delete this allotted task from the curriculum?')) {
+      setAllottedTasks(prev => prev.filter(t => t.id !== taskId));
+    }
+  };
+
+  const handleImportRecommendedCurriculum = () => {
+    const templateTasks = (RECOMMENDED_ROLE_TEMPLATES[activeRole.id] || []).map(t => ({
+      ...t,
+      roleId: activeRole.id
+    }));
+    if (templateTasks.length === 0) return;
+    if (window.confirm(`Import 6 recommended weekly tasks for ${activeRole.title}? This will publish them as active tasks.`)) {
+      setAllottedTasks(prev => {
+        const nonDupes = prev.filter(t => t.roleId !== activeRole.id);
+        return [...nonDupes, ...templateTasks];
+      });
+    }
+  };
+
+  const handleClearTrackTasks = () => {
+    if (window.confirm(`Clear all allotted tasks for ${activeRole.title}?`)) {
+      setAllottedTasks(prev => prev.filter(t => t.roleId !== activeRole.id));
+    }
+  };
+
   // Real Submissions Handler with PDF, Google Drive & GitHub Support
   const handleDeliverableSubmit = (e) => {
     e.preventDefault();
@@ -558,7 +681,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       return;
     }
 
-    const matchedDeliv = activeRole.deliverables.find(d => d.id === selectedDeliverableId);
+    const matchedDeliv = roleAllottedTasks.find(d => d.id === selectedDeliverableId);
     const newSub = {
       id: `sub-${Date.now()}`,
       deliverableId: selectedDeliverableId,
@@ -597,15 +720,6 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       setInternActiveTab('roadmap');
     }, 1500);
   };
-
-  // Active role config (with track curriculum switcher)
-  const activeRole = useMemo(() => {
-    if (viewingRoleId) {
-      return INTERN_ROLES.find(r => r.id === viewingRoleId) || INTERN_ROLES[0];
-    }
-    if (!session) return INTERN_ROLES[0];
-    return INTERN_ROLES.find(r => r.id === session.roleId) || INTERN_ROLES[0];
-  }, [session, viewingRoleId]);
 
   // Compute a deterministic SHA-256 style fingerprint from session data
   const certSha256 = useMemo(() => {
@@ -829,7 +943,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     setTimeout(() => {
       setAiAuditing(false);
 
-      const milestone = activeRole.deliverables.find(d => d.id === selectedDeliverableId);
+      const milestone = roleAllottedTasks.find(d => d.id === selectedDeliverableId);
       const hasMilestone = Boolean(milestone);
       const pr = (submissionData.prUrl || '').trim();
       const demo = (submissionData.demoUrl || '').trim();
@@ -1281,7 +1395,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
           <button
             onClick={() => {
               setSelectedEvalIntern(session);
-              setSelectedEvalDeliverable(activeRole.deliverables[0]);
+              setSelectedEvalDeliverable(roleAllottedTasks[0] || null);
               setEvaluatorDrawerOpen(true);
             }}
             className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
@@ -1402,157 +1516,318 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'roadmap' && (
         <div className="space-y-4 animate-fade-in">
-          <div className="flex justify-between items-center">
+          {/* Header & Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-black text-white">
-                {activeRole.title} Curriculum Deliverables
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <span>{activeRole.title} Weekly Tasks</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                  {roleAllottedTasks.length} {roleAllottedTasks.length === 1 ? 'Task' : 'Tasks'} Allotted
+                </span>
               </h3>
               <p className="text-xs text-gray-400 mt-0.5">
                 {activeRole.summary}
               </p>
             </div>
-            <button
-              onClick={() => setInternActiveTab('submit')}
-              className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Submit Task</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              {isFounder && (
+                <button
+                  onClick={() => {
+                    setTaskForm({
+                      id: '',
+                      roleId: activeRole.id,
+                      week: `Week ${roleAllottedTasks.length + 1}`,
+                      sprint: `Week ${roleAllottedTasks.length + 1}`,
+                      title: '',
+                      description: '',
+                      submissionRequirements: 'Google Drive Link, GitHub Repository, or PDF Report',
+                      dueDate: '2026-11-28'
+                    });
+                    setTaskModalOpen(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>+ Allot Real Task</span>
+                </button>
+              )}
+              {roleAllottedTasks.length > 0 && (
+                <button
+                  onClick={() => setInternActiveTab('submit')}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Submit Work</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {activeRole.deliverables.map((del, idx) => {
-              const sub = submissions.find(s => s.deliverableId === del.id);
-              return (
-                <div
-                  key={del.id}
-                  className="p-5 rounded-2xl bg-[#0c101c] border border-white/10 hover:border-white/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl"
+          {/* Founder Task Manager Action Bar */}
+          {isFounder && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                    👑 FOUNDER TASK CONTROLS
+                  </span>
+                  <span className="text-xs font-bold text-white">Shaik Sowban</span>
+                </div>
+                <p className="text-[11px] text-gray-300">
+                  Allot real weekly tasks to the <strong className="text-cyan-300">{activeRole.title}</strong> track. Interns will only see tasks you create.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={handleImportRecommendedCurriculum}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="Import the 6 recommended weekly milestones as real tasks"
                 >
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/10 text-gray-300">
-                        Task 0{idx + 1} • {del.sprint}
-                      </span>
-                      {sub?.status === 'approved' ? (
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                          <CheckCheck className="w-3 h-3 text-emerald-400" />
-                          <span>✓ APPROVED & SIGNED</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Load 6-Week Template</span>
+                </button>
+                {roleAllottedTasks.length > 0 && (
+                  <button
+                    onClick={handleClearTrackTasks}
+                    className="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+                    title="Delete all tasks for this track"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Task Deliverables List OR Authentic Empty State */}
+          {roleAllottedTasks.length === 0 ? (
+            <div className="p-10 rounded-3xl bg-[#0c101c] border border-white/10 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 mx-auto flex items-center justify-center">
+                <Clock className="w-7 h-7" />
+              </div>
+              <div className="space-y-1.5 max-w-md mx-auto">
+                <h4 className="text-base font-black text-white">No Weekly Tasks Allotted Yet</h4>
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  Track Lead & Founder <strong className="text-white">Shaik Sowban</strong> has not assigned any tasks for the <strong className="text-cyan-400">{activeRole.title}</strong> track yet.
+                </p>
+                <p className="text-[11px] text-gray-500">
+                  When Week 1 tasks are posted, your deliverables, instructions, and deadlines will appear right here.
+                </p>
+              </div>
+              {isFounder && (
+                <div className="pt-2 flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => {
+                      setTaskForm({
+                        id: '',
+                        roleId: activeRole.id,
+                        week: 'Week 1',
+                        sprint: 'Week 1',
+                        title: '',
+                        description: '',
+                        submissionRequirements: 'Google Drive Link, GitHub Repository, or PDF Report',
+                        dueDate: '2026-11-28'
+                      });
+                      setTaskModalOpen(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-cyan-400/20 cursor-pointer"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span>+ Allot First Task (Week 1)</span>
+                  </button>
+                  <button
+                    onClick={handleImportRecommendedCurriculum}
+                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span>Import 6-Week Template</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {roleAllottedTasks.map((del, idx) => {
+                const sub = submissions.find(s => s.deliverableId === del.id);
+                return (
+                  <div
+                    key={del.id}
+                    className="p-5 rounded-2xl bg-[#0c101c] border border-white/10 hover:border-white/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl"
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/10 text-gray-300">
+                          Task 0{idx + 1} • {del.sprint || del.week}
                         </span>
-                      ) : sub?.status === 'revisions' ? (
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3 text-amber-400" />
-                          <span>⚠ REVISIONS REQUESTED</span>
-                        </span>
-                      ) : sub ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                          ✓ SUBMITTED (UNDER REVIEW)
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-gray-400 border border-white/10">
-                          PENDING SUBMISSION
-                        </span>
+                        {sub?.status === 'approved' ? (
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                            <CheckCheck className="w-3 h-3 text-emerald-400" />
+                            <span>✓ APPROVED & SIGNED</span>
+                          </span>
+                        ) : sub?.status === 'revisions' ? (
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 text-amber-400" />
+                            <span>⚠ REVISIONS REQUESTED</span>
+                          </span>
+                        ) : sub ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                            ✓ SUBMITTED (UNDER REVIEW)
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-gray-400 border border-white/10">
+                            PENDING SUBMISSION
+                          </span>
+                        )}
+
+                        {sub?.score && (
+                          <span className="text-[10px] font-mono font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded">
+                            Score: {sub.score}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="text-sm font-black text-white">{del.title}</h4>
+                      <p className="text-xs text-gray-400 leading-relaxed">{del.description || del.desc}</p>
+                      {del.submissionRequirements && (
+                        <p className="text-[11px] text-cyan-400/80 font-mono">
+                          Format: {del.submissionRequirements}
+                        </p>
                       )}
 
-                      {sub?.score && (
-                        <span className="text-[10px] font-mono font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded">
-                          Score: {sub.score}
-                        </span>
-                      )}
-                    </div>
-
-                    <h4 className="text-sm font-black text-white">{del.title}</h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">{del.desc}</p>
-
-                    {sub ? (
-                      <div className="mt-2 space-y-1.5">
-                        <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-gray-300 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span className="text-gray-300 font-bold">
-                              Submitted on {sub.submittedAt} • {sub.status === 'approved' ? 'Signed off by ' + (sub.leadSignatory || activeRole.leadName) : 'Awaiting ' + activeRole.leadName + ' Attestation'}
-                            </span>
+                      {sub ? (
+                        <div className="mt-2 space-y-1.5">
+                          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-gray-300 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                              <span className="text-gray-300 font-bold">
+                                Submitted on {sub.submittedAt} • {sub.status === 'approved' ? 'Signed off by ' + (sub.leadSignatory || activeRole.leadName) : 'Awaiting ' + activeRole.leadName + ' Attestation'}
+                              </span>
+                            </div>
+                            {sub.driveUrl && (
+                              <div className="text-[10px] text-blue-300 font-mono truncate">
+                                Drive: <a href={sub.driveUrl} target="_blank" rel="noreferrer" className="underline">{sub.driveUrl}</a>
+                              </div>
+                            )}
+                            {sub.githubUrl && (
+                              <div className="text-[10px] text-cyan-300 font-mono truncate">
+                                GitHub: <a href={sub.githubUrl} target="_blank" rel="noreferrer" className="underline">{sub.githubUrl}</a>
+                              </div>
+                            )}
+                            {sub.pdfUrl && (
+                              <div className="text-[10px] text-rose-300 font-mono truncate">
+                                PDF: <a href={sub.pdfUrl} target="_blank" rel="noreferrer" className="underline">{sub.pdfUrl}</a>
+                              </div>
+                            )}
                           </div>
-                          {sub.prUrl && (
-                            <div className="text-[10px] text-cyan-300 font-mono truncate">
-                              PR: <a href={sub.prUrl} target="_blank" rel="noreferrer" className="underline">{sub.prUrl}</a>
+
+                          {sub.feedback && (
+                            <div className="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/20 text-[11px] text-emerald-200 space-y-0.5">
+                              <div className="flex items-center gap-1.5 font-bold text-emerald-400 text-[10px] uppercase tracking-wider">
+                                <MessageSquare className="w-3 h-3" />
+                                <span>Lead Feedback ({sub.leadSignatory || activeRole.leadName}):</span>
+                              </div>
+                              <p className="text-gray-300 italic pl-4">"{sub.feedback}"</p>
                             </div>
                           )}
                         </div>
+                      ) : (
+                        <div className="text-[10px] text-gray-500 mt-1">
+                          Due Date: <span className="font-mono text-gray-400">{del.dueDate}</span>
+                        </div>
+                      )}
+                    </div>
 
-                        {/* Lead Feedback Quote Bubble */}
-                        {sub.feedback && (
-                          <div className="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/20 text-[11px] text-emerald-200 space-y-0.5">
-                            <div className="flex items-center gap-1.5 font-bold text-emerald-400 text-[10px] uppercase tracking-wider">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>Lead Feedback ({sub.leadSignatory || activeRole.leadName}):</span>
-                            </div>
-                            <p className="text-gray-300 italic pl-4">"{sub.feedback}"</p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-[10px] text-gray-500 mt-1">
-                        Due Date: <span className="font-mono text-gray-400">{del.dueDate}</span>
-                      </div>
-                    )}
-                  </div>
+                    <div className="shrink-0 flex items-center gap-2 flex-wrap">
+                      {!sub && (
+                        <button
+                          onClick={() => {
+                            setSelectedDeliverableId(del.id);
+                            setSubmissionData(prev => ({ ...prev, title: del.title }));
+                            setInternActiveTab('submit');
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-bold cursor-pointer transition-all shadow-md shadow-cyan-400/20"
+                        >
+                          Submit Now
+                        </button>
+                      )}
+                      {sub && sub.status !== 'approved' && (
+                        <button
+                          onClick={() => {
+                            setSelectedDeliverableId(del.id);
+                            setSubmissionData({
+                              title: del.title,
+                              driveUrl: sub.driveUrl || '',
+                              githubUrl: sub.githubUrl || sub.prUrl || '',
+                              pdfUrl: sub.pdfUrl || '',
+                              demoUrl: sub.demoUrl || '',
+                              loomUrl: sub.loomUrl || '',
+                              notes: sub.notes || '',
+                              hours: sub.hoursSpent || 15
+                            });
+                            setInternActiveTab('submit');
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition-all"
+                        >
+                          Edit Work
+                        </button>
+                      )}
 
-                  <div className="shrink-0 flex items-center gap-2 flex-wrap">
-                    {!sub && (
+                      {/* Founder Edit & Delete Controls */}
+                      {isFounder && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setTaskForm({
+                                id: del.id,
+                                roleId: del.roleId || activeRole.id,
+                                week: del.week || del.sprint || 'Week 1',
+                                sprint: del.sprint || del.week || 'Week 1',
+                                title: del.title,
+                                description: del.description || del.desc || '',
+                                submissionRequirements: del.submissionRequirements || '',
+                                dueDate: del.dueDate || '2026-11-28'
+                              });
+                              setTaskModalOpen(true);
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                            title="Edit task parameters"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTask(del.id)}
+                            className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold flex items-center transition-all cursor-pointer"
+                            title="Delete this task"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Evaluator Grade Trigger */}
                       <button
                         onClick={() => {
-                          setSelectedDeliverableId(del.id);
-                          setSubmissionData(prev => ({ ...prev, title: del.title }));
-                          setInternActiveTab('submit');
+                          setSelectedEvalIntern(session);
+                          setSelectedEvalDeliverable(del);
+                          setEvaluatorDrawerOpen(true);
                         }}
-                        className="px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-bold cursor-pointer transition-all shadow-md shadow-cyan-400/20"
+                        className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                        title="Open Evaluator Drawer to grade or sign off"
                       >
-                        Submit Now
+                        <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                        <span>{sub?.status === 'approved' ? 'Re-Grade' : 'Review & Grade'}</span>
                       </button>
-                    )}
-                    {sub && sub.status !== 'approved' && (
-                      <button
-                        onClick={() => {
-                          setSelectedDeliverableId(del.id);
-                          setSubmissionData({
-                            title: del.title,
-                            prUrl: sub.prUrl || '',
-                            demoUrl: sub.demoUrl || '',
-                            loomUrl: sub.loomUrl || '',
-                            notes: sub.notes || '',
-                            hours: 12
-                          });
-                          setInternActiveTab('submit');
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition-all"
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {/* Evaluator Grade Trigger */}
-                    <button
-                      onClick={() => {
-                        setSelectedEvalIntern(session);
-                        setSelectedEvalDeliverable(del);
-                        setEvaluatorDrawerOpen(true);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
-                      title="Open Evaluator Drawer to grade or sign off"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                      <span>{sub?.status === 'approved' ? 'Re-Grade' : 'Review & Grade'}</span>
-                    </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
-      {/* ───────────────────────────────────────────────────────────────────────────── */}
-      {/* VIEW 2: SUBMIT WEEKLY WORK (PDF, GOOGLE DRIVE, GITHUB REPO)                   */}
-      {/* ───────────────────────────────────────────────────────────────────────────── */}
       {activeTab === 'submit' && (
         <div className="max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-[#0c101d] border border-white/10 shadow-2xl space-y-6 animate-fade-in">
           <div>
@@ -1584,13 +1859,13 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                 value={selectedDeliverableId}
                 onChange={e => {
                   setSelectedDeliverableId(e.target.value);
-                  const found = activeRole.deliverables.find(d => d.id === e.target.value);
+                  const found = roleAllottedTasks.find(d => d.id === e.target.value);
                   if (found) setSubmissionData(prev => ({ ...prev, title: found.title }));
                 }}
                 className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-cyan-400"
               >
                 <option value="">-- Choose Weekly Task --</option>
-                {activeRole.deliverables.map(d => (
+                {roleAllottedTasks.map(d => (
                   <option key={d.id} value={d.id}>{d.week || d.sprint} — {d.title}</option>
                 ))}
               </select>
@@ -2059,6 +2334,128 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
             </div>
           </div>
 
+        </div>
+      )}
+
+      
+      {/* ───────────────────────────────────────────────────────────────────────────── */}
+      {/* FOUNDER TASK ALLOTMENT & EDIT MODAL                                           */}
+      {/* ───────────────────────────────────────────────────────────────────────────── */}
+      {taskModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg bg-[#0c101c] border border-cyan-500/30 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                  <PlusCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    {taskForm.id ? 'Edit Allotted Task' : 'Allot Real Weekly Task'}
+                  </h3>
+                  <p className="text-[11px] text-gray-400">Founder & Tech Lead Action (Shaik Sowban)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTaskModalOpen(false)}
+                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAllottedTask} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Target Track</label>
+                <select
+                  value={taskForm.roleId || activeRole.id}
+                  onChange={e => setTaskForm(prev => ({ ...prev, roleId: e.target.value }))}
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                >
+                  {INTERN_ROLES.map(r => (
+                    <option key={r.id} value={r.id}>{r.title} ({r.count} Interns)</option>
+                  ))}
+                  <option value="all">All Tracks (Common Task)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">Sprint / Week</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Week 1 or Sprint 01"
+                    value={taskForm.week}
+                    onChange={e => setTaskForm(prev => ({ ...prev, week: e.target.value, sprint: e.target.value }))}
+                    className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-300 block mb-1">Due Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={taskForm.dueDate}
+                    onChange={e => setTaskForm(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Task Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Master Test Plan & Severity Bug Matrix"
+                  value={taskForm.title}
+                  onChange={e => setTaskForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Detailed Description & Instructions</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Describe what interns must accomplish, guidelines, edge cases, and rubrics..."
+                  value={taskForm.description}
+                  onChange={e => setTaskForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-300 block mb-1">Submission Deliverable Requirements</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Google Drive Link, GitHub Repository, or PDF Report"
+                  value={taskForm.submissionRequirements}
+                  onChange={e => setTaskForm(prev => ({ ...prev, submissionRequirements: e.target.value }))}
+                  className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setTaskModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{taskForm.id ? 'Save Changes' : 'Publish Task to Interns'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
