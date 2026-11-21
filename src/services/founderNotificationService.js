@@ -357,3 +357,58 @@ export async function requestMobileNotificationPermission() {
     return false;
   }
 }
+
+/**
+ * Dispatches intern access passcode directly to their registered email from lumixora.team@gmail.com
+ * (Supports any email domain without restriction: Gmail, Yahoo, Outlook, custom, etc.)
+ * @param {Object} internInfo
+ * @param {string} internInfo.email
+ * @param {string} internInfo.name
+ * @param {string} internInfo.internId
+ * @param {string} internInfo.roleTitle
+ * @param {string} internInfo.passcode
+ * @param {string} [internInfo.accessPin]
+ * @param {'LOGIN_CONFIRMATION' | 'PASSCODE_REQUEST'} [internInfo.type]
+ */
+export async function sendInternPasscodeEmail({ email, name, internId, roleTitle, passcode, accessPin, type = 'LOGIN_CONFIRMATION' }) {
+  if (!email || !passcode) {
+    return { success: false, error: 'Missing email or passcode' };
+  }
+
+  const payload = {
+    email,
+    name,
+    internId,
+    roleTitle,
+    passcode,
+    accessPin,
+    type
+  };
+
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const targetUrls = isLocal
+    ? ['https://lumixora.in/api/send-intern-passcode', 'https://lumixora.pages.dev/api/send-intern-passcode', '/api/send-intern-passcode']
+    : ['/api/send-intern-passcode', 'https://lumixora.in/api/send-intern-passcode'];
+
+  let lastError = null;
+  for (const url of targetUrls) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        return { success: true, message: 'Passcode sent successfully from lumixora.team@gmail.com' };
+      }
+      if (data.error) {
+        lastError = data.error;
+      }
+    } catch (err) {
+      lastError = err.message;
+    }
+  }
+
+  return { success: false, error: lastError || 'Failed to dispatch passcode email' };
+}

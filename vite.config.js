@@ -11,6 +11,10 @@ export default defineConfig({
   ],
   server: {
     proxy: {
+      '/api': {
+        target: 'https://lumixora.in',
+        changeOrigin: true
+      },
       '/groq-api': {
         target: 'https://api.groq.com',
         changeOrigin: true,

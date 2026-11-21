@@ -5,14 +5,14 @@ import {
   AlertCircle, Lock, ChevronRight, Video, Download, RefreshCw,
   LogOut, Filter, Search, Layers, Zap, BookOpen, MessageSquare,
   ThumbsUp, CheckSquare, Eye, Briefcase, GraduationCap, Share2, Printer,
-  ShieldCheck, CheckCheck
+  ShieldCheck, CheckCheck, Mail
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import realInternsData from '../data/realInternsBatch01.json';
 import pendingApplicantsData from '../data/pendingApplicants.json';
 import CertificateRenderer, { CERTIFICATE_STYLES } from '../components/CertificateRenderer';
 import EvaluatorReviewDrawer from '../components/EvaluatorReviewDrawer';
-import { notifyFounder } from '../services/founderNotificationService';
+import { notifyFounder, sendInternPasscodeEmail } from '../services/founderNotificationService';
 
 // ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
 export const INTERN_ROLES = [
@@ -20,10 +20,10 @@ export const INTERN_ROLES = [
     id: 'software_testing',
     title: 'Software Testing & QA',
     shortTitle: 'Software Testing',
-    count: 3,
+    count: 5,
     color: 'emerald',
     accent: '#10b981',
-    badge: '3 Interns Selected',
+    badge: '5 Interns Selected',
     borderClass: 'border-emerald-500/30',
     bgBadge: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
     gradient: 'from-emerald-500 to-teal-600',
@@ -31,7 +31,7 @@ export const INTERN_ROLES = [
     leadRole: 'Founder & Chief Architect',
     leadAvatar: '/founder_sowban.png',
     leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-9780',
+    demoId: 'LMX-B01-1726',
     demoName: 'Bosle TulasiLakshmi',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
     branch: 'B.Tech • 3rd Year',
@@ -48,10 +48,10 @@ export const INTERN_ROLES = [
     id: 'research',
     title: 'Research & Competitive Intelligence',
     shortTitle: 'Research',
-    count: 10,
+    count: 6,
     color: 'cyan',
     accent: '#06b6d4',
-    badge: '10 Interns Selected',
+    badge: '6 Interns Selected',
     borderClass: 'border-cyan-500/30',
     bgBadge: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30',
     gradient: 'from-cyan-500 to-blue-600',
@@ -76,10 +76,10 @@ export const INTERN_ROLES = [
     id: 'marketing',
     title: 'Growth Marketing & Brand Strategy',
     shortTitle: 'Marketing',
-    count: 1,
+    count: 6,
     color: 'violet',
     accent: '#8b5cf6',
-    badge: '1 Intern Selected',
+    badge: '6 Interns Selected',
     borderClass: 'border-violet-500/30',
     bgBadge: 'bg-violet-500/15 text-violet-300 border border-violet-500/30',
     gradient: 'from-purple-500 to-indigo-600',
@@ -87,10 +87,10 @@ export const INTERN_ROLES = [
     leadRole: 'Founder & Chief Architect',
     leadAvatar: '/founder_sowban.png',
     leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-0032',
-    demoName: 'NAZIA SHAIK',
+    demoId: 'LMX-B01-4734',
+    demoName: 'Mohammed Nazia Tehaseen',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
-    branch: 'B.Tech • 3rd Year',
+    branch: 'B.Tech CSM • 3rd Year',
     summary: 'Driving viral campus loops, student ambassador network expansion, launch funnels, and organic community blitz.',
     deliverables: [
       { id: 'mk-d1', sprint: 'Sprint 1', title: 'Brand Tone of Voice & Campus Ambassador Playbook', status: 'pending', dueDate: '2026-11-25', score: null, feedback: null },
@@ -104,10 +104,10 @@ export const INTERN_ROLES = [
     id: 'content_creation',
     title: 'Content Creation & Visual Media',
     shortTitle: 'Content Creation',
-    count: 6,
+    count: 3,
     color: 'pink',
     accent: '#ec4899',
-    badge: '6 Interns Selected',
+    badge: '3 Interns Selected',
     borderClass: 'border-pink-500/30',
     bgBadge: 'bg-pink-500/15 text-pink-300 border border-pink-500/30',
     gradient: 'from-pink-500 to-rose-600',
@@ -115,7 +115,7 @@ export const INTERN_ROLES = [
     leadRole: 'Founder & Chief Architect',
     leadAvatar: '/founder_sowban.png',
     leadEmail: 'founder@lumixora.com',
-    demoId: 'LMX-B01-5207',
+    demoId: 'LMX-B01-5958',
     demoName: 'MODALLA SUCHARITHA REDDY',
     college: 'G. Pulla Reddy Engineering College (Autonomous)',
     branch: 'B.Tech • 3rd Year',
@@ -175,6 +175,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const [loginPasscode, setLoginPasscode] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
+  const [sendingPasscode, setSendingPasscode] = useState(false);
+  const [passcodeSuccess, setPasscodeSuccess] = useState('');
 
   // Active Workspace Tab
   const [activeTab, setInternActiveTab] = useState('roadmap'); // 'roadmap' | 'submit' | 'standup' | 'cohort' | 'certificate'
@@ -385,6 +387,63 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       role: matched.roleTitle,
       college: matched.college
     });
+
+    // Dispatch Access Passcode & Login Confirmation directly to the intern's registered email (Any Domain, No Restrictions)
+    sendInternPasscodeEmail({
+      email: matched.email,
+      name: matched.name,
+      internId: matched.refId || matched.id,
+      roleTitle: matched.roleTitle,
+      passcode: matched.passcode,
+      accessPin: matched.accessPin,
+      type: 'LOGIN_CONFIRMATION'
+    }).catch(err => console.warn('[InternPasscodeEmail] Login dispatch notice:', err));
+  };
+
+  // Dispatches access passcode directly to the intern's registered email (Any Domain, No Restrictions)
+  const handleSendPasscodeToEmail = async () => {
+    setLoginError('');
+    setPasscodeSuccess('');
+    const clean = loginId.trim().toUpperCase();
+    if (!clean) {
+      setLoginError('Please enter your Intern ID or registered email first to receive your passcode.');
+      return;
+    }
+
+    const matched = REAL_SELECTED_INTERNS.find(i => 
+      (i.id && i.id.toUpperCase() === clean) || 
+      (i.refId && i.refId.toUpperCase() === clean) ||
+      (i.email && i.email.toUpperCase() === clean) ||
+      (i.name && i.name.toUpperCase() === clean) ||
+      (i.docId && i.docId.toUpperCase() === clean)
+    );
+
+    if (!matched) {
+      setLoginError('No accepted Batch 01 intern found matching that ID or email. Please verify your credentials.');
+      return;
+    }
+
+    setSendingPasscode(true);
+    const res = await sendInternPasscodeEmail({
+      email: matched.email,
+      name: matched.name,
+      internId: matched.refId || matched.id,
+      roleTitle: matched.roleTitle,
+      passcode: matched.passcode,
+      accessPin: matched.accessPin,
+      type: 'PASSCODE_REQUEST'
+    });
+    setSendingPasscode(false);
+
+    if (res.success) {
+      const emailParts = (matched.email || '').split('@');
+      const masked = emailParts[0].length > 2 
+        ? `${emailParts[0].slice(0, 2)}***@${emailParts[1]}`
+        : `***@${emailParts[1]}`;
+      setPasscodeSuccess(`Access passcode successfully sent to ${masked}! Please check your inbox / spam folder.`);
+    } else {
+      setLoginError(`Email delivery notice: ${res.error || 'Failed to dispatch email'}.`);
+    }
   };
 
   const handleLogout = () => {
@@ -670,6 +729,14 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                     </div>
                   )}
 
+                  {/* Passcode Sent Success Message */}
+                  {passcodeSuccess && (
+                    <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-xs text-emerald-200 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                      <span>{passcodeSuccess}</span>
+                    </div>
+                  )}
+
                   {/* Login Form */}
                   <form onSubmit={handleLoginSubmit} className="space-y-4">
                     
@@ -710,6 +777,29 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                       </button>
                     </div>
 
+                    {/* Forgot Passcode / Send to Email Action */}
+                    <div className="flex justify-between items-center text-xs pt-0.5">
+                      <span className="text-white/50 text-[11px]">Need your passcode?</span>
+                      <button
+                        type="button"
+                        disabled={sendingPasscode}
+                        onClick={handleSendPasscodeToEmail}
+                        className="text-purple-300 hover:text-purple-200 font-semibold text-[11px] underline underline-offset-2 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {sendingPasscode ? (
+                          <>
+                            <RefreshCw className="w-3 h-3 animate-spin text-purple-300" />
+                            <span>Sending to Email...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="w-3 h-3 text-purple-300" />
+                            <span>Send Passcode to my Email</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
                     {/* Launch Button */}
                     <button
                       type="submit"
@@ -718,6 +808,10 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                       <span>Launch Intern Workspace</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
+
+                    <p className="text-[10px] text-center text-white/50">
+                      🔒 Passcode is dispatched directly to your registered email upon login.
+                    </p>
                   </form>
 
                   {/* OR Divider */}
