@@ -174,6 +174,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const [loginId, setLoginId] = useState('');
   const [loginPasscode, setLoginPasscode] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [showPasscode, setShowPasscode] = useState(false);
 
   // Active Workspace Tab
   const [activeTab, setInternActiveTab] = useState('roadmap'); // 'roadmap' | 'submit' | 'standup' | 'cohort' | 'certificate'
@@ -498,128 +499,269 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   }, [selectedRosterFilter]);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 1. UNIQUE INTERN LOGIN SCREEN (Rendered if not signed in)
+  // 1. UNIQUE INTERN LOGIN SCREEN — Premium Purple/Blue Split-Layout Design
   // ─────────────────────────────────────────────────────────────────────────────
   if (!session) {
     return (
-      <div className="min-h-screen bg-[#06080f] text-white p-4 sm:p-8 flex flex-col justify-center items-center relative overflow-hidden font-sans">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a0a3e] via-[#2d1b69] to-[#1e1145] text-white relative overflow-hidden font-sans">
         
         {/* Return to Lumixora Home Button */}
         {onBackHome && (
           <button
             onClick={onBackHome}
-            className="fixed top-6 left-6 z-50 px-4 py-2 bg-zinc-950/80 hover:bg-zinc-900 text-zinc-300 hover:text-white text-xs font-mono font-semibold rounded-full backdrop-blur-2xl transition-all border border-white/20 flex items-center gap-2 shadow-2xl cursor-pointer"
+            className="fixed top-6 left-6 z-50 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-full backdrop-blur-2xl transition-all border border-white/20 flex items-center gap-2 shadow-2xl cursor-pointer"
             title="Return to Lumixora Home"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Home</span>
           </button>
         )}
 
-        {/* Ambient Figma AI Gradient Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none -z-10" />
+        {/* ── Ambient Gradient Orbs ── */}
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[180px] pointer-events-none -z-10" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-[160px] pointer-events-none -z-10" />
+        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-violet-400/10 rounded-full blur-[140px] pointer-events-none -z-10 -translate-x-1/2 -translate-y-1/2" />
 
-        <div className="w-full max-w-4xl space-y-8 animate-fade-in">
-          
-          {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold shadow-lg shadow-cyan-500/15">
-              <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-              <span>LUMIXORA INTERN OS • COHORT BATCH 01</span>
+        {/* ── Main Content: Two-Column Split Layout ── */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10 min-h-[calc(100vh-80px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-160px)]">
+
+            {/* ══════ LEFT COLUMN: Hero Content ══════ */}
+            <div className="space-y-6 sm:space-y-8">
+              
+              {/* Cohort Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 text-xs font-semibold backdrop-blur-sm shadow-lg">
+                <Users className="w-4 h-4 text-purple-300" />
+                <span>Lumixora Intern OS</span>
+                <span className="text-purple-300">•</span>
+                <span>Cohort Batch 01</span>
+              </div>
+
+              {/* Hero Title */}
+              <div>
+                <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black leading-[1.1] tracking-tight">
+                  <span className="text-white">Unique Intern</span>
+                  <br />
+                  <span className="bg-gradient-to-r from-purple-300 via-violet-200 to-indigo-300 bg-clip-text text-transparent">Authentication</span>
+                  <span className="text-white"> System</span>
+                </h1>
+                <p className="text-base sm:text-lg text-white/70 mt-4 max-w-md leading-relaxed">
+                  Your gateway to knowledge, opportunities and a future with Lumixora.
+                </p>
+              </div>
+
+              {/* Trust Badges Row */}
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { icon: <Shield className="w-4 h-4" />, label: 'Secure Access', color: 'text-green-300' },
+                  { icon: <CheckCircle2 className="w-4 h-4" />, label: 'Verified Interns', color: 'text-emerald-300' },
+                  { icon: <Sparkles className="w-4 h-4" />, label: 'Exciting Opportunities', color: 'text-yellow-300' },
+                  { icon: <Users className="w-4 h-4" />, label: 'Grow Together', color: 'text-blue-300' },
+                ].map((badge, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm text-xs font-semibold text-white/90 hover:bg-white/15 transition-all"
+                  >
+                    <span className={badge.color}>{badge.icon}</span>
+                    <span>{badge.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Available Tracks Card (Real Data) */}
+              <div className="rounded-3xl bg-white/[0.07] border border-white/15 p-4 sm:p-5 shadow-2xl backdrop-blur-xl space-y-3.5">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-purple-300" />
+                    <span className="text-xs font-black uppercase tracking-wider text-purple-200">Available Tracks (Batch 01)</span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-white/80 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">
+                    {INTERN_ROLES.reduce((s, r) => s + r.count, 0)} Interns Total
+                  </span>
+                </div>
+
+                {/* 4 Tracks Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  {INTERN_ROLES.map(role => (
+                    <div 
+                      key={role.id}
+                      className="p-3 rounded-2xl bg-white/[0.05] hover:bg-white/[0.09] border border-white/10 hover:border-white/20 transition-all text-left flex flex-col justify-between space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${role.bgBadge}`}>
+                          {role.count} Selected
+                        </span>
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: role.accent }} />
+                      </div>
+                      <h3 className="text-xs font-bold text-white leading-tight">
+                        {role.shortTitle}
+                      </h3>
+                      <div className="text-[10px] text-white/60 pt-1 border-t border-white/5 flex items-center justify-between">
+                        <span>Lead:</span>
+                        <span className="font-bold text-purple-200">{role.leadName.split('&')[0]}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Strip */}
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/70">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {['from-emerald-400 to-teal-500', 'from-cyan-400 to-blue-500', 'from-violet-400 to-purple-500', 'from-pink-400 to-rose-500'].map((grad, i) => (
+                        <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${grad} border border-[#1a0a3e] flex items-center justify-center text-[9px] font-bold text-white`}>
+                          <User className="w-3 h-3" />
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-[11px] font-semibold text-white/80">Batch 01 Cohort</span>
+                  </div>
+                  <span className="text-[11px] text-emerald-300 font-bold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    All 4 Tracks Active
+                  </span>
+                </div>
+              </div>
+
+              {/* Dream Big Tagline */}
+              <p className="text-2xl sm:text-3xl font-black italic bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent drop-shadow-lg">
+                Dream Big... Intern Bigger!
+              </p>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Unique Intern Authentication System
-            </h1>
-            <p className="text-sm text-gray-400 max-w-xl mx-auto leading-relaxed">
-              Exclusive portal for the <span className="text-white font-bold">48 verified cohort interns</span> across Software Testing, Research, Marketing, and Content Creation.
-            </p>
-          </div>
+            {/* ══════ RIGHT COLUMN: Login Card ══════ */}
+            <div className="flex flex-col items-center lg:items-end">
+              <div className="w-full max-w-md space-y-6">
 
-          {/* Current 4 Roles Breakdown Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {INTERN_ROLES.map(role => (
-              <div 
-                key={role.id}
-                className="p-3.5 rounded-2xl bg-[#0c101d]/90 border border-white/10 hover:border-white/25 transition-all text-left flex flex-col justify-between space-y-2 shadow-xl"
-              >
-                <div>
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${role.bgBadge}`}>
-                    {role.badge}
-                  </span>
-                  <h3 className="text-sm font-black text-white mt-1.5 leading-tight">
-                    {role.shortTitle}
-                  </h3>
+                {/* Shield Icon Header */}
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/30 to-purple-600/30 border border-white/20 backdrop-blur-xl flex items-center justify-center shadow-2xl shadow-purple-500/20">
+                      <Lock className="w-9 h-9 text-purple-300 drop-shadow-lg" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                      <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-gray-400 pt-1 border-t border-white/5 flex items-center justify-between">
-                  <span>Lead:</span>
-                  <span className="font-bold text-gray-200">{role.leadName.split('&')[0]}</span>
+
+                {/* Login Form Card */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.07] border border-white/15 shadow-2xl shadow-purple-900/30 backdrop-blur-2xl space-y-6">
+                  
+                  {/* Card Header */}
+                  <div className="text-center space-y-2">
+                    <span className="inline-block text-[11px] font-black uppercase tracking-widest text-purple-300 bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">
+                      Batch 01
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-white">
+                      Batch 01 Intern Sign In
+                    </h2>
+                    <p className="text-xs text-white/60 leading-relaxed">
+                      Enter your unique Intern ID (e.g. <span className="text-purple-300 font-mono font-bold">LMX-B01-4783</span>) or registered email and confidential passcode.
+                    </p>
+                  </div>
+
+                  {/* Error Message */}
+                  {loginError && (
+                    <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-200 flex items-center gap-2 animate-pulse">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                      <span>{loginError}</span>
+                    </div>
+                  )}
+
+                  {/* Login Form */}
+                  <form onSubmit={handleLoginSubmit} className="space-y-4">
+                    
+                    {/* Intern ID Input */}
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Intern ID or Registered Email"
+                        value={loginId}
+                        onChange={e => setLoginId(e.target.value)}
+                        className="w-full bg-white/[0.06] border border-white/15 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/40 outline-none transition-all"
+                      />
+                    </div>
+
+                    {/* Passcode Input */}
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <input
+                        type={showPasscode ? 'text' : 'password'}
+                        required
+                        placeholder="Access Passcode / PIN"
+                        value={loginPasscode}
+                        onChange={e => setLoginPasscode(e.target.value)}
+                        className="w-full bg-white/[0.06] border border-white/15 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-white/40 outline-none transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasscode(prev => !prev)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Launch Button */}
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-500 hover:from-purple-500 hover:via-violet-400 hover:to-indigo-400 text-white font-extrabold text-sm shadow-xl shadow-purple-500/30 transition-all cursor-pointer flex items-center justify-center gap-2 hover:shadow-purple-500/40 active:scale-[0.98]"
+                    >
+                      <span>Launch Intern Workspace</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+
+                  {/* OR Divider */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-white/10" />
+                    <span className="text-xs text-white/40 font-semibold">OR</span>
+                    <div className="flex-1 h-px bg-white/10" />
+                  </div>
+
+                  {/* Support Link */}
+                  <button
+                    type="button"
+                    className="w-full py-3 rounded-xl bg-white/[0.05] border border-white/10 hover:bg-white/10 text-white/70 hover:text-white font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    onClick={() => window.open('mailto:founder@lumixora.com?subject=Intern%20Login%20Help', '_blank')}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Need Help? Get Support</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom Stats Bar (Real Data) ── */}
+        <div className="w-full bg-[#0d0520]/80 border-t border-white/10 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 flex flex-wrap items-center justify-center sm:justify-start gap-8 sm:gap-16">
+            {[
+              { icon: <Users className="w-5 h-5 text-purple-400" />, value: `${INTERN_ROLES.reduce((s, r) => s + r.count, 0)}`, label: 'Selected Interns' },
+              { icon: <Layers className="w-5 h-5 text-blue-400" />, value: `${INTERN_ROLES.length}`, label: 'Active Tracks' },
+              { icon: <Award className="w-5 h-5 text-yellow-400" />, value: 'Batch 01', label: 'Current Cohort' },
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                  {stat.icon}
+                </div>
+                <div>
+                  <p className="text-lg font-black text-white">{stat.value}</p>
+                  <p className="text-[11px] text-white/50 font-medium">{stat.label}</p>
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Direct Unique Intern Login Form (Centered) */}
-          <div className="max-w-xl mx-auto p-6 sm:p-8 rounded-3xl bg-[#0b0e1a]/95 border border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.15)] space-y-6 backdrop-blur-xl">
-            <div>
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Lock className="w-4 h-4 text-cyan-400" />
-                <span>Batch 01 Intern Sign In</span>
-              </h2>
-              <p className="text-xs text-gray-400 mt-1">
-                Enter your unique Intern ID (e.g. <span className="text-cyan-300 font-mono">LMX-B01-4783</span>) or registered email and confidential passcode.
-              </p>
-            </div>
-
-            {loginError && (
-              <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/40 text-xs text-rose-300 flex items-center gap-2 animate-shake">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                <span>{loginError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-300 block mb-1.5">
-                  Intern ID or Registered Email
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. mudiamkushala@gmail.com or LMX-B01-4783"
-                  value={loginId}
-                  onChange={e => setLoginId(e.target.value)}
-                  className="w-full bg-black/50 border border-white/15 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-600 outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="text-xs font-bold text-gray-300">
-                    Access Passcode / PIN
-                  </label>
-                </div>
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={loginPasscode}
-                  onChange={e => setLoginPasscode(e.target.value)}
-                  className="w-full bg-black/50 border border-white/15 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-600 outline-none transition-colors"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-400 to-indigo-500 hover:opacity-95 text-black font-extrabold text-xs shadow-lg shadow-cyan-400/25 transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <span>Launch Intern Workspace</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-
         </div>
 
       </div>
