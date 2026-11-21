@@ -159,45 +159,62 @@ export default function CertificateRenderer({
         style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       >
         {/* ── Top-Left Geometric Navy & Gold Cuts ── */}
-        <div className="absolute top-0 left-0 w-36 sm:w-52 md:w-64 h-36 sm:h-52 md:h-64 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-32 sm:w-44 md:w-52 h-32 sm:h-44 md:h-52 pointer-events-none z-0">
           <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
             {/* Dark Navy Triangle */}
-            <polygon points="0,0 180,0 0,220" fill="#0b1a30" />
+            <polygon points="0,0 75,0 0,130" fill="#0b1a30" />
             {/* Inner Gold Diagonal Line */}
-            <polygon points="180,0 190,0 0,232 0,220" fill="#d4af37" />
+            <polygon points="75,0 85,0 0,145 0,130" fill="#d4af37" />
             {/* Outer Accent Gold Strip */}
-            <polygon points="205,0 215,0 0,260 0,250" fill="#c59b27" opacity="0.9" />
+            <polygon points="95,0 105,0 0,165 0,155" fill="#c59b27" opacity="0.9" />
             {/* Secondary Floating Gold Accent Slash */}
-            <line x1="28" y1="215" x2="215" y2="28" stroke="#f3d068" strokeWidth="2.5" />
+            <line x1="10" y1="145" x2="115" y2="10" stroke="#f3d068" strokeWidth="2.5" />
           </svg>
         </div>
 
         {/* ── Bottom-Right Geometric Navy & Gold Cuts ── */}
-        <div className="absolute bottom-0 right-0 w-36 sm:w-52 md:w-64 h-36 sm:h-52 md:h-64 pointer-events-none z-0">
+        <div className="absolute bottom-0 right-0 w-32 sm:w-44 md:w-52 h-32 sm:h-44 md:h-52 pointer-events-none z-0">
           <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
             {/* Dark Navy Triangle */}
-            <polygon points="240,240 60,240 240,20" fill="#0b1a30" />
+            <polygon points="240,240 165,240 240,110" fill="#0b1a30" />
             {/* Inner Gold Diagonal Line */}
-            <polygon points="60,240 50,240 240,8 240,20" fill="#d4af37" />
+            <polygon points="165,240 155,240 240,95 240,110" fill="#d4af37" />
             {/* Outer Accent Gold Strip */}
-            <polygon points="35,240 25,240 240,-10 240,0" fill="#c59b27" opacity="0.9" />
+            <polygon points="145,240 135,240 240,75 240,85" fill="#c59b27" opacity="0.9" />
             {/* Secondary Floating Gold Accent Slash */}
-            <line x1="212" y1="25" x2="25" y2="212" stroke="#f3d068" strokeWidth="2.5" />
+            <line x1="230" y1="95" x2="125" y2="230" stroke="#f3d068" strokeWidth="2.5" />
           </svg>
         </div>
 
-        {/* ── Right Background Translucent Watermark Star/Logo ── */}
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 opacity-[0.05] pointer-events-none select-none z-0">
-          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-            <path d="M100 0 L115 85 L200 100 L115 115 L100 200 L85 115 L0 100 L85 85 Z" fill="#0b1a30" />
-            <path d="M60 40 L60 160 L140 160 L140 135 L90 135 L90 40 Z" fill="#0b1a30" />
-          </svg>
+        {/* ── Background Double-Exposed Lumixora Brand Watermark (Increased Opacity) ── */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+          {/* Double Exposure Layer 1: Wider Soft Offset Exposure */}
+          <img 
+            src="/lumixora_logo_transparent.png" 
+            alt="" 
+            className="w-[580px] sm:w-[740px] max-w-none opacity-[0.14] filter grayscale contrast-150 transform scale-110 translate-x-4 -translate-y-2 pointer-events-none"
+          />
+          {/* Double Exposure Layer 2: Primary Crisp Double-Exposure */}
+          <img 
+            src="/lumixora_logo_transparent.png" 
+            alt="" 
+            className="absolute w-[520px] sm:w-[670px] max-w-none opacity-[0.18] filter grayscale contrast-175 pointer-events-none"
+          />
+        </div>
+
+        {/* ── Right Flank Translucent 3D Emblem Watermark (Increased Opacity) ── */}
+        <div className="absolute right-6 sm:right-12 top-1/2 -translate-y-1/2 w-48 sm:w-60 h-48 sm:h-60 pointer-events-none select-none z-0 flex items-center justify-center">
+          <img 
+            src="/lumixora_logo_3d.png" 
+            alt="" 
+            className="w-full h-full object-contain opacity-[0.16] filter grayscale contrast-150"
+          />
         </div>
 
         {/* ── TOP HEADER (Logo + Subtitle Left, LEARN • BUILD • GROW Right) ── */}
         <div className="flex items-center justify-between relative z-10 w-full mb-3">
           {/* Left: Brand Identity */}
-          <div className="flex flex-col items-start pl-14 sm:pl-24 md:pl-32 text-left">
+          <div className="flex flex-col items-start pl-16 sm:pl-24 md:pl-32 text-left">
             <div className="flex items-center">
               <span className="text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.04em] text-[#0b1a30] font-sora">
                 L<span className="relative inline-block">U<span className="absolute -top-1 left-1/2 -translate-x-1/2 text-[#c59b27] text-xs sm:text-sm font-black">✦</span></span>MIXORA
@@ -261,7 +278,7 @@ export default function CertificateRenderer({
             During the period from [ <strong className="font-bold text-slate-950">{formattedStartDate}</strong> ] to [ <strong className="font-bold text-slate-950">{formattedEndDate}</strong> ],
           </p>
           <p>
-            the intern demonstrated dedication, enthusiasm and a strong willingness to learn.
+            {cert.statementText || "the intern demonstrated dedication, enthusiasm and a strong willingness to learn."}
           </p>
         </div>
 
@@ -317,17 +334,17 @@ export default function CertificateRenderer({
         )}
 
         {/* ── SIGNATURES, 3D GOLD MEDALLION & QR CODE ── */}
-        <div className="grid grid-cols-4 items-end pt-3 relative z-10 gap-2 sm:gap-4 mt-auto">
+        <div className="grid grid-cols-3 items-end pt-3 relative z-10 gap-4 sm:gap-6 mt-auto">
           {/* Left Signature: Shaik Sowban */}
           <div className="flex flex-col items-center sm:items-start text-left">
             <div className="h-7 sm:h-9 flex items-center">
               <span className="text-xl sm:text-2xl text-slate-900 select-none block" style={{ fontFamily: "'Great Vibes', cursive" }}>
-                Shaik Sowban
+                {cert.founderSignatureName || 'Shaik Sowban'}
               </span>
             </div>
-            <div className="w-full border-t border-slate-400 pt-1">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 leading-tight">Shaik Sowban</p>
-              <p className="text-[8px] sm:text-[9px] text-slate-600 leading-tight">Founder, CEO & Tech Lead</p>
+            <div className="w-full max-w-[210px] border-t border-slate-400 pt-1">
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 leading-tight">{cert.founderSignatureName || 'Shaik Sowban'}</p>
+              <p className="text-[8px] sm:text-[9px] text-slate-600 leading-tight">{cert.founderRole || 'Founder, CEO & Tech Lead'}</p>
               <p className="text-[7.5px] sm:text-[8px] text-slate-500 leading-tight">Lumixora</p>
             </div>
           </div>
@@ -350,21 +367,8 @@ export default function CertificateRenderer({
             </div>
           </div>
 
-          {/* Right Signature: Team Lumixora */}
-          <div className="flex flex-col items-center sm:items-start text-left">
-            <div className="h-7 sm:h-9 flex items-center">
-              <span className="text-xl sm:text-2xl text-slate-900 select-none block" style={{ fontFamily: "'Great Vibes', cursive" }}>
-                Shaarfam
-              </span>
-            </div>
-            <div className="w-full border-t border-slate-400 pt-1">
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 leading-tight">Team Lumixora</p>
-              <p className="text-[8px] sm:text-[9px] text-slate-600 leading-tight">Product Development Team</p>
-            </div>
-          </div>
-
           {/* Far Right: QR Code */}
-          <div className="flex flex-col items-center sm:items-end text-center sm:text-right pr-1 sm:pr-2">
+          <div className="flex flex-col items-center sm:items-end text-center sm:text-right pr-6 sm:pr-8 md:pr-10 relative z-10">
             <div className="p-1 bg-white rounded-md border border-slate-300 shadow-sm shrink-0">
               {qrCodeDataUrl ? (
                 <img src={qrCodeDataUrl} alt="Verify QR" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
@@ -372,7 +376,7 @@ export default function CertificateRenderer({
                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 flex items-center justify-center text-[8px] font-mono">QR</div>
               )}
             </div>
-            <div className="mt-1 leading-tight">
+            <div className="mt-1 leading-tight bg-white/95 rounded px-1">
               <p className="text-[8px] sm:text-[9px] font-bold text-slate-900">Verify Certificate</p>
               <p className="text-[7px] sm:text-[8px] font-mono text-slate-600">lumixora.in/verify</p>
             </div>

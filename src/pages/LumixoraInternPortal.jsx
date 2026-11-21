@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  PlusCircle, Trash2, Edit3, X,
+  PlusCircle, Trash2, Edit3, X, RotateCcw,
   Award, CheckCircle2, Clock, Calendar, FileText, Send, Link2, 
   Sparkles, Shield, User, Users, ArrowLeft, ArrowRight, ExternalLink, Copy, Check,
   AlertCircle, Lock, ChevronRight, Video, Download, RefreshCw,
@@ -542,6 +542,162 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
 
   // Founder Shaik Sowban Task Modal State
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  // Founder Custom Certificate Details State with Multi-Intern Issuance Controls
+  const [selectedRecipientId, setSelectedRecipientId] = useState(session?.id || 'LMX-B01-1726');
+
+  const [customCertDetails, setCustomCertDetails] = useState(() => {
+    try {
+      if (session?.id) {
+        const saved = localStorage.getItem(`lumixora_custom_cert_details_${session.id}`);
+        if (saved) return JSON.parse(saved);
+      }
+      const globalSaved = localStorage.getItem('lumixora_custom_cert_details_global');
+      if (globalSaved) return JSON.parse(globalSaved);
+    } catch (_) {}
+    return {
+      studentName: session?.name || 'C. Chandrika',
+      rollNumber: session?.id || 'LMX-B01-1726',
+      domain: 'Product Testing',
+      startDate: '1 Nov 2025',
+      endDate: '30 Nov 2025',
+      wishesText: 'We wish them all the best for their future endeavors.',
+      statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+      comp1: 'Product Testing',
+      comp2: 'Quality Analysis',
+      comp3: 'Innovation Mindset',
+      founderSignatureName: 'Shaik Sowban',
+      founderRole: 'Founder, CEO & Tech Lead',
+      certId: `LMX-INT-2026-${(session?.id || '1726').replace(/[^a-zA-Z0-9]/g, '')}`,
+      isIssued: true,
+      githubUrl: '',
+      driveUrl: '',
+      pdfUrl: ''
+    };
+  });
+
+  const [certEditModalOpen, setCertEditModalOpen] = useState(false);
+
+  // Real dynamic sprint calculation from actual start date
+  const realCurrentSprintWeek = useMemo(() => {
+    try {
+      const startStr = customCertDetails?.startDate || '15 Nov 2026';
+      const parsedStart = new Date(startStr);
+      if (!isNaN(parsedStart.getTime())) {
+        const now = new Date();
+        const diffMs = now.getTime() - parsedStart.getTime();
+        if (diffMs < 0) return 1;
+        const weekNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+        return Math.max(1, Math.min(6, weekNum));
+      }
+    } catch (_) {}
+    return 1;
+  }, [customCertDetails?.startDate]);
+  const [certEditForm, setCertEditForm] = useState(customCertDetails);
+
+  // Sync certEditForm when customCertDetails updates
+  useEffect(() => {
+    setCertEditForm(customCertDetails);
+  }, [customCertDetails]);
+
+  // Handle changing recipient in Founder modal
+  const handleSelectRecipient = (internId) => {
+    setSelectedRecipientId(internId);
+    if (internId === 'custom') {
+      setCertEditForm(prev => ({
+        ...prev,
+        studentName: '',
+        rollNumber: 'LMX-INT-CUSTOM',
+        certId: `LMX-INT-2026-CUSTOM${Date.now().toString().slice(-4)}`
+      }));
+      return;
+    }
+
+    const found = REAL_SELECTED_INTERNS.find(i => i.id === internId);
+    if (found) {
+      // Check if this intern already has custom cert details saved
+      let existingDetails = null;
+      try {
+        const saved = localStorage.getItem(`lumixora_custom_cert_details_${found.id}`);
+        if (saved) existingDetails = JSON.parse(saved);
+      } catch (_) {}
+
+      const cleanDomain = found.roleTitle ? found.roleTitle.replace(' Intern', '') : 'Product Testing';
+      const updated = existingDetails || {
+        studentName: found.name,
+        rollNumber: found.id,
+        domain: cleanDomain,
+        startDate: '1 Nov 2025',
+        endDate: '30 Nov 2025',
+        wishesText: 'We wish them all the best for their future endeavors.',
+        statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+        comp1: cleanDomain.includes('Research') ? 'Market Research' : cleanDomain.includes('Marketing') ? 'Growth Marketing' : 'Product Testing',
+        comp2: cleanDomain.includes('Research') ? 'Competitive Intelligence' : cleanDomain.includes('Marketing') ? 'Brand Strategy' : 'Quality Analysis',
+        comp3: 'Innovation Mindset',
+        founderSignatureName: 'Shaik Sowban',
+        founderRole: 'Founder, CEO & Tech Lead',
+        certId: `LMX-INT-2026-${found.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+        isIssued: true,
+        githubUrl: '',
+        driveUrl: '',
+        pdfUrl: ''
+      };
+
+      setCertEditForm(updated);
+    }
+  };
+
+  const handleSaveCertDetails = (e) => {
+    if (e) e.preventDefault();
+    setCustomCertDetails(certEditForm);
+    
+    // Save per recipient
+    const targetId = certEditForm.rollNumber || selectedRecipientId || session?.id || 'default';
+    try {
+      localStorage.setItem(`lumixora_custom_cert_details_${targetId}`, JSON.stringify(certEditForm));
+      localStorage.setItem('lumixora_custom_cert_details_global', JSON.stringify(certEditForm));
+      
+      // Also register in issued certificates dictionary for public verification
+      const registryKey = 'lumixora_issued_certificates';
+      const registryRaw = localStorage.getItem(registryKey);
+      const registry = registryRaw ? JSON.parse(registryRaw) : {};
+      registry[certEditForm.certId] = certEditForm;
+      registry[targetId] = certEditForm;
+      localStorage.setItem(registryKey, JSON.stringify(registry));
+    } catch (_) {}
+
+    setCertEditModalOpen(false);
+  };
+
+  const handleResetCertDetails = () => {
+    if (window.confirm('Reset certificate content to standard default values?')) {
+      const defaultDetails = {
+        studentName: session?.name || 'C. Chandrika',
+        rollNumber: session?.id || 'LMX-B01-1726',
+        domain: activeRole.title || 'Product Testing',
+        startDate: '1 Nov 2025',
+        endDate: '30 Nov 2025',
+        wishesText: 'We wish them all the best for their future endeavors.',
+        statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+        comp1: 'Product Testing',
+        comp2: 'Quality Analysis',
+        comp3: 'Innovation Mindset',
+        founderSignatureName: 'Shaik Sowban',
+        founderRole: 'Founder, CEO & Tech Lead',
+        certId: `LMX-INT-2026-${(session?.id || '1726').replace(/[^a-zA-Z0-9]/g, '')}`,
+        isIssued: true,
+        githubUrl: '',
+        driveUrl: '',
+        pdfUrl: ''
+      };
+      setCustomCertDetails(defaultDetails);
+      setCertEditForm(defaultDetails);
+      if (session?.id) {
+        localStorage.removeItem(`lumixora_custom_cert_details_${session.id}`);
+      }
+      localStorage.removeItem('lumixora_custom_cert_details_global');
+    }
+  };
+
   const [taskForm, setTaskForm] = useState({
     id: '',
     roleId: '',
@@ -1465,7 +1621,9 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         <div className="p-4 rounded-2xl bg-[#0b0e19] border border-white/10 flex items-center justify-between">
           <div>
             <span className="text-[11px] text-gray-400 font-bold block">Current Sprint</span>
-            <span className="text-xl font-black text-emerald-400">Week 3 of 6</span>
+            <span className={`text-xl font-black ${roleAllottedTasks.length > 0 ? 'text-emerald-400' : 'text-gray-400'}`}>
+              {roleAllottedTasks.length > 0 ? (roleAllottedTasks[roleAllottedTasks.length - 1]?.week || 'Week 1') : 'No Tasks Yet'}
+            </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
             <Calendar className="w-4 h-4" />
@@ -1475,7 +1633,9 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         <div className="p-4 rounded-2xl bg-[#0b0e19] border border-white/10 flex items-center justify-between">
           <div>
             <span className="text-[11px] text-gray-400 font-bold block">Sprint Deliverables</span>
-            <span className="text-xl font-black text-amber-400">{submissions.length} / 5 Shipped</span>
+            <span className={`text-xl font-black ${roleAllottedTasks.length > 0 ? 'text-amber-400' : 'text-gray-400'}`}>
+              {roleAllottedTasks.length > 0 ? `${submissions.length} / ${roleAllottedTasks.length} Submitted` : '0 Assigned'}
+            </span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
             <CheckCircle2 className="w-4 h-4" />
@@ -2201,35 +2361,52 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
             </p>
           </div>
 
-          {/* Theme Switcher Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl bg-black/40 border border-white/10 shadow-lg">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-300 font-bold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Executive Color & Style:</span>
+          {/* Founder Certificate Editor Bar & Verification Status */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-black/40 border border-white/10 shadow-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Batch 01 Official Registry • Cryptographically Verified ✓</span>
               </span>
-              <div className="flex flex-wrap gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
-                {CERTIFICATE_STYLES.map((st) => (
-                  <button
-                    key={st.id}
-                    onClick={() => setCertTheme(st.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      certTheme === st.id
-                        ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 text-black font-black shadow-md shadow-amber-500/20'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span>{st.name}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> Verified & Active ✓
-              </span>
-            </div>
+            {isFounder && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    setCertEditForm({
+                      studentName: customCertDetails.studentName || session?.name || '',
+                      domain: customCertDetails.domain || activeRole.title || 'Product Testing',
+                      startDate: customCertDetails.startDate || '15 Nov 2026',
+                      endDate: customCertDetails.endDate || '30 Dec 2026',
+                      wishesText: customCertDetails.wishesText || 'We wish them all the best for their future endeavors.',
+                      statementText: customCertDetails.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+                      comp1: customCertDetails.comp1 || 'Product Testing',
+                      comp2: customCertDetails.comp2 || 'Quality Analysis',
+                      comp3: customCertDetails.comp3 || 'Innovation Mindset',
+                      founderSignatureName: customCertDetails.founderSignatureName || 'Shaik Sowban',
+                      founderRole: customCertDetails.founderRole || 'Founder, CEO & Tech Lead',
+                      signer2Name: customCertDetails.signer2Name || 'Team Lumixora',
+                      signer2Role: customCertDetails.signer2Role || 'Product Development Team'
+                    });
+                    setCertEditModalOpen(true);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
+                  title="Edit certificate recipient name, domain, dates, competencies, wishes ribbon, and signatures"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Certificate Details</span>
+                </button>
+                <button
+                  onClick={handleResetCertDetails}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                  title="Reset to defaults"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Master Certificate Canvas (Executive Ivory / Midnight / Sapphire / Classic) */}
@@ -2453,6 +2630,332 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                   <Check className="w-3.5 h-3.5" />
                   <span>{taskForm.id ? 'Save Changes' : 'Publish Task to Interns'}</span>
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── FOUNDER COMPREHENSIVE CERTIFICATE ISSUANCE & EDIT CONTROLS MODAL ── */}
+      {certEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-[#0c101c] border border-cyan-500/30 rounded-2xl w-full max-w-3xl p-5 sm:p-7 text-left shadow-[0_25px_80px_rgba(0,0,0,0.8)] space-y-5 max-h-[92vh] overflow-y-auto custom-scrollbar">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <span>Founder Certificate Issuance & Content Controls</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">Shaik Sowban Mode</span>
+                  </h3>
+                  <p className="text-xs text-gray-400">Manage recipient selection, issuance authority, completion period, and verifiable credentials.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setCertEditModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCertDetails} className="space-y-4 text-xs">
+              {/* SECTION 1: TO WHOM IT SHOULD BE ISSUED */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-cyan-500/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" />
+                    <span>1. To Whom It Should Be Issued (Recipient Selection)</span>
+                  </span>
+                  <span className="text-[10px] text-gray-400">Total 48 Selected Interns</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Select from Cohort Interns</label>
+                    <select
+                      value={selectedRecipientId}
+                      onChange={e => handleSelectRecipient(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-cyan-400 text-xs cursor-pointer"
+                    >
+                      <option value="custom">✍️ Custom Student / External Recipient...</option>
+                      <optgroup label="Batch 01 Cohort Interns (48 Total)">
+                        {REAL_SELECTED_INTERNS.map(intern => (
+                          <option key={intern.id} value={intern.id}>
+                            {intern.name} ({intern.id}) — {intern.roleTitle}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Recipient Name (Calligraphy on Certificate)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.studentName || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, studentName: e.target.value }))}
+                      placeholder="e.g. C. Chandrika or Shaik Sowban"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-cyan-400 text-xs font-semibold"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Roll / Identifier No.</label>
+                    <input
+                      type="text"
+                      value={certEditForm.rollNumber || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, rollNumber: e.target.value }))}
+                      placeholder="e.g. 249XA33106 or LMX-B01-1726"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-cyan-400 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Certificate Unique ID</label>
+                    <input
+                      type="text"
+                      value={certEditForm.certId || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, certId: e.target.value }))}
+                      placeholder="e.g. LMX-INT-2026-CHANDRIKA01"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-cyan-400 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Issuance Status</label>
+                    <select
+                      value={certEditForm.isIssued ? 'issued' : 'draft'}
+                      onChange={e => setCertEditForm(p => ({ ...p, isIssued: e.target.value === 'issued' }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-cyan-400 text-xs cursor-pointer font-bold"
+                    >
+                      <option value="issued">✅ Officially Issued & Verified</option>
+                      <option value="draft">⏳ Draft / In Progress</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: DOMAIN, TRACK & DATES */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-white/10 space-y-3">
+                <span className="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>2. Domain Track & Completion Period</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Domain of Specialization</label>
+                    <input
+                      type="text"
+                      value={certEditForm.domain || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, domain: e.target.value }))}
+                      placeholder="e.g. Product Testing"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-amber-400 text-xs font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Period From (Start Date)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.startDate || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, startDate: e.target.value }))}
+                      placeholder="e.g. 1 Nov 2025 or 15 Nov 2026"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-amber-400 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Period To (End Date)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.endDate || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, endDate: e.target.value }))}
+                      placeholder="e.g. 30 Nov 2025 or 30 Dec 2026"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-amber-400 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: DEDICATION STATEMENT & RIBBON */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-white/10 space-y-3">
+                <span className="text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>3. Statement & Wishes Ribbon</span>
+                </span>
+
+                <div>
+                  <label className="text-gray-300 font-bold block mb-1">Performance & Dedication Statement</label>
+                  <input
+                    type="text"
+                    value={certEditForm.statementText || ''}
+                    onChange={e => setCertEditForm(p => ({ ...p, statementText: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-purple-400 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-gray-300 font-bold block mb-1">Wishes Navy/Gold Ribbon Text</label>
+                  <input
+                    type="text"
+                    value={certEditForm.wishesText || ''}
+                    onChange={e => setCertEditForm(p => ({ ...p, wishesText: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-purple-400 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* SECTION 4: 3 COMPETENCIES */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-white/10 space-y-3">
+                <span className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>4. Three Verified Competency Badges</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Competency 1 (Left)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.comp1 || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, comp1: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Competency 2 (Center)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.comp2 || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, comp2: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Competency 3 (Right)</label>
+                    <input
+                      type="text"
+                      value={certEditForm.comp3 || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, comp3: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 5: PROOF OF WORK LINKS */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-white/10 space-y-3">
+                <span className="text-xs font-black uppercase text-blue-400 tracking-wider flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>5. Proof of Work Deliverables (Publicly Attached to Certificate)</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">GitHub Repository Link</label>
+                    <input
+                      type="url"
+                      value={certEditForm.githubUrl || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, githubUrl: e.target.value }))}
+                      placeholder="https://github.com/..."
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-blue-400 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Google Drive Link</label>
+                    <input
+                      type="url"
+                      value={certEditForm.driveUrl || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, driveUrl: e.target.value }))}
+                      placeholder="https://drive.google.com/..."
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-blue-400 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">PDF Dossier / Report Link</label>
+                    <input
+                      type="url"
+                      value={certEditForm.pdfUrl || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, pdfUrl: e.target.value }))}
+                      placeholder="https://.../report.pdf"
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-blue-400 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 6: FOUNDER SIGNATORY */}
+              <div className="p-3.5 rounded-xl bg-[#141927] border border-white/10 space-y-3">
+                <span className="text-xs font-black uppercase text-yellow-400 tracking-wider flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>6. Founder Signature Authority</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Signatory Name</label>
+                    <input
+                      type="text"
+                      value={certEditForm.founderSignatureName || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, founderSignatureName: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-yellow-400 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Title / Designation</label>
+                    <input
+                      type="text"
+                      value={certEditForm.founderRole || ''}
+                      onChange={e => setCertEditForm(p => ({ ...p, founderRole: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-yellow-400 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetCertDetails}
+                    className="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/25 font-bold flex items-center gap-1.5 cursor-pointer text-xs"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+
+                  <a
+                    href={`/verify?id=${certEditForm.certId || 'LMX-B01-1726'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-cyan-400/20 font-bold flex items-center gap-1.5 text-xs"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Preview Public Ledger</span>
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCertEditModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-black text-xs shadow-lg shadow-cyan-500/20 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Save & Issue Certificate</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

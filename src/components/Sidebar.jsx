@@ -125,7 +125,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       return updated;
     });
   };
-  const [showAllPortals, setShowAllPortals] = useState(false);
 
   // Active portals configured in live user preferences (if empty/unspecified or founder, all are allowed)
   const userActivePortals = useMemo(() => {
@@ -276,20 +275,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       }
     }
 
-    // Apply personalization filter if user has chosen portals and "showAllPortals" is toggled off
-    if (userActivePortals && !showAllPortals) {
-      sections = sections.map(sec => ({
-        ...sec,
-        items: sec.items.filter(item => {
-          // Always keep dashboard, previous-papers, community, and support
-          if (item.id === 'dashboard' || item.id === 'previous-papers' || item.id === 'community' || sec.key === 'social' || sec.key === 'support' || sec.key === 'admin') {
-            return true;
-          }
-          return userActivePortals.has(item.id);
-        })
-      })).filter(sec => sec.items.length > 0);
-    }
-
     if (!menuSearchQuery.trim()) return sections;
     const q = menuSearchQuery.toLowerCase().trim();
     return sections.map(sec => ({
@@ -300,7 +285,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         item.id.toLowerCase().includes(q)
       )
     })).filter(sec => sec.items.length > 0);
-  }, [menuSections, menuSearchQuery, userActivePortals, showAllPortals, selectedWorkspace, isGprecSubdomain, isTpo]);
+  }, [menuSections, menuSearchQuery, selectedWorkspace, isGprecSubdomain, isTpo]);
 
   const handleTabClick = (tabId) => {
     if (isGprecSubdomain && !isAllowedGprecPlacementTab(tabId)) {
@@ -442,27 +427,6 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
               >✕</button>
             )}
           </div>
-
-          {/* Show All Portals Toggle (when personalized filter is active) */}
-          {userActivePortals && (
-            <div className="flex items-center justify-between px-1 pt-0.5">
-              <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
-                {showAllPortals ? <Eye className="w-3 h-3 text-cyan-400" /> : <EyeOff className="w-3 h-3 text-brand-teal" />}
-                {showAllPortals ? 'All Portals' : 'Tailored Portals'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowAllPortals(prev => !prev)}
-                className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
-                  showAllPortals 
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
-                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {showAllPortals ? 'Hide Extra' : 'Show All'}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Navigation Categories & Items */}
