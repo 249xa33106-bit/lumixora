@@ -17,7 +17,9 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '259xa05013',
   '269x105013',
   '249xa05086',
-  '249xa33092'
+  '249xa33092',
+  '259xa33002',
+  '259xa33030'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
@@ -206,6 +208,8 @@ export function getGprecScholarRoster() {
       if (r === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
       else if (r === '249xa05086') scholarName = 'GG PREETHI';
       else if (r === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
+      else if (r === '259xa33002') scholarName = 'A POOJA';
+      else if (r === '259xa33030') scholarName = 'E USHA ESWARI';
       else scholarName = `GPREC Scholar (${r.toUpperCase()})`;
     }
     fullList.push({
