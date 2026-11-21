@@ -58,6 +58,8 @@ const GprecResumeMockInterviewPortal = lazy(() => import('../components/gprec/Gp
 const GprecCompanyDrillPacks = lazy(() => import('../components/gprec/GprecCompanyDrillPacks'));
 const GprecCompanyPapersPortal = lazy(() => import('../components/gprec/GprecCompanyPapersPortal'));
 const GprecPlacementCertificateModal = lazy(() => import('../components/gprec/GprecPlacementCertificateModal'));
+const GprecTpoPortal = lazy(() => import('./GprecTpoPortal'));
+const FacultyPortal = lazy(() => import('./FacultyPortal'));
 
 function GprecSubPortalFallback({ label = 'Calibrating Portal...' }) {
   return (
@@ -495,6 +497,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     if (!nav) return 'dashboard';
     const clean = String(nav).toLowerCase().replace(/[-_]/g, '');
     if (clean.includes('founderaudit') || clean.includes('founder') || clean.includes('timelog') || clean.includes('audit')) return 'founder_audit';
+    if (clean.includes('tpo') || clean.includes('tpocenter') || clean.includes('tpodashboard')) return 'tpo_portal';
+    if (clean.includes('faculty') || clean.includes('facultypages') || clean.includes('teach')) return 'faculty_portal';
     if (clean.includes('techpulse') || clean.includes('technews') || clean.includes('jobsradar') || clean.includes('techradar') || clean === 'techpulse') return 'tech_pulse';
     if (clean.includes('secureexam') || clean.includes('exam') || clean.includes('proctor') || clean.includes('assessment')) return 'secure_exams';
     if (clean.includes('careergrowth') || clean.includes('offcampus') || clean.includes('referral') || clean.includes('portfolio')) return 'career_growth';
@@ -730,6 +734,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     user?.email?.toLowerCase() === 'founder@lumixora.com' ||
     user?.email?.toLowerCase() === '249xa33106@gprec.ac.in' ||
     (typeof window !== 'undefined' && localStorage.getItem('lumixora_founder_mode') === 'true');
+
+  const isOfficerOrFaculty = isFounder ||
+    user?.role === 'faculty' ||
+    user?.role === 'mentor' ||
+    user?.role === 'teacher' ||
+    user?.role === 'tpo' ||
+    user?.isOfficer === true ||
+    user?.isDean === true ||
+    !!user?.designation ||
+    user?.email?.toLowerCase() === 'dean.placements@gprec.ac.in' ||
+    user?.email?.toLowerCase() === 'srikanth.csm@gprec.ac.in';
   const [streakDays, setStreakDays] = useState(typeof user?.streak === 'number' ? user.streak : 0);
 
   // Adaptive Dynamic Daily Mission Generator (strictly tracks real student completion)
@@ -2333,6 +2348,57 @@ Return ONLY a valid JSON object without markdown:
 
           {/* Categorized Navigation Sections */}
           <nav className="flex flex-col gap-3">
+            {isOfficerOrFaculty && (
+              <div className="space-y-1">
+                {!isSidebarCollapsed && (
+                  <div className="px-2.5 text-[9px] font-black uppercase tracking-wider text-blue-400/80">
+                    Faculty & T&P Center
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    navigateTo('faculty_portal');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center h-10' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-all text-left cursor-pointer border ${
+                    activeNav === 'faculty_portal'
+                      ? 'bg-blue-600 text-white shadow-md border-blue-500'
+                      : 'bg-blue-500/10 text-blue-300 border-blue-500/30 hover:bg-blue-500/20'
+                  }`}
+                  title="Faculty Portal"
+                >
+                  <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-2.5'} min-w-0`}>
+                    <GraduationCap className="w-4 h-4 text-blue-400 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">Faculty Portal</span>}
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-500 text-white uppercase">T&P</span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigateTo('tpo_portal');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center h-10' : 'justify-between px-3 py-2'} rounded-xl text-xs font-bold transition-all text-left cursor-pointer border ${
+                    activeNav === 'tpo_portal'
+                      ? 'bg-indigo-600 text-white shadow-md border-indigo-500'
+                      : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/20'
+                  }`}
+                  title="TPO Officer Command Center"
+                >
+                  <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-2.5'} min-w-0`}>
+                    <Building2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                    {!isSidebarCollapsed && <span className="truncate">TPO Command Suite</span>}
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-indigo-500 text-white uppercase">Dean</span>
+                  )}
+                </button>
+              </div>
+            )}
+
             {isFounder && (
               <div className="space-y-1">
                 {!isSidebarCollapsed && (
@@ -2726,6 +2792,50 @@ Return ONLY a valid JSON object without markdown:
               )}
             </div>
 
+            {/* Faculty & TPO Quick Switch Pills */}
+            {isOfficerOrFaculty && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => navigateTo('faculty_portal')}
+                  className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all ${
+                    activeNav === 'faculty_portal'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-900'
+                  }`}
+                  title="Open Faculty Portal"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Faculty Portal</span>
+                </button>
+
+                <button
+                  onClick={() => navigateTo('tpo_portal')}
+                  className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all ${
+                    activeNav === 'tpo_portal'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                      : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-300 text-indigo-900'
+                  }`}
+                  title="Open TPO Command Suite"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>TPO Portal</span>
+                </button>
+
+                <button
+                  onClick={() => navigateTo('dashboard')}
+                  className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-all ${
+                    activeNav === 'dashboard'
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                      : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                  }`}
+                  title="Switch to Student Placement Suite"
+                >
+                  <Users className="w-3.5 h-3.5 text-slate-700" />
+                  <span>Student View</span>
+                </button>
+              </div>
+            )}
+
             {isFounder && (
               <button
                 onClick={() => navigateTo('founder_audit')}
@@ -2950,6 +3060,28 @@ Return ONLY a valid JSON object without markdown:
           {/* ========================================================= */}
           {/* VIEW: 1. APPLE-INSPIRED MAIN DASHBOARD                    */}
           {/* ========================================================= */}
+          {/* ========================================================= */}
+          {/* VIEW: FACULTY & T&P PORTAL (FOR FACULTY & OFFICERS)       */}
+          {/* ========================================================= */}
+          {activeNav === 'faculty_portal' && isOfficerOrFaculty && (
+            <div className="flex flex-col gap-6">
+              <Suspense fallback={<GprecSubPortalFallback label="Loading Faculty Placement Portal..." />}>
+                <FacultyPortal user={user} setActiveTab={setActiveTab} />
+              </Suspense>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* VIEW: TPO OFFICER COMMAND CENTER & DATABASE               */}
+          {/* ========================================================= */}
+          {activeNav === 'tpo_portal' && isOfficerOrFaculty && (
+            <div className="flex flex-col gap-6">
+              <Suspense fallback={<GprecSubPortalFallback label="Loading TPO Command Suite..." />}>
+                <GprecTpoPortal user={user} setActiveTab={setActiveTab} />
+              </Suspense>
+            </div>
+          )}
+
           {/* ========================================================= */}
           {/* VIEW: FOUNDER AUDIT & TIME LOGS CENTER (GPREC EXCLUSIVE)  */}
           {/* ========================================================= */}
