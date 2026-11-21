@@ -363,7 +363,7 @@ export default function GprecPlacementLoginModal({
                     type="text"
                     value={rollNumber}
                     onChange={(e) => setRollNumber(e.target.value)}
-                    placeholder="e.g. 249XA33106 or srikanth.csm@gprec.ac.in"
+                    placeholder="e.g. 249XA33106 or faculty@gprec.ac.in"
                     className="w-full px-3.5 py-2.5 rounded-lg bg-white border border-[#CBD5E1] focus:border-[#0B132B] focus:ring-1 focus:ring-[#0B132B] text-sm font-mono font-bold tracking-wider uppercase outline-none transition-all"
                     autoFocus
                     required
