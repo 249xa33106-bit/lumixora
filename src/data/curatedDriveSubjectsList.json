@@ -1,0 +1,1026 @@
+[
+  {
+    "subjectId": "adsa",
+    "subjectName": "Advanced Data Structures & Algorithms (ADSA)",
+    "subjectCode": "CS202",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1jymy9qvF0dZg239lBLh6Z-aWAHXGfLsC",
+        "title": "ADSA Semester End Exam Paper - Scheme-2023 (Official)"
+      },
+      {
+        "id": "1DUVM5Buyz1_u_dl8nwX42NYv2FlQDRCP",
+        "title": "ADSA End Exam Paper (Common to CSE, CSM, CSD, CSBS)"
+      },
+      {
+        "id": "18LCdN3IFCF5wJHA3W0oTUY4TJPmvL3Iu",
+        "title": "ADSA (S-23) II Sessional Exam 2025-26 with Key"
+      },
+      {
+        "id": "14-ADSA",
+        "title": "ADSA 1st Sessional Question Paper (Autonomous GPREC)"
+      },
+      {
+        "id": "16-ADSA",
+        "title": "ADSA 2nd Sessional Question Paper (Autonomous GPREC)"
+      },
+      {
+        "id": "1sBbqSo1dJqpSe2-0uA7KFtXwFbHFLNBB",
+        "title": "ADSA Unit-1 & Unit-2 Faculty Classwork Notes"
+      },
+      {
+        "id": "1d-Qkp8SwrwJXz23vsWheA4U_Cg2ANVeO",
+        "title": "ADSA Unit-IV Complete Faculty Notes"
+      },
+      {
+        "id": "1JGwoJC-VKuHS-S-Uw-e1giD9yAQkpZht",
+        "title": "ADSA Unit-V Complete Faculty Notes"
+      }
+    ]
+  },
+  {
+    "subjectId": "dbms",
+    "subjectName": "Database Management Systems (DBMS)",
+    "subjectCode": "CS302",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT",
+      "ECE"
+    ],
+    "semester": "Sem 4",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1_SDN4yeh6ODjKjUZghKEIs4freoFUAEs",
+        "title": "DBMS Semester End Paper - Scheme-2023 (Common to CSE, CSM, CSD, CSBS)"
+      },
+      {
+        "id": "1BpJau1-_0rx-GlokLabElnTgNrrWm1g1",
+        "title": "DBMS External Question Paper (Common to CSE, CSM, CSD, CSB) Set-3"
+      },
+      {
+        "id": "1b0td2gD5AM-CK3XLF8oyqPVBjWn7y_4i",
+        "title": "DBMS End Semester Question Paper (Autonomous)"
+      },
+      {
+        "id": "1Qijf7GR6wyT2xOhpPFzx7ZXB1lfAsE74",
+        "title": "DBMS Comprehensive Examination Paper"
+      },
+      {
+        "id": "179ptnWNVNn7bryPCR0nTCTmLUudh2QEH",
+        "title": "DBMS Sessional & Mid Question Paper Bank"
+      }
+    ]
+  },
+  {
+    "subjectId": "dlco",
+    "subjectName": "Digital Logic & Computer Organization (DLCO)",
+    "subjectCode": "CS203",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1qx1lkDOE2ZSd9OQ8AtWMnqtGc-ppmvVh",
+        "title": "DLCO End Exam Question Paper (Scheme-2023)"
+      },
+      {
+        "id": "1_W_FPQXAUAiVpsqynRWdtxncXVl-Clb4",
+        "title": "DLCO University Question Paper"
+      },
+      {
+        "id": "16oEjR8EagiSY1ir3v9uGsomMj_K958yG",
+        "title": "DLCO Scheme-2023 Common to CSE, CSM, CSD, CSBS"
+      },
+      {
+        "id": "1aFBzGJsPN8hRmZakP3P4bEWh6vuzEGnx",
+        "title": "DLCO Common to CSM, CSD & CSBS Set-2"
+      },
+      {
+        "id": "1Pl47pwn6jdJzNOSWJZAMnlPxm2yKHXtJ",
+        "title": "DLCO Regular End Exam Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "dmgt",
+    "subjectName": "Discrete Mathematics & Graph Theory (DMGT)",
+    "subjectCode": "BS201",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1t-Hg3Y6A1-CBQ79aNpbFlvpeFNGLnEXQ",
+        "title": "DMGT End Exam Question Paper"
+      },
+      {
+        "id": "1hzJyBxhyQasmYC2G_atgt7csE3ekNTo1",
+        "title": "DMGT University Question Paper (Scheme-2023)"
+      },
+      {
+        "id": "1VXZbYV89NO88_YhH1M2uxVv88p8A1Kml",
+        "title": "DMGT Autonomous Semester Paper - Scheme-2023"
+      },
+      {
+        "id": "1efPwNLceknMQ3niPuVyy-k1Uy04pkEVw",
+        "title": "DMGT Comprehensive Question Paper"
+      },
+      {
+        "id": "1MuaaYhYpdjclxszI37xKbiRyaP0EKV2b",
+        "title": "DMGT Regular End Semester Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "dti",
+    "subjectName": "Design Thinking & Innovation (DTI)",
+    "subjectCode": "MC201",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2026",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1VlHOxeaLidB_BqdyboZ3FGXI-acbb7r0",
+        "title": "DTI End Exam Question Paper - Scheme-2023"
+      },
+      {
+        "id": "1OaGzNSTCXCmQw0npyaJ5DAIq375IRlA2",
+        "title": "DTI University Semester Paper"
+      },
+      {
+        "id": "1qakG6F2L-K5ho-EV7LilMkmfbiz68Zx1",
+        "title": "DTI Scheme-2023 Official Paper"
+      },
+      {
+        "id": "1wnpf-RrJ0dexGwrFpnQhEgTiB91lr-iH",
+        "title": "DTI Scheme-23 Sessional & Final Paper"
+      },
+      {
+        "id": "1zXCoBDo1XU8aK9wBTDn7HXysSJdDhVL9",
+        "title": "DTI Autonomous Regular Question Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "oopj",
+    "subjectName": "Object Oriented Programming through Java (OOPJ)",
+    "subjectCode": "CS204",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT",
+      "ECE"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1DazrFd0xsXBq1glQpHPxDwaem_tmxYxq",
+        "title": "OOPJ Scheme-2023 Common to CSE, CSM, CSD, CSB"
+      },
+      {
+        "id": "1t33Kor93dj4c8EHfRM3FsHBk2Sq9cClJ",
+        "title": "OOPJ External Question Paper Set-2"
+      },
+      {
+        "id": "1n86k39k53Hdzt2ZULBApILx7auF_CTZ0",
+        "title": "Java Programming University Question Paper"
+      },
+      {
+        "id": "1si3ZCjK-RmlT2fsQqCz_capG2Ivq_KWf",
+        "title": "Java Intro, Classes, Objects Complete Unit 1 & 2"
+      },
+      {
+        "id": "16CoYoetzPVaggSrMKdR6T3qyp7-3rwxI",
+        "title": "Collections in Java & Exception Handling Unit 5"
+      },
+      {
+        "id": "1S60Q0UeUfHwyNaeceuaZDdRFmBawXkVE",
+        "title": "Complete Java Notes & Practice Problem Set"
+      }
+    ]
+  },
+  {
+    "subjectId": "ml",
+    "subjectName": "Machine Learning (ML)",
+    "subjectCode": "AI301",
+    "branch": "CSM",
+    "branchesApplicable": [
+      "CSM",
+      "CSE",
+      "CSD"
+    ],
+    "semester": "Sem 5",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1fjcn8AG8Zl3o5aBnmJzRgUnPWqcfl0gb",
+        "title": "Model Question Paper Machine Learning (ML) - Scheme-2023"
+      },
+      {
+        "id": "1wj842SBRkvt6DC8mT2RzaCrS5uuCBub8",
+        "title": "AI R-23 Unit-1 & Machine Learning Foundations"
+      },
+      {
+        "id": "1AGZFRQGtt1CyWt82y9c_uBqi777Cc8Nl",
+        "title": "Machine Learning & Deep Learning Unit-IV PPT"
+      },
+      {
+        "id": "1velYeCHjd6Srlod_E3FxlPnweXuUCccA",
+        "title": "CSM 5th Semester Mid Examination Papers Bank"
+      }
+    ]
+  },
+  {
+    "subjectId": "os",
+    "subjectName": "Operating Systems & System Programming (OS / OSSP)",
+    "subjectCode": "CS301",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT",
+      "ECE"
+    ],
+    "semester": "Sem 4",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1wxHz51xSjNvEQwKaBlQ1ZlqQQzaFR40A",
+        "title": "OSSP Unit-I & End Semester Exam Paper"
+      },
+      {
+        "id": "1t7II5Y941joj0hAUK8xvJj7JrHs_HYHB",
+        "title": "Operating Systems Computer Science Unit-II Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "pas",
+    "subjectName": "Probability and Statistics (PAS)",
+    "subjectCode": "BS202",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "11dsGaRxesiaiZ8iwdslik8po1N8GXaZV",
+        "title": "PAS Scheme-2023 Common to CSE, CSM, CSB"
+      },
+      {
+        "id": "1ceG9vPqkVTMYYqu1lHitWHJK0U93F2CE",
+        "title": "Probability & Statistics Semester End Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "ot",
+    "subjectName": "Optimization Techniques (OT)",
+    "subjectCode": "BS301",
+    "branch": "CSM",
+    "branchesApplicable": [
+      "CSM",
+      "CSD",
+      "CSE"
+    ],
+    "semester": "Sem 5",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1gIQGpNQx-363x3DO8zsBdNLVxGWELfe6",
+        "title": "Optimization Techniques Common to CSM & CSD Scheme-2023"
+      }
+    ]
+  },
+  {
+    "subjectId": "bcme",
+    "subjectName": "Basic Civil & Mechanical Engineering (BCME)",
+    "subjectCode": "ES101",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1IvAcydOfqukl8do51Kp6heIbdC1GlJD_",
+        "title": "BCME End Exam Paper - Scheme-2023 / Scheme-2026 Set-1"
+      },
+      {
+        "id": "1OAW3AksrAS-MlFRtQn49AqhTKTxkuLe7",
+        "title": "BCME Regular Semester Exam Paper Set-2"
+      },
+      {
+        "id": "1TmYOHaz-vrYv78HpsRj0j0hBVRhfPcxE",
+        "title": "BCME University Question Paper Set-3"
+      },
+      {
+        "id": "19Fn9lPKq1IVlr8WKK7LLX6goWBH1P-WI",
+        "title": "BCME Autonomous Examination Paper Set-4"
+      },
+      {
+        "id": "16TbZ0xHPMv9EuOxve0MmrxAc9s0jUBR1",
+        "title": "BCME Final Question Paper Set-5"
+      }
+    ]
+  },
+  {
+    "subjectId": "beee",
+    "subjectName": "Basic Electrical & Electronics Engineering (BEEE / BEE)",
+    "subjectCode": "ES102",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1ANnzfr6j68Kos4b9lvjr54JuergIviGd",
+        "title": "BEEE Semester End Exam Paper Set-1"
+      },
+      {
+        "id": "1qnRBhot7Mum6wriNeXWp6B2YDKNV0TJh",
+        "title": "BEEE Semester End Exam Paper Set-2"
+      },
+      {
+        "id": "11b-TGMS4UFGBdJ8dkxXW8RNwZ4i-UrM0",
+        "title": "BEEE Important Question Bank with Answers"
+      },
+      {
+        "id": "12czpaaCvnU5LHvJAAZNdulqgvBkGum0N",
+        "title": "BEE Official End Exam Paper Set-1"
+      },
+      {
+        "id": "17JVkKUo0a5AjjHLiPfzFHOPUBm865ty8",
+        "title": "BEE Official End Exam Paper Set-2"
+      },
+      {
+        "id": "1TjSYZMhtzWAhoCm8GBt0sH-LhBwN8K5a",
+        "title": "BEEE Final University Question Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "chy",
+    "subjectName": "Engineering Chemistry (CHY / EC)",
+    "subjectCode": "BS102",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "Civil",
+      "Mechanical",
+      "ECE",
+      "EEE",
+      "CSE"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1vTwMn0HSl2iJqHabw30hL9iVlJlSLzcu",
+        "title": "Chemistry (CHY) Scheme-2023 End Exam Paper"
+      },
+      {
+        "id": "1m8cJbSL-7mDSBbPFnGSYSCDt-nlQfHPn",
+        "title": "Chemistry University Examination Paper Set-1"
+      },
+      {
+        "id": "1Z4cWJrPLsVv88ThG4V4IHNRqlL7VFrXn",
+        "title": "Chemistry University Examination Paper Set-2"
+      },
+      {
+        "id": "1RxzoYeUMc_yPFDfrt25EGk720AKO_wx-",
+        "title": "Chemistry University Examination Paper Set-3"
+      },
+      {
+        "id": "1vKtd2dfwNtwxL2zYmo3wzlgAT1lK-ivF",
+        "title": "Chemistry University Examination Paper Set-4"
+      },
+      {
+        "id": "1F7XPshTRT704TKKmcQOJm2ctJQt1CIUL",
+        "title": "Engineering Chemistry Common to CE & ME Paper Set-1"
+      },
+      {
+        "id": "1H8-7eXxDQB9-B7nnDwtfUeyc278s3mJP",
+        "title": "Engineering Chemistry Regular Question Paper Set-2"
+      },
+      {
+        "id": "1wtN1QNTsL_4Nf8_dqvt9wDYNB0iHdFO5",
+        "title": "Engineering Chemistry Question Paper Set-3"
+      },
+      {
+        "id": "1NtR3-lgbRFSccJ9tTFedCOrtxSWrzNP6",
+        "title": "Engineering Chemistry Common to CE & ME Set-4"
+      },
+      {
+        "id": "1FH3hpvCcWJVGRRTSrTZDBPbwIKlZN86l",
+        "title": "Chemistry Chapter Notes & Question Bank Part 1"
+      },
+      {
+        "id": "12AJrazi8LlZB55refaTMzzyB4ojTlrdG",
+        "title": "Chemistry Chapter Notes & Question Bank Part 2"
+      }
+    ]
+  },
+  {
+    "subjectId": "ce",
+    "subjectName": "Communicative English (CE)",
+    "subjectCode": "HS101",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1me7tdFnNshJ_yvERm6x4qP0Htn9FyJa8",
+        "title": "Communicative English End Exam Paper Set-1"
+      },
+      {
+        "id": "1Ov7XlX02dgq6WFbHx_h7MIB5yed97ZYg",
+        "title": "Communicative English End Exam Paper Set-2"
+      },
+      {
+        "id": "1BuOAdoEYviCJI7ziZ4thRN4isgajkwzP",
+        "title": "Communicative English End Exam Paper Set-3"
+      },
+      {
+        "id": "1LH9FGIHlzBVWNZU3ObKhixYWKWKbpjNS",
+        "title": "Communicative English University Paper Set-4"
+      },
+      {
+        "id": "1krjqumALPWK0LIEB-KoBANO-FaBCyvkV",
+        "title": "Communicative English Final Exam Paper Set-5"
+      }
+    ]
+  },
+  {
+    "subjectId": "ds",
+    "subjectName": "Data Structures (DS)",
+    "subjectCode": "CS102",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT",
+      "ECE"
+    ],
+    "semester": "Sem 2",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1pu_rqSZJKl0Exozk5gElhi7vQd8yKXKK",
+        "title": "Data Structures End Exam Question Paper Set-1"
+      },
+      {
+        "id": "1o71zCDhaEVrK51I2dYuZq2Lwq-2NfnYz",
+        "title": "Data Structures End Exam Question Paper Set-2"
+      },
+      {
+        "id": "1VXqakEPI-SGy_iQlAHAgHCZaZEFwJ5tB",
+        "title": "Data Structures End Exam Question Paper Set-3"
+      },
+      {
+        "id": "1GdNfhEPXlJDafXFX4pDjQepd-9aWOLwD",
+        "title": "Data Structures Common to CSE, CSM, CSD, CSBS Set-4"
+      },
+      {
+        "id": "1x6UWpk4zTj9Ius3dpa_HbJMcOQovwvuG",
+        "title": "Data Structures Common to CSE, CSM, CSD, CSBS Set-5"
+      },
+      {
+        "id": "1AT_1EBCMweR1Pz1bO-XLLkDuB0CLHnMY",
+        "title": "Data Structures Common to CSE, CSM, CSD, CSBS Set-6"
+      }
+    ]
+  },
+  {
+    "subjectId": "devc",
+    "subjectName": "Differential Equations and Vector Calculus (DEVC / M2)",
+    "subjectCode": "BS103",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 2",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1e_hISK-M2kNtTCWn80GivYst6Q9eRbHD",
+        "title": "DEVC Mathematics-2 End Exam Paper Set-1"
+      },
+      {
+        "id": "1rCj3RYyOB2ahzshgjzSDv0GzCzHdAIJ8",
+        "title": "DEVC Mathematics-2 End Exam Paper Set-2"
+      },
+      {
+        "id": "1-1B1VA6DZXIIIdrY_Qi78Ab86kumboPa",
+        "title": "DEVC Mathematics-2 University Paper Set-3"
+      }
+    ]
+  },
+  {
+    "subjectId": "eg",
+    "subjectName": "Engineering Graphics & Modeling (EG / EGM)",
+    "subjectCode": "ES103",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "Mechanical",
+      "Civil",
+      "EEE",
+      "ECE",
+      "CSM",
+      "CSD"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1TfXSe59XIzYULhLbzBxY-I-QuJnxNhEr",
+        "title": "EG Scheme-2023 Common to CSM, CSD, ME, EEE"
+      },
+      {
+        "id": "13iCf4c0TPcCeBIVPXe_xxIoiElRoWOXm",
+        "title": "Engineering Graphics End Exam Paper Set-1"
+      },
+      {
+        "id": "1W5LiML6mC8pRmCfJa3TDZtYJQ2zu5wLM",
+        "title": "Engineering Graphics End Exam Paper Set-2"
+      },
+      {
+        "id": "1gcXG6fHU430VY-pMLTkXOQOlIG5y3vt6",
+        "title": "EG Common to ME, EEE, CSM, CSD Paper Set-3"
+      },
+      {
+        "id": "1x4ocdM14Kwsc1EnsTlnc0l26klQ3KC-S",
+        "title": "EGM Common to CE, ME Paper Set-1"
+      },
+      {
+        "id": "1frBnBYgccmtauj8IrVt3NBnjLWCuhwS-",
+        "title": "EGM Common to CE, ME Paper Set-2"
+      },
+      {
+        "id": "1O5W35OzGiXliXgJ7sXcs8jHJgQKnXRDF",
+        "title": "EGM Common to CE, ME Paper Set-3"
+      }
+    ]
+  },
+  {
+    "subjectId": "ep",
+    "subjectName": "Engineering Physics / Applied Physics (EP / AP)",
+    "subjectCode": "BS104",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "16pWLmT-foqWau897uYBQKTJ04vHJh9gm",
+        "title": "Engineering Physics All Branches Official Paper Set-1"
+      },
+      {
+        "id": "1IX2Ypi4ISczwdIO24OMBVp44chlvCiWZ",
+        "title": "Engineering Physics All Branches Official Paper Set-2"
+      },
+      {
+        "id": "1dErPSLHsI9XO5giicjbwzhfSuESFheBD",
+        "title": "Engineering Physics University Exam Paper Set-3"
+      },
+      {
+        "id": "1IGJcSUyBtH1Ol6ZYejrEKIq3yZG_S6bf",
+        "title": "Engineering Physics University Exam Paper Set-4"
+      },
+      {
+        "id": "1psW7wsTpkKjgzKnvfB9E6m-xbhezafci",
+        "title": "Engineering Physics University Exam Paper Set-5"
+      },
+      {
+        "id": "1L1CKcGw1yalJ5HSg__U_9NknyjmY7-QU",
+        "title": "Engineering Physics Autonomous Paper Set-6"
+      },
+      {
+        "id": "1fgiILEUDAPYSNX9j7shVJalNQL5zZ3RE",
+        "title": "EP Question Paper 9D7"
+      },
+      {
+        "id": "1OH6eE3IQlq8-0iANCMTnE9HUYHZSW_aB",
+        "title": "EP Question Paper czO"
+      },
+      {
+        "id": "1VoND0zfoeHXAURNHc08DSjIDYlbc4x1M",
+        "title": "EP Question Paper kjO"
+      },
+      {
+        "id": "1EQMt1ENI4Bo3BYBW5PIGgQZ5ek4XwKqW",
+        "title": "EP Question Paper S7F"
+      },
+      {
+        "id": "17o5YY_Rm_sVfPWZ6sMB5_i8yqAAHa2-H",
+        "title": "Applied Physics (AP) Official Examination Paper Set-1"
+      },
+      {
+        "id": "1a7WZtyHvL5UH-uGNQ1bPN9ihlV9izjVx",
+        "title": "Applied Physics (AP) Official Examination Paper Set-2"
+      }
+    ]
+  },
+  {
+    "subjectId": "inp",
+    "subjectName": "Introduction to Programming through C (INP / PPS)",
+    "subjectCode": "ES104",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 1",
+    "scheme": "Scheme-2026",
+    "schemesApplicable": [
+      "Scheme-2026",
+      "Scheme-2023",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "19b9KbhDBUMhWMXGvEmp7x0Bb88f--vRX",
+        "title": "Introduction to Programming End Exam Paper Set-1"
+      },
+      {
+        "id": "1xRri1h8YJ-g6pDE3M3mt7cKH_6Pz1YP4",
+        "title": "Introduction to Programming End Exam Paper Set-2"
+      },
+      {
+        "id": "1cQJt-JWZPqsFMMoxrNPyga18t9rhN3OI",
+        "title": "INP University Question Paper Set-3"
+      },
+      {
+        "id": "1YahZi168rJimDGl47zzI7530P0-iRJV2",
+        "title": "INP Official Question Paper Set-4"
+      },
+      {
+        "id": "14eo4g1u_udZqS4Zu84wi3SMJPtaB7NUR",
+        "title": "INP Official Question Paper Set-5"
+      },
+      {
+        "id": "16LoyTU4UwHHYxjHxUVjjZukVDrMYgyqk",
+        "title": "INP Official Question Paper Set-6"
+      },
+      {
+        "id": "1ZN84plcu5muOcEvy1REK7Mr-wp6sSwtp",
+        "title": "INP Official Question Paper Set-7"
+      },
+      {
+        "id": "1ItoGC55YAg7xPvcCboiEE8jNgfz6SI_E",
+        "title": "C Viva & Lab Sessional Questions Bank"
+      }
+    ]
+  },
+  {
+    "subjectId": "mefa",
+    "subjectName": "Managerial Economics and Financial Analysis (MEFA)",
+    "subjectCode": "HS201",
+    "branch": "All Branches",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "ECE",
+      "EEE",
+      "Civil",
+      "Mechanical"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "1Stk2enIZawho7Ka1r-hAplrECRYtg845",
+        "title": "Capital Budgeting Problems for Scheme-23"
+      },
+      {
+        "id": "18GYuMj9N36TP-ZTSE1Y6oRtyp3J_-JDv",
+        "title": "Capital Budgeting for ECE Students AY-2025-26"
+      },
+      {
+        "id": "19MoSbg-bmMNruT2Kwi6B-KEVFhwMz1nG",
+        "title": "Cost Analysis for ECE Abridged Form"
+      },
+      {
+        "id": "1mefa-ch1",
+        "title": "MEFA Unit-I: Managerial Economics & Demand Forecasting"
+      },
+      {
+        "id": "1mefa-ch2",
+        "title": "MEFA Unit-II: Production & Cost Function Analysis"
+      },
+      {
+        "id": "1mefa-ch3",
+        "title": "MEFA Unit-III: Market Structures & Pricing Policies"
+      },
+      {
+        "id": "1mefa-fin",
+        "title": "MEFA Final Accounts & Financial Ratios Analysis"
+      }
+    ]
+  },
+  {
+    "subjectId": "cn",
+    "subjectName": "Computer Networks (CN)",
+    "subjectCode": "CS401",
+    "branch": "CSE",
+    "branchesApplicable": [
+      "CSE",
+      "CSM",
+      "CSD",
+      "IT",
+      "ECE"
+    ],
+    "semester": "Sem 4",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "119rOEFLI7vkmRf_VaWMjmNq7h8zg4uAe",
+        "title": "Computer Networks CSE & CST Official Examination Paper"
+      }
+    ]
+  },
+  {
+    "subjectId": "dcd",
+    "subjectName": "Digital Circuits and Design (DCD / DLD)",
+    "subjectCode": "EC201",
+    "branch": "ECE",
+    "branchesApplicable": [
+      "ECE",
+      "EEE",
+      "CSE"
+    ],
+    "semester": "Sem 3",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23",
+      "R20"
+    ],
+    "drivePapers": [
+      {
+        "id": "11b-TGMS4UFGBdJ8dkxXW8RNwZ4i-UrM0",
+        "title": "DCD Important Questions & Answers Key Bank"
+      },
+      {
+        "id": "1cgejO-ZeyIdgKxH9b5xEHecQPsygPXAl",
+        "title": "DCD Unit-III HDL Verilog/VHDL Complete Notes"
+      },
+      {
+        "id": "1q756C-hwgRnt5sxZTomP60cxGPbQXNe0",
+        "title": "DCD Unit-V FSM & PLDs Complete Faculty Notes"
+      }
+    ]
+  },
+  {
+    "subjectId": "adcm",
+    "subjectName": "Analog & Digital Communication (ADCM)",
+    "subjectCode": "EC301",
+    "branch": "ECE",
+    "branchesApplicable": [
+      "ECE",
+      "EEE"
+    ],
+    "semester": "Sem 4",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1QzCH3dJAp8ztMg6ig-9AXKv0L6CXAGSZ",
+        "title": "ADCM Unit-3 Digital Modulation & Carrier Systems"
+      }
+    ]
+  },
+  {
+    "subjectId": "cvip",
+    "subjectName": "Computer Vision & Image Processing (CVIP)",
+    "subjectCode": "AI401",
+    "branch": "CSM",
+    "branchesApplicable": [
+      "CSM",
+      "CSE",
+      "CSD"
+    ],
+    "semester": "Sem 6",
+    "scheme": "Scheme-2023",
+    "schemesApplicable": [
+      "Scheme-2023",
+      "Scheme-2020",
+      "R23"
+    ],
+    "drivePapers": [
+      {
+        "id": "1yGE6mLbxIl6UH0IdX4V9aC8A3_YQN1-2",
+        "title": "CVIP Semester End Exam Question Paper"
+      },
+      {
+        "id": "1OLKU9WjSzX0Xd74NvZX2ZtWETwLsbkEh",
+        "title": "CVIP / Computer Vision Lab Manual & Experiments"
+      }
+    ]
+  }
+]
