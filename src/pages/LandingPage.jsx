@@ -255,14 +255,17 @@ export default function LandingPage({ onLoginClick }) {
               </span>
             </button>
 
-            {/* Intern Portal Quick Login */}
+            {/* Official Cohort 01 Intern Quick Login */}
             <button
               onClick={() => handleAuth('intern')}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-indigo-700 hover:bg-indigo-50 border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
-              title="Interns Workspace Access"
+              className="px-3 py-1.5 rounded-xl text-xs font-black text-cyan-800 hover:text-black bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 hover:scale-[1.02]"
+              title="Official Intern Sign In (48 Active Cohort)"
             >
-              <Briefcase className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Intern</span>
+              <Briefcase className="w-3.5 h-3.5 text-cyan-600" />
+              <span>Intern Login</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-cyan-600 text-white text-[9px] font-black uppercase tracking-wider">
+                48
+              </span>
             </button>
 
             <button
@@ -407,6 +410,21 @@ export default function LandingPage({ onLoginClick }) {
               <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00B987]" /> Built for students</span>
               <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#08BFD0]" /> Empowering institutions</span>
               <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#7553E8]" /> Connecting employers</span>
+            </div>
+
+            {/* Direct Cohort 01 Active Intern Sign In Banner */}
+            <div className="pt-2 flex justify-center">
+              <div
+                onClick={() => handleAuth('intern')}
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-emerald-500/10 border border-cyan-500/30 hover:border-cyan-400 text-xs text-[#101A35] font-medium shadow-xs hover:shadow-md transition-all cursor-pointer group"
+              >
+                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                <span className="font-extrabold text-[#101A35]">Cohort 01 Intern?</span>
+                <span className="text-[#101A35]/70 hidden sm:inline">Software Testing (17) • Research (13) • Marketing (13) • Content Creation (5)</span>
+                <span className="font-black text-[#7553E8] group-hover:underline flex items-center gap-0.5">
+                  Sign In to Track &rarr;
+                </span>
+              </div>
             </div>
           </div>
 

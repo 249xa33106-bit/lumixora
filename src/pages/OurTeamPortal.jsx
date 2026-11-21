@@ -40,7 +40,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'Feature Strategy & Product Innovation',
     department: 'Feature Strategy & Innovation',
     lead: 'Feature Strategy Team Lead',
-    image: '/team_manasa.jpg?v=2',
+    image: '/team_manasa.jpg',
     color: 'amber',
     gradient: 'from-amber-400 to-orange-500',
     borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
@@ -62,7 +62,7 @@ export const DEFAULT_TEAM_MEMBERS = [
     divisionLabel: 'Feature Strategy & UX',
     department: 'UI/UX & Product Design',
     lead: '',
-    image: '/team_meghana.jpg?v=2',
+    image: '/team_meghana.jpg',
     color: 'amber',
     gradient: 'from-amber-400 via-orange-500 to-rose-500',
     borderBadge: 'border-amber-400/40 text-amber-300 bg-amber-400/10',
@@ -212,14 +212,6 @@ export const DEFAULT_TEAM_MEMBERS = [
 
 function TeamAvatarBadge({ src, name, gradient = "from-teal-400 to-emerald-500", size = "w-20 h-20", textSize = "text-xl" }) {
   const [imgError, setImgError] = useState(false);
-  
-  const getInitials = (n) => {
-    if (!n) return 'T';
-    const clean = n.replace(/[^a-zA-Z\s]/g, '').trim();
-    const parts = clean.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
 
   return (
     <div className={`relative ${size} shrink-0`}>
@@ -232,8 +224,8 @@ function TeamAvatarBadge({ src, name, gradient = "from-teal-400 to-emerald-500",
           className={`${size} rounded-2xl object-cover relative z-10 border-2 border-white/20 group-hover:scale-105 transition-transform duration-500 shadow-xl`} 
         />
       ) : (
-        <div className={`${size} rounded-2xl bg-gradient-to-tr ${gradient} flex items-center justify-center font-black ${textSize} text-white border-2 border-white/20 relative z-10 shadow-xl select-none group-hover:scale-105 transition-transform duration-500`}>
-          {getInitials(name)}
+        <div className={`${size} rounded-2xl bg-[#0d111d] flex items-center justify-center text-white/70 border-2 border-white/20 relative z-10 shadow-xl select-none group-hover:scale-105 transition-transform duration-500`}>
+          <Users className="w-1/2 h-1/2 opacity-75" />
         </div>
       )}
     </div>
@@ -277,7 +269,7 @@ export default function OurTeamPortal({ user, setActiveTab }) {
         if (item.id === 'tousif') return { ...item, role: 'AI Solutions', lead: 'Lead — AI Solutions' };
         if (item.id === 'riyaz') return { ...item, role: 'AI Solutions', image: '/team_riyaz.jpg?v=2' };
         if (item.id === 'meghana') return { ...item, lead: '', image: '/team_meghana.jpg?v=2' };
-        if (item.id === 'manasa') return { ...item, image: '/team_manasa.jpg?v=2' };
+        if (item.id === 'manasa') return { ...item, image: '/team_manasa.jpg' };
         if (item.id === 'pooja') return { ...item, image: '/team_pooja.jpg?v=2' };
         if (item.id === 'ushaeswari') return { ...item, image: '/team_ushaeswari.jpg?v=2' };
         return item;

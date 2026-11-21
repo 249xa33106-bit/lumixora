@@ -9,9 +9,10 @@ import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/fires
 import { internshipDb } from '../services/internshipDb';
 import { recordLocalFeePayment, KNOWN_VERIFIED_UTRS, KNOWN_PAID_EMAILS, validateUtrFormat, isValidVerifiedUtr } from '../data/collegesData';
 import { 
-  notifyFounderPayment, notifyFounderAmbassadorReferral, cleanScholarName,
+  notifyFounderPayment, notifyFounderAmbassadorReferral,
   checkUtrVerificationStatus 
 } from '../services/founderNotificationService';
+import { cleanScholarName } from '../utils/authSecurity';
 import { 
   initiateRazorpayPayment, getRazorpayKeyId, fetchRemoteRazorpayKey, saveRazorpayKeyGlobally 
 } from '../services/razorpayService';

@@ -275,8 +275,17 @@ export default function SubjectPage({ subject, onBack, onNavigateBranchSem, user
   };
 
   const handleOpenPdf = (title, url) => {
-    setViewingTitle(title || `${subject.code} Course Notes & Exam Bank`);
-    setViewingUrl(url || 'https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/contributions/1783536363296_Unit_5_Questions.pdf');
+    const currentUnitNum = selectedUnitIndex + 1;
+    const activeUnitNote = subject?.notes?.find(n => 
+      n.unit?.toLowerCase().includes(`unit ${currentUnitNum}`) || 
+      n.unit?.toLowerCase().includes(`unit${currentUnitNum}`) ||
+      n.title?.toLowerCase().includes(`unit ${currentUnitNum}`) ||
+      n.title?.toLowerCase().includes(`unit${currentUnitNum}`)
+    );
+    const defaultSubjectNote = subject?.notes?.[0];
+    const targetUrl = url || activeUnitNote?.fileUrl || defaultSubjectNote?.fileUrl || 'https://ykuyzkhhnltjccyzduap.supabase.co/storage/v1/object/public/academic_resources/contributions/1783536363296_Unit_5_Questions.pdf';
+    setViewingTitle(title || activeUnitNote?.title || `${subject.code} Course Notes & Exam Bank`);
+    setViewingUrl(targetUrl);
     setViewerOpen(true);
   };
 
@@ -592,12 +601,13 @@ export default function SubjectPage({ subject, onBack, onNavigateBranchSem, user
 
           {/* Open Full PDF / PYQs */}
           <button 
-            onClick={() => handleOpenPdf(`${subject.name} Official Model Paper & Exam Bank`, '')}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+            onClick={() => handleOpenPdf(`${subject.name} Unit ${selectedUnitIndex + 1} Notes & Exam Bank`, '')}
+            className="px-3 py-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 text-teal-300 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Open Unit Notes & Model Papers in PDF Reader"
           >
             <BookOpen className="w-3.5 h-3.5 text-brand-teal" />
-            <span className="hidden sm:inline">Model Papers</span>
-            <span className="sm:hidden">PDF</span>
+            <span className="hidden sm:inline">Unit {selectedUnitIndex + 1} Notes & Papers</span>
+            <span className="sm:hidden">Notes PDF</span>
           </button>
         </div>
       </div>

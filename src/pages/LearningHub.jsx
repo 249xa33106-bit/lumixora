@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Search, BookOpen, ChevronRight, GraduationCap, Map, Clock, Shield, Plus, Trash2, Edit2, X, Video, Sparkles, Film } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Search, BookOpen, ChevronRight, GraduationCap, Map, Clock, Shield, Plus, Trash2, 
+  Edit2, X, Video, Sparkles, Film, Layers, Award, Filter, SlidersHorizontal, Check, FileText
+} from 'lucide-react';
 import SubjectPage from './SubjectPage';
 import VideoPortal from './VideoPortal';
 import { useData } from '../context/DataContext';
@@ -8,14 +11,38 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
   const { hubSubjects, addHubSubject, updateHubSubject, deleteHubSubject, hubMaterials, updateHubMaterials, uploadFile } = useData();
   
   const [activeHubView, setActiveHubView] = useState(initialTab === 'resources' || initialTab === 'notes' ? 'resources' : 'videos');
-  const [selectedBranch, setSelectedBranch] = useState('CSE');
-  const [selectedSem, setSelectedSem] = useState('Sem 3');
+  
+  // ── Auto-Detect User's Branch & Semester ──
+  const [selectedScheme, setSelectedScheme] = useState('Scheme-2026');
+  const [selectedBranch, setSelectedBranch] = useState(() => {
+    const userBranch = user?.branch || user?.department;
+    if (userBranch) {
+      const ub = userBranch.toUpperCase();
+      if (['CSE', 'CSM', 'ECE', 'EEE', 'CIVIL', 'MECHANICAL'].includes(ub)) {
+        return ub === 'CIVIL' ? 'Civil' : ub === 'MECHANICAL' ? 'Mechanical' : ub;
+      }
+    }
+    return 'CSE';
+  });
+
+  const [selectedSem, setSelectedSem] = useState(() => {
+    const userSem = user?.semester || user?.sem;
+    if (userSem) {
+      const semNum = String(userSem).replace(/[^0-9]/g, '');
+      if (semNum && Number(semNum) >= 1 && Number(semNum) <= 8) {
+        return `Sem ${semNum}`;
+      }
+    }
+    return 'Sem 1';
+  });
+
+  const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | 'theory' | 'labs'
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubject, setActiveSubject] = useState(null);
   const [isFounderMode, setIsFounderMode] = useState(false);
 
   // Synchronize subject selection with window location hash for back button support
-  React.useEffect(() => {
+  useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#/learning-hub/subject-')) {
@@ -63,11 +90,31 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
   const [quickLabel, setQuickLabel] = useState('');
   const [quickUploading, setQuickUploading] = useState(false);
 
-  const filteredSubjects = hubSubjects.filter(sub => 
-    sub.branch === selectedBranch && 
-    sub.semester === selectedSem &&
-    sub.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const schemes = [
+    { id: 'Scheme-2026', label: 'Scheme-2026 (Autonomous)', badge: '2026' },
+    { id: '2023 Scheme', label: 'Scheme-2023 (Autonomous)', badge: '2023' },
+    { id: 'All', label: 'All Curricula', badge: 'ALL' }
+  ];
+
+  const filteredSubjects = hubSubjects.filter(sub => {
+    const matchesBranch = sub.branch === selectedBranch || (sub.branchesApplicable && sub.branchesApplicable.includes(selectedBranch));
+    const matchesSem = sub.semester === selectedSem || (sub.semestersApplicable && sub.semestersApplicable.includes(selectedSem));
+    const matchesScheme = selectedScheme === 'All' || 
+      (selectedScheme === 'Scheme-2026' && (sub.scheme === 'Scheme-2026' || !sub.scheme && (sub.semester === 'Sem 1' || sub.semester === 'Sem 2'))) ||
+      (selectedScheme === '2023 Scheme' && (sub.scheme === '2023 Scheme' || !sub.scheme));
+    const matchesSearch = !searchQuery || 
+      sub.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (sub.code && sub.code.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Category filter: theory vs lab
+    const isLab = (sub.name || '').toLowerCase().includes('lab') || (sub.name || '').toLowerCase().includes('workshop') || (sub.name || '').toLowerCase().includes('practice');
+    const matchesCategory = categoryFilter === 'all' || (categoryFilter === 'labs' && isLab) || (categoryFilter === 'theory' && !isLab);
+      
+    return matchesBranch && matchesSem && matchesScheme && matchesSearch && matchesCategory;
+  });
+
+  const theoryCount = hubSubjects.filter(s => (s.branch === selectedBranch || (s.branchesApplicable && s.branchesApplicable.includes(selectedBranch))) && (s.semester === selectedSem || (s.semestersApplicable && s.semestersApplicable.includes(selectedSem))) && !((s.name || '').toLowerCase().includes('lab') || (s.name || '').toLowerCase().includes('workshop') || (s.name || '').toLowerCase().includes('practice'))).length;
+  const labCount = hubSubjects.filter(s => (s.branch === selectedBranch || (s.branchesApplicable && s.branchesApplicable.includes(selectedBranch))) && (s.semester === selectedSem || (s.semestersApplicable && s.semestersApplicable.includes(selectedSem))) && ((s.name || '').toLowerCase().includes('lab') || (s.name || '').toLowerCase().includes('workshop') || (s.name || '').toLowerCase().includes('practice'))).length;
 
   const handleOpenAddModal = () => {
     setIsEditing(false);
@@ -144,12 +191,11 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
       delete updatedMaterials.id;
 
       const newResource = {
-        id: Date.now(),
-        label: quickLabel || (quickFile ? quickFile.name.replace(/\.[^/.]+$/, "") : "Notes Link"),
-        type: 'FileText',
-        color: 'text-brand-blue',
-        bg: 'bg-brand-blue/10',
-        fileUrl: downloadUrl
+        id: `res_${Date.now()}`,
+        name: quickLabel || quickFile?.name || "Uploaded Document",
+        type: quickFile ? quickFile.name.split('.').pop().toUpperCase() : 'PDF',
+        url: downloadUrl,
+        size: quickFile ? `${(quickFile.size / (1024 * 1024)).toFixed(1)} MB` : 'Cloud Link'
       };
 
       updatedMaterials.resources.push(newResource);
@@ -163,243 +209,298 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
     }
   };
 
+  const handleNavigateBranchSem = (branch, sem) => {
+    setActiveSubject(null);
+    window.location.hash = `#/learning-hub`;
+    if (branch) setSelectedBranch(branch);
+    if (sem) setSelectedSem(sem);
+  };
+
   // If a subject is selected, render the detailed Subject Page instead
   if (activeSubject) {
-    return <SubjectPage subject={activeSubject} onBack={handleBackFromSubject} user={user} />;
+    return (
+      <SubjectPage 
+        subject={activeSubject} 
+        onBack={handleBackFromSubject} 
+        onNavigateBranchSem={handleNavigateBranchSem}
+        user={user} 
+      />
+    );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12 relative">
-      {/* Unified Hub Navigation Switcher */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 glass-panel p-3 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-2xl">
-        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5">
+    <div className="space-y-5 animate-fade-in pb-12 relative max-w-7xl mx-auto">
+      
+      {/* ── 1. CLEAN APPLE/NOTION-STYLE SEGMENTED VIEW SWITCHER ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-1.5 bg-[#0a0e17]/90 rounded-2xl border border-white/10 backdrop-blur-xl shadow-lg">
+        <div className="inline-flex p-1 bg-white/5 rounded-xl border border-white/5 gap-1">
           <button
-            onClick={() => { setActiveHubView('videos'); setActiveSubject(null); }}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-300 ${
-              activeHubView === 'videos'
-                ? 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-lg shadow-rose-500/25 scale-[1.02]'
+            onClick={() => { setActiveHubView('resources'); setActiveSubject(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              activeHubView === 'resources'
+                ? 'bg-teal-500 text-black shadow-md font-black'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Video className="w-4 h-4" />
-            <span>Academic Video Lectures</span>
-            <span className="text-[10px] bg-black/40 text-rose-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Unit Lectures 🎥</span>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Resource Academy & Notes</span>
           </button>
           
           <button
-            onClick={() => setActiveHubView('resources')}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-300 ${
-              activeHubView === 'resources'
-                ? 'bg-gradient-to-r from-brand-teal via-emerald-500 to-teal-400 text-black shadow-lg shadow-brand-teal/25 scale-[1.02]'
+            onClick={() => { setActiveHubView('videos'); setActiveSubject(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              activeHubView === 'videos'
+                ? 'bg-rose-500 text-white shadow-md font-black'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <BookOpen className="w-4 h-4" />
-            <span>Resource Academy & Notes</span>
-            <span className="text-[10px] bg-black/40 text-teal-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Notes & PDFs 📚</span>
+            <Video className="w-3.5 h-3.5" />
+            <span>Academic Video Lectures</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-3 px-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-            <Sparkles className="w-4 h-4 text-brand-teal animate-pulse" />
-            <span className="hidden md:inline">Unified Academic Hub</span>
-          </div>
+        {/* User Academic Badge & Founder Switch */}
+        <div className="flex items-center gap-3 px-3 justify-between sm:justify-end">
+          <span className="text-[11px] font-bold text-gray-400 hidden md:flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-teal-400"></span>
+            <span>{selectedBranch} • {selectedSem}</span>
+          </span>
+
+          {user?.role === 'founder' && (
+            <div className="flex items-center gap-2 bg-white/5 px-2.5 py-1 rounded-xl border border-white/10">
+              <Shield className={`w-3.5 h-3.5 ${isFounderMode ? 'text-teal-400' : 'text-gray-500'}`} />
+              <button 
+                onClick={() => setIsFounderMode(!isFounderMode)}
+                className="text-[10px] font-bold text-gray-300 hover:text-white"
+              >
+                {isFounderMode ? 'Founder Active ✓' : 'Founder Mode'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {activeHubView === 'videos' ? (
         <VideoPortal user={user} setActiveTab={setActiveTab} />
       ) : (
-        <div className="space-y-8 animate-fade-in">
-          {/* Header Section */}
-          <div className="glass-panel p-8 rounded-3xl bg-gradient-to-br from-brand-blue/10 to-transparent border border-white/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl"></div>
-            <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center justify-between w-full">
-                  <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                    <GraduationCap className="w-8 h-8 text-brand-blue" />
-                    Resource Academy
-                  </h1>
-              {/* Founder Mode Toggle */}
-              {user?.role === 'founder' && (
-                <div className="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shrink-0">
-                  <Shield className={`w-4 h-4 ${isFounderMode ? 'text-brand-teal' : 'text-gray-500'}`} />
-                  <span className="text-xs tracking-wide font-bold hidden sm:block">Founder Mode</span>
-                  <button 
-                    onClick={() => setIsFounderMode(!isFounderMode)}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${isFounderMode ? 'bg-brand-teal' : 'bg-gray-600'}`}
+        <div className="space-y-5 animate-fade-in">
+          
+          {/* ── 2. UNIFIED COMPACT FILTER BAR (ELIMINATES GIANT 3-BOX CLUTTER) ── */}
+          <div className="bg-[#0e1422]/95 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-xl">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+              
+              {/* Left Selectors: Scheme, Branch, Semester in a single streamlined row */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                
+                {/* Scheme Select */}
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl">
+                  <Layers className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span className="text-[11px] text-gray-400 font-medium">Scheme:</span>
+                  <select
+                    value={selectedScheme}
+                    onChange={(e) => {
+                      const sch = e.target.value;
+                      setSelectedScheme(sch);
+                      if (sch === 'Scheme-2026' && (selectedSem !== 'Sem 1' && selectedSem !== 'Sem 2')) {
+                        setSelectedSem('Sem 1');
+                      }
+                    }}
+                    className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1"
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isFounderMode ? 'translate-x-5' : ''}`}></span>
-                  </button>
+                    {schemes.map(sch => (
+                      <option key={sch.id} value={sch.id} className="bg-[#111827] text-white">
+                        {sch.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
-            </div>
-            
-            <p className="text-sm text-gray-400 max-w-xl">
-              Select your branch and semester to access the highest-quality YouTube playlists, study materials, and academic resources tailored to your curriculum.
-            </p>
-          </div>
-          
-          <div className="relative w-full md:w-72 shrink-0 self-end">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search subjects..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/10 transition-colors"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 tracking-wide pl-1">1. Select Branch</label>
-          <div className="flex flex-wrap gap-2">
-            {branches.map(branch => (
-              <button
-                key={branch}
-                onClick={() => setSelectedBranch(branch)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
-                  selectedBranch === branch 
-                    ? 'bg-brand-blue text-black shadow-sm' 
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-                }`}
-              >
-                {branch}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 tracking-wide pl-1">2. Select Semester</label>
-          <div className="flex flex-wrap gap-2">
-            {semesters.map(sem => (
-              <button
-                key={sem}
-                onClick={() => setSelectedSem(sem)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
-                  selectedSem === sem 
-                    ? 'bg-brand-orange text-black shadow-sm' 
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-                }`}
-              >
-                {sem}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Subjects Grid */}
-      <div className="space-y-4 pt-4">
-        <div className="flex items-center justify-between border-b border-white/5 pb-2">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-brand-teal" />
-              Subjects for {selectedBranch} - {selectedSem}
-            </h2>
-            <span className="text-xs font-semibold text-gray-500">{filteredSubjects.length} subjects found</span>
-          </div>
-          
-          {isFounderMode && (
-            <button 
-              onClick={handleOpenAddModal}
-              className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors font-bold"
-            >
-              <Plus className="w-4 h-4" /> Add Subject
-            </button>
-          )}
-        </div>
-
-        {filteredSubjects.length === 0 ? (
-          <div className="glass-panel p-12 rounded-2xl flex flex-col items-center justify-center text-center border-dashed border-white/10 relative">
-            <Map className="w-12 h-12 text-gray-600 mb-4" />
-            <h3 className="text-lg font-bold text-gray-300">No subjects found</h3>
-            <p className="text-sm text-gray-500 mt-2 max-w-sm mb-6">
-              We couldn't find any subjects matching your current filters.
-            </p>
-            {isFounderMode && (
-              <button 
-                onClick={handleOpenAddModal}
-                className="px-6 py-2.5 bg-brand-teal text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm hover:scale-105"
-              >
-                <Plus className="w-4 h-4" /> Add the First Subject
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredSubjects.map(subject => (
-              <div 
-                key={subject.id}
-                onClick={() => handleSelectSubject(subject)}
-                className="glass-panel p-5 rounded-2xl hover:border-white/10 transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
-              >
-                {/* Admin Controls (Founder Mode) */}
-                {isFounderMode && (
-                  <div className="absolute -top-2 -right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <button 
-                      onClick={(e) => handleOpenEditModal(e, subject)}
-                      className="w-7 h-7 rounded-full bg-brand-blue text-black flex items-center justify-center hover:scale-110 shadow-lg transition-transform"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button 
-                      onClick={(e) => handleDeleteSubject(e, subject.id)}
-                      className="w-7 h-7 rounded-full bg-brand-pink text-white flex items-center justify-center hover:scale-110 shadow-lg transition-transform"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] font-bold bg-white/10 text-gray-300 px-2.5 py-1 rounded-full uppercase tracking-wide">
-                    {subject.code}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${
-                    subject.difficulty === 'Hard' ? 'bg-brand-pink/20 text-brand-pink' :
-                    subject.difficulty === 'Medium' ? 'bg-brand-orange/20 text-brand-orange' :
-                    'bg-brand-teal/20 text-brand-teal'
-                  }`}>
-                    {subject.difficulty}
-                  </span>
+                {/* Branch Select */}
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl">
+                  <span className="text-[11px] text-gray-400 font-medium">Branch:</span>
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-teal-300 focus:outline-none cursor-pointer pr-1"
+                  >
+                    {branches.map(b => (
+                      <option key={b} value={b} className="bg-[#111827] text-white">
+                        {b}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                
-                <h3 className="text-lg font-bold text-white group-hover:text-brand-blue transition-colors mb-2 line-clamp-2">
-                  {subject.name}
-                </h3>
-                
-                {isFounderMode && (
+
+                {/* Semester Select */}
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl">
+                  <span className="text-[11px] text-gray-400 font-medium">Sem:</span>
+                  <select
+                    value={selectedSem}
+                    onChange={(e) => setSelectedSem(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1"
+                  >
+                    {semesters.map(s => (
+                      <option key={s} value={s} className="bg-[#111827] text-white">
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Theory vs Lab Category Filter Pills */}
+                <div className="flex items-center p-1 bg-white/5 rounded-xl border border-white/5 text-[11px] font-bold">
                   <button
-                    onClick={(e) => handleQuickUploadOpen(e, subject)}
-                    className="mt-2 mb-4 text-[10px] bg-brand-teal/20 text-brand-teal hover:bg-brand-teal/35 border border-white/10 px-2.5 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors font-bold z-10 relative"
+                    onClick={() => setCategoryFilter('all')}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${categoryFilter === 'all' ? 'bg-white/20 text-white font-black' : 'text-gray-400 hover:text-white'}`}
                   >
-                    <Plus className="w-3.5 h-3.5" /> Upload PDF/Notes
+                    All ({filteredSubjects.length})
                   </button>
-                )}
-
-                <div className="mt-auto pt-4 flex items-center justify-between text-xs font-semibold text-gray-400">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
-                    <span>{subject.credits} Credits</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-brand-blue opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
-                    <span>Explore</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
+                  <button
+                    onClick={() => setCategoryFilter('theory')}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${categoryFilter === 'theory' ? 'bg-teal-500/30 text-teal-300 font-black' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Theory ({theoryCount})
+                  </button>
+                  <button
+                    onClick={() => setCategoryFilter('labs')}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${categoryFilter === 'labs' ? 'bg-purple-500/30 text-purple-300 font-black' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Labs ({labCount})
+                  </button>
                 </div>
               </div>
-            ))}
+
+              {/* Subject Search Bar */}
+              <div className="relative w-full lg:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Quick search subjects or codes..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* ── 3. STREAMLINED SUBJECTS SECTION ── */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-sm font-bold text-white">
+                <BookOpen className="w-4 h-4 text-teal-400" />
+                <span>Curriculum for {selectedBranch} • {selectedSem}</span>
+                <span className="text-xs font-normal text-gray-500">({filteredSubjects.length} courses)</span>
+              </div>
+              
+              {isFounderMode && (
+                <button 
+                  onClick={handleOpenAddModal}
+                  className="text-xs bg-teal-500 hover:bg-teal-400 text-black px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all font-black shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Subject
+                </button>
+              )}
+            </div>
+
+            {filteredSubjects.length === 0 ? (
+              <div className="bg-[#0e1422]/60 p-12 rounded-2xl flex flex-col items-center justify-center text-center border border-dashed border-white/10">
+                <Map className="w-10 h-10 text-gray-600 mb-3" />
+                <h3 className="text-sm font-bold text-gray-300">No subjects found</h3>
+                <p className="text-xs text-gray-500 mt-1 max-w-sm mb-4">
+                  No courses match your selected filter. Try switching between Theory or Labs.
+                </p>
+                {isFounderMode && (
+                  <button 
+                    onClick={handleOpenAddModal}
+                    className="px-4 py-2 bg-teal-500 text-black font-bold rounded-xl text-xs transition-all flex items-center gap-2 hover:scale-105"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add the First Subject
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* ── 4. STREAMLINED, MODERN CARDS (NO CLUTTER) ── */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSubjects.map(subject => {
+                  const isLab = (subject.name || '').toLowerCase().includes('lab') || (subject.name || '').toLowerCase().includes('workshop') || (subject.name || '').toLowerCase().includes('practice');
+                  
+                  return (
+                    <div 
+                      key={subject.id}
+                      onClick={() => handleSelectSubject(subject)}
+                      className="bg-[#0f1422] hover:bg-[#141b2e] border border-white/10 hover:border-teal-500/40 p-5 rounded-2xl transition-all duration-200 cursor-pointer group flex flex-col justify-between h-[180px] relative shadow-md hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-0.5"
+                    >
+                      {/* Admin Controls (Founder Mode) */}
+                      {isFounderMode && (
+                        <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
+                          <button 
+                            onClick={(e) => handleOpenEditModal(e, subject)}
+                            className="w-6 h-6 rounded-lg bg-blue-500 text-black flex items-center justify-center hover:scale-110 shadow transition-transform"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeleteSubject(e, subject.id)}
+                            className="w-6 h-6 rounded-lg bg-rose-500 text-white flex items-center justify-center hover:scale-110 shadow transition-transform"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Card Top: Code + Regulation + Lab Tag */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[10px] font-extrabold bg-teal-500/15 text-teal-300 border border-teal-500/30 px-2 py-0.5 rounded-md uppercase tracking-wider font-mono">
+                            {subject.code || 'BS101'}
+                          </span>
+                          <span className="text-[10px] text-gray-500 font-semibold">
+                            {subject.scheme || 'Scheme-2026'}
+                          </span>
+                          {isLab && (
+                            <span className="text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.2 rounded uppercase">
+                              Lab Practical
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Subject Title */}
+                        <h3 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors line-clamp-2 leading-snug">
+                          {subject.name}
+                        </h3>
+                      </div>
+
+                      {/* Card Bottom: Credits, Chapters indicator & Arrow */}
+                      <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-gray-400">
+                        <div className="flex items-center gap-2 text-[11px] font-medium">
+                          <Clock className="w-3.5 h-3.5 text-gray-500" />
+                          <span>{subject.credits || 3} Credits</span>
+                          <span>•</span>
+                          <span className="text-gray-400">5 Chapters</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1 text-teal-400 font-bold text-xs group-hover:translate-x-1 transition-transform">
+                          <span>Open</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Subject Edit/Add Modal */}
       {isModalOpen && (
@@ -448,9 +549,8 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
                   <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Credits</label>
                   <input 
                     type="number" 
-                    min="1" max="10"
                     value={subjectForm.credits} 
-                    onChange={e => setSubjectForm({...subjectForm, credits: parseInt(e.target.value)})} 
+                    onChange={e => setSubjectForm({...subjectForm, credits: parseInt(e.target.value) || 0})} 
                     className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none" 
                     required 
                   />
@@ -468,88 +568,23 @@ export default function LearningHub({ user, setActiveTab, initialTab = 'videos' 
                   <option value="Hard">Hard</option>
                 </select>
               </div>
-
-              <div className="flex gap-3 pt-4 border-t border-[#222]">
-                <button type="submit" className="flex-1 bg-brand-teal text-black font-bold py-2 rounded-lg text-xs hover:bg-brand-teal/90 transition-colors shadow-sm">
-                  {isEditing ? 'Save Changes' : 'Add Subject'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Quick Upload Modal */}
-      {quickUploadSubject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-[#222] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
-            <div className="p-5 border-b border-[#222] flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Shield className="text-brand-teal w-4 h-4" />
-                Quick Upload PDF/Notes
-              </h3>
-              <button onClick={() => setQuickUploadSubject(null)} className="text-gray-500 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleQuickUploadSubmit} className="p-5 space-y-4">
-              <div className="bg-brand-teal/10 border border-white/10 rounded-lg p-3">
-                <p className="text-xs text-brand-teal/90 font-semibold">
-                  Uploading to: <strong className="text-white">{quickUploadSubject.name}</strong>
-                </p>
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">File Label / Title</label>
-                <input
-                  type="text"
-                  value={quickLabel}
-                  onChange={e => setQuickLabel(e.target.value)}
-                  placeholder="e.g. Unit 1 Handwritten Notes"
-                  className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Choose PDF or Image File</label>
-                <input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={e => {
-                    const file = e.target.files[0];
-                    setQuickFile(file);
-                    if (file && !quickLabel) {
-                      setQuickLabel(file.name.replace(/\.[^/.]+$/, ""));
-                    }
-                  }}
-                  className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none"
-                />
-              </div>
-              <div className="relative flex items-center justify-center py-1">
-                <span className="bg-[#111] px-2 text-[9px] text-gray-500 font-bold uppercase z-10">OR</span>
-                <div className="absolute w-full h-[1px] bg-white/5"></div>
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 tracking-wide mb-1 block">Paste Document Link (Google Drive / OneDrive)</label>
-                <input
-                  type="url"
-                  value={quickUrl}
-                  onChange={e => setQuickUrl(e.target.value)}
-                  placeholder="https://drive.google.com/... or direct PDF link"
-                  className="w-full bg-black border border-[#333] rounded-lg px-3 py-2 text-xs text-white focus:border-brand-teal outline-none"
-                />
-              </div>
-              <div className="flex gap-3 pt-4 border-t border-[#222]">
-                <button
-                  type="submit"
-                  disabled={quickUploading}
-                  className="flex-1 bg-brand-teal text-black font-bold py-2 rounded-lg text-xs hover:bg-brand-teal/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              <div className="pt-2 flex justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 font-semibold rounded-lg text-xs"
                 >
-                  {quickUploading ? "Uploading..." : "Upload & Save"}
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-brand-teal text-black font-bold rounded-lg text-xs"
+                >
+                  Save Subject
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
         </div>
       )}
     </div>
