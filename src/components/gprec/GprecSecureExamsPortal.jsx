@@ -17,6 +17,27 @@ import GprecExamConductorPanel from './GprecExamConductorPanel';
 export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
   const [exams, setExams] = useState(() => loadAllSecureExams());
   const [attempts, setAttempts] = useState(() => loadExamAttempts());
+  
+  // Role checks: Only Faculty, TPO, Admins & Founders can access the Conductor Studio & War Room
+  const userRole = (user?.role || '').toLowerCase();
+  const userEmail = (user?.email || '').toLowerCase();
+  const isFacultyOrAdmin = Boolean(
+    userRole === 'faculty' ||
+    userRole === 'mentor' ||
+    userRole === 'teacher' ||
+    userRole === 'founder' ||
+    userRole === 'admin' ||
+    userRole === 'tpo' ||
+    user?.isFounder ||
+    user?.isOfficer ||
+    user?.isDean ||
+    user?.designation ||
+    userEmail === 'founder@lumixora.com' ||
+    userEmail === 'dean.placements@gprec.ac.in' ||
+    userEmail === 'srikanth.csm@gprec.ac.in' ||
+    userEmail === '249xa33106@gprec.ac.in'
+  );
+
   const [activeTab, setActiveTab] = useState('hall'); // 'hall' | 'scorecards' | 'conductor'
   const [activeExam, setActiveExam] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -163,7 +184,9 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
           {[
             { id: 'hall', label: 'Exam Hall (Take Test)', icon: Lock },
             { id: 'scorecards', label: `My Scorecards (${attempts.length})`, icon: Award },
-            { id: 'conductor', label: 'Conductor Studio & Live War Room', icon: Radio }
+            ...(isFacultyOrAdmin
+              ? [{ id: 'conductor', label: 'Conductor Studio & Live War Room', icon: Radio, facultyOnly: true }]
+              : [])
           ].map(t => {
             const Icon = t.icon;
             return (
@@ -179,6 +202,11 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{t.label}</span>
+                {t.facultyOnly && (
+                  <span className="ml-1 px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950">
+                    Faculty
+                  </span>
+                )}
               </button>
             );
           })}
@@ -370,15 +398,33 @@ export default function GprecSecureExamsPortal({ user, awardXP, addToast }) {
         </div>
       )}
 
-      {/* TAB 3: CONDUCTOR STUDIO & LIVE WAR ROOM */}
+      {/* TAB 3: CONDUCTOR STUDIO & LIVE WAR ROOM (FACULTY / TPO / ADMINS ONLY) */}
       {activeTab === 'conductor' && (
-        <GprecExamConductorPanel
-          exams={exams}
-          attempts={attempts}
-          onPublishExam={handlePublishExam}
-          onDeleteExam={handleDeleteExam}
-          addToast={addToast}
-        />
+        isFacultyOrAdmin ? (
+          <GprecExamConductorPanel
+            exams={exams}
+            attempts={attempts}
+            onPublishExam={handlePublishExam}
+            onDeleteExam={handleDeleteExam}
+            addToast={addToast}
+          />
+        ) : (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-xs flex flex-col items-center justify-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shadow-xs">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 font-sora">Faculty & Conductor Access Restricted</h3>
+            <p className="text-xs text-slate-500 max-w-md">
+              The Conductor Studio & Live War Room is strictly restricted to Faculty Coordinators, TPO Officers, and Institution Admins. Students cannot access exam authoring or live invigilation.
+            </p>
+            <button
+              onClick={() => setActiveTab('hall')}
+              className="mt-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all cursor-pointer"
+            >
+              Return to Exam Hall
+            </button>
+          </div>
+        )
       )}
     </div>
   );
