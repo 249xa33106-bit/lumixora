@@ -1147,7 +1147,38 @@ Analyze this code and return ONLY a valid JSON object:
         </div>
 
         {/* PLACEMENT OS NAVIGATION TABS */}
-        <div className="mt-8 flex flex-wrap gap-2 pt-6 border-t border-white/10">
+        <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-xs font-black uppercase tracking-wider text-gray-400 font-mono flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 text-blue-400" />
+              <span>Placement Preparation Journey:</span>
+            </span>
+
+            {/* Quick Flow Bridge to SpeakVerse & Coding */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab && setActiveTab('speakverse')}
+                className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Launch SpeakVerse AI Group Discussion & Debates"
+              >
+                <Mic className="w-3.5 h-3.5 text-emerald-400" />
+                <span>SpeakVerse GD Arena</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab && setActiveTab('coding-practice')}
+                className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Open Code Arena & DSA Lab"
+              >
+                <Code className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Code Arena & DSA</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
           {[
             { id: 'overview', label: '📊 Twin Overview', icon: BarChart2 },
             { id: 'skill_gap', label: '🎯 Advanced Skill Gap', icon: Target },
@@ -1177,6 +1208,7 @@ Analyze this code and return ONLY a valid JSON object:
               <span>{m.label}</span>
             </button>
           ))}
+          </div>
         </div>
       </div>
 

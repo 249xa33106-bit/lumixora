@@ -642,7 +642,7 @@ export const PRACTICE_LABS = [
     color: "#E11D48",
     bgGradient: "from-rose-500/10 to-pink-500/10",
     borderCol: "border-rose-200",
-    desc: "Structured debates against an adversarial AI debater. Build point-by-point arguments, cite evidence, and defend positions under rebuttals.",
+    desc: "Structured debates against an adversarial AI debater. Build point-by-point arguments, cite empirical data, and defend positions under aggressive cross-examination.",
     topics: [
       {
         topic: "Universal Basic Income: Necessary Human Safety Net or Economic Drag?",
@@ -657,6 +657,27 @@ export const PRACTICE_LABS = [
         userRole: "Advocate for Remote",
         rounds: 3,
         initialAiOpening: "Junior engineers learn through osmosis by observing senior architects across a desk. Remote setups isolate freshers and stall professional growth. Why do you believe remote work is superior for a fresh graduate?"
+      },
+      {
+        topic: "Is Traditional 4-Year Engineering Degree Outdated in the AI Copilot Era?",
+        aiStance: "Advocate for Degree (Foundations First)",
+        userRole: "Advocate for Self-Directed / AI-First",
+        rounds: 3,
+        initialAiOpening: "AI tools write superficial code, but without 4 years of discrete mathematics, operating systems, and kernel architecture, developers cannot debug deep distributed failures. Why abandon structured university rigor?"
+      },
+      {
+        topic: "Should AI-Generated Software Code & Art Hold Legal Copyright Protection?",
+        aiStance: "Advocate for Human-Only Copyright",
+        userRole: "Advocate for AI Co-Creator Rights",
+        rounds: 3,
+        initialAiOpening: "Copyright law was conceived exclusively to protect human emotional and intellectual investment. Granting legal authorship to probabilistic matrix multiplications devalues authentic human ingenuity. Defend your stance."
+      },
+      {
+        topic: "High Equity Early-Stage Startups vs. High Fixed CTC at MNCs for Freshers",
+        aiStance: "Advocate for Stable Tier-1 MNC CTC",
+        userRole: "Advocate for Startup Equity",
+        rounds: 3,
+        initialAiOpening: "Over 90% of tech startups fail within 3 years, rendering equity options worthless while cost of living skyrockets. Freshers need liquid cashflow and brand pedigree first. Why risk your formative years on illiquid paper wealth?"
       }
     ]
   },
@@ -668,7 +689,7 @@ export const PRACTICE_LABS = [
     color: "#7C3AED",
     bgGradient: "from-purple-500/10 to-indigo-500/10",
     borderCol: "border-purple-200",
-    desc: "Deliver addresses in front of a virtual interactive audience with real-time feedback on pacing, audience engagement, eye contact, and vocal modulation.",
+    desc: "Deliver high-impact addresses before an interactive virtual audience with real-time feedback on pacing, cadence, filler words, and audience engagement.",
     scenarios: [
       {
         title: "College Tech Fest Presidential Address",
@@ -681,6 +702,24 @@ export const PRACTICE_LABS = [
         duration: "90 seconds",
         audienceType: "Distinguished Alumni & Department HODs",
         prompt: "Address returning alumni on how current students are building AI products for social impact."
+      },
+      {
+        title: "JAM (Just A Minute) Extempore: 'Failure as a Feature'",
+        duration: "60 seconds",
+        audienceType: "Recruitment Panel & Fast-Paced Evaluators",
+        prompt: "Speak non-stop for 60 seconds on the topic 'Failure as a Feature, Not a Bug'. Zero pauses, maximum eloquence, and positive framing."
+      },
+      {
+        title: "Global Hackathon Grand Finale Pitch",
+        duration: "90 seconds",
+        audienceType: "Silicon Valley Tech Investors & Jury",
+        prompt: "Present your team's autonomous agent system in 90 seconds. Hook the judges in the first 10 seconds, demo the breakthrough, and conclude with explosive impact."
+      },
+      {
+        title: "Farewell Address to Graduating Senior Batch",
+        duration: "90 seconds",
+        audienceType: "Graduating Seniors, Faculty & Juniors",
+        prompt: "Deliver a heartfelt, witty, and uplifting farewell address thanking seniors for their mentorship, lab guidance, and campus legacy."
       }
     ]
   },
@@ -692,13 +731,63 @@ export const PRACTICE_LABS = [
     color: "#059669",
     bgGradient: "from-emerald-500/10 to-teal-500/10",
     borderCol: "border-emerald-200",
-    desc: "Simulate corporate campus group discussions with 3 distinct AI participants: The Moderator, The Data-Driven Peer (Ananya), and The Contrarian (Vikram).",
+    desc: "Simulate corporate campus group discussions with 3 distinct AI participants: The Moderator (Prof. Raghav), The Data-Driven Peer (Ananya), and The Contrarian (Vikram).",
     participants: [
       { name: "Prof. Raghav (Moderator)", role: "Moderator", bias: "Balances speaking time and probes for structure" },
       { name: "Ananya", role: "Analytical Peer", bias: "Quotes statistics and industry case studies" },
       { name: "Vikram", role: "Contrarian Peer", bias: "Challenges assumptions and offers counter-examples" }
     ],
-    sampleTopic: "Is AI Automation Creating More High-Value Jobs or Driving Mass Unemployment in IT?"
+    sampleTopic: "Generative AI in IT: Mass Engineering Layoffs or Unprecedented Productivity Explosion?",
+    topics: [
+      {
+        id: "gd-ai-jobs",
+        title: "Generative AI in IT: Mass Engineering Layoffs or Unprecedented Productivity Explosion?",
+        category: "Tech & Economy",
+        difficulty: "High Yield",
+        starterPrompt: "Intervene in the discussion. Acknowledge both automated repetitive code generation and the rising demand for systems architects, security reviewers, and domain AI orchestrators.",
+        openingAi: "Ananya: According to Gartner, AI copilots increase developer speed by 40%. But Vikram will argue this cuts junior headcount by half. What is your stance?"
+      },
+      {
+        id: "gd-moonlighting",
+        title: "Moonlighting & Side Hustles: Developer Autonomy vs Corporate Breach of Loyalty?",
+        category: "Workplace Ethics",
+        difficulty: "Campus Favorite",
+        starterPrompt: "Deliver a balanced argument discussing intellectual property, fatigue risk, versus personal growth and open-source contribution outside working hours.",
+        openingAi: "Vikram: An engineer's after-hours time belongs to them. If deliverables are green, why should companies police side projects? Moderator: Let our candidate weigh in."
+      },
+      {
+        id: "gd-ev-revolution",
+        title: "Electric Vehicles in Developing Economies: True Environmental Savior or Grid Mirage?",
+        category: "Sustainability & Industry",
+        difficulty: "Analytical",
+        starterPrompt: "Synthesize the trade-off between tailpipe emissions and battery mining, charging infrastructure costs, and fossil-heavy electrical grids.",
+        openingAi: "Ananya: EV penetration reached 6% last quarter. But our coal dependence remains at 70%. Does transitioning vehicle fleets actually reduce carbon emissions?"
+      },
+      {
+        id: "gd-exams-vs-code",
+        title: "Should Universities Replace 3-Hour Rote Exams with Verifiable GitHub Portfolios?",
+        category: "Education Reform",
+        difficulty: "Trending",
+        starterPrompt: "Propose how practical problem-solving, open-source pull requests, and peer reviews offer superior assessment signals over memorized theoretical answers.",
+        openingAi: "Prof. Raghav: Theory ensures fundamentals like memory management and complexity notation. Can open-source PRs completely replace standardized theoretical examination?"
+      },
+      {
+        id: "gd-social-media",
+        title: "Social Media Algorithms: Digital Democratization vs Mental Health & Attention Crisis?",
+        category: "Society & Ethics",
+        difficulty: "Humanities & Tech",
+        starterPrompt: "Frame the conversation around engagement-driven algorithmic amplification, cognitive fragmentation among students, and digital well-being guardrails.",
+        openingAi: "Vikram: Social algorithms simply serve what humans desire. If users scroll for 5 hours, that is consumer choice, not algorithmic coercion."
+      },
+      {
+        id: "gd-wfo-mandates",
+        title: "Mandatory 70-Hour Work Weeks & In-Office Mandates: Key to Growth or Burnout Catalyst?",
+        category: "Corporate Culture",
+        difficulty: "Hot Debate",
+        starterPrompt: "Articulate how sustainable productivity, psychological safety, and smart execution outshine brute-force hours in high-cognitive software engineering.",
+        openingAi: "Ananya: Fast-growing startups frequently clock 60+ hour sprints to beat competitors. Is raw work duration essential for young engineers to build domain mastery?"
+      }
+    ]
   },
   {
     id: "corporate-arena",
@@ -708,7 +797,7 @@ export const PRACTICE_LABS = [
     color: "#2563EB",
     bgGradient: "from-blue-500/10 to-sky-500/10",
     borderCol: "border-blue-200",
-    desc: "Practice executive standups, sprint reviews, client status calls, and cross-functional engineering meetings with demanding corporate stakeholder personas.",
+    desc: "Practice executive standups, sprint retrospectives, client status negotiations, and high-pressure engineering incident debriefs with demanding corporate personas.",
     scenarios: [
       {
         title: "Sprint Retrospective: Unplanned Outage Post-Mortem",
@@ -719,6 +808,21 @@ export const PRACTICE_LABS = [
         title: "Client Scope Creep Negotiation",
         stakeholder: "US Corporate Client (Product Owner)",
         prompt: "Politely push back on new feature requests submitted 48 hours before milestone delivery without damaging client trust."
+      },
+      {
+        title: "Disagreeing with Tech Lead: Microservices vs Modular Monolith",
+        stakeholder: "Principal Architect",
+        prompt: "Present a respectful, data-backed argument explaining why an early-stage service should begin as a clean modular monolith before premature microservice sharding."
+      },
+      {
+        title: "Annual Salary Appraisal & Impact Demonstration",
+        stakeholder: "Engineering Manager (VP of Engineering)",
+        prompt: "Articulate your accomplishments over the past sprint cycle, tying your automated test suites and bug fixes directly to reduced server costs and team velocity."
+      },
+      {
+        title: "Critical Bug Reported by Enterprise Client During Live Demo",
+        stakeholder: "Chief Commercial Officer",
+        prompt: "A null pointer exception crashed the live product demo in front of 50 enterprise buyers. Keep your composure, acknowledge smoothly, and restore executive confidence."
       }
     ]
   },

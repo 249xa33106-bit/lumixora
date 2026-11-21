@@ -11,6 +11,43 @@ import {
   Eye, EyeOff, Sliders, Radio, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 
+
+const TAB_TO_WORKSPACE = {
+  'dashboard': 'academics',
+  'learning-hub': 'academics',
+  'doubts': 'academics',
+  'my-academics': 'academics',
+  'courses': 'academics',
+  'tests': 'academics',
+  'bolo-class': 'academics',
+  'simulations': 'academics',
+  'attendance': 'academics',
+
+  'ai-placement': 'career',
+  'speakverse': 'career',
+  'interviews': 'career',
+  'techpulse': 'career',
+  'coding-practice': 'career',
+  'certificates': 'career',
+  'internships': 'career',
+  'referrals': 'career',
+  'roadmap': 'career',
+
+  'perks': 'social',
+  'marketplace': 'social',
+  'clubs': 'social',
+  'projects': 'social',
+  'hackathons': 'social',
+
+  'notes-contribute': 'support',
+  'contact': 'support',
+  'report-bug': 'support',
+  'founder-portal': 'support',
+  'team-workspace': 'support',
+  'intern-portal': 'support',
+  'faculty-portal': 'support',
+};
+
 export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose, onLogout, onExitApp, isCollapsed = false, onToggleCollapse }) {
   const isGprecSubdomain = isGprecPlacementSubdomain(user);
   const isTpo = isTpoSubdomain();
@@ -26,6 +63,20 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const isIntern = user?.role === 'intern' || userEmail.includes('intern');
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
+  const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_sidebar_workspace');
+      if (saved) return saved;
+    } catch (_) {}
+    return 'all';
+  });
+
+  const handleSelectWorkspace = (wsId) => {
+    setSelectedWorkspace(wsId);
+    try {
+      localStorage.setItem('lumixora_sidebar_workspace', wsId);
+    } catch (_) {}
+  };
   // ─── Pinned / Favorite Portals State ───
   const [pinnedPortals, setPinnedPortals] = useState(() => {
     try {
@@ -214,6 +265,15 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
   const filteredSections = useMemo(() => {
     let sections = menuSections;
 
+    // Filter by Workspace Mode when active and not searching
+    if (!isGprecSubdomain && !isTpo && selectedWorkspace !== 'all' && !menuSearchQuery.trim()) {
+      if (selectedWorkspace === 'support') {
+        sections = sections.filter(sec => sec.key === 'support' || sec.key === 'admin');
+      } else {
+        sections = sections.filter(sec => sec.key === selectedWorkspace);
+      }
+    }
+
     // Apply personalization filter if user has chosen portals and "showAllPortals" is toggled off
     if (userActivePortals && !showAllPortals) {
       sections = sections.map(sec => ({
@@ -238,13 +298,17 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         item.id.toLowerCase().includes(q)
       )
     })).filter(sec => sec.items.length > 0);
-  }, [menuSections, menuSearchQuery, userActivePortals, showAllPortals]);
+  }, [menuSections, menuSearchQuery, userActivePortals, showAllPortals, selectedWorkspace, isGprecSubdomain, isTpo]);
 
   const handleTabClick = (tabId) => {
     if (isGprecSubdomain && !isAllowedGprecPlacementTab(tabId)) {
       setActiveTab('ai-commander');
     } else {
       setActiveTab(tabId);
+      const ws = TAB_TO_WORKSPACE[tabId];
+      if (ws && selectedWorkspace !== 'all') {
+        handleSelectWorkspace(ws);
+      }
     }
     if (onClose) onClose();
   };
@@ -317,6 +381,46 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
             </button>
           </div>
         </div>
+
+        {/* ─── 4 Workspace Mode Segmented Control (Academics / Career / Campus / More / All) ─── */}
+        {!isGprecSubdomain && !isTpo && (
+          <div className="px-3 pt-2.5 pb-1 bg-black/20 border-b border-white/5 space-y-1.5">
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-gray-400 px-1">
+              <span>Workspaces</span>
+              <span className="text-[9px] font-mono font-bold text-cyan-400">
+                {selectedWorkspace === 'all' ? 'All Portals' : selectedWorkspace.toUpperCase()}
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-1 p-1 bg-white/[0.04] border border-white/10 rounded-2xl">
+              {[
+                { id: 'all', label: 'All', icon: Sparkles },
+                { id: 'academics', label: 'Study', icon: GraduationCap },
+                { id: 'career', label: 'Career', icon: Rocket },
+                { id: 'social', label: 'Campus', icon: Users },
+                { id: 'support', label: 'More', icon: Settings },
+              ].map(ws => {
+                const isWsActive = selectedWorkspace === ws.id;
+                const Icon = ws.icon;
+                return (
+                  <button
+                    key={ws.id}
+                    type="button"
+                    onClick={() => handleSelectWorkspace(ws.id)}
+                    className={`py-1.5 px-0.5 rounded-xl text-[10px] font-black transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                      isWsActive
+                        ? 'bg-gradient-to-r from-cyan-500/25 to-blue-600/25 text-cyan-300 border border-cyan-500/40 shadow-xs'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+                    title={`Switch to ${ws.label} Workspace`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isWsActive ? 'text-cyan-400' : 'text-gray-400'}`} />
+                    <span className="truncate tracking-tight text-[9px]">{ws.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Quick Menu Search & Personalized Toggle */}
         <div className="p-3 border-b border-white/5 bg-black/20 space-y-2">

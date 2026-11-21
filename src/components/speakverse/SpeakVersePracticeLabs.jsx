@@ -15,6 +15,13 @@ import { PRACTICE_LABS } from './SpeakVerseData';
 
 export default function SpeakVersePracticeLabs({ onLaunchVoiceModal = () => {} }) {
   const [activeLabId, setActiveLabId] = useState('debate-arena');
+  const [selectedGdIndex, setSelectedGdIndex] = useState(0);
+
+  const handleShuffleGdTopic = (topicsLength) => {
+    if (!topicsLength) return;
+    const nextIdx = Math.floor(Math.random() * topicsLength);
+    setSelectedGdIndex(nextIdx);
+  };
 
   const currentLab = PRACTICE_LABS.find(l => l.id === activeLabId) || PRACTICE_LABS[0];
 
@@ -162,46 +169,133 @@ export default function SpeakVersePracticeLabs({ onLaunchVoiceModal = () => {} }
         )}
 
         {/* 3. GD ARENA (GROUP DISCUSSION) */}
-        {currentLab.id === 'gd-arena' && (
-          <div className="space-y-5">
-            <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-bold text-emerald-700 uppercase font-mono block">Current GD Topic</span>
-                <h4 className="text-base font-black text-slate-900 font-sora mt-0.5">
-                  "{currentLab.sampleTopic}"
-                </h4>
-              </div>
-              <button
-                onClick={() => onLaunchVoiceModal({
-                  id: 'gd-session-1',
-                  title: 'GD Turn Intervention',
-                  prompt: `Intervene in the discussion on "${currentLab.sampleTopic}". Introduce a balanced stance acknowledging both productivity and workforce displacement.`,
-                  sampleResponse: "If I may intervene here, while automation disrupts legacy positions, historical precedents show it simultaneously creates new roles in AI orchestration and data governance...",
-                  difficulty: "Campus Placement GD"
-                })}
-                className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all shadow-xs cursor-pointer active:scale-95"
-              >
-                <Play className="w-3.5 h-3.5 fill-white" />
-                <span>Intervene in Discussion Now</span>
-              </button>
-            </div>
+        {currentLab.id === 'gd-arena' && (() => {
+          const gdTopics = currentLab.topics || [
+            {
+              id: 'gd-default',
+              title: currentLab.sampleTopic || "Is AI Automation Creating More High-Value Jobs or Driving Mass Unemployment in IT?",
+              category: "Tech & Economy",
+              difficulty: "Standard",
+              starterPrompt: "Intervene in the discussion. Acknowledge both automated repetitive code generation and the rising demand for systems architects, security reviewers, and domain AI orchestrators.",
+              openingAi: "Ananya: Automation boosts velocity, but Vikram insists junior roles will vanish. Moderator: Candidate, please share your perspective."
+            }
+          ];
+          const activeTopic = gdTopics[selectedGdIndex % gdTopics.length];
 
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block font-mono">
-                Simulated AI Cohort Members:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {currentLab.participants.map((p, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
-                    <span className="text-xs font-bold text-slate-900 block">{p.name}</span>
-                    <span className="text-[10px] text-emerald-700 font-mono font-bold block">{p.role}</span>
-                    <p className="text-[11px] text-slate-500 leading-snug">{p.bias}</p>
+          return (
+            <div className="space-y-6">
+              {/* Topic Selector Tabs / Carousel */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Select Campus Placement GD Topic ({gdTopics.length} Topics):</span>
+                  </span>
+
+                  <button
+                    onClick={() => handleShuffleGdTopic(gdTopics.length)}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold font-mono border border-emerald-200 transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                    title="Pick random topic"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Shuffle Topic</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {gdTopics.map((t, idx) => {
+                    const isSelected = selectedGdIndex === idx;
+                    return (
+                      <button
+                        key={t.id || idx}
+                        onClick={() => setSelectedGdIndex(idx)}
+                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20 scale-[1.01]'
+                            : 'bg-white hover:bg-emerald-50/50 border-slate-200 text-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 w-full text-[9px] font-mono font-bold mb-1.5">
+                          <span className={`px-2 py-0.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                            {t.category || 'Placement GD'}
+                          </span>
+                          <span className={`${isSelected ? 'text-emerald-100' : 'text-emerald-700 font-extrabold'}`}>
+                            {t.difficulty || 'High Yield'}
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold leading-snug line-clamp-2">
+                          {t.title}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Active Selected GD Arena Hero Board */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-emerald-50/60 border border-emerald-200 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-emerald-800 uppercase font-mono bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                        Active GD Arena Topic
+                      </span>
+                      <span className="text-xs text-slate-500 font-mono">
+                        Topic #{selectedGdIndex + 1} of {gdTopics.length}
+                      </span>
+                    </div>
+                    <h4 className="text-base sm:text-lg font-black text-slate-900 font-sora">
+                      "{activeTopic.title}"
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                      {activeTopic.starterPrompt}
+                    </p>
                   </div>
-                ))}
+
+                  <button
+                    onClick={() => onLaunchVoiceModal({
+                      id: `gd-session-${selectedGdIndex}`,
+                      title: 'GD Turn Intervention',
+                      prompt: `Topic: "${activeTopic.title}". ${activeTopic.starterPrompt}`,
+                      sampleResponse: "If I may intervene here: while this disruption introduces challenges, historical industry shifts demonstrate that new high-leverage specializations rapidly emerge...",
+                      difficulty: "Campus Placement GD"
+                    })}
+                    className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shrink-0 transition-all shadow-md shadow-emerald-600/20 cursor-pointer active:scale-95"
+                  >
+                    <Play className="w-4 h-4 fill-white" />
+                    <span>Intervene in Discussion Now</span>
+                  </button>
+                </div>
+
+                {/* Simulated AI Peers Opening Dialogue */}
+                {activeTopic.openingAi && (
+                  <div className="p-3.5 rounded-2xl bg-white/90 border border-emerald-200/80 text-xs text-slate-700 space-y-1">
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase font-mono block">Live AI Peer Dialogue In Progress:</span>
+                    <p className="italic font-medium leading-relaxed">
+                      "{activeTopic.openingAi}"
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Simulated AI Cohort Members */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block font-mono">
+                  Simulated AI Cohort Members:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {currentLab.participants.map((p, idx) => (
+                    <div key={idx} className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                      <span className="text-xs font-bold text-slate-900 block">{p.name}</span>
+                      <span className="text-[10px] text-emerald-700 font-mono font-bold block">{p.role}</span>
+                      <p className="text-[11px] text-slate-500 leading-snug">{p.bias}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* 4. CORPORATE ARENA */}
         {currentLab.id === 'corporate-arena' && (
