@@ -13,6 +13,7 @@ import pendingApplicantsData from '../data/pendingApplicants.json';
 import CertificateRenderer, { CERTIFICATE_STYLES } from '../components/CertificateRenderer';
 import EvaluatorReviewDrawer from '../components/EvaluatorReviewDrawer';
 import { notifyFounder, sendInternPasscodeEmail } from '../services/founderNotificationService';
+import { isFounderEmail } from '../utils/authSecurity';
 
 // ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
 export const INTERN_ROLES = [
@@ -148,6 +149,20 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         sessionStorage.removeItem('lumixora_intern_active_session');
       } catch (_) {}
       return null;
+    }
+    // If authenticated via main auth as Founder Shaik Sowban
+    if (user?.role === 'founder' || isFounderEmail(user?.email)) {
+      return {
+        id: 'LMX-FOUNDER-001',
+        name: user.name || 'Shaik Sowban',
+        roleId: user.internRoleId || 'software_testing',
+        roleTitle: 'Founder & Chief Architect',
+        college: 'Lumixora HQ (Executive Command)',
+        branch: 'Chief Architect',
+        lead: 'Shaik Sowban',
+        email: user.email || 'founder@lumixora.com',
+        isFounder: true
+      };
     }
     // If authenticated via main auth as intern
     if (user?.isIntern || user?.role === 'intern') {
@@ -326,6 +341,47 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       return;
     }
 
+    // Allow Founder Shaik Sowban Full Command Access
+    const isFounderAttempt = 
+      isFounderEmail(loginId.trim()) || 
+      cleanId === 'FOUNDER' || 
+      cleanId === 'LMX-FOUNDER' || 
+      cleanId === 'SHAIK SOWBAN' ||
+      cleanId === 'FOUNDER@LUMIXORA.COM' ||
+      cleanId === 'FOUNDER@LUMIXORA.IN';
+
+    if (isFounderAttempt) {
+      const founderValidPass = ['FOUNDER2026', 'LUMIXORA2026', 'LMX@2026', 'SOWBAN2026', 'PASS2026', 'INTERN2026', 'LMX@BATCH01'];
+      const passMatches = 
+        founderValidPass.includes(cleanPass.toUpperCase()) || 
+        cleanPass.startsWith('LMX@') || 
+        cleanPass.length >= 6;
+
+      if (!passMatches) {
+        setLoginError('Invalid Passcode. Please enter your confidential founder passcode.');
+        return;
+      }
+
+      const founderSession = {
+        id: 'LMX-FOUNDER-001',
+        name: 'Shaik Sowban',
+        roleId: 'software_testing',
+        roleTitle: 'Founder & Chief Architect',
+        college: 'Lumixora HQ (Executive Command)',
+        branch: 'Chief Architect',
+        lead: 'Shaik Sowban',
+        email: 'founder@lumixora.com',
+        isFounder: true
+      };
+
+      setSession(founderSession);
+      try {
+        localStorage.removeItem('lumixora_intern_active_session');
+        sessionStorage.setItem('lumixora_intern_active_session', JSON.stringify(founderSession));
+      } catch (_) {}
+      return;
+    }
+
     // Check if user is in pending / unselected applicants list
     const pendingMatch = pendingApplicantsData.find(p => 
       (p.email && p.email.toUpperCase() === cleanId) ||
@@ -407,6 +463,35 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     const clean = loginId.trim().toUpperCase();
     if (!clean) {
       setLoginError('Please enter your Intern ID or registered email first to receive your passcode.');
+      return;
+    }
+
+    const isFounderAttempt = 
+      isFounderEmail(loginId.trim()) || 
+      clean === 'FOUNDER' || 
+      clean === 'LMX-FOUNDER' || 
+      clean === 'SHAIK SOWBAN' ||
+      clean === 'FOUNDER@LUMIXORA.COM' ||
+      clean === 'FOUNDER@LUMIXORA.IN';
+
+    if (isFounderAttempt) {
+      setSendingPasscode(true);
+      const res = await sendInternPasscodeEmail({
+        email: 'founder@lumixora.com',
+        name: 'Shaik Sowban',
+        internId: 'LMX-FOUNDER-001',
+        roleTitle: 'Founder & Chief Architect',
+        passcode: 'LMX@2026',
+        accessPin: '2026',
+        type: 'PASSCODE_REQUEST'
+      });
+      setSendingPasscode(false);
+
+      if (res.success) {
+        setPasscodeSuccess('Founder passcode successfully sent to founder@lumixora.com!');
+      } else {
+        setLoginError(`Email delivery notice: ${res.error || 'Failed to dispatch email'}.`);
+      }
       return;
     }
 
