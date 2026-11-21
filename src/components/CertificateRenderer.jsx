@@ -186,28 +186,21 @@ export default function CertificateRenderer({
           </svg>
         </div>
 
-        {/* ── Background Double-Exposed Lumixora Brand Watermark (Increased Opacity) ── */}
+        {/* ── Official 3D Lumixora Icon Watermark (Zero Black Background, Pure Transparent Icon Only) ── */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
-          {/* Double Exposure Layer 1: Wider Soft Offset Exposure */}
           <img 
-            src="/lumixora_logo_transparent.png" 
-            alt="" 
-            className="w-[580px] sm:w-[740px] max-w-none opacity-[0.14] filter grayscale contrast-150 transform scale-110 translate-x-4 -translate-y-2 pointer-events-none"
-          />
-          {/* Double Exposure Layer 2: Primary Crisp Double-Exposure */}
-          <img 
-            src="/lumixora_logo_transparent.png" 
-            alt="" 
-            className="absolute w-[520px] sm:w-[670px] max-w-none opacity-[0.18] filter grayscale contrast-175 pointer-events-none"
+            src="/lumixora_isolated_3d_icon.png" 
+            alt="Lumixora 3D Icon" 
+            className="w-[380px] sm:w-[480px] md:w-[540px] max-w-none object-contain opacity-[0.16] filter contrast-125 pointer-events-none"
           />
         </div>
 
-        {/* ── Right Flank Translucent 3D Emblem Watermark (Increased Opacity) ── */}
-        <div className="absolute right-6 sm:right-12 top-1/2 -translate-y-1/2 w-48 sm:w-60 h-48 sm:h-60 pointer-events-none select-none z-0 flex items-center justify-center">
+        {/* ── Right Flank Subtle Star/Emblem Accent ── */}
+        <div className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-48 h-48 sm:w-60 sm:h-60 pointer-events-none select-none z-0 flex items-center justify-center">
           <img 
-            src="/lumixora_logo_3d.png" 
-            alt="" 
-            className="w-full h-full object-contain opacity-[0.16] filter grayscale contrast-150"
+            src="/lumixora_clean_watermark.png" 
+            alt="Lumixora Watermark" 
+            className="w-full h-full object-contain opacity-[0.12]"
           />
         </div>
 
