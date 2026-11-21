@@ -186,14 +186,6 @@ export default function CertificateRenderer({
           </svg>
         </div>
 
-        {/* ── Official Lumixora "L" Icon Watermark (Authentic Right-Flank Placement, Clearly Visible & Crisp) ── */}
-        <div className="absolute right-0 sm:right-6 md:right-12 top-1/2 -translate-y-1/2 w-[280px] sm:w-[360px] md:w-[440px] pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden">
-          <img 
-            src="/lumixora_watermark_l_only.png?v=2" 
-            alt="Lumixora L Watermark" 
-            className="w-full h-auto object-contain opacity-[0.20] sm:opacity-[0.22] pointer-events-none"
-          />
-        </div>
 
         {/* ── TOP HEADER (Logo + Subtitle Left, LEARN • BUILD • GROW Right) ── */}
         <div className="flex items-center justify-between relative z-10 w-full mb-3">
