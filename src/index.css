@@ -1075,3 +1075,230 @@ html {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ─── ELEMENTAL NEXUS: FIRE GLOW & WATER FOUNTAIN EFFECTS ─── */
+@keyframes fireFlickerPulse {
+  0%, 100% {
+    transform: scale(1) translate3d(0, 0, 0);
+    opacity: 0.82;
+    filter: drop-shadow(0 0 25px rgba(249, 115, 22, 0.7)) drop-shadow(0 0 50px rgba(239, 68, 68, 0.45));
+  }
+  25% {
+    transform: scale(1.05, 0.98) translate3d(-3px, -2px, 0);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 35px rgba(245, 158, 11, 0.85)) drop-shadow(0 0 65px rgba(249, 115, 22, 0.55));
+  }
+  50% {
+    transform: scale(0.97, 1.04) translate3d(2px, -4px, 0);
+    opacity: 0.78;
+    filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.65)) drop-shadow(0 0 45px rgba(245, 158, 11, 0.4));
+  }
+  75% {
+    transform: scale(1.03, 1.01) translate3d(-2px, -1px, 0);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 30px rgba(249, 115, 22, 0.8)) drop-shadow(0 0 60px rgba(245, 158, 11, 0.5));
+  }
+}
+
+@keyframes fireTongueFlicker {
+  0%, 100% {
+    transform: rotate(-1deg) scaleY(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: rotate(2deg) scaleY(1.08) skewX(-2deg);
+    opacity: 0.98;
+  }
+}
+
+@keyframes emberRise1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(-25px, -140px, 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes emberRise2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(-40px, -165px, 0) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes emberRise3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.5);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(-18px, -125px, 0) scale(0.15);
+    opacity: 0;
+  }
+}
+
+@keyframes waterFountainFlow {
+  0%, 100% {
+    transform: scale(1) translate3d(0, 0, 0);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 25px rgba(6, 182, 212, 0.7)) drop-shadow(0 0 50px rgba(59, 130, 246, 0.45));
+  }
+  33% {
+    transform: scale(1.04, 1.05) translate3d(3px, -3px, 0);
+    opacity: 0.98;
+    filter: drop-shadow(0 0 35px rgba(34, 211, 238, 0.85)) drop-shadow(0 0 65px rgba(14, 165, 233, 0.6));
+  }
+  66% {
+    transform: scale(0.98, 1.02) translate3d(1px, -2px, 0);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 22px rgba(6, 182, 212, 0.65)) drop-shadow(0 0 45px rgba(37, 99, 235, 0.4));
+  }
+}
+
+@keyframes waterJetSway {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: rotate(-1.5deg) scale(1.04, 1.02);
+    opacity: 0.98;
+  }
+}
+
+@keyframes fountainSpray1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    transform: translate3d(32px, -90px, 0) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(68px, -45px, 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes fountainSpray2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.5);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  65% {
+    transform: translate3d(48px, -115px, 0) scale(1.1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(95px, -65px, 0) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes fountainSpray3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate3d(22px, -75px, 0) scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(52px, -30px, 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes waterRipplePulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.animate-fire-glow {
+  animation: fireFlickerPulse 3.2s ease-in-out infinite;
+}
+
+.animate-fire-tongue {
+  animation: fireTongueFlicker 2.4s ease-in-out infinite;
+}
+
+.animate-ember-1 {
+  animation: emberRise1 2.5s ease-out infinite;
+}
+
+.animate-ember-2 {
+  animation: emberRise2 3.2s ease-out infinite;
+}
+
+.animate-ember-3 {
+  animation: emberRise3 2.2s ease-out infinite;
+}
+
+.animate-water-glow {
+  animation: waterFountainFlow 3.6s ease-in-out infinite;
+}
+
+.animate-water-jet {
+  animation: waterJetSway 2.8s ease-in-out infinite;
+}
+
+.animate-fountain-1 {
+  animation: fountainSpray1 2.4s ease-out infinite;
+}
+
+.animate-fountain-2 {
+  animation: fountainSpray2 3.0s ease-out infinite;
+}
+
+.animate-fountain-3 {
+  animation: fountainSpray3 2.1s ease-out infinite;
+}
+
+.animate-water-ripple {
+  animation: waterRipplePulse 3s ease-out infinite;
+}

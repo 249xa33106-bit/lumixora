@@ -5,12 +5,18 @@ import {
   Filter, Award, Brain, BookOpen, Copy, Check, Play, AlertCircle, 
   ArrowRight, X, HelpCircle, CheckSquare, Target, Flame, Database,
   Calendar, Layers, Printer, ShieldCheck, Zap,
-  FolderOpen, CheckCircle2, FileSpreadsheet
+  FolderOpen, CheckCircle2, FileSpreadsheet, RefreshCw, BarChart2, TrendingUp, CheckCheck
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { HUGE_EXAM_DATASET } from '../data/hugeExamPredictorDataset';
-import { generatePredictedModelSets } from '../services/mlPaperPredictorEngine';
+import { 
+  generatePredictedModelSets,
+  runInteractiveBacktest,
+  getMustStudyTierMatrix,
+  getTopicFrequencyHeatmap,
+  calculatePredictiveProbability
+} from '../services/lumixoraExamPaperPredictorEngine';
 import CompanyPlacementPapers from './CompanyPlacementPapers';
 import { useToast } from '../context/ToastContext';
 
@@ -61,12 +67,18 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
   const [selectedSemester, setSelectedSemester] = useState('All');
   const [uniSearch, setUniSearch] = useState('');
 
-  // ML Predictor & Model Sets State
+  // Lumixora Exam Paper Predictor States
   const [selectedSubjectId, setSelectedSubjectId] = useState('os');
   const [selectedUnit, setSelectedUnit] = useState('all');
   const [paperFormatMode, setPaperFormatMode] = useState('blueprint'); // 'blueprint' | 'matrix'
   const [expandedModelAnswers, setExpandedModelAnswers] = useState({});
   const [copiedQId, setCopiedQId] = useState(null);
+
+  // Predictor 4 Core Engines: 'model_papers' | 'backtest' | 'must_study' | 'topic_cycles'
+  const [predictorEngineMode, setPredictorEngineMode] = useState('model_papers');
+  const [backtestYear, setBacktestYear] = useState(2024);
+  const [selectedTierFilter, setSelectedTierFilter] = useState('all'); // 'all' | 'tier1' | 'tier2' | 'tier3'
+  const [mustStudyUnitFilter, setMustStudyUnitFilter] = useState('all');
 
   // Handle branch change: strictly update branch and sync first matching subject
   const handleBranchChange = (branch) => {
@@ -121,6 +133,21 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
   // Synchronize 2 Question Paper Model Sets (Set A & Set B)
   const predictedModelSets = useMemo(() => {
     return generatePredictedModelSets(activeSubject.subjectId);
+  }, [activeSubject.subjectId]);
+
+  // Empirical Interactive Backtesting Data (Predicts Past Years to Verify Hit Rate)
+  const backtestData = useMemo(() => {
+    return runInteractiveBacktest(activeSubject.subjectId, backtestYear);
+  }, [activeSubject.subjectId, backtestYear]);
+
+  // Must-Study Prioritized Tier Matrix (Tier 1: 90%+, Tier 2: 75-89%, Tier 3: 60-74%)
+  const mustStudyData = useMemo(() => {
+    return getMustStudyTierMatrix(activeSubject.subjectId);
+  }, [activeSubject.subjectId]);
+
+  // Topic Recurrence & Syllabus Cycle Analysis
+  const topicHeatmapData = useMemo(() => {
+    return getTopicFrequencyHeatmap(activeSubject.subjectId);
   }, [activeSubject.subjectId]);
 
   const activePaper = useMemo(() => {
@@ -709,403 +736,665 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
             </div>
           </div>
 
-          {/* ── DUAL MODEL SET SWITCHER RIBBON (Clean Segment Control) ── */}
-          <div className="flex items-center gap-2 bg-[#090d16] p-1.5 rounded-2xl border border-white/10">
+          {/* ── LUMIXORA EXAM PREDICTOR 4-ENGINE SUITE SWITCHER ── */}
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#090d16] border border-white/10 overflow-x-auto no-scrollbar">
             <button
-              onClick={() => setActiveModelSet('set1')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                activeModelSet === 'set1'
-                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setPredictorEngineMode('model_papers')}
+              className={`flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                predictorEngineMode === 'model_papers'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg font-extrabold'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span>Model Set 1 (Set A)</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set1' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
-                Primary
+              <Target className="w-3.5 h-3.5" />
+              <span>70M Model Papers</span>
+            </button>
+
+            <button
+              onClick={() => setPredictorEngineMode('backtest')}
+              className={`flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                predictorEngineMode === 'backtest'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-black shadow-lg font-extrabold'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <CheckCheck className="w-3.5 h-3.5" />
+              <span>Interactive Backtest</span>
+              <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                predictorEngineMode === 'backtest' ? 'bg-black/25 text-black' : 'bg-emerald-500/20 text-emerald-300'
+              }`}>
+                {backtestData.hitRatePct}% Hit
               </span>
             </button>
 
             <button
-              onClick={() => setActiveModelSet('set2')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                activeModelSet === 'set2'
-                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setPredictorEngineMode('must_study')}
+              className={`flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                predictorEngineMode === 'must_study'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-black shadow-lg font-extrabold'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span>Model Set 2 (Set B)</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set2' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
-                Alternate
+              <Flame className="w-3.5 h-3.5" />
+              <span>Must-Study Tiers</span>
+              <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                predictorEngineMode === 'must_study' ? 'bg-black/25 text-black' : 'bg-amber-500/20 text-amber-300'
+              }`}>
+                Tier 1-3
               </span>
             </button>
 
             <button
-              onClick={() => setActiveModelSet('compare')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                activeModelSet === 'compare'
-                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setPredictorEngineMode('topic_cycles')}
+              className={`flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                predictorEngineMode === 'topic_cycles'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg font-extrabold'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Unit Coverage Matrix</span>
+              <BarChart2 className="w-3.5 h-3.5" />
+              <span>Topic Cycles</span>
             </button>
           </div>
 
-          {/* VIEW MODE A/B: OFFICIAL 70-MARK BLUEPRINT EXAMINATION PAPER */}
-          {activeModelSet !== 'compare' ? (
-            <div className="p-6 sm:p-8 rounded-3xl bg-[#090d16] border border-white/10 shadow-2xl space-y-6 text-slate-100">
-              
-              {/* University Exam Paper Header */}
-              <div className="text-center border-b border-white/10 pb-5 space-y-1">
-                <div className="inline-block px-3 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-mono text-[11px] font-bold border border-cyan-500/30 mb-2">
-                  AUTONOMOUS MODEL QUESTION PAPER &bull; {activePaper.setModelCode}
-                </div>
-                <h2 className="text-base sm:text-lg font-bold tracking-wide uppercase text-white font-sans">
-                  {activePaper.institution}
-                </h2>
-                <p className="text-xs text-slate-400 font-sans">{activePaper.affiliatedTo}</p>
-                <p className="text-xs text-slate-300 font-mono">{activePaper.examTitle}</p>
-                
-                <div className="pt-3 grid grid-cols-2 text-left text-xs font-sans text-slate-300 border-t border-white/10 mt-3">
-                  <div>
-                    <span className="font-semibold text-white">Subject: </span>{activePaper.subjectName} ({activePaper.subjectCode})<br/>
-                    <span className="font-semibold text-white">Branch / Semester: </span>B.Tech {activePaper.branch} - {activePaper.semester}
-                  </div>
-                  <div className="text-right">
-                    <span className="font-semibold text-white">Time: </span>3 Hours<br/>
-                    <span className="font-semibold text-white">Max. Marks: </span>{activePaper.maxMarks} Marks
-                  </div>
-                </div>
-
-                <div className="pt-2 text-left flex items-center justify-between flex-wrap gap-2 text-xs">
-                  <div className="inline-block px-2.5 py-0.5 rounded border border-white/15 font-mono text-[11px] text-slate-400">
-                    Candidate Hall Ticket No: [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]
-                  </div>
-                  <div className="font-mono text-[11px] text-slate-400 font-medium">
-                    {activePaper.setName} &bull; {activePaper.scheme}
-                  </div>
-                </div>
-              </div>
-
-              {/* ── SYLLABUS COVERAGE & 5-YEAR RECURRENCE HEATMAP ── */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3 font-sans">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-300 flex items-center justify-center border border-cyan-500/20">
-                      <Flame className="w-4 h-4 text-cyan-400" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 font-mono">
-                        <span>Syllabus Coverage & Recurrence Breakdown</span>
-                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                          100% University Blueprint Quota
-                        </span>
-                      </h4>
-                      <p className="text-[11px] text-slate-400">Unit-wise examination weightage and high-yield topics.</p>
-                    </div>
-                  </div>
-                  
-                  {/* Global Expand/Collapse All Rubrics Action */}
-                  <button
-                    onClick={handleToggleAllAnswers}
-                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 hover:text-cyan-200 text-xs font-semibold font-mono border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
-                  >
-                    {areAllAnswersExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    <span>{areAllAnswersExpanded ? 'Collapse Rubrics' : '⚡ Expand All Solutions'}</span>
-                  </button>
-                </div>
-
-                {/* 5-Unit Heatmap Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1">
-                  {unitCoverageStats.map((uStat) => {
-                    return (
-                      <div 
-                        key={uStat.unit}
-                        className="p-3 rounded-xl bg-[#090d16] border border-white/10 space-y-2 hover:border-cyan-500/30 transition-all"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-bold text-white">UNIT {uStat.unit}</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
-                            {uStat.recurrenceScore}% YIELD
-                          </span>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="space-y-1">
-                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full rounded-full bg-cyan-500 transition-all duration-500"
-                              style={{ width: `${uStat.recurrenceScore}%` }}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                            <span>Quota: 14M</span>
-                            <span>{uStat.questionCount} Questions</span>
-                          </div>
-                        </div>
-
-                        {/* High Yield Topic Tags */}
-                        <div className="space-y-1 pt-1 border-t border-white/5">
-                          <span className="text-[9px] font-mono uppercase text-slate-500 font-bold tracking-wider">Core Topics:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {uStat.topics.map((top, tIdx) => (
-                              <span key={tIdx} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-300 font-medium truncate max-w-full">
-                                • {top}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* PART - A: 10 Compulsory 2-Mark Questions (20 Marks) */}
-              <div className="space-y-4 font-sans">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <h3 className="text-xs sm:text-sm font-bold tracking-wider text-cyan-300 uppercase font-mono">
-                    PART - A (Answer ALL Questions: 10 x 2 = 20 Marks) &bull; {activePaper.setModelCode}
-                  </h3>
-                  <span className="text-xs text-slate-400 font-mono">Compulsory Questions</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {activePaper.partA.map((q, idx) => (
-                    <div key={q.id || idx} className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/25 transition-all">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-cyan-400">Q{idx + 1} &bull; Unit {q.unit}</span>
-                        <span className="text-xs font-bold text-slate-300 font-mono">{q.marks}M</span>
-                      </div>
-
-                      <p className="text-xs text-slate-200 leading-relaxed font-medium">{q.question}</p>
-
-                      <div className="pt-2 flex items-center justify-between text-[11px] border-t border-white/5">
-                        <button
-                          onClick={() => toggleAnswer(q.id)}
-                          className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <span>{expandedModelAnswers[q.id] ? 'Hide Answer Rubric' : 'View Answer Rubric'}</span>
-                          {expandedModelAnswers[q.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        </button>
-                        <button
-                          onClick={() => copyQuestion(q, `${q.question}\n\nModel Answer:\n${q.modelAnswer?.keyPoints?.join('\n')}`)}
-                          className="text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          {copiedQId === q.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                          <span>{copiedQId === q.id ? 'Copied' : 'Copy'}</span>
-                        </button>
-                      </div>
-
-                      {/* Expandable Model Answer */}
-                      {expandedModelAnswers[q.id] && (
-                        <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-2 text-xs animate-fade-in font-mono">
-                          <div className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">Evaluation Rubric:</div>
-                          <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
-                            {q.modelAnswer?.keyPoints?.map((pt, pIdx) => (
-                              <li key={pIdx}>{pt}</li>
-                            ))}
-                          </ul>
-                          {q.modelAnswer?.examinerTip && (
-                            <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
-                              <strong>Examiner Tip:</strong> {q.modelAnswer.examinerTip}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* PART - B: 5 Units with Internal Choice (5 x 10 = 50 Marks) */}
-              <div className="space-y-5 font-sans pt-3 border-t border-white/10">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <h3 className="text-xs sm:text-sm font-bold tracking-wider text-emerald-400 uppercase font-mono">
-                    PART - B (Answer ONE question from EACH Unit: 5 x 10 = 50 Marks) &bull; {activePaper.setModelCode}
-                  </h3>
-                  <span className="text-xs text-slate-400 font-mono">Internal Choice [OR]</span>
-                </div>
-
-                <div className="space-y-5">
-                  {activePaper.partB.map((pair, pIdx) => (
-                    <div key={pIdx} className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                        <span className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                          UNIT {pair.unit} &bull; 10 MARKS
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400">
-                          Choose EITHER Q{pair.questionNumberA} OR Q{pair.questionNumberB}
-                        </span>
-                      </div>
-
-                      {/* Question Option A */}
-                      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberA}</span>
-                          <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionA.question}</p>
-
-                        <div className="pt-2 flex items-center justify-between text-[11px]">
-                          <button
-                            onClick={() => toggleAnswer(pair.questionA.id)}
-                            className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
-                          >
-                            <span>{expandedModelAnswers[pair.questionA.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
-                            {expandedModelAnswers[pair.questionA.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                          </button>
-                        </div>
-
-                        {expandedModelAnswers[pair.questionA.id] && (
-                          <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
-                            <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
-                            <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
-                              {pair.questionA.modelAnswer?.structure?.map((st, sIdx) => (
-                                <li key={sIdx}>{st}</li>
-                              ))}
-                            </ul>
-                            {pair.questionA.modelAnswer?.diagramDescription && (
-                              <div className="text-[11px] text-cyan-300 bg-cyan-500/10 p-2 rounded">
-                                <strong>Mandatory Diagram:</strong> {pair.questionA.modelAnswer.diagramDescription}
-                              </div>
-                            )}
-                            {pair.questionA.modelAnswer?.examinerTip && (
-                              <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
-                                <strong>Examiner Tip:</strong> {pair.questionA.modelAnswer.examinerTip}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* OR Divider */}
-                      <div className="text-center py-1">
-                        <span className="px-3 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10 font-mono text-[10px] font-bold uppercase tracking-widest">
-                          [ OR ]
-                        </span>
-                      </div>
-
-                      {/* Question Option B */}
-                      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberB}</span>
-                          <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionB.question}</p>
-
-                        <div className="pt-2 flex items-center justify-between text-[11px]">
-                          <button
-                            onClick={() => toggleAnswer(pair.questionB.id)}
-                            className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
-                          >
-                            <span>{expandedModelAnswers[pair.questionB.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
-                            {expandedModelAnswers[pair.questionB.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                          </button>
-                        </div>
-
-                        {expandedModelAnswers[pair.questionB.id] && (
-                          <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
-                            <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
-                            <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
-                              {pair.questionB.modelAnswer?.structure?.map((st, sIdx) => (
-                                <li key={sIdx}>{st}</li>
-                              ))}
-                            </ul>
-                            {pair.questionB.modelAnswer?.diagramDescription && (
-                              <div className="text-[11px] text-cyan-300 bg-cyan-500/10 p-2 rounded">
-                                <strong>Mandatory Diagram:</strong> {pair.questionB.modelAnswer.diagramDescription}
-                              </div>
-                            )}
-                            {pair.questionB.modelAnswer?.examinerTip && (
-                              <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
-                                <strong>Examiner Tip:</strong> {pair.questionB.modelAnswer.examinerTip}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          ) : (
-            /* VIEW MODE: SIDE-BY-SIDE MATRIX COMPARISON BETWEEN SET 1 & SET 2 */
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#090d16] border border-white/10 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white font-mono flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-cyan-400" />
-                    <span>Unit-by-Unit Examination Matrix: Model Set 1 (Set A) vs Model Set 2 (Set B)</span>
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Compares primary vs alternate question topic distributions across all 5 syllabus units.
-                  </p>
-                </div>
+          {/* ═════════ ENGINE 1: 70M MODEL BLUEPRINT PAPERS (SET A & SET B) ═════════ */}
+          {predictorEngineMode === 'model_papers' && (
+            <div className="space-y-5 animate-fade-in">
+              {/* Dual Model Set Switcher Ribbon */}
+              <div className="flex items-center gap-2 bg-[#090d16] p-1.5 rounded-2xl border border-white/10">
                 <button
-                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both')}
-                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                  onClick={() => setActiveModelSet('set1')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    activeModelSet === 'set1'
+                      ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Download Both Sets</span>
+                  <span>Model Set 1 (Set A)</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set1' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
+                    Primary
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveModelSet('set2')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    activeModelSet === 'set2'
+                      ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span>Model Set 2 (Set B)</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set2' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
+                    Alternate
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveModelSet('compare')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    activeModelSet === 'compare'
+                      ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Dual Comparison Matrix</span>
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map(u => {
-                  const s1Pair = predictedModelSets.set1.partB.find(p => p.unit === u);
-                  const s2Pair = predictedModelSets.set2.partB.find(p => p.unit === u);
-                  const unitTitle = activeSubject.syllabusUnits?.find(su => su.unit === u)?.title || `Unit ${u}`;
-
-                  return (
-                    <div key={u} className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-cyan-400">UNIT {u}: {unitTitle}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">14 Marks Quota</span>
+              {/* View Mode A/B: Official 70-Mark Blueprint Examination Paper */}
+              {activeModelSet !== 'compare' ? (
+                <div className="p-6 sm:p-8 rounded-3xl bg-[#090d16] border border-white/10 shadow-2xl space-y-6 text-slate-100">
+                  
+                  {/* University Exam Paper Header */}
+                  <div className="text-center border-b border-white/10 pb-5 space-y-1">
+                    <div className="inline-block px-3 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-mono text-[11px] font-bold border border-cyan-500/30 mb-2">
+                      AUTONOMOUS MODEL QUESTION PAPER &bull; {activePaper.setModelCode}
+                    </div>
+                    <h2 className="text-base sm:text-lg font-bold tracking-wide uppercase text-white font-sans">
+                      {activePaper.institution}
+                    </h2>
+                    <p className="text-xs text-slate-400 font-sans">{activePaper.affiliatedTo}</p>
+                    <p className="text-xs text-slate-300 font-mono">{activePaper.examTitle}</p>
+                    
+                    <div className="pt-3 grid grid-cols-2 text-left text-xs font-sans text-slate-300 border-t border-white/10 mt-3">
+                      <div>
+                        <span className="font-semibold text-white">Subject: </span>{activePaper.subjectName} ({activePaper.subjectCode})<br/>
+                        <span className="font-semibold text-white">Branch / Semester: </span>B.Tech {activePaper.branch} - {activePaper.semester}
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* SET 1 */}
-                        <div className="p-3.5 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
-                            <span>MODEL SET 1 (SET A)</span>
-                            <span className="text-[10px] text-slate-400">Primary</span>
-                          </div>
-                          <div className="text-xs text-slate-200">
-                            <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberA}: </span>
-                            {s1Pair?.questionA.question}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
-                          <div className="text-xs text-slate-200">
-                            <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberB}: </span>
-                            {s1Pair?.questionB.question}
-                          </div>
-                        </div>
-
-                        {/* SET 2 */}
-                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-300">
-                            <span>MODEL SET 2 (SET B)</span>
-                            <span className="text-[10px] text-slate-400">Alternate</span>
-                          </div>
-                          <div className="text-xs text-slate-200">
-                            <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberA}: </span>
-                            {s2Pair?.questionA.question}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
-                          <div className="text-xs text-slate-200">
-                            <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberB}: </span>
-                            {s2Pair?.questionB.question}
-                          </div>
-                        </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-white">Time: </span>3 Hours<br/>
+                        <span className="font-semibold text-white">Max. Marks: </span>{activePaper.maxMarks} Marks
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div className="pt-2 text-left flex items-center justify-between flex-wrap gap-2 text-xs">
+                      <div className="inline-block px-2.5 py-0.5 rounded border border-white/15 font-mono text-[11px] text-slate-400">
+                        Candidate Hall Ticket No: [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]
+                      </div>
+                      <div className="font-mono text-[11px] text-slate-400 font-medium">
+                        {activePaper.setName} &bull; {activePaper.scheme}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PART - A: 10 Compulsory 2-Mark Questions (20 Marks) */}
+                  <div className="space-y-4 font-sans">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                      <h3 className="text-xs sm:text-sm font-bold tracking-wider text-cyan-300 uppercase font-mono">
+                        PART - A (Answer ALL Questions: 10 x 2 = 20 Marks) &bull; {activePaper.setModelCode}
+                      </h3>
+                      <span className="text-xs text-slate-400 font-mono">Compulsory Questions</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {activePaper.partA.map((q, idx) => (
+                        <div key={q.id || idx} className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/25 transition-all">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-bold text-cyan-400">Q{idx + 1} &bull; Unit {q.unit}</span>
+                            <span className="text-xs font-bold text-slate-300 font-mono">{q.marks}M</span>
+                          </div>
+
+                          <p className="text-xs text-slate-200 leading-relaxed font-medium">{q.question}</p>
+
+                          <div className="pt-2 flex items-center justify-between text-[11px] border-t border-white/5">
+                            <button
+                              onClick={() => toggleAnswer(q.id)}
+                              className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              <span>{expandedModelAnswers[q.id] ? 'Hide Answer Rubric' : 'View Answer Rubric'}</span>
+                              {expandedModelAnswers[q.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                            <button
+                              onClick={() => copyQuestion(q, `${q.question}\n\nModel Answer:\n${q.modelAnswer?.keyPoints?.join('\n')}`)}
+                              className="text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              {copiedQId === q.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                              <span>{copiedQId === q.id ? 'Copied' : 'Copy'}</span>
+                            </button>
+                          </div>
+
+                          {/* Expandable Model Answer */}
+                          {expandedModelAnswers[q.id] && (
+                            <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-2 text-xs animate-fade-in font-mono">
+                              <div className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">Evaluation Rubric:</div>
+                              <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+                                {q.modelAnswer?.keyPoints?.map((pt, pIdx) => (
+                                  <li key={pIdx}>{pt}</li>
+                                ))}
+                              </ul>
+                              {q.modelAnswer?.examinerTip && (
+                                <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                                  <strong>Examiner Tip:</strong> {q.modelAnswer.examinerTip}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PART - B: 5 Units with Internal Choice (5 x 10 = 50 Marks) */}
+                  <div className="space-y-5 font-sans pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                      <h3 className="text-xs sm:text-sm font-bold tracking-wider text-emerald-400 uppercase font-mono">
+                        PART - B (Answer ONE question from EACH Unit: 5 x 10 = 50 Marks) &bull; {activePaper.setModelCode}
+                      </h3>
+                      <span className="text-xs text-slate-400 font-mono">Internal Choice [OR]</span>
+                    </div>
+
+                    <div className="space-y-5">
+                      {activePaper.partB.map((pair, pIdx) => (
+                        <div key={pIdx} className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-wider">
+                              UNIT {pair.unit} &bull; 10 MARKS
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400">
+                              Choose EITHER Q{pair.questionNumberA} OR Q{pair.questionNumberB}
+                            </span>
+                          </div>
+
+                          {/* Question Option A */}
+                          <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberA}</span>
+                              <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionA.question}</p>
+
+                            <div className="pt-2 flex items-center justify-between text-[11px]">
+                              <button
+                                onClick={() => toggleAnswer(pair.questionA.id)}
+                                className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
+                              >
+                                <span>{expandedModelAnswers[pair.questionA.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
+                                {expandedModelAnswers[pair.questionA.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </button>
+                            </div>
+
+                            {expandedModelAnswers[pair.questionA.id] && (
+                              <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
+                                <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
+                                <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+                                  {pair.questionA.modelAnswer?.structure?.map((st, sIdx) => (
+                                    <li key={sIdx}>{st}</li>
+                                  ))}
+                                </ul>
+                                {pair.questionA.modelAnswer?.diagramDescription && (
+                                  <div className="text-[11px] text-cyan-300 bg-cyan-500/10 p-2 rounded">
+                                    <strong>Mandatory Diagram:</strong> {pair.questionA.modelAnswer.diagramDescription}
+                                  </div>
+                                )}
+                                {pair.questionA.modelAnswer?.examinerTip && (
+                                  <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                                    <strong>Examiner Tip:</strong> {pair.questionA.modelAnswer.examinerTip}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* OR Divider */}
+                          <div className="text-center py-1">
+                            <span className="px-3 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10 font-mono text-[10px] font-bold uppercase tracking-widest">
+                              [ OR ]
+                            </span>
+                          </div>
+
+                          {/* Question Option B */}
+                          <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberB}</span>
+                              <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionB.question}</p>
+
+                            <div className="pt-2 flex items-center justify-between text-[11px]">
+                              <button
+                                onClick={() => toggleAnswer(pair.questionB.id)}
+                                className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
+                              >
+                                <span>{expandedModelAnswers[pair.questionB.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
+                                {expandedModelAnswers[pair.questionB.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </button>
+                            </div>
+
+                            {expandedModelAnswers[pair.questionB.id] && (
+                              <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
+                                <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
+                                <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+                                  {pair.questionB.modelAnswer?.structure?.map((st, sIdx) => (
+                                    <li key={sIdx}>{st}</li>
+                                  ))}
+                                </ul>
+                                {pair.questionB.modelAnswer?.diagramDescription && (
+                                  <div className="text-[11px] text-cyan-300 bg-cyan-500/10 p-2 rounded">
+                                    <strong>Mandatory Diagram:</strong> {pair.questionB.modelAnswer.diagramDescription}
+                                  </div>
+                                )}
+                                {pair.questionB.modelAnswer?.examinerTip && (
+                                  <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                                    <strong>Examiner Tip:</strong> {pair.questionB.modelAnswer.examinerTip}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              ) : (
+                /* Dual Comparison Matrix View */
+                <div className="p-5 sm:p-6 rounded-3xl bg-[#090d16] border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-white font-mono flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-cyan-400" />
+                        <span>Unit-by-Unit Examination Matrix: Model Set 1 (Set A) vs Model Set 2 (Set B)</span>
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Compares primary vs alternate question topic distributions across all 5 syllabus units.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both')}
+                      className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Download Both Sets</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map(u => {
+                      const s1Pair = predictedModelSets.set1.partB.find(p => p.unit === u);
+                      const s2Pair = predictedModelSets.set2.partB.find(p => p.unit === u);
+                      const unitTitle = activeSubject.syllabusUnits?.find(su => su.unit === u)?.title || `Unit ${u}`;
+
+                      return (
+                        <div key={u} className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-bold text-cyan-400">UNIT {u}: {unitTitle}</span>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">14 Marks Quota</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* SET 1 */}
+                            <div className="p-3.5 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-2">
+                              <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
+                                <span>MODEL SET 1 (SET A)</span>
+                                <span className="text-[10px] text-slate-400">Primary</span>
+                              </div>
+                              <div className="text-xs text-slate-200">
+                                <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberA}: </span>
+                                {s1Pair?.questionA.question}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
+                              <div className="text-xs text-slate-200">
+                                <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberB}: </span>
+                                {s1Pair?.questionB.question}
+                              </div>
+                            </div>
+
+                            {/* SET 2 */}
+                            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2">
+                              <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-300">
+                                <span>MODEL SET 2 (SET B)</span>
+                                <span className="text-[10px] text-slate-400">Alternate</span>
+                              </div>
+                              <div className="text-xs text-slate-200">
+                                <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberA}: </span>
+                                {s2Pair?.questionA.question}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
+                              <div className="text-xs text-slate-200">
+                                <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberB}: </span>
+                                {s2Pair?.questionB.question}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ═════════ ENGINE 2: INTERACTIVE HISTORICAL BACKTESTING ENGINE ═════════ */}
+          {predictorEngineMode === 'backtest' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="p-6 rounded-3xl bg-[#090d16] border border-emerald-500/30 shadow-xl space-y-5">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-6 rounded-full bg-emerald-500"></span>
+                      <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>Interactive Historical Backtesting Engine</span>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          Empirical Proof
+                        </span>
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 pl-4">
+                      Simulate predicting historical autonomous papers using only prior years data to mathematically evaluate hit rate.
+                    </p>
+                  </div>
+
+                  {/* Year Selector */}
+                  <div className="flex items-center gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/10">
+                    <span className="text-xs font-mono text-slate-400 px-2 font-bold">Target Exam:</span>
+                    {[2024, 2023, 2022].map(yr => (
+                      <button
+                        key={yr}
+                        onClick={() => setBacktestYear(yr)}
+                        className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                          backtestYear === yr
+                            ? 'bg-emerald-500 text-black shadow-md'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {yr} Paper
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Accuracy Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-emerald-300 font-bold tracking-wider">Overall Hit Rate</span>
+                    <div className="text-2xl font-black text-white font-mono">{backtestData.hitRatePct}%</div>
+                    <span className="text-[10px] text-emerald-400 font-medium">Mathematically Verified</span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold tracking-wider">Part A Short Hits</span>
+                    <div className="text-2xl font-black text-cyan-300 font-mono">{backtestData.partAHits} / 10</div>
+                    <span className="text-[10px] text-slate-400">2-Mark Definitions</span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold tracking-wider">Part B Unit Matched</span>
+                    <div className="text-2xl font-black text-purple-300 font-mono">{backtestData.partBHits} / 10</div>
+                    <span className="text-[10px] text-slate-400">10-Mark Long Questions</span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold tracking-wider">Training Period</span>
+                    <div className="text-lg font-black text-white font-mono mt-1">{backtestData.trainYearsRange}</div>
+                    <span className="text-[10px] text-amber-300 font-bold">{backtestData.confidenceRating}</span>
+                  </div>
+                </div>
+
+                {/* Backtesting Side-by-Side Verification Table */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>Backtested Question Matching for {backtestYear} Exam</span>
+                    <span className="text-[10px] text-slate-500 font-normal">Compared against official university archive</span>
+                  </h4>
+
+                  <div className="space-y-2">
+                    {backtestData.verifiedHits.map((hit, hIdx) => (
+                      <div
+                        key={hIdx}
+                        className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-emerald-500/25 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-emerald-400 font-bold">Unit {hit.unit} ({hit.marks}M)</span>
+                            <span className="px-2 py-0.2 rounded-full font-mono text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                              {hit.status}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">Confidence: {hit.confidenceScore}</span>
+                          </div>
+                          <p className="text-slate-200 font-medium">{hit.predictedQuestion}</p>
+                        </div>
+                        <div className="md:text-right shrink-0">
+                          <span className="text-[10px] text-slate-500 font-mono block">Actual Exam Locus</span>
+                          <span className="text-xs text-slate-300 font-mono font-semibold">{hit.actualHitTopic}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═════════ ENGINE 3: MUST-STUDY PRIORITY TIER LIST ═════════ */}
+          {predictorEngineMode === 'must_study' && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="p-6 rounded-3xl bg-[#090d16] border border-amber-500/30 shadow-xl space-y-5">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-6 rounded-full bg-amber-500"></span>
+                      <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>Must-Study Priority Tier List</span>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          {mustStudyData.totalQuestions} Questions Analyzed
+                        </span>
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 pl-4">
+                      Ranked by recurrence frequency, 2-year alternating cycles, and syllabus weightage.
+                    </p>
+                  </div>
+
+                  {/* Tier Filter Pills */}
+                  <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/10">
+                    {[
+                      { id: 'all', label: 'All Tiers', count: mustStudyData.totalQuestions },
+                      { id: 'tier1', label: '🚨 Tier 1 (90%+)', count: mustStudyData.tier1.length },
+                      { id: 'tier2', label: '⚡ Tier 2 (75-89%)', count: mustStudyData.tier2.length },
+                      { id: 'tier3', label: '💡 Tier 3 (60-74%)', count: mustStudyData.tier3.length }
+                    ].map(tf => (
+                      <button
+                        key={tf.id}
+                        onClick={() => setSelectedTierFilter(tf.id)}
+                        className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          selectedTierFilter === tf.id
+                            ? 'bg-amber-500 text-black shadow-md'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span>{tf.label}</span>
+                        <span className={`text-[9px] px-1 rounded ${selectedTierFilter === tf.id ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
+                          {tf.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tier Questions List */}
+                <div className="space-y-3">
+                  {(selectedTierFilter === 'all' || selectedTierFilter === 'tier1' ? mustStudyData.tier1 : [])
+                    .concat(selectedTierFilter === 'all' || selectedTierFilter === 'tier2' ? mustStudyData.tier2 : [])
+                    .concat(selectedTierFilter === 'all' || selectedTierFilter === 'tier3' ? mustStudyData.tier3 : [])
+                    .map((q, qIdx) => (
+                      <div
+                        key={q.id || qIdx}
+                        className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-amber-500/30 transition-all space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border ${
+                              q.probability >= 90
+                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                                : q.probability >= 75
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                  : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                            }`}>
+                              {q.probability >= 90 ? '🚨 TIER 1 - MUST KNOW' : q.probability >= 75 ? '⚡ TIER 2 - HIGH LIKELIHOOD' : '💡 TIER 3 - STRATEGIC'}
+                            </span>
+                            <span className="font-mono text-xs text-slate-400 font-bold">Unit {q.unit} &bull; {q.marks} Marks</span>
+                          </div>
+                          <div className="font-mono font-extrabold text-sm text-amber-300">
+                            {q.probability}% Prob
+                          </div>
+                        </div>
+
+                        <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{q.question}</p>
+
+                        <div className="pt-2 flex items-center justify-between text-[11px] border-t border-white/5">
+                          <span className="font-mono text-[10px] text-slate-500">
+                            Recurrence: {q.recurrenceCount || (q.frequencyYears?.length || 1)}x across Autonomous Exams
+                          </span>
+                          <button
+                            onClick={() => toggleAnswer(q.id)}
+                            className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>{expandedModelAnswers[q.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
+                            {expandedModelAnswers[q.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          </button>
+                        </div>
+
+                        {expandedModelAnswers[q.id] && (
+                          <div className="p-3.5 rounded-xl bg-black/50 border border-white/10 space-y-2 text-xs font-mono animate-fade-in">
+                            <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">Evaluation Rubric & Blueprint:</div>
+                            <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+                              {(q.modelAnswer?.keyPoints || q.modelAnswer?.structure || []).map((pt, pIdx) => (
+                                <li key={pIdx}>{pt}</li>
+                              ))}
+                            </ul>
+                            {q.modelAnswer?.examinerTip && (
+                              <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                                <strong>Examiner Tip:</strong> {q.modelAnswer.examinerTip}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═════════ ENGINE 4: TOPIC RECURRENCE & CYCLE MATRIX ═════════ */}
+          {predictorEngineMode === 'topic_cycles' && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="p-6 rounded-3xl bg-[#090d16] border border-purple-500/30 shadow-xl space-y-5">
+                <div className="border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-6 rounded-full bg-purple-500"></span>
+                    <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                      <span>Topic Recurrence & 2-Year Alternating Cycle Matrix</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        Autonomous R23 / Scheme-23
+                      </span>
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1 pl-4">
+                    Unit-by-unit cyclical rotation analysis mapping odd/even year patterns from past autonomous papers.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {topicHeatmapData.map((th, thIdx) => (
+                    <div
+                      key={thIdx}
+                      className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3 hover:border-purple-500/30 transition-all"
+                    >
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                        <span className="font-mono text-xs font-bold text-purple-300">UNIT {th.unitNumber}</span>
+                        <span className="text-xs font-mono font-black text-emerald-400">{th.averageProbability}% Prob</span>
+                      </div>
+
+                      <h4 className="text-xs font-bold text-white leading-snug">{th.unitTitle}</h4>
+
+                      <div className="space-y-1.5 text-xs font-mono">
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span>Historical Appearances:</span>
+                          <span className="text-white font-bold">{th.historicalAppearances}x</span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-400">
+                          <span>Cycle Type:</span>
+                          <span className="text-cyan-300 font-semibold">{th.cycleType}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/5 space-y-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 font-bold tracking-wider">High-Yield Concepts:</span>
+                        <ul className="space-y-1 text-slate-300 text-[11px]">
+                          {th.mustKnowConcepts.map((c, cIdx) => (
+                            <li key={cIdx} className="line-clamp-2 text-slate-300">• {c}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
