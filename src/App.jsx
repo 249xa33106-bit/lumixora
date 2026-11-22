@@ -116,7 +116,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'ai-commander'].includes(hash)) return hash;
+        if (['previous-papers', 'company-papers', 'papers', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'code-editor', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'intern-portal', 'student-offers', 'clubs', 'marketplace', 'ai-commander', 'contact', 'report-bug', 'team-workspace', 'our-team'].includes(hash)) return hash;
       }
     }
     return 'dashboard';

@@ -1,15 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   HelpCircle, Upload, Send, Sparkles, User, CheckCircle2, 
-  ChevronRight, Image as ImageIcon, X, ImageOff, MessageCircle,
-  Mic, MicOff, Calculator, Code, BookOpen, Layers, RefreshCw,
-  Search, ArrowRight, Zap, Check
+  ChevronRight, Image as ImageIcon, X, MessageCircle,
+  Mic, MicOff, Calculator, Code, BookOpen, RefreshCw,
+  Search, ArrowRight, Zap, Check, FileDown, Lightbulb, 
+  SlidersHorizontal, History, PlusCircle, ArrowLeft, Eye
 } from 'lucide-react';
+import katex from 'katex';
 import { generateDoubtResolution } from '../services/aiService';
 import { useData } from '../context/DataContext';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
-import AcademicSolutionRenderer from '../components/AcademicSolutionRenderer';
+import AcademicSolutionRenderer, { renderMarkdownWithKaTeX } from '../components/AcademicSolutionRenderer';
 
 const MATH_QUICK_SYMBOLS = [
   { label: '√x', insert: '\\sqrt{x}' },
@@ -25,11 +27,27 @@ const MATH_QUICK_SYMBOLS = [
   { label: '±', insert: '\\pm' },
   { label: '≈', insert: '\\approx' },
   { label: '≠', insert: '\\neq' },
-  { label: 'Code Block', insert: '```python\n# write code here\n```' }
+  { label: 'Matrix', insert: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}' },
+  { label: 'Python Block', insert: '```python\n# write code here\n```' }
+];
+
+const DOMAINS = [
+  'All Subjects',
+  'Computer Science',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Electronics',
+  'Aptitude'
 ];
 
 export default function DoubtSolving() {
-  const [solverMode, setSolverMode] = useState('ai'); // 'ai' or 'mentor'
+  const { doubts = [], addDoubt, updateDoubt } = useData();
+  const { awardXP } = useGamification();
+  const { addToast } = useToast();
+
+  const [solverMode, setSolverMode] = useState('ai'); // 'ai' | 'mentor'
+  const [tutorStyle, setTutorStyle] = useState('full'); // 'full' | 'socratic'
   const [doubtText, setDoubtText] = useState('');
   const [subject, setSubject] = useState('All Subjects');
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -37,12 +55,10 @@ export default function DoubtSolving() {
   const [imageBase64, setImageBase64] = useState('');
   const [showMathBar, setShowMathBar] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [searchHistoryQuery, setSearchHistoryQuery] = useState('');
   
-  const { doubts, addDoubt, updateDoubt } = useData();
-  const { awardXP } = useGamification();
-  const { addToast } = useToast();
-
   const [activeDoubt, setActiveDoubt] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [followUpText, setFollowUpText] = useState('');
@@ -58,13 +74,37 @@ export default function DoubtSolving() {
     }
   }, [activeDoubt?.thread, isFollowUpSubmitting]);
 
+  // Real-Time KaTeX Math Live Preview calculation
+  const liveMathPreviewHtml = useMemo(() => {
+    if (!doubtText) return null;
+    const hasLatex = doubtText.includes('$') || 
+      doubtText.includes('\\frac') || 
+      doubtText.includes('\\int') || 
+      doubtText.includes('\\sqrt') || 
+      doubtText.includes('\\sum') || 
+      doubtText.includes('\\lim');
+    
+    if (!hasLatex) return null;
+
+    try {
+      let mathExpr = doubtText;
+      const match = doubtText.match(/\$\$([\s\S]*?)\$\$/) || doubtText.match(/\$([^\$]+)\$/);
+      if (match) {
+        mathExpr = match[1];
+      }
+      return katex.renderToString(mathExpr, { throwOnError: false, displayMode: true });
+    } catch {
+      return null;
+    }
+  }, [doubtText]);
+
   // Voice speech-to-text
   const toggleVoiceInput = () => {
     if (typeof window === 'undefined') return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      addToast({ message: "Voice input is not supported in this browser. Please use Chrome/Edge.", type: "warning" });
+      if (addToast) addToast({ message: "Voice input is not supported in this browser. Please use Chrome/Edge.", type: "warning" });
       return;
     }
 
@@ -87,7 +127,7 @@ export default function DoubtSolving() {
         const transcript = event.results[0][0].transcript;
         if (transcript) {
           setDoubtText(prev => prev ? `${prev} ${transcript}` : transcript);
-          addToast({ message: "Voice captured!", type: "success" });
+          if (addToast) addToast({ message: "Voice captured into question box!", type: "success" });
         }
       };
 
@@ -95,6 +135,56 @@ export default function DoubtSolving() {
     } catch (err) {
       console.warn("Speech recognition error:", err);
       setIsListening(false);
+    }
+  };
+
+  // Direct Clipboard Image Paste Handler (Ctrl + V)
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          setUploadedFile(file);
+          setPreviewUrl(URL.createObjectURL(file));
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImageBase64(reader.result);
+          };
+          reader.readAsDataURL(file);
+          if (addToast) addToast({ message: "📋 Screenshot attached from clipboard!", type: "success" });
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+  };
+
+  // Drag and Drop Image Handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setUploadedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageBase64(reader.result);
+      };
+      reader.readAsDataURL(file);
+      if (addToast) addToast({ message: "📁 Problem image attached!", type: "success" });
     }
   };
 
@@ -119,7 +209,6 @@ export default function DoubtSolving() {
     if (file) {
       setUploadedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      
       const reader = new FileReader();
       reader.onloadend = () => {
         setImageBase64(reader.result);
@@ -138,20 +227,19 @@ export default function DoubtSolving() {
   };
 
   const getPlaceholder = () => {
-    if (solverMode === 'mentor') return "Explain your doubt in detail to our mentors...";
+    if (solverMode === 'mentor') return "Explain your question or concept in detail for human mentors...";
     switch (subject) {
-      case 'All Subjects': return "Paste your question, equation, or describe what you're stuck on...";
-      case 'Computer Science': return "Paste your code, pseudocode, or CS theory question here...";
-      case 'Mathematics': return "Type your equation or calculus problem here (e.g. \\int x^2 dx)...";
-      case 'Physics': return "Describe your physics problem or concept here...";
-      case 'Chemistry': return "Enter your chemical equation or reaction query here...";
-      default: return "Paste your question, equation, or describe what you're stuck on...";
+      case 'Computer Science': return "Paste code, compiler error, or algorithms question... (Supports Ctrl+V for screenshots)";
+      case 'Mathematics': return "Type problem, calculus question, or equation e.g. \\int x^2 dx... (Supports Ctrl+V screenshots)";
+      case 'Physics': return "Describe the physics law, circuit, or mechanics problem...";
+      case 'Chemistry': return "Enter reaction mechanism, stoichiometry, or concept...";
+      default: return "Paste your problem, equation, or screenshot (Press Ctrl+V to attach images directly)...";
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!doubtText.trim()) return;
+    if (!doubtText.trim() && !imageBase64) return;
 
     setIsSubmitting(true);
     
@@ -159,11 +247,15 @@ export default function DoubtSolving() {
       let thread = [];
       let status = 'Pending Review';
 
+      const promptPayload = tutorStyle === 'socratic' 
+        ? `${doubtText}\n\n[Instruction: Present this explanation in clear, numbered steps starting with Step 1: Core Concept, Step 2: Formula, Step 3: Derivation, so I can learn interactively.]`
+        : doubtText;
+
       if (solverMode === 'ai') {
-        const aiResponse = await generateDoubtResolution(doubtText, subject, false, imageBase64);
+        const aiResponse = await generateDoubtResolution(promptPayload, subject, false, imageBase64);
         thread = [
           {
-            author: 'Vyomra AI Assistant',
+            author: 'Vyomra AI Master Tutor',
             isAI: true,
             content: aiResponse,
             timestamp: new Date().toISOString()
@@ -174,14 +266,15 @@ export default function DoubtSolving() {
 
       const newDoubt = {
         id: `doubt_${Date.now()}`,
-        topic: doubtText,
+        topic: doubtText || 'Attached textbook problem image',
         tag: subject,
         status: status,
         date: 'Just now',
         hasImage: !!imageBase64,
         imageUrl: imageBase64,
         isHumanRequest: solverMode === 'mentor',
-        thread: thread
+        thread: thread,
+        initialSocratic: tutorStyle === 'socratic'
       };
 
       // Display doubt resolution immediately
@@ -204,25 +297,25 @@ export default function DoubtSolving() {
       clearFile();
 
       if (solverMode === 'mentor') {
-        addToast({ message: "Doubt submitted to mentors! They will reply soon.", type: "success" });
+        if (addToast) addToast({ message: "Doubt sent to faculty mentors! They will reply soon.", type: "success" });
       } else {
-        addToast({ message: "AI resolution generated with textbook-grade formulas!", type: "success" });
+        if (addToast) addToast({ message: "Step-by-step textbook resolution generated!", type: "success" });
       }
     } catch (err) {
       console.error(err);
-      addToast({ message: "Error generating resolution.", type: "error" });
+      if (addToast) addToast({ message: "Error generating resolution.", type: "error" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Quick follow up handler triggered by buttons
+  // Quick follow up handler
   const handleQuickFollowUp = async (customPrompt) => {
     if (!customPrompt || !activeDoubt || isFollowUpSubmitting) return;
 
     setIsFollowUpSubmitting(true);
     const userMessage = {
-      author: 'Shaik Sowban',
+      author: 'Scholar',
       isAI: false,
       content: customPrompt,
       timestamp: new Date().toISOString()
@@ -240,7 +333,7 @@ export default function DoubtSolving() {
       const aiResponse = await generateDoubtResolution(chatContext, activeDoubt.tag || 'Academic', true, null);
       
       const aiMessage = {
-        author: 'Vyomra AI Assistant',
+        author: 'Vyomra AI Master Tutor',
         isAI: true,
         content: aiResponse,
         timestamp: new Date().toISOString()
@@ -255,7 +348,7 @@ export default function DoubtSolving() {
       }
     } catch (err) {
       console.error(err);
-      addToast({ message: "Error getting AI response.", type: "error" });
+      if (addToast) addToast({ message: "Error retrieving explanation.", type: "error" });
     } finally {
       setIsFollowUpSubmitting(false);
     }
@@ -270,6 +363,67 @@ export default function DoubtSolving() {
     await handleQuickFollowUp(query);
   };
 
+  // Printable Exam Note PDF Export
+  const handleExportExamNote = (doubt) => {
+    if (!doubt) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      if (addToast) addToast({ message: "Please allow popups to export exam note", type: "warning" });
+      return;
+    }
+
+    const solutionText = doubt.thread?.find(m => m.isAI)?.content || doubt.topic;
+    const renderedContent = renderMarkdownWithKaTeX(solutionText);
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Lumixora Exam Note - ${doubt.tag || 'Academic'}</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #0f172a; line-height: 1.6; max-width: 800px; margin: 0 auto; background: #ffffff; }
+            .header { border-bottom: 2px solid #06b6d4; padding-bottom: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .brand { font-size: 20px; font-weight: 900; color: #0891b2; letter-spacing: -0.5px; }
+            .domain { font-size: 11px; font-weight: 800; background: #ecfeff; color: #0e7490; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #cffafe; }
+            .question-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #06b6d4; padding: 16px; border-radius: 12px; margin-bottom: 24px; font-weight: 600; font-size: 14px; }
+            .solution-content { font-size: 13.5px; color: #1e293b; }
+            .katex-display { margin: 16px 0; padding: 12px; background: #f8fafc; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; }
+            code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+            pre { background: #0b0f19; color: #f8fafc; padding: 16px; border-radius: 12px; overflow-x: auto; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+            th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
+            th { background: #f8fafc; font-weight: 700; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="brand">LUMIXORA ACADEMIC DERIVATION STUDIO</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Textbook-Grade Step-by-Step Verified Solution</div>
+            </div>
+            <div class="domain">${doubt.tag || 'Academic Doubt'}</div>
+          </div>
+          <div class="question-box">
+            <div style="font-size: 10px; text-transform: uppercase; color: #64748b; margin-bottom: 4px; font-weight: 800;">Problem Statement:</div>
+            ${doubt.topic}
+          </div>
+          <div class="solution-content">
+            ${renderedContent}
+          </div>
+          <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 11px; color: #94a3b8; text-align: center;">
+            Generated via Lumixora AI Academic Master Tutor • Verified for University Exams
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   // Filtered doubts history
   const filteredDoubts = (doubts || []).filter(d => {
     const q = searchHistoryQuery.toLowerCase().trim();
@@ -278,441 +432,657 @@ export default function DoubtSolving() {
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in text-gray-100 font-sans">
+    <div className="w-full min-h-screen text-slate-100 animate-fade-in relative z-10 pb-16 font-sans">
       
-      {/* Left Column (Doubt Submission Form + Recent History Feed) */}
-      <div className="lg:col-span-5 space-y-6">
-        
-        {/* Ask Box */}
-        <div className="glass-panel p-5 sm:p-6 rounded-3xl relative overflow-hidden border border-white/10 shadow-2xl bg-gradient-to-br from-[#0c1322] via-[#09101d] to-[#080d18]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* ─── 1. TOP CONTROL BAR (SLEEK OBSIDIAN BANNER) ─── */}
+      <div className="w-full rounded-2xl md:rounded-3xl bg-[#0b0f19] border border-slate-800/80 p-4 sm:p-5 mb-5 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left">
+        {/* Ambient Subtle Glow */}
+        <div className="absolute top-0 right-0 w-80 h-32 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                <HelpCircle className="w-4 h-4" />
-              </div>
-              <div>
-                <h2 className="text-base font-black text-white tracking-wide">Academic Doubt Solver</h2>
-                <p className="text-[11px] text-gray-400 font-medium">Textbook-grade step-by-step derivations & code</p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowMathBar(prev => !prev)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                showMathBar 
-                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' 
-                  : 'bg-white/5 hover:bg-white/10 text-gray-300 border-white/10'
-              }`}
-              title="Toggle Math & Code symbols toolbar"
-            >
-              <Calculator className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Math Toolbar</span>
-            </button>
+        {/* Title & Status */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-md">
+            <Calculator className="w-5 h-5" />
           </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-black text-white tracking-wide">
+                Academic Doubt & Derivation Studio
+              </h1>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/50 text-cyan-400 text-[10px] font-bold font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                KaTeX Live
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Textbook-grade step-by-step derivations, code & exam proofs</p>
+          </div>
+        </div>
 
-          {/* Solver Mode Switcher */}
-          <div className="flex bg-[#030712]/90 p-1.5 rounded-2xl mb-5 border border-white/5 gap-1">
+        {/* Mode Selector & Knowledge Drawer Toggle */}
+        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-between md:justify-end">
+          {/* Solver Mode Toggle */}
+          <div className="inline-flex bg-slate-950/90 p-1 rounded-xl border border-slate-800 gap-1">
             <button
               type="button"
               onClick={() => setSolverMode('ai')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                solverMode === 'ai' 
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg font-black' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                solverMode === 'ai'
+                  ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Instant AI Master Solver</span>
+              <span>AI Master Tutor</span>
             </button>
             <button
               type="button"
               onClick={() => setSolverMode('mentor')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                solverMode === 'mentor' 
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg font-black' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                solverMode === 'mentor'
+                  ? 'bg-purple-600 text-white shadow-md font-black'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <User className="w-3.5 h-3.5" />
-              <span>Ask Human Mentor</span>
+              <span>Faculty Mentor</span>
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Subject selector */}
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Select Domain</span>
-              <div className="flex flex-wrap gap-1.5">
-                {['All Subjects', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Electronics', 'Aptitude'].map((sub) => (
-                  <button
-                    type="button"
-                    key={sub}
-                    onClick={() => setSubject(sub)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                      subject === sub 
-                        ? 'bg-cyan-500 text-black border-cyan-400 shadow-md' 
-                        : 'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300'
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Doubt History Library Drawer Button */}
+          <button
+            type="button"
+            onClick={() => setShowHistoryDrawer(!showHistoryDrawer)}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+              showHistoryDrawer 
+                ? 'bg-cyan-950/80 text-cyan-300 border-cyan-700/60 shadow-sm' 
+                : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border-slate-800'
+            }`}
+            title="Toggle previous doubts history"
+          >
+            <History className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Library ({doubts.length})</span>
+          </button>
 
-            {/* Quick Math Symbols Insert Drawer */}
-            {showMathBar && (
-              <div className="p-3 bg-black/50 border border-cyan-500/30 rounded-2xl space-y-2 animate-fade-in">
-                <span className="text-[10px] font-mono text-cyan-300 font-bold uppercase block">
-                  Click to insert LaTeX math symbol or code:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {MATH_QUICK_SYMBOLS.map((sym, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleInsertSymbol(sym.insert)}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-cyan-200 hover:text-cyan-300 border border-white/10 hover:border-cyan-500/40 text-xs font-mono font-bold transition-all cursor-pointer active:scale-95"
-                    >
-                      {sym.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Textarea Input */}
-            <div className="relative">
-              <textarea
-                ref={textareaRef}
-                value={doubtText}
-                onChange={(e) => setDoubtText(e.target.value)}
-                placeholder={getPlaceholder()}
-                rows="4"
-                className="w-full p-4 rounded-2xl bg-black/40 border border-white/15 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-cyan-500/60 transition-colors font-sans shadow-inner"
-              ></textarea>
-
-              {/* Voice input mic button */}
-              <button
-                type="button"
-                onClick={toggleVoiceInput}
-                className={`absolute right-3 top-3 p-2 rounded-xl transition-all cursor-pointer border ${
-                  isListening 
-                    ? 'bg-rose-500 text-white border-rose-400 animate-ping' 
-                    : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-cyan-300 border-white/10'
-                }`}
-                title={isListening ? 'Listening... click to stop' : 'Click to dictate doubt with voice'}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-            </div>
-
-            {/* Image Upload & Action Row */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between pt-1">
-              <div className="w-full sm:w-auto">
-                <input
-                  type="file"
-                  id="image-upload"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                
-                {previewUrl ? (
-                  <div className="relative flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-2xl p-2 pr-4">
-                    <img src={previewUrl} alt="Preview" className="w-10 h-10 object-cover rounded-xl border border-white/10" />
-                    <div className="text-left">
-                      <span className="text-[10px] text-cyan-400 font-bold block">Attached Problem</span>
-                      <span className="text-xs text-gray-300 font-medium truncate max-w-[120px] block">
-                        {uploadedFile?.name || 'Problem.jpg'}
-                      </span>
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={clearFile}
-                      className="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-rose-400 transition-colors ml-2 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <label 
-                    htmlFor="image-upload"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs font-bold cursor-pointer transition-all duration-300"
-                  >
-                    <Upload className={`w-4 h-4 ${solverMode === 'ai' ? 'text-cyan-400' : 'text-purple-400'}`} />
-                    <span>Upload textbook image</span>
-                  </label>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || !doubtText.trim()}
-                className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                  isSubmitting || !doubtText.trim()
-                    ? 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
-                    : solverMode === 'ai' 
-                      ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:opacity-95 text-black shadow-[0_0_25px_rgba(6,182,212,0.4)]' 
-                      : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-95 text-white shadow-[0_0_25px_rgba(168,85,247,0.4)]'
-                }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Sparkles className="w-4 h-4 animate-spin" />
-                    <span>Resolving Step-by-Step...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>{solverMode === 'ai' ? 'Solve Academic Doubt' : 'Send to Mentor'}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          {/* New Doubt Button */}
+          {activeDoubt && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveDoubt(null);
+                setDoubtText('');
+                clearFile();
+              }}
+              className="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all shadow-md shadow-cyan-600/30 cursor-pointer"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>+ New Doubt</span>
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Recent Doubts History Feed */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-black uppercase text-gray-400 tracking-wider">
-              Recent Doubts ({filteredDoubts.length})
-            </span>
-            
-            <div className="relative w-44">
-              <Search className="w-3 h-3 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+      {/* ─── 2. MAIN LAYOUT (WORKSPACE STUDIO + COLLAPSIBLE DRAWER) ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        {/* COLLAPSIBLE HISTORY DRAWER (WHEN OPENED) */}
+        {showHistoryDrawer && (
+          <div className="lg:col-span-4 rounded-3xl bg-[#0b0f19] border border-slate-800/80 p-4 shadow-xl space-y-3 text-left animate-fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="text-xs font-black uppercase text-slate-300 tracking-wider flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <span>My Resolved Library ({filteredDoubts.length})</span>
+              </span>
+              <button 
+                onClick={() => setShowHistoryDrawer(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Search History */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchHistoryQuery}
                 onChange={(e) => setSearchHistoryQuery(e.target.value)}
-                placeholder="Search history..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-7 pr-2 py-1 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50"
+                placeholder="Search past questions or formulas..."
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
               />
             </div>
-          </div>
 
-          <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
-            {filteredDoubts.slice().reverse().map(d => (
-              <div 
-                key={d.id} 
-                onClick={() => setActiveDoubt(d)}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                  activeDoubt?.id === d.id 
-                    ? 'bg-cyan-500/10 border-cyan-500/40 shadow-md' 
-                    : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1 ${
-                    d.isHumanRequest ? 'bg-purple-500/20 text-purple-300' : 'bg-cyan-500/20 text-cyan-300'
-                  }`}>
-                    {d.isHumanRequest ? <User className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
-                    {d.isHumanRequest ? 'Mentor' : 'AI'} • {d.tag}
-                  </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                    d.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  }`}>
-                    {d.status}
-                  </span>
+            {/* Doubt Cards List */}
+            <div className="space-y-2 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin">
+              {filteredDoubts.slice().reverse().map(d => {
+                const isSelected = activeDoubt?.id === d.id;
+                return (
+                  <div
+                    key={d.id}
+                    onClick={() => {
+                      setActiveDoubt(d);
+                      setShowHistoryDrawer(false);
+                    }}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer text-left ${
+                      isSelected
+                        ? 'bg-cyan-500/10 border-cyan-500/50 shadow-md'
+                        : 'bg-slate-950/60 border-slate-800/80 hover:bg-slate-900 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
+                        d.isHumanRequest ? 'bg-purple-950 text-purple-300 border border-purple-800/40' : 'bg-cyan-950 text-cyan-300 border border-cyan-800/40'
+                      }`}>
+                        {d.tag || 'Academic'}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                        d.status === 'Resolved' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/40' : 'bg-amber-950 text-amber-300 border border-amber-800/40'
+                      }`}>
+                        {d.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-200 font-semibold line-clamp-2 leading-snug">{d.topic}</p>
+                    <div className="text-[10px] text-slate-400 mt-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-3 h-3 text-slate-500" />
+                        {d.thread?.length || 0} answers
+                      </span>
+                      <span>{d.date || 'Active'}</span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filteredDoubts.length === 0 && (
+                <div className="p-8 text-center text-slate-500 rounded-2xl bg-slate-950/40 border border-slate-800/40">
+                  <HelpCircle className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
+                  <p className="text-xs">No previous doubts found.</p>
                 </div>
-                <p className="text-xs text-gray-200 truncate font-semibold">{d.topic}</p>
-                <div className="text-[10px] text-gray-500 mt-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1">
-                    <MessageCircle className="w-3 h-3" />
-                    {d.thread?.length || 0} explanations
-                  </span>
-                  <span>{d.date || 'Active'}</span>
-                </div>
-              </div>
-            ))}
-
-            {filteredDoubts.length === 0 && (
-              <div className="text-center p-8 bg-white/[0.02] border border-white/5 rounded-2xl">
-                <HelpCircle className="w-8 h-8 text-gray-600 mx-auto mb-2 opacity-50" />
-                <p className="text-xs text-gray-400">No doubts recorded yet. Ask a question to start!</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-      </div>
-
-      {/* Right Details Thread Column (Interactive Live Resolution Canvas) */}
-      <div className="lg:col-span-7 h-full">
-        {activeDoubt ? (
-          <div className="glass-panel rounded-3xl flex flex-col h-[720px] border border-cyan-500/30 bg-[#090f1d]/90 shadow-2xl overflow-hidden backdrop-blur-2xl">
-            
-            {/* Thread Header */}
-            <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-black/40">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
-                    activeDoubt.isHumanRequest ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                  }`}>
-                    {activeDoubt.tag}
-                  </span>
-                  <span className="text-xs font-black text-white">
-                    {activeDoubt.isHumanRequest ? 'Mentor Connect Thread' : 'Active AI Resolution Thread'}
-                  </span>
-                </div>
-              </div>
-              <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                activeDoubt.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-              }`}>
-                {activeDoubt.status}
-              </span>
+              )}
             </div>
+          </div>
+        )}
 
-            {/* Scrollable Conversation Thread */}
-            <div ref={chatScrollRef} className="flex-1 p-5 overflow-y-auto space-y-5 custom-scrollbar">
-              
-              {/* Question Card */}
-              <div className="bg-white/[0.04] border border-white/10 p-4 rounded-2xl space-y-2.5 shadow-md">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center font-black text-xs text-purple-300">
-                      Q
-                    </div>
-                    <div>
-                      <span className="text-xs font-black text-white">Academic Question</span>
-                      <span className="text-[10px] text-gray-500 block">{activeDoubt.date}</span>
-                    </div>
+        {/* MAIN STUDIO AREA */}
+        <div className={`${showHistoryDrawer ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-5 transition-all text-left`}>
+          
+          {/* ─── WHEN NO DOUBT IS ACTIVE: FOCUSED QUESTION STUDIO ─── */}
+          {!activeDoubt && (
+            <div className="rounded-3xl bg-[#0b0f19] border border-slate-800/80 p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* 1. Domain Selector Bar & Tutor Style Switcher */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-bold text-slate-400 mr-1 uppercase tracking-wider">Domain:</span>
+                    {DOMAINS.map((sub) => (
+                      <button
+                        type="button"
+                        key={sub}
+                        onClick={() => setSubject(sub)}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                          subject === sub 
+                            ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md font-bold' 
+                            : 'bg-slate-950 border-slate-800 hover:bg-slate-800 text-slate-300'
+                        }`}
+                      >
+                        {sub}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Socratic vs Full Solution Toggle */}
+                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setTutorStyle('full')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        tutorStyle === 'full' 
+                          ? 'bg-slate-800 text-cyan-300 shadow-sm' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Full Derivation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTutorStyle('socratic')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                        tutorStyle === 'socratic' 
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Progressively reveals step-by-step so you learn actively"
+                    >
+                      <Lightbulb className="w-3 h-3 text-amber-400" />
+                      <span>Socratic Tutor</span>
+                    </button>
                   </div>
                 </div>
 
-                <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-semibold">
-                  {activeDoubt.topic}
-                </p>
+                {/* 2. Math & Code Toolbar Toggle */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <span>Ask Your Doubt</span>
+                    <span className="text-[11px] text-slate-500 font-normal">(Drag & drop or Ctrl+V to attach screenshots)</span>
+                  </span>
 
-                {activeDoubt.hasImage && activeDoubt.imageUrl && (
-                  <div className="rounded-xl overflow-hidden border border-white/10 mt-2 bg-black/40 max-h-[180px] flex items-center justify-center">
-                    <img 
-                      src={activeDoubt.imageUrl} 
-                      alt="Problem attached" 
-                      className="max-h-[180px] w-full object-contain"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.style.display = 'none';
-                      }}
+                  <button
+                    type="button"
+                    onClick={() => setShowMathBar(!showMathBar)}
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                      showMathBar
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                        : 'bg-slate-950 hover:bg-slate-900 text-slate-400 border-slate-800'
+                    }`}
+                  >
+                    <Calculator className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{showMathBar ? 'Hide Math Bar' : 'Math & Code Toolbar'}</span>
+                  </button>
+                </div>
+
+                {/* Quick Math Symbols Insert Drawer */}
+                {showMathBar && (
+                  <div className="p-3 bg-slate-950 border border-cyan-500/30 rounded-2xl space-y-2 animate-fade-in shadow-inner">
+                    <span className="text-[10px] font-mono text-cyan-300 font-bold uppercase block">
+                      Click symbol to insert LaTeX equation or code:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {MATH_QUICK_SYMBOLS.map((sym, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleInsertSymbol(sym.insert)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-cyan-500/20 text-cyan-200 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 text-xs font-mono font-bold transition-all cursor-pointer active:scale-95"
+                        >
+                          {sym.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Textarea with Direct Clipboard Paste & Drag-and-Drop */}
+                <div 
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`relative rounded-2xl border transition-all ${
+                    isDragging ? 'border-cyan-400 bg-cyan-950/20 ring-2 ring-cyan-500/30' : 'border-slate-800 bg-slate-950/70 focus-within:border-cyan-500/70'
+                  }`}
+                >
+                  <textarea
+                    ref={textareaRef}
+                    value={doubtText}
+                    onPaste={handlePaste}
+                    onChange={(e) => setDoubtText(e.target.value)}
+                    placeholder={getPlaceholder()}
+                    rows="5"
+                    className="w-full p-4 rounded-2xl bg-transparent text-sm text-slate-100 placeholder-slate-500 resize-none focus:outline-none font-sans"
+                  />
+
+                  {/* Mic Voice Dictation Button */}
+                  <div className="absolute right-3 top-3 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={toggleVoiceInput}
+                      className={`p-2 rounded-xl transition-all cursor-pointer border ${
+                        isListening 
+                          ? 'bg-rose-500 text-white border-rose-400 animate-ping' 
+                          : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-cyan-300 border-slate-800'
+                      }`}
+                      title={isListening ? 'Listening... click to stop' : 'Click to dictate doubt with voice'}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Attached Image Preview Pill */}
+                  {previewUrl && (
+                    <div className="m-3 p-2 rounded-xl bg-slate-900 border border-cyan-800/40 flex items-center justify-between gap-3 max-w-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img src={previewUrl} alt="Attached" className="w-9 h-9 object-cover rounded-lg border border-slate-700 shrink-0" />
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-cyan-400 font-bold block">Attached Problem Screenshot</span>
+                          <span className="text-xs text-slate-300 truncate block">{uploadedFile?.name || 'Clipboard-Screenshot.png'}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearFile}
+                        className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Real-Time KaTeX Math Live Preview Pill (Upgrade 4) */}
+                {liveMathPreviewHtml && (
+                  <div className="p-3 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-cyan-500/30 animate-fade-in text-center shadow-lg">
+                    <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold tracking-wider block mb-1">
+                      ⚡ Live Math Formula Preview:
+                    </span>
+                    <div 
+                      className="overflow-x-auto text-cyan-200 text-sm sm:text-base font-serif"
+                      dangerouslySetInnerHTML={{ __html: liveMathPreviewHtml }}
                     />
                   </div>
                 )}
-              </div>
 
-              {/* Answers & AI Resolutions with KaTeX & Markdown Rendering */}
-              {activeDoubt.thread && activeDoubt.thread.map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  className={`p-5 rounded-2xl border space-y-3.5 shadow-lg ${
-                    msg.isAI 
-                      ? 'bg-gradient-to-b from-[#0b1424] via-[#09101d] to-[#070c17] border-cyan-500/30' 
-                      : msg.isMentor
-                        ? 'bg-purple-950/20 border-purple-500/30'
-                        : 'bg-white/[0.03] border-white/10'
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
-                        msg.isAI ? 'bg-cyan-500 text-black shadow-md' : msg.isMentor ? 'bg-purple-500 text-white' : 'bg-gray-700 text-white'
-                      }`}>
-                        {msg.isAI ? 'AI' : msg.isMentor ? 'M' : 'S'}
-                      </div>
-                      <div>
-                        <span className="text-xs font-black text-white">{msg.author}</span>
-                        {msg.isAI && (
-                          <span className="text-[9px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-black uppercase ml-2">
-                            Master Tutor
-                          </span>
-                        )}
-                        {msg.isMentor && (
-                          <span className="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-black uppercase ml-2">
-                            Mentor
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* BEAUTIFUL KATEX MATH & MARKDOWN RENDERER */}
-                  {(msg.isAI || msg.author?.toLowerCase().includes('ai') || msg.author?.toLowerCase().includes('vyomra') || msg.author?.toLowerCase().includes('assistant')) ? (
-                    <AcademicSolutionRenderer 
-                      content={msg.content} 
-                      onAskFollowUp={handleQuickFollowUp}
-                      author={msg.author}
+                {/* 5. Quick Starter Prompt Pills */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Quick prompts:</span>
+                  <button
+                    type="button"
+                    onClick={() => setDoubtText(prev => prev ? `${prev} - derive step-by-step with formulas` : 'Derive step-by-step with formulas: ')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 text-[11px] transition-all cursor-pointer"
+                  >
+                    ⚡ Step-by-step Proof
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDoubtText(prev => prev ? `${prev} - explain intuition simply with real-world analogy` : 'Explain the intuition simply with a real-world analogy: ')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 text-[11px] transition-all cursor-pointer"
+                  >
+                    🧠 Intuitive Analogy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDoubtText(prev => prev ? `${prev} - find bug in this code and provide corrected implementation` : 'Find the bug in this code and provide corrected implementation: \n```\n\n```')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 text-[11px] transition-all cursor-pointer"
+                  >
+                    🐞 Debug Code Error
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDoubtText(prev => prev ? `${prev} - provide 10-mark university exam essay answer` : 'Provide standard 10-mark university exam answer for: ')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 text-[11px] transition-all cursor-pointer"
+                  >
+                    📝 10-Mark Exam Model
+                  </button>
+                </div>
+
+                {/* 6. Footer Actions: File Upload & Submit */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                  <div>
+                    <input
+                      type="file"
+                      id="problem-image-upload"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
                     />
-                  ) : (
-                    <div className="text-xs text-gray-200 whitespace-pre-line leading-relaxed font-normal">
-                      {msg.content}
-                    </div>
-                  )}
+                    <label
+                      htmlFor="problem-image-upload"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold cursor-pointer transition-all"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{previewUrl ? 'Change Image' : 'Attach Textbook Image'}</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {(doubtText || previewUrl) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDoubtText('');
+                          clearFile();
+                        }}
+                        className="px-3 py-2.5 rounded-xl text-xs text-slate-400 hover:text-white transition-all cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || (!doubtText.trim() && !imageBase64)}
+                      className={`flex-1 sm:flex-initial px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                        isSubmitting || (!doubtText.trim() && !imageBase64)
+                          ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                          : solverMode === 'ai'
+                            ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/30 font-black active:scale-95'
+                            : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/30 font-black active:scale-95'
+                      }`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Sparkles className="w-4 h-4 animate-spin text-black" />
+                          <span>Solving Step-by-Step...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>{solverMode === 'ai' ? 'Solve Academic Doubt' : 'Send to Faculty'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              ))}
 
-              {/* Shimmer loading state during follow up query */}
-              {isFollowUpSubmitting && (
-                <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 flex items-center gap-3 animate-pulse">
-                  <Sparkles className="w-5 h-5 text-cyan-400 animate-spin" />
-                  <span className="text-xs text-cyan-300 font-bold">Computing textbook derivation & solution...</span>
-                </div>
-              )}
-
-              {activeDoubt.isHumanRequest && activeDoubt.status === 'Pending Review' && (!activeDoubt.thread || activeDoubt.thread.length === 0) && (
-                <div className="text-center p-8 bg-white/[0.02] border border-white/5 rounded-2xl border-dashed space-y-2">
-                  <User className="w-8 h-8 text-purple-400/60 mx-auto" />
-                  <p className="text-xs text-gray-300 font-bold">A verified academic mentor will review and solve your query soon.</p>
-                </div>
-              )}
-
-            </div>
-
-            {/* Input Footer for further questions */}
-            <div className="p-4 border-t border-white/10 bg-black/50">
-              <form onSubmit={handleFollowUpSubmit} className="relative">
-                <input
-                  type="text"
-                  value={followUpText}
-                  onChange={(e) => setFollowUpText(e.target.value)}
-                  placeholder={activeDoubt.isHumanRequest ? "Send a follow-up message to your mentor..." : "Ask follow-up question or request simpler breakdown..."}
-                  disabled={isFollowUpSubmitting}
-                  className="w-full py-3 pl-4 pr-12 rounded-2xl bg-white/5 border border-white/15 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/60 transition-colors disabled:opacity-50"
-                />
-                <button 
-                  type="submit"
-                  disabled={isFollowUpSubmitting || !followUpText.trim()}
-                  className={`absolute right-1.5 top-1.5 h-9 w-9 rounded-xl flex items-center justify-center text-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all ${
-                    activeDoubt.isHumanRequest ? 'bg-purple-500 hover:bg-purple-400 text-white' : 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-md'
-                  }`}
-                >
-                  {isFollowUpSubmitting ? (
-                    <Sparkles className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </button>
               </form>
             </div>
+          )}
 
-          </div>
-        ) : (
-          <div className="glass-panel rounded-3xl h-[680px] flex flex-col items-center justify-center text-center p-8 border border-white/10 bg-gradient-to-b from-[#0b1324]/40 to-[#070c17]/40 shadow-xl">
-            <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 animate-bounce">
-              <HelpCircle className="w-8 h-8" />
+          {/* ─── WHEN A DOUBT IS ACTIVE: INTERACTIVE LIVE RESOLUTION CANVAS ─── */}
+          {activeDoubt && (
+            <div className="rounded-3xl bg-[#0b0f19] border border-cyan-500/30 shadow-2xl overflow-hidden flex flex-col h-[750px] relative backdrop-blur-2xl">
+              
+              {/* Canvas Header */}
+              <div className="p-4 border-b border-slate-800/80 bg-slate-950/80 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDoubt(null);
+                      setDoubtText('');
+                      clearFile();
+                    }}
+                    className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer mr-1"
+                    title="Return to Question Studio"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                    activeDoubt.isHumanRequest ? 'bg-purple-950 text-purple-300 border border-purple-800/40' : 'bg-cyan-950 text-cyan-300 border border-cyan-800/40'
+                  }`}>
+                    {activeDoubt.tag || 'Academic'}
+                  </span>
+
+                  <span className="text-xs font-bold text-white truncate">
+                    {activeDoubt.topic}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                    activeDoubt.status === 'Resolved' 
+                      ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/50' 
+                      : 'bg-amber-950 text-amber-400 border border-amber-800/50'
+                  }`}>
+                    {activeDoubt.status}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleExportExamNote(activeDoubt)}
+                    className="px-3 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Save or Print as Exam Note PDF"
+                  >
+                    <FileDown className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="hidden sm:inline">Exam Note</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Thread Body */}
+              <div ref={chatScrollRef} className="flex-1 p-5 overflow-y-auto space-y-4 scrollbar-thin">
+                
+                {/* 1. Original Question Card */}
+                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-black text-[11px] text-cyan-300">
+                      Q
+                    </div>
+                    <span className="text-xs font-bold text-white">Problem Statement</span>
+                    <span className="text-[10px] text-slate-500">• {activeDoubt.date || 'Today'}</span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-200 font-semibold leading-relaxed">
+                    {activeDoubt.topic}
+                  </p>
+
+                  {/* Attached Image Thumbnail */}
+                  {activeDoubt.hasImage && activeDoubt.imageUrl && (
+                    <div className="rounded-xl overflow-hidden border border-slate-800 mt-2 bg-black/40 max-h-[200px] flex items-center justify-center">
+                      <img 
+                        src={activeDoubt.imageUrl} 
+                        alt="Attached problem" 
+                        className="max-h-[200px] w-full object-contain"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Resolutions and AI Answers with KaTeX & Socratic Reveal */}
+                {activeDoubt.thread && activeDoubt.thread.map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-5 rounded-2xl border space-y-3.5 shadow-lg ${
+                      msg.isAI 
+                        ? 'bg-gradient-to-b from-[#091122] via-[#09101d] to-[#070c17] border-cyan-500/30' 
+                        : msg.isMentor
+                          ? 'bg-purple-950/20 border-purple-500/30'
+                          : 'bg-slate-950/60 border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${
+                          msg.isAI ? 'bg-cyan-500 text-slate-950 font-bold' : msg.isMentor ? 'bg-purple-500 text-white' : 'bg-slate-700 text-white'
+                        }`}>
+                          {msg.isAI ? 'AI' : msg.isMentor ? 'M' : 'S'}
+                        </div>
+                        <span className="text-xs font-bold text-white">{msg.author}</span>
+                        {msg.isAI && (
+                          <span className="text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800/40 px-2 py-0.5 rounded-full font-bold uppercase ml-1">
+                            Verified Derivation
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Academic Markdown + KaTeX Renderer with Progressive Socratic Steps */}
+                    {(msg.isAI || msg.author?.toLowerCase().includes('ai') || msg.author?.toLowerCase().includes('vyomra')) ? (
+                      <AcademicSolutionRenderer 
+                        content={msg.content} 
+                        onAskFollowUp={handleQuickFollowUp}
+                        onExportPdf={() => handleExportExamNote(activeDoubt)}
+                        author={msg.author}
+                        initialSocratic={activeDoubt.initialSocratic || false}
+                      />
+                    ) : (
+                      <div className="text-xs text-slate-200 whitespace-pre-line leading-relaxed">
+                        {msg.content}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Computing Follow Up Animation */}
+                {isFollowUpSubmitting && (
+                  <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex items-center gap-3 animate-pulse">
+                    <Sparkles className="w-4 h-4 text-cyan-400 animate-spin" />
+                    <span className="text-xs text-cyan-300 font-bold">Computing textbook derivation & formulas...</span>
+                  </div>
+                )}
+
+                {activeDoubt.isHumanRequest && activeDoubt.status === 'Pending Review' && (!activeDoubt.thread || activeDoubt.thread.length === 0) && (
+                  <div className="text-center p-8 bg-slate-950/40 border border-slate-800 rounded-2xl border-dashed space-y-2">
+                    <User className="w-8 h-8 text-purple-400/60 mx-auto" />
+                    <p className="text-xs text-slate-300 font-bold">A verified academic faculty member will review your query soon.</p>
+                  </div>
+                )}
+
+              </div>
+
+              {/* Interactive Follow-Up Input Footer */}
+              <div className="p-4 border-t border-slate-800/80 bg-slate-950/90 space-y-2.5">
+                {/* Quick Chips */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 shrink-0">Follow-up:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFollowUp("Can you generate 1 similar university exam practice question based on this topic with a hidden solution so I can test myself?")}
+                    className="px-2 py-0.5 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-800/40 text-emerald-300 text-[10px] font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <BookOpen className="w-3 h-3 text-emerald-400" />
+                    <span>Practice Similar Problem</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFollowUp("Can you explain this simpler in plain English with an intuitive real-world analogy?")}
+                    className="px-2 py-0.5 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-800/40 text-cyan-300 text-[10px] font-bold shrink-0 transition-all cursor-pointer"
+                  >
+                    Explain Simpler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFollowUp("Can you show an alternative formula or derivation method?")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-bold shrink-0 transition-all cursor-pointer"
+                  >
+                    Alternative Method
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFollowUp("Please provide a runnable Python implementation of this algorithm with comments.")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-bold shrink-0 transition-all cursor-pointer"
+                  >
+                    Python Code
+                  </button>
+                </div>
+
+                {/* Follow-up Query Form */}
+                <form onSubmit={handleFollowUpSubmit} className="relative">
+                  <input
+                    type="text"
+                    value={followUpText}
+                    onChange={(e) => setFollowUpText(e.target.value)}
+                    placeholder={activeDoubt.isHumanRequest ? "Send follow-up query to your mentor..." : "Ask follow-up question, request simpler breakdown, or alternative proof..."}
+                    disabled={isFollowUpSubmitting}
+                    className="w-full py-2.5 pl-4 pr-12 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 transition-colors"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={isFollowUpSubmitting || !followUpText.trim()}
+                    className={`absolute right-1.5 top-1.5 h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all ${
+                      activeDoubt.isHumanRequest ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold shadow-md'
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    {isFollowUpSubmitting ? (
+                      <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </form>
+              </div>
+
             </div>
-            <h4 className="text-base font-black text-white">No active doubt thread selected</h4>
-            <p className="text-xs text-gray-400 max-w-[260px] mt-1.5 leading-relaxed">
-              Select a question from your history or ask a new doubt on the left to receive an instant step-by-step resolution.
-            </p>
-          </div>
-        )}
+          )}
+
+        </div>
+
       </div>
 
     </div>
   );
 }
-

@@ -4,13 +4,14 @@ import katex from 'katex';
 import DOMPurify from 'dompurify';
 import { 
   Copy, Check, Volume2, VolumeX, Sparkles, BookOpen, 
-  HelpCircle, Code, Calculator, CheckCircle2, Lightbulb
+  HelpCircle, Code, Calculator, CheckCircle2, Lightbulb,
+  FileDown, ChevronDown, Eye, Layers
 } from 'lucide-react';
 
 /**
  * Transforms raw markdown + LaTeX into styled, sanitized HTML with KaTeX formulas
  */
-function renderMarkdownWithKaTeX(content) {
+export function renderMarkdownWithKaTeX(content) {
   if (!content) return '';
 
   let text = content.replace(/\r\n/g, '\n');
@@ -80,11 +81,25 @@ function renderMarkdownWithKaTeX(content) {
 export default function AcademicSolutionRenderer({ 
   content = '', 
   onAskFollowUp,
+  onExportPdf,
   showToolbar = true,
-  author = 'Vyomra AI Assistant'
+  author = 'Vyomra AI Assistant',
+  initialSocratic = false
 }) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSocraticMode, setIsSocraticMode] = useState(initialSocratic);
+
+  // Split content into Socratic steps if step markers exist
+  const stepSegments = useMemo(() => {
+    if (!content) return [];
+    const regex = /\n(?=(?:###?\s+Step|\*\*Step|Step\s+\d+:))/i;
+    const parts = content.split(regex);
+    return parts.length > 1 ? parts : [content];
+  }, [content]);
+
+  const hasMultipleSteps = stepSegments.length > 1;
+  const [visibleStepCount, setVisibleStepCount] = useState(1);
 
   // Text to speech handler
   const handleToggleSpeech = useCallback(() => {
@@ -124,25 +139,84 @@ export default function AcademicSolutionRenderer({
     });
   };
 
+  // Content to render based on Socratic mode
+  const displayedContent = useMemo(() => {
+    if (!isSocraticMode || !hasMultipleSteps) {
+      return content;
+    }
+    return stepSegments.slice(0, visibleStepCount).join('\n\n');
+  }, [content, isSocraticMode, hasMultipleSteps, stepSegments, visibleStepCount]);
+
   const renderedHtml = useMemo(() => {
-    return renderMarkdownWithKaTeX(content);
-  }, [content]);
+    return renderMarkdownWithKaTeX(displayedContent);
+  }, [displayedContent]);
 
   return (
     <div className="space-y-4 font-sans text-xs text-gray-200 leading-relaxed selection:bg-cyan-500 selection:text-black">
       
+      {/* Socratic Step Mode Banner (if multiple steps detected) */}
+      {hasMultipleSteps && (
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="font-bold text-white text-[11px]">
+              {isSocraticMode ? `Socratic Tutor Mode • Step ${visibleStepCount} of ${stepSegments.length}` : 'Full Derivation View'}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsSocraticMode(prev => !prev);
+              if (!isSocraticMode) setVisibleStepCount(1);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-700/50 text-cyan-300 font-semibold text-[10px] transition-all cursor-pointer flex items-center gap-1"
+          >
+            <Lightbulb className="w-3 h-3 text-cyan-400" />
+            <span>{isSocraticMode ? 'View Full Solution' : 'Switch to Step-by-Step Reveal'}</span>
+          </button>
+        </div>
+      )}
+
       {/* HTML Stream with CSS classes for Typography & Tables */}
       <div 
         className="academic-prose space-y-3 leading-relaxed text-gray-200 text-xs sm:text-[13px]"
         dangerouslySetInnerHTML={{ __html: renderedHtml }}
       />
 
+      {/* Socratic Reveal Next Step Action Button */}
+      {isSocraticMode && hasMultipleSteps && visibleStepCount < stepSegments.length && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/40 to-slate-950 border border-cyan-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in shadow-lg">
+          <div>
+            <span className="text-xs font-bold text-white block">Test your understanding of Step {visibleStepCount}</span>
+            <span className="text-[11px] text-slate-400">Try solving the next step in your notebook, then reveal the answer.</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setVisibleStepCount(stepSegments.length)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+            >
+              Reveal All
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibleStepCount(prev => prev + 1)}
+              className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs shadow-md shadow-cyan-500/30 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+            >
+              <Lightbulb className="w-3.5 h-3.5" />
+              <span>Reveal Step {visibleStepCount + 1} &rarr;</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* QUICK ACADEMIC ACTIONS TOOLBAR */}
       {showToolbar && (
         <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
           
           {/* Left Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={handleToggleSpeech}
               className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
@@ -164,11 +238,31 @@ export default function AcademicSolutionRenderer({
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
               <span>{copied ? 'Copied!' : 'Copy Solution'}</span>
             </button>
+
+            {onExportPdf && (
+              <button
+                onClick={onExportPdf}
+                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-cyan-300 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-white/10"
+                title="Print or Save as Exam Note PDF"
+              >
+                <FileDown className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Save Exam Note</span>
+              </button>
+            )}
           </div>
 
           {/* Quick Follow-Up AI Prompt Pills */}
           {onAskFollowUp && (
             <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                onClick={() => onAskFollowUp("Can you generate 1 similar university exam practice question based on this topic with a hidden solution so I can test myself?")}
+                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1"
+                title="Generate a similar problem to test yourself"
+              >
+                <BookOpen className="w-3 h-3 text-emerald-400" />
+                <span>Practice Similar Problem</span>
+              </button>
+
               <button
                 onClick={() => onAskFollowUp("Can you explain this simpler in plain English with an intuitive real-world analogy?")}
                 className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/30 transition-all cursor-pointer flex items-center gap-1"
@@ -178,19 +272,11 @@ export default function AcademicSolutionRenderer({
               </button>
 
               <button
-                onClick={() => onAskFollowUp("Give me a step-by-step mathematical derivation / breakdown of this formula.")}
+                onClick={() => onAskFollowUp("Give me a rigorous step-by-step mathematical derivation of each intermediate formula.")}
                 className="px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30 transition-all cursor-pointer flex items-center gap-1"
               >
                 <Calculator className="w-3 h-3 text-purple-400" />
                 <span>Deep Derivation</span>
-              </button>
-
-              <button
-                onClick={() => onAskFollowUp("Generate a practice problem on this topic with step-by-step hints so I can test myself.")}
-                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1"
-              >
-                <BookOpen className="w-3 h-3 text-emerald-400" />
-                <span>Practice Problem</span>
               </button>
             </div>
           )}
