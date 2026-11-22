@@ -4,21 +4,13 @@ import {
   Sparkles, ExternalLink, ChevronDown, ChevronUp, Search, 
   Filter, Award, Brain, BookOpen, Copy, Check, Play, AlertCircle, 
   ArrowRight, X, HelpCircle, CheckSquare, Target, Flame, Database,
-  Calendar, Cpu, Layers, RefreshCw, Printer, ShieldCheck, Zap,
-  FolderOpen, HardDrive, CheckCircle2,
-  Upload, FileUp, Trash2, Square, Eye, FileSpreadsheet
+  Calendar, Layers, Printer, ShieldCheck, Zap,
+  FolderOpen, CheckCircle2, FileSpreadsheet
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { HUGE_EXAM_DATASET } from '../data/hugeExamPredictorDataset';
-import { 
-  generateFullPredictedExamPaper, 
-  generatePredictedModelSets, 
-  parseSubmittedPaperText, 
-  detectSubjectFromText,
-  ML_MODEL_WEIGHTS, 
-  computeMLPredictionScore 
-} from '../services/mlPaperPredictorEngine';
+import { generatePredictedModelSets } from '../services/mlPaperPredictorEngine';
 import CompanyPlacementPapers from './CompanyPlacementPapers';
 import { useToast } from '../context/ToastContext';
 
@@ -69,16 +61,10 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
   const [selectedSemester, setSelectedSemester] = useState('All');
   const [uniSearch, setUniSearch] = useState('');
 
-  // ML Predictor Specific State
+  // ML Predictor & Model Sets State
   const [selectedSubjectId, setSelectedSubjectId] = useState('os');
   const [selectedUnit, setSelectedUnit] = useState('all');
   const [paperFormatMode, setPaperFormatMode] = useState('blueprint'); // 'blueprint' | 'matrix'
-  const [isRetraining, setIsRetraining] = useState(false);
-  const [trainingProgress, setTrainingProgress] = useState(100);
-  const [trainingPhase, setTrainingPhase] = useState('');
-  const [liveLoss, setLiveLoss] = useState(0.034);
-  const [liveAccuracy, setLiveAccuracy] = useState(98.4);
-  const [liveEpoch, setLiveEpoch] = useState(180);
   const [expandedModelAnswers, setExpandedModelAnswers] = useState({});
   const [copiedQId, setCopiedQId] = useState(null);
 
@@ -129,22 +115,13 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
     return HUGE_EXAM_DATASET.find(s => s.subjectId === selectedSubjectId) || HUGE_EXAM_DATASET[0];
   }, [filteredSubjects, selectedSubjectId]);
 
-  // ── DUAL MODEL SETS (SET A & SET B) PREDICTION STATE ──
+  // ── DUAL MODEL SETS (SET A & SET B) STATE ──
   const [activeModelSet, setActiveModelSet] = useState('set1'); // 'set1' | 'set2' | 'compare'
-  const [submissionMode, setSubmissionMode] = useState('drive'); // 'drive' | 'upload' | 'paste'
-  const [selectedDrivePapers, setSelectedDrivePapers] = useState(() => ['p1', 'p2', 'p3', 'p4']);
-  const [pastedPaperText, setPastedPaperText] = useState('');
-  const [uploadedPaperFiles, setUploadedPaperFiles] = useState([]);
-  const [customExtractedQuestions, setCustomExtractedQuestions] = useState([]);
-  const [isSynthesizing2Sets, setIsSynthesizing2Sets] = useState(false);
-  const [synthesisProgress, setSynthesisProgress] = useState(100);
-  const [synthesisPhase, setSynthesisPhase] = useState('');
-  const [hasRunCustomSynthesis, setHasRunCustomSynthesis] = useState(false);
 
   // Synchronize 2 Question Paper Model Sets (Set A & Set B)
   const predictedModelSets = useMemo(() => {
-    return generatePredictedModelSets(activeSubject.subjectId, customExtractedQuestions);
-  }, [activeSubject.subjectId, customExtractedQuestions]);
+    return generatePredictedModelSets(activeSubject.subjectId);
+  }, [activeSubject.subjectId]);
 
   const activePaper = useMemo(() => {
     return activeModelSet === 'set2' ? predictedModelSets.set2 : predictedModelSets.set1;
@@ -211,43 +188,6 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
     });
   }, [activePaper]);
 
-  // Execute Deep Learning Model Calibration
-  const handleRetrainModel = () => {
-    if (isRetraining) return;
-    setIsRetraining(true);
-    setTrainingProgress(0);
-    setLiveLoss(0.482);
-    setLiveAccuracy(74.2);
-    setLiveEpoch(1);
-
-    addToast({ message: '🧠 Fine-tuning ML Recurrence Weights across 150+ Autonomous Examination Papers...', type: 'info' });
-
-    const phases = [
-      { p: 20, epoch: 35, loss: 0.312, acc: 84.5, phase: 'Stage 1/5: Extracting 5-Year Recurrence Frequency Fensors...' },
-      { p: 45, epoch: 75, loss: 0.185, acc: 91.2, phase: 'Stage 2/5: Optimizing Unit Quota & Cognitive Bloom Weights...' },
-      { p: 70, epoch: 120, loss: 0.082, acc: 95.8, phase: 'Stage 3/5: Adam Optimization minimizing cross-entropy loss...' },
-      { p: 90, epoch: 160, loss: 0.045, acc: 97.9, phase: 'Stage 4/5: Cross-Validating on 2024/2025 Test Split Papers...' },
-      { p: 100, epoch: 180, loss: 0.034, acc: 98.4, phase: 'Stage 5/5: Converged: 98.4% Accuracy across Autonomous Exam Bank' }
-    ];
-
-    let step = 0;
-    const interval = setInterval(() => {
-      if (step < phases.length) {
-        const item = phases[step];
-        setTrainingProgress(item.p);
-        setLiveEpoch(item.epoch);
-        setLiveLoss(item.loss);
-        setLiveAccuracy(item.acc);
-        setTrainingPhase(item.phase);
-        step++;
-      } else {
-        clearInterval(interval);
-        setIsRetraining(false);
-        addToast({ message: '✨ AI Exam Model Calibrated! 98.4% Accuracy verified on 2024/2025 Autonomous papers.', type: 'success' });
-      }
-    }, 350);
-  };
-
   const toggleAnswer = (id) => {
     setExpandedModelAnswers(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -259,152 +199,10 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
     setTimeout(() => setCopiedQId(null), 2000);
   };
 
-  // Execute Neural Extraction & 2-Set Model Synthesis on User Submitted Papers
-  const handleRun2SetPrediction = () => {
-    if (isSynthesizing2Sets) return;
-    setIsSynthesizing2Sets(true);
-    setSynthesisProgress(10);
-    setSynthesisPhase('Phase 1/4: Ingesting & tokenizing submitted question papers...');
-
-    let parsedQuestions = [];
-    if (submissionMode === 'paste' && pastedPaperText.trim()) {
-      const detectedSubjId = detectSubjectFromText(pastedPaperText, '', HUGE_EXAM_DATASET);
-      if (detectedSubjId && detectedSubjId !== activeSubject.subjectId) {
-        setSelectedSubjectId(detectedSubjId);
-      }
-      const targetSubj = (detectedSubjId ? HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId) : null) || activeSubject;
-      parsedQuestions = parseSubmittedPaperText(pastedPaperText, targetSubj, '');
-    } else if (submissionMode === 'upload' && uploadedPaperFiles.length > 0) {
-      parsedQuestions = uploadedPaperFiles.flatMap((f) => {
-        if (f.text && f.text.trim().length > 10) {
-          const detectedSubjId = detectSubjectFromText(f.text, f.name, HUGE_EXAM_DATASET);
-          const targetSubj = (detectedSubjId ? HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId) : null) || activeSubject;
-          return parseSubmittedPaperText(f.text, targetSubj, f.name);
-        }
-        return [];
-      });
-    } else {
-      parsedQuestions = [];
-    }
-
-    addToast({ message: '⚡ Neural Predictor Ingesting Submitted Papers & Recalibrating Recurrence Tensors...', type: 'info' });
-
-    const phases = [
-      { p: 30, text: 'Phase 1/4: Ingesting question tokens & mathematical notations...' },
-      { p: 60, text: 'Phase 2/4: Cross-referencing against Syllabus Units 1 to 5 & Bloom Taxonomy...' },
-      { p: 85, text: 'Phase 3/4: Synthesizing Model Set 1 (Primary Autonomous Paper - 70M)...' },
-      { p: 100, text: 'Phase 4/4: Synthesizing Model Set 2 (Alternate Contingency Paper - 70M)...' }
-    ];
-
-    let step = 0;
-    const interval = setInterval(() => {
-      if (step < phases.length) {
-        setSynthesisProgress(phases[step].p);
-        setSynthesisPhase(phases[step].text);
-        step++;
-      } else {
-        clearInterval(interval);
-        setIsSynthesizing2Sets(false);
-        setCustomExtractedQuestions(parsedQuestions);
-        setHasRunCustomSynthesis(true);
-        addToast({ 
-          message: `✨ Successfully synthesized 2 Complete Model Sets (Set A & Set B) with 98.4% Confidence!`, 
-          type: 'success' 
-        });
-      }
-    }, 400);
-  };
-
-  const handleLoadSampleAutonomousPaper = () => {
-    const sample = `1. Define System Call and explain user mode to kernel mode transition. [2M]
-2. What are the three essential conditions for Critical Section Problem? [2M]
-3. State Banker's algorithm safe state criterion with formula. [2M]
-4. Compare Paging and Segmentation memory allocation. [2M]
-5. List four metadata attributes stored in an Inode. [2M]
-6. Explain Process Scheduling Algorithms (FCFS, SJF, Round Robin). Draw Gantt chart and compute Average Turnaround Time. [10M]
-7. Explain Banker's Algorithm for deadlock avoidance with safety algorithm implementation. [10M]
-8. Describe Paging hardware with Translation Lookaside Buffer (TLB). Derive Effective Memory Access Time (EMAT). [10M]
-9. Discuss File Allocation Methods (Contiguous, Linked, Indexed) with diagrams and trade-offs. [10M]
-10. Explain Disk Scheduling Algorithms (SSTF, SCAN, C-SCAN) with total head movement calculations. [10M]`;
-    setPastedPaperText(sample);
-    addToast({ message: 'Loaded authentic previous autonomous examination paper sample!', type: 'info' });
-  };
-
-  const handleFileUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    addToast({ message: `Extracting full text and diagrams from ${files.length} document(s)...`, type: 'info' });
-
-    let detectedSubject = null;
-    const processedFiles = [];
-
-    for (const file of files) {
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const isText = file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt') || file.name.toLowerCase().endsWith('.md');
-      let extractedText = '';
-
-      if (isPdf) {
-        try {
-          const [pdfjsLib, { default: pdfjsWorker }] = await Promise.all([
-            import('pdfjs-dist'),
-            import('pdfjs-dist/build/pdf.worker.mjs?url')
-          ]);
-          pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-          const arrayBuffer = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-          
-          for (let p = 1; p <= Math.min(pdf.numPages, 50); p++) {
-            const page = await pdf.getPage(p);
-            const content = await page.getTextContent();
-            extractedText += content.items.map(it => it.str).join(' ') + '\n';
-          }
-        } catch (pdfErr) {
-          console.error('Error extracting text from PDF:', pdfErr);
-        }
-      } else if (isText) {
-        try {
-          extractedText = await file.text();
-        } catch (txtErr) {
-          console.error('Error reading text file:', txtErr);
-        }
-      }
-
-      // Run automatic subject detection on extracted contents & filename
-      const detectedSubjId = detectSubjectFromText(extractedText, file.name, HUGE_EXAM_DATASET);
-      if (detectedSubjId) {
-        detectedSubject = HUGE_EXAM_DATASET.find(s => s.subjectId === detectedSubjId);
-      }
-
-      processedFiles.push({
-        name: file.name,
-        size: (file.size / 1024).toFixed(1) + ' KB',
-        text: extractedText,
-        isPdf
-      });
-    }
-
-    setUploadedPaperFiles(prev => [...prev, ...processedFiles]);
-
-    // If a subject was detected and it differs from current activeSubject, auto-switch context!
-    if (detectedSubject && detectedSubject.subjectId !== activeSubject.subjectId) {
-      setSelectedSubjectId(detectedSubject.subjectId);
-      addToast({
-        message: `🎯 Auto-detected ${detectedSubject.subjectName} from [${files[0].name}]! Switched subject context automatically.`,
-        type: 'success'
-      });
-    } else {
-      addToast({
-        message: `Attached & parsed ${files.length} question paper file(s) for neural ingestion!`,
-        type: 'success'
-      });
-    }
-  };
-
   // 1-Click Export Official 70-Mark Examination Paper PDF (Supports Set 1, Set 2, or Both Sets, with optional Model Solutions)
   const handleDownloadOfficialPDF = (targetSubjId, whichSet = 'set1', includeSolutions = false) => {
     try {
-      const activeSets = generatePredictedModelSets(targetSubjId || activeSubject.subjectId, customExtractedQuestions);
+      const activeSets = generatePredictedModelSets(targetSubjId || activeSubject.subjectId);
       const isBoth = whichSet === 'both';
       const setsToRender = isBoth 
         ? [activeSets.set1, activeSets.set2]
@@ -555,24 +353,24 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-rose-500/25 border border-white/20 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25 border border-white/20 shrink-0">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30 uppercase tracking-wider">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 uppercase tracking-wider">
                 Autonomous University Exam Suite
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Previous Question Papers & AI Blueprint Predictor
+                Previous Question Papers & Curated Model Blueprints
               </h1>
             </div>
           </div>
           <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-            Verified past university examination papers with question-by-question scoring rubrics, 1-click official PDF exports, and 70-mark AI predictive forecasts for all engineering branches.
+            Verified past university examination papers with step-by-step solved answer keys, 1-click official PDF exports, and 70-mark curated model sets for all engineering branches.
           </p>
         </div>
 
-        {/* Quick Branch Metric Pills */}
+        {/* Quick Metric Pills */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-center">
             <span className="text-xs font-mono font-bold text-cyan-400">42 Subjects</span>
@@ -583,8 +381,8 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
             <span className="text-[10px] text-slate-400 block">2019–2025 Archive</span>
           </div>
           <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-center">
-            <span className="text-xs font-mono font-bold text-rose-400">98.4% Yield</span>
-            <span className="text-[10px] text-slate-400 block">AI Accuracy</span>
+            <span className="text-xs font-mono font-bold text-amber-400">100% Solved</span>
+            <span className="text-[10px] text-slate-400 block">Step-by-Step Keys</span>
           </div>
         </div>
       </div>
@@ -614,9 +412,9 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Brain className="w-4 h-4" />
-          <span>AI 70M Blueprint Predictor</span>
-          <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/30 text-white font-mono">2026 Forecast</span>
+          <BookOpen className="w-4 h-4" />
+          <span>Curated Model Papers (Set A & B)</span>
+          <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/30 text-white font-mono">70M Blueprint</span>
         </button>
 
         <button
@@ -632,116 +430,147 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         </button>
       </div>
 
-      {/* ── 3. CLEAN SINGLE FILTER BAR ────────────────────────────────────── */}
-      <div className="bg-[#090d16] p-4 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
-        {/* Left: Search input */}
-        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          <Search className="w-4 h-4 text-slate-500 shrink-0" />
-          <input
-            type="text"
-            value={uniSearch}
-            onChange={(e) => setUniSearch(e.target.value)}
-            placeholder="Search papers by subject name or code (e.g. Thermodynamics, DSP, DBMS, SOM)..."
-            className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
-          />
-          {uniSearch && (
-            <button
-              onClick={() => setUniSearch('')}
-              className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              title="Clear search"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Right: Branch & Semester Selectors */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Branch Dropdown */}
-          <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
-            <span className="text-slate-400 font-mono text-[11px]">Branch:</span>
-            <select
-              value={selectedBranch}
-              onChange={(e) => handleBranchChange(e.target.value)}
-              className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
-            >
-              <option value="All" className="bg-[#090d16] text-white">All Branches (42)</option>
-              <option value="CSE" className="bg-[#090d16] text-white">CSE (6 Core)</option>
-              <option value="CSM" className="bg-[#090d16] text-white">CSM (AI & ML) (6)</option>
-              <option value="Civil" className="bg-[#090d16] text-white">Civil Engineering (6)</option>
-              <option value="ECE" className="bg-[#090d16] text-white">ECE (6 Core)</option>
-              <option value="EEE" className="bg-[#090d16] text-white">EEE (6 Core)</option>
-              <option value="Mechanical" className="bg-[#090d16] text-white">Mechanical Engineering (6)</option>
-              <option value="Common" className="bg-[#090d16] text-white">1st Year Foundation (6)</option>
-            </select>
-          </div>
-
-          {/* Semester Dropdown */}
-          <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
-            <span className="text-slate-400 font-mono text-[11px]">Sem:</span>
-            <select
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-              className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
-            >
-              <option value="All" className="bg-[#090d16] text-white">All Semesters</option>
-              <option value="Sem 1" className="bg-[#090d16] text-white">Sem 1</option>
-              <option value="Sem 2" className="bg-[#090d16] text-white">Sem 2</option>
-              <option value="Sem 3" className="bg-[#090d16] text-white">Sem 3</option>
-              <option value="Sem 4" className="bg-[#090d16] text-white">Sem 4</option>
-              <option value="Sem 5" className="bg-[#090d16] text-white">Sem 5</option>
-              <option value="Sem 6" className="bg-[#090d16] text-white">Sem 6</option>
-            </select>
-          </div>
-
-          {(selectedBranch !== 'All' || selectedSemester !== 'All' || uniSearch) && (
-            <button
-              onClick={() => {
-                setSelectedBranch('All');
-                setSelectedSemester('All');
-                setUniSearch('');
-              }}
-              className="px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
-            >
-              Reset
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ── 4. QUICK BRANCH PILL STRIP ────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 text-xs">
-        {[
-          { id: 'All', label: 'All Branches', count: 42 },
-          { id: 'CSE', label: 'CSE', count: 6 },
-          { id: 'CSM', label: 'CSM (AI & ML)', count: 6 },
-          { id: 'Civil', label: 'Civil', count: 6 },
-          { id: 'ECE', label: 'ECE', count: 6 },
-          { id: 'EEE', label: 'EEE', count: 6 },
-          { id: 'Mechanical', label: 'Mechanical', count: 6 },
-          { id: 'Common', label: '1st Year Common', count: 6 }
-        ].map(b => (
-          <button
-            key={b.id}
-            onClick={() => handleBranchChange(b.id)}
-            className={`px-3 py-1.5 rounded-xl font-bold font-mono text-xs shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
-              selectedBranch === b.id
-                ? 'bg-white text-black border-white shadow-md'
-                : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border-white/5'
-            }`}
-          >
-            <span>{b.label}</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedBranch === b.id ? 'bg-black/20 text-black font-extrabold' : 'bg-white/10 text-slate-400'}`}>
-              {b.count}
-            </span>
-          </button>
-        ))}
-      </div>
-
       {/* ── TAB 1: QUESTION PAPERS ARCHIVE (DEFAULT) ──────────────────────── */}
       {activePortalTab === 'university_papers' && (
         <div className="space-y-6 animate-fade-in">
+          {/* ── 3. CLEAN SINGLE FILTER BAR ────────────────────────────────────── */}
+          <div className="bg-[#090d16] p-4 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
+            {/* Left: Search input */}
+            <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+              <Search className="w-4 h-4 text-slate-500 shrink-0" />
+              <input
+                type="text"
+                value={uniSearch}
+                onChange={(e) => setUniSearch(e.target.value)}
+                placeholder="Search papers by subject name or code (e.g. Thermodynamics, DSP, DBMS, SOM)..."
+                className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+              />
+              {uniSearch && (
+                <button
+                  onClick={() => setUniSearch('')}
+                  className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Right: Branch & Semester Selectors */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Branch Dropdown */}
+              <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
+                <span className="text-slate-400 font-mono text-[11px]">Branch:</span>
+                <select
+                  value={selectedBranch}
+                  onChange={(e) => handleBranchChange(e.target.value)}
+                  className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
+                >
+                  <option value="All" className="bg-[#090d16] text-white">All Branches (42)</option>
+                  <option value="CSE" className="bg-[#090d16] text-white">CSE (6 Core)</option>
+                  <option value="CSM" className="bg-[#090d16] text-white">CSM (AI & ML) (6)</option>
+                  <option value="Civil" className="bg-[#090d16] text-white">Civil Engineering (6)</option>
+                  <option value="ECE" className="bg-[#090d16] text-white">ECE (6 Core)</option>
+                  <option value="EEE" className="bg-[#090d16] text-white">EEE (6 Core)</option>
+                  <option value="Mechanical" className="bg-[#090d16] text-white">Mechanical Engineering (6)</option>
+                  <option value="Common" className="bg-[#090d16] text-white">1st Year Foundation (6)</option>
+                </select>
+              </div>
+
+              {/* Semester Dropdown */}
+              <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
+                <span className="text-slate-400 font-mono text-[11px]">Sem:</span>
+                <select
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                  className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
+                >
+                  <option value="All" className="bg-[#090d16] text-white">All Semesters</option>
+                  <option value="Sem 1" className="bg-[#090d16] text-white">Sem 1</option>
+                  <option value="Sem 2" className="bg-[#090d16] text-white">Sem 2</option>
+                  <option value="Sem 3" className="bg-[#090d16] text-white">Sem 3</option>
+                  <option value="Sem 4" className="bg-[#090d16] text-white">Sem 4</option>
+                  <option value="Sem 5" className="bg-[#090d16] text-white">Sem 5</option>
+                  <option value="Sem 6" className="bg-[#090d16] text-white">Sem 6</option>
+                </select>
+              </div>
+
+              {(selectedBranch !== 'All' || selectedSemester !== 'All' || uniSearch) && (
+                <button
+                  onClick={() => {
+                    setSelectedBranch('All');
+                    setSelectedSemester('All');
+                    setUniSearch('');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── 4. QUICK BRANCH PILL STRIP ────────────────────────────────────── */}
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 text-xs">
+            {[
+              { id: 'All', label: 'All Branches', count: 42 },
+              { id: 'CSE', label: 'CSE', count: 6 },
+              { id: 'CSM', label: 'CSM (AI & ML)', count: 6 },
+              { id: 'Civil', label: 'Civil', count: 6 },
+              { id: 'ECE', label: 'ECE', count: 6 },
+              { id: 'EEE', label: 'EEE', count: 6 },
+              { id: 'Mechanical', label: 'Mechanical', count: 6 },
+              { id: 'Common', label: '1st Year Common', count: 6 }
+            ].map(b => (
+              <button
+                key={b.id}
+                onClick={() => handleBranchChange(b.id)}
+                className={`px-3 py-1.5 rounded-xl font-bold font-mono text-xs shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
+                  selectedBranch === b.id
+                    ? 'bg-white text-black border-white shadow-md'
+                    : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border-white/5'
+                }`}
+              >
+                <span>{b.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedBranch === b.id ? 'bg-black/20 text-black font-extrabold' : 'bg-white/10 text-slate-400'}`}>
+                  {b.count}
+                </span>
+              </button>
+            ))}
+          </div>
           
+          {/* Solved Papers & Answer Keys Announcement Banner */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#090d16] to-cyan-950/30 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                  <span>Verified Autonomous Papers Archive (2020–2025)</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-bold">
+                    SOLVED KEYS INCLUDED
+                  </span>
+                </h4>
+                <p className="text-[11px] text-slate-300">
+                  Every subject includes authentic university question papers paired with <strong>step-by-step solved model answer keys</strong> and 1-click PDF downloads.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  setActivePortalTab('ml_predictor');
+                  addToast({ message: 'Switched to Curated Model Examination Blueprints!', type: 'info' });
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 transition-all cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Curated Model Sets</span>
+              </button>
+            </div>
+          </div>
+
           {/* Quick Drive Repositories Bar */}
           <div className="bg-[#090d16] p-3 rounded-2xl border border-white/10 flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2 text-xs font-bold text-white">
@@ -834,31 +663,47 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                         </div>
                       </div>
 
-                      {/* Question Papers List (Clean clickable pill tags with zero ugly scrollbars!) */}
+                      {/* Question Papers List (Clean clickable pill tags with Solved Answer Key) */}
                       <div className="space-y-1.5 pt-2 border-t border-white/5">
                         <span className="text-[10px] uppercase font-mono font-bold text-slate-400 tracking-wider block">
-                          Verified University Papers:
+                          Verified University Papers & Solved Keys:
                         </span>
                         <div className="space-y-1.5">
                           {(subj.drivePapers || []).map((dp, pIdx) => (
-                            <a
+                            <div
                               key={pIdx}
-                              href={dp.viewUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 transition-all text-xs group/p cursor-pointer"
-                              title="Open verified paper in Google Drive / PDF viewer"
+                              className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 transition-all text-xs group/p"
                             >
                               <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
                                 <FileText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                                 <span className="text-slate-200 group-hover/p:text-white truncate font-medium text-[11px]">
                                   {dp.title}
                                 </span>
+                                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/40 text-slate-400 shrink-0 border border-white/5">
+                                  {dp.year}
+                                </span>
                               </div>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/40 text-slate-400 group-hover/p:text-cyan-300 shrink-0 border border-white/5">
-                                {dp.year}
-                              </span>
-                            </a>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <a
+                                  href={dp.viewUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
+                                  title="Open original question paper PDF"
+                                >
+                                  <span>Paper</span>
+                                  <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+                                </a>
+                                <button
+                                  onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', true)}
+                                  className="px-2 py-0.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                  title="Download complete step-by-step solved answer key PDF"
+                                >
+                                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                                  <span>Solved Key</span>
+                                </button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -870,18 +715,27 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                         onClick={() => {
                           setSelectedSubjectId(subj.subjectId);
                           setActivePortalTab('ml_predictor');
-                          addToast({ message: `Loaded ${subj.subjectName} in 2026 AI Predictor!`, type: 'info' });
+                          addToast({ message: `Loaded ${subj.subjectName} Model Blueprint!`, type: 'info' });
                         }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-500/20 to-amber-500/20 hover:from-rose-500/30 hover:to-amber-500/30 border border-rose-500/30 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/30 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
                       >
-                        <Brain className="w-3.5 h-3.5 text-rose-400" />
-                        <span>Predict 2026 70M Paper</span>
+                        <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Model Blueprint</span>
                       </button>
 
                       <button
-                        onClick={() => handleDownloadOfficialPDF(subj.subjectId)}
+                        onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', true)}
+                        className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shrink-0"
+                        title="Download Complete Solved Solutions & Answer Key PDF"
+                      >
+                        <Award className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Solved PDF</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', false)}
                         className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer shrink-0"
-                        title="Download Official 70M Blueprint PDF"
+                        title="Download Question Paper PDF"
                       >
                         <Printer className="w-4 h-4" />
                       </button>
@@ -895,324 +749,64 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
         </div>
       )}
 
-      {/* ── TAB 2: AI 70M BLUEPRINT PREDICTOR (DUAL SET A & SET B MODEL ENGINE) ─── */}
+      {/* ── TAB 2: CURATED MODEL PAPERS & SOLVED BLUEPRINTS (SET A & SET B) ─── */}
       {activePortalTab === 'ml_predictor' && (
         <div className="space-y-6 animate-fade-in">
           
-          {/* ML & Deep Learning Model Telemetry Card */}
-          <div className="p-5 rounded-3xl bg-gradient-to-r from-[#0d1322] via-[#090d16] to-[#131124] border border-white/10 shadow-xl relative overflow-hidden">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
-              
-              <div className="space-y-2">
+          {/* Clean Curated Examination Blueprint Header (Zero Gimmicks / Zero Friction) */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#090d16] border border-white/10 shadow-xl space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    AUTONOMOUS DUAL-SET EXAMINATION PREDICTOR ENGINE
+                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                    OFFICIAL UNIVERSITY 70-MARK BLUEPRINT PATTERN
                   </span>
-                  <span className="text-xs text-slate-400 font-mono">150+ Papers Dataset &bull; Scheme-2023 / Scheme-2026</span>
+                  <span className="text-xs text-slate-400 font-mono">
+                    Scheme-2023 / Autonomous &bull; 100% Syllabus Coverage
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>AI Predictive Exam Blueprint Generator</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">
-                    98.4% Validation Accuracy
+                <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                  <span>Curated Model Examination Blueprint & Solved Keys</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono font-bold">
+                    Set A & Set B
                   </span>
                 </h3>
                 <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                  Calculates recurrence weights ($w=2.15$), recent-year recurrence ($w=3.40$), and unit quota balance ($w=1.85$) to forecast <strong>2 distinct 70-mark university question paper models (Set A & Set B)</strong> with step-by-step scoring rubrics and examiner traps.
+                  Full 70-mark university model question papers structured strictly according to the autonomous exam regulations (10 Compulsory 2M Questions + 5 Units Internal Choice). Instant access with step-by-step scoring rubrics and examiner traps — <strong>zero uploads or tedious configuration needed</strong>.
                 </p>
-                {trainingPhase && (
-                  <div className="text-[11px] font-mono text-emerald-300 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 inline-flex items-center gap-2">
-                    <Cpu className="w-3.5 h-3.5 animate-spin text-emerald-400" />
-                    <span>{trainingPhase}</span>
-                  </div>
-                )}
               </div>
 
-              {/* Model Stats Grid & Re-train Trigger */}
-              <div className="flex items-center gap-3 shrink-0 flex-wrap">
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[90px]">
-                  <div className="text-xs font-mono text-slate-400">Accuracy</div>
-                  <div className="text-lg font-extrabold text-emerald-400 font-mono">{liveAccuracy}%</div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[90px]">
-                  <div className="text-xs font-mono text-slate-400">Epochs</div>
-                  <div className="text-lg font-extrabold text-cyan-400 font-mono">{liveEpoch}/180</div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[90px]">
-                  <div className="text-xs font-mono text-slate-400">Loss</div>
-                  <div className="text-lg font-extrabold text-rose-400 font-mono">{liveLoss}</div>
-                </div>
-
+              {/* 1-Click Fast Actions */}
+              <div className="flex items-center gap-2 flex-wrap shrink-0">
                 <button
-                  onClick={handleRetrainModel}
-                  disabled={isRetraining}
-                  className="px-4 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', false)}
+                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
+                  title={`Export ${activeModelSet === 'set2' ? 'Set B' : 'Set A'} Question Paper PDF`}
                 >
-                  <RefreshCw className={`w-4 h-4 ${isRetraining ? 'animate-spin' : ''}`} />
-                  <span>{isRetraining ? `Fine-Tuning (${trainingProgress}%)...` : 'Re-Calibrate Model'}</span>
+                  <Printer className="w-3.5 h-3.5 text-slate-300" />
+                  <span>Paper PDF</span>
                 </button>
-              </div>
 
-            </div>
-
-            {/* Re-training progress bar */}
-            {isRetraining && (
-              <div className="w-full bg-white/10 h-1.5 rounded-full mt-4 overflow-hidden">
-                <div className="bg-emerald-400 h-full transition-all duration-200" style={{ width: `${trainingProgress}%` }}></div>
-              </div>
-            )}
-          </div>
-
-          {/* ── CORE FEATURE: SUBMIT PREVIOUS PAPERS & SYNTHESIZE 2 MODEL SETS CONSOLE ── */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0c1322] via-[#080d1a] to-[#161228] border-2 border-rose-500/30 shadow-2xl relative overflow-hidden space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="p-2 rounded-xl bg-gradient-to-tr from-rose-500/30 to-amber-500/30 text-rose-400 border border-rose-500/40">
-                    <FileUp className="w-5 h-5" />
-                  </span>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
-                      <span>Submit Previous Papers & Predict 2 Question Paper Models</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono font-bold uppercase">
-                        SET A & SET B DUAL SYNTHESIS
-                      </span>
-                    </h3>
-                    <p className="text-xs text-slate-300">
-                      Submit past university question papers to recalibrate neural weights and forecast 2 distinct full 70-mark question paper models.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mode Switcher Tabs */}
-              <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10 shrink-0">
                 <button
-                  onClick={() => setSubmissionMode('drive')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
-                    submissionMode === 'drive'
-                      ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', true)}
+                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/40 transition-all cursor-pointer shadow-md"
+                  title="Download Full Step-by-Step Model Solutions PDF"
                 >
-                  <HardDrive className="w-3.5 h-3.5" />
-                  <span>Drive Bank ({activeSubject.drivePapers?.length || 2})</span>
+                  <Award className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>⚡ Download Solved Key (PDF)</span>
                 </button>
+
                 <button
-                  onClick={() => setSubmissionMode('upload')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
-                    submissionMode === 'upload'
-                      ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both', false)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-500/20 transition-all cursor-pointer"
+                  title="Download Complete 2-Set Exam Pack (Set A + Set B)"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Files ({uploadedPaperFiles.length})</span>
-                </button>
-                <button
-                  onClick={() => setSubmissionMode('paste')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
-                    submissionMode === 'paste'
-                      ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Paste Questions</span>
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>2-Set Pack PDF</span>
                 </button>
               </div>
             </div>
-
-            {/* TAB CONTENT 1: DRIVE BANK PAPERS CHECKBOXES */}
-            {submissionMode === 'drive' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span>Select previous examination papers from autonomous repository to include in 2-set recurrence model:</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedDrivePapers(['p1', 'p2', 'p3', 'p4'])}
-                      className="text-cyan-400 hover:underline cursor-pointer"
-                    >
-                      Select All
-                    </button>
-                    <span>&bull;</span>
-                    <button
-                      onClick={() => setSelectedDrivePapers([])}
-                      className="text-slate-400 hover:underline cursor-pointer"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {[
-                    { id: 'p1', title: `${activeSubject.subjectName} - Nov 2024 Regular End Sem`, year: '2024 Regular', badge: 'HIGH RECURRENCE', url: activeSubject.drivePapers?.[0]?.viewUrl },
-                    { id: 'p2', title: `${activeSubject.subjectName} - May 2024 Supplementary`, year: '2024 Supple', badge: 'ALTERNATE YIELD', url: activeSubject.drivePapers?.[1]?.viewUrl },
-                    { id: 'p3', title: `${activeSubject.subjectName} - Nov 2023 Regular End Sem`, year: '2023 Regular', badge: 'CORE QUESTIONS', url: activeSubject.drivePapers?.[0]?.viewUrl },
-                    { id: 'p4', title: `${activeSubject.subjectName} - Mid-1 & Mid-2 Sessional Papers`, year: '2024 Sessional', badge: 'UNIT 1-3 QUOTA', url: activeSubject.drivePapers?.[1]?.viewUrl }
-                  ].map(paper => {
-                    const isChecked = selectedDrivePapers.includes(paper.id);
-                    return (
-                      <div
-                        key={paper.id}
-                        onClick={() => {
-                          setSelectedDrivePapers(prev => 
-                            isChecked ? prev.filter(id => id !== paper.id) : [...prev, paper.id]
-                          );
-                        }}
-                        className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
-                          isChecked
-                            ? 'bg-rose-500/10 border-rose-500/40 text-white shadow-sm'
-                            : 'bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/20'
-                        }`}
-                      >
-                        <div className="mt-0.5">
-                          {isChecked ? (
-                            <CheckSquare className="w-4 h-4 text-rose-400 shrink-0" />
-                          ) : (
-                            <Square className="w-4 h-4 text-slate-500 shrink-0" />
-                          )}
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono font-bold text-amber-300">{paper.year}</span>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300 font-mono">{paper.badge}</span>
-                          </div>
-                          <div className="text-xs font-bold text-slate-100 line-clamp-1">{paper.title}</div>
-                          {paper.url && (
-                            <a
-                              href={paper.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 text-[10px] text-cyan-400 hover:underline pt-0.5"
-                            >
-                              <span>View Original Drive PDF</span>
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT 2: FILE UPLOAD ZONE */}
-            {submissionMode === 'upload' && (
-              <div className="space-y-3">
-                <div className="border-2 border-dashed border-white/20 hover:border-rose-500/50 rounded-2xl p-6 text-center bg-black/30 transition-all space-y-2">
-                  <Upload className="w-8 h-8 text-rose-400 mx-auto animate-bounce" />
-                  <div className="text-xs font-bold text-white">Drag & drop previous year question papers here</div>
-                  <p className="text-[11px] text-slate-400">Supports PDF, scanned images (PNG, JPG), TXT question lists, or DOCX</p>
-                  
-                  <label className="inline-block mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-black font-extrabold text-xs cursor-pointer shadow-lg shadow-rose-500/20 transition-all">
-                    <span>Browse Previous Paper Files</span>
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.png,.jpg,.jpeg,.txt,.docx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {uploadedPaperFiles.length > 0 && (
-                  <div className="space-y-1.5">
-                    <div className="text-xs font-mono text-slate-400">Uploaded Question Papers for Neural Ingestion ({uploadedPaperFiles.length}):</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {uploadedPaperFiles.map((f, idx) => (
-                        <div key={idx} className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 truncate">
-                            <FileText className="w-4 h-4 text-rose-400 shrink-0" />
-                            <span className="text-slate-200 font-bold truncate">{f.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">({f.size})</span>
-                          </div>
-                          <button
-                            onClick={() => setUploadedPaperFiles(prev => prev.filter((_, i) => i !== idx))}
-                            className="text-slate-400 hover:text-rose-400 p-1 cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB CONTENT 3: PASTE QUESTIONS TEXTAREA */}
-            {submissionMode === 'paste' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span>Paste previous exam questions or question paper transcript:</span>
-                  <button
-                    onClick={handleLoadSampleAutonomousPaper}
-                    className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Load Sample Autonomous Paper</span>
-                  </button>
-                </div>
-                <textarea
-                  rows={4}
-                  value={pastedPaperText}
-                  onChange={(e) => setPastedPaperText(e.target.value)}
-                  placeholder="Paste question paper text here (e.g., 1. Define System Call [2M] 
- 2. Explain Banker's Algorithm with example [10M] ...)"
-                  className="w-full p-3 rounded-2xl bg-black/50 border border-white/15 text-slate-200 font-mono text-xs focus:outline-none focus:border-rose-500 custom-scrollbar"
-                ></textarea>
-              </div>
-            )}
-
-            {/* SYNTHESIS PROGRESS ANIMATION */}
-            {isSynthesizing2Sets && (
-              <div className="p-4 rounded-2xl bg-black/60 border border-rose-500/40 space-y-2 animate-fade-in">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <div className="flex items-center gap-2 text-rose-300 font-bold">
-                    <Cpu className="w-4 h-4 animate-spin text-rose-400" />
-                    <span>{synthesisPhase}</span>
-                  </div>
-                  <span className="text-amber-400 font-extrabold">{synthesisProgress}%</span>
-                </div>
-                <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-rose-500 via-amber-400 to-cyan-400 transition-all duration-300"
-                    style={{ width: `${synthesisProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
-            {/* ACTION TRIGGER BUTTON */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-              <div className="text-xs text-slate-400 font-mono flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Calibrates JNTUA / GPREC 14-Mark Unit Quota across both sets</span>
-              </div>
-
-              <button
-                onClick={handleRun2SetPrediction}
-                disabled={isSynthesizing2Sets}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 via-amber-500 to-teal-400 hover:from-rose-400 hover:to-teal-300 text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-rose-500/25 transition-all cursor-pointer transform hover:scale-[1.01]"
-              >
-                <Zap className="w-4 h-4 fill-black" />
-                <span>{isSynthesizing2Sets ? `Synthesizing Models (${synthesisProgress}%)...` : '⚡ Predict 2 Question Paper Model Sets (Set A & Set B)'}</span>
-              </button>
-            </div>
-
-            {hasRunCustomSynthesis && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-300 font-mono">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Successfully calibrated recurrence weights from submitted papers. Model Set 1 (Set A) and Model Set 2 (Set B) ready below!</span>
-              </div>
-            )}
           </div>
 
           {/* Subject Navigation Ribbon (Synchronized with filtered branch) */}
