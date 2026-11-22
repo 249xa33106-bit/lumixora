@@ -14,7 +14,7 @@ import { collection, getDocs, addDoc, serverTimestamp, query, orderBy, limit, wh
 import Dashboard3DBackground from '../components/Dashboard3DBackground';
 import LumixoraHeroSuite from '../components/dashboard/LumixoraHeroSuite';
 import StudentDnaCard from '../components/omiverse/StudentDnaCard';
-import OmiverseWorldNavigator from '../components/omiverse/OmiverseWorldNavigator';
+import UnifiedCommandHub from '../components/dashboard/UnifiedCommandHub';
 import VyomraProveModal from '../components/omiverse/VyomraProveModal';
 import { cloudSync } from '../services/cloudSyncService';
 import { useGamification } from '../context/GamificationContext';
@@ -402,24 +402,23 @@ Do NOT use markdown backticks. Return raw JSON.`
       {/* 🔮 Interactive 3D WebGL Neural Background 🔮 */}
       <Dashboard3DBackground />
 
-      {/* 🌟🌟🌟 Lumixora Flagship Hero Suite (Unclipped Full Banner + Founder Journey + Career Intelligence) 🌟🌟🌟 */}
+      {/* 🌟 1. Flagship Hero Spotlight Banner (Career Commitment • Founder's Journey • AI Predictor) 🌟 */}
       {!isGprecPlacementSubdomain() && (
         <LumixoraHeroSuite onNavigateTab={setActiveTab} user={user} />
       )}
 
-      {/* ─── 🌌 VYOMRA OMIVERSE: AI CAREER BRAIN & TALENT GRAPH ─── */}
-      <div className="animate-fade-in my-2">
-        <StudentDnaCard 
-          user={user} 
+      {/* ⚡ 2 & 3. Clean 4-Track Command Switcher & Unified Interactive Portal Grid (100% Intact - All 36 Portals) ⚡ */}
+      <div className="animate-fade-in my-3">
+        <UnifiedCommandHub 
           onNavigateTab={setActiveTab} 
           onOpenProveModal={() => setIsProveModalOpen(true)} 
         />
       </div>
 
-      {/* ─── 🌐 6 WORLDS OF VYOMRA OMIVERSE NAVIGATOR ─── */}
-      <div className="animate-fade-in my-4">
-        <OmiverseWorldNavigator 
-          activeTab={null} 
+      {/* 📊 4. Student AI Talent Graph & DNA (Streamlined readiness metrics, next best action, verified proofs) 📊 */}
+      <div className="animate-fade-in my-3">
+        <StudentDnaCard 
+          user={user} 
           onNavigateTab={setActiveTab} 
           onOpenProveModal={() => setIsProveModalOpen(true)} 
         />
