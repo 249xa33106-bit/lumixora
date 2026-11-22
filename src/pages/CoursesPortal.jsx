@@ -7,7 +7,7 @@ import {
   Zap, CheckCheck, Play, ArrowRight, BookMarked, Copy, CheckSquare,
   XCircle, Info, ChevronLeft, Lightbulb, AlertTriangle, Building2,
   GraduationCap, Terminal, Type, Volume2, VolumeX, Maximize2, Minimize2,
-  PanelLeftClose, PanelLeft, Sun, Moon, Coffee, Mic, Square
+  PanelLeftClose, PanelLeft, Sun, Moon, Coffee, Mic, Square, Search, X
 } from 'lucide-react';
 import { ALL_COURSES } from '../data/coursesData';
 import { getTextbookForCourse } from '../data/textbooks';
@@ -18,6 +18,51 @@ import {
 } from '../services/certificateService';
 import { resolveVoiceAndSpeech, playSynthesizedNarration } from '../utils/teluguAudioEngine';
 import { useToast } from '../context/ToastContext';
+
+
+// Marquee Recruiter Targets, Capstone Deliverables & Industry Taglines
+const COURSE_METADATA_EXTRAS = {
+  'course-fullstack-core-cs': {
+    targetRecruiters: ['Google', 'Amazon', 'Microsoft', 'Atlassian'],
+    capstone: 'Microservices Event Bus with React 19 & Distributed SQL',
+    tagline: 'Enterprise Full-Stack Architecture'
+  },
+  'course-multilang-specialist': {
+    targetRecruiters: ['Oracle', 'Bloomberg', 'Goldman Sachs', 'Adobe'],
+    capstone: 'Polyglot Distributed Execution Engine (Java/Python/C++)',
+    tagline: 'Multi-Paradigm Systems Mastery'
+  },
+  'course-dsa-competitive-solver': {
+    targetRecruiters: ['Amazon SDE', 'TCS Digital', 'Infosys SP', 'Cognizant GenC'],
+    capstone: '100+ Hard LeetCode Algorithmic Problem Solving Suite',
+    tagline: 'Tier-1 Algorithmic Specialist'
+  },
+  'course-weekly-championship': {
+    targetRecruiters: ['Codeforces', 'LeetCode Weekly', 'ACM-ICPC', 'HackerRank'],
+    capstone: 'High-Pressure Speed Coding Arena Sub-15m Solutions',
+    tagline: 'Competitive Championship Track'
+  },
+  'course-aiml-datascience-mastery': {
+    targetRecruiters: ['OpenAI', 'Google DeepMind', 'Meta AI', 'Anthropic'],
+    capstone: 'Production Enterprise RAG Agent with vLLM & Ray Serve',
+    tagline: 'Foundation Models & GenAI Mastery'
+  },
+  'course-cloud-devops-kubernetes': {
+    targetRecruiters: ['AWS', 'Microsoft Azure', 'Netflix', 'Datadog'],
+    capstone: 'Multi-AZ Kubernetes Platform with Cilium eBPF & ArgoCD',
+    tagline: 'Cloud Infrastructure & SRE Leadership'
+  },
+  'course-cybersecurity-defense-hacking': {
+    targetRecruiters: ['CrowdStrike', 'Palo Alto', 'Mandiant', 'Cisco'],
+    capstone: 'Zero-Trust Enterprise SOC Defense & Threat Containment',
+    tagline: 'Defensive Cyber Operations'
+  },
+  'course-mobile-engineering-flutter-reactnative': {
+    targetRecruiters: ['Apple', 'Uber', 'Spotify', 'Stripe'],
+    capstone: '120 FPS Offline-First Real-Time Fintech SuperApp',
+    tagline: 'Cross-Platform Native Engineering'
+  }
+};
 
 export default function CoursesPortal({ user, setActiveTab }) {
   const { addToast } = useToast();
@@ -66,6 +111,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
 
   const [unlockedCertModal, setUnlockedCertModal] = useState(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadProgress = () => {
     try {
@@ -130,7 +176,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
   }, [selectedFullTextbook, selectedLessonModal, activeTestCourse, unlockedCertModal, selectedCourse]);
 
   const handleOpenFullTextbook = (course, pageIndex = 0) => {
-    const tb = getTextbookForCourse(course.id);
+    const tb = getTextbookForCourse(course.id, course);
     if (!tb) {
       addToast?.({
         type: 'warning',
@@ -150,7 +196,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
   const handleOpenLessonInNotesReader = (lesson, course) => {
     const activeCourse = course || selectedCourse;
     if (!activeCourse) return;
-    const tb = getTextbookForCourse(activeCourse.id);
+    const tb = getTextbookForCourse(activeCourse.id, activeCourse);
     if (!tb) {
       addToast?.({
         type: 'warning',
@@ -503,10 +549,52 @@ export default function CoursesPortal({ user, setActiveTab }) {
     }
   };
 
-  const filteredCourses = courses.filter(c => {
-    if (activeCategoryFilter === 'all') return true;
-    return (c.category || '').toLowerCase().includes(activeCategoryFilter.toLowerCase());
-  });
+  // Compute active resume track for in-progress student dock
+  const activeResumeTrack = useMemo(() => {
+    const inProgress = courses.map(c => ({
+      course: c,
+      progress: getCourseProgress(c),
+      testPassed: isGrandTestPassed(c)
+    })).filter(x => x.progress > 0 || x.testPassed);
+
+    if (inProgress.length === 0) return null;
+    inProgress.sort((a, b) => {
+      if (a.progress < 100 && b.progress >= 100) return -1;
+      if (b.progress < 100 && a.progress >= 100) return 1;
+      return b.progress - a.progress;
+    });
+    return inProgress[0];
+  }, [courses, completedLessons, userId]);
+
+  // Compute category counts for tab badges
+  const categoryCounts = useMemo(() => {
+    const counts = { all: courses.length };
+    courses.forEach(c => {
+      const cat = (c.category || '').toLowerCase();
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [courses]);
+
+  // Multi-attribute live search & filter
+  const filteredCourses = useMemo(() => {
+    return courses.filter(c => {
+      if (activeCategoryFilter !== 'all') {
+        const cat = (c.category || '').toLowerCase();
+        if (!cat.includes(activeCategoryFilter.toLowerCase())) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const titleMatch = (c.title || '').toLowerCase().includes(q);
+        const descMatch = (c.shortDescription || '').toLowerCase().includes(q);
+        const skillMatch = (c.skills || []).some(s => s.toLowerCase().includes(q));
+        const extraMatch = COURSE_METADATA_EXTRAS[c.id]?.capstone?.toLowerCase().includes(q) ||
+                           COURSE_METADATA_EXTRAS[c.id]?.targetRecruiters?.some(r => r.toLowerCase().includes(q));
+        return titleMatch || descMatch || skillMatch || extraMatch;
+      }
+      return true;
+    });
+  }, [courses, activeCategoryFilter, searchQuery]);
 
   // Dynamic font size classes for comfortable textbook reading
   const fontSizeClass = readerFontSize === 'huge' ? 'text-base leading-relaxed' : readerFontSize === 'large' ? 'text-sm leading-relaxed' : 'text-xs leading-relaxed';
@@ -745,122 +833,266 @@ export default function CoursesPortal({ user, setActiveTab }) {
         </div>
       ) : (
         <div className="space-y-6">
-          
-          {/* Category Filter Tabs */}
+
+          {/* ── 🚀 APPLE-STANDARD HERO RESUME DOCK (If user has in-progress track) ── */}
+          {activeResumeTrack && (
+            <div className="p-6 md:p-7 rounded-3xl bg-gradient-to-r from-[#0d162d] via-[#091020] to-[#060810] border border-cyan-500/40 shadow-[0_20px_70px_rgba(6,182,212,0.15)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="flex items-start md:items-center gap-4 z-10">
+                <div className={'w-14 h-14 rounded-2xl bg-gradient-to-tr ' + activeResumeTrack.course.badgeColor + ' flex items-center justify-center text-3xl shadow-lg border border-white/20 shrink-0'}>
+                  {activeResumeTrack.course.badgeIcon}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-cyan-400/30 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-cyan-400" /> Current Specialization Track
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">
+                      {activeResumeTrack.progress}% Syllabus Completed
+                    </span>
+                  </div>
+                  <h2 className="text-base md:text-xl font-black text-white font-sora">
+                    {activeResumeTrack.course.title}
+                  </h2>
+                  <div className="w-full max-w-md bg-white/10 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div 
+                      className="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.max(8, activeResumeTrack.progress)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5 z-10 w-full lg:w-auto">
+                <button
+                  onClick={() => handleOpenFullTextbook(activeResumeTrack.course)}
+                  className="flex-1 lg:flex-none px-5 py-3 rounded-2xl bg-[#008037] hover:bg-[#00682b] text-white font-bold text-xs shadow-lg shadow-[#008037]/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4 text-white" />
+                  Resume Notes (30 Topics)
+                </button>
+                <button
+                  onClick={() => handleStartGrandTest(activeResumeTrack.course)}
+                  className="flex-1 lg:flex-none px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:opacity-95 text-black font-black text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  {activeResumeTrack.testPassed ? 'Retake Grand Test' : 'Take Grand Test (30 Qs)'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── 🔍 LIVE SEARCH & FILTER SUITE ── */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl bg-[#0a0f1d] border border-white/10 shadow-lg">
+            
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search specializations, skills (e.g. Kubernetes, PyTorch, React, SQL, Biometrics)..."
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/60 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Results Counter Pill */}
+            <div className="flex items-center gap-3 shrink-0 text-xs font-mono text-gray-400">
+              <span>
+                Showing <strong className="text-cyan-400">{filteredCourses.length}</strong> of {courses.length} Specializations
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline text-amber-300 font-bold">
+                240 Digital Textbook Chapters
+              </span>
+            </div>
+          </div>
+
+          {/* Category Filter Tabs with Dynamic Count Badges */}
           <div className="flex flex-wrap gap-2">
             {[
-              { id: 'all', label: 'All Courses' },
-              { id: 'courses', label: 'Core Full-Stack' },
-              { id: 'aiml', label: 'AI & Data Science' },
-              { id: 'cloud', label: 'Cloud & DevOps' },
-              { id: 'security', label: 'Cybersecurity' },
-              { id: 'mobile', label: 'Mobile Engineering' },
-              { id: 'languages', label: 'Programming Languages' },
-              { id: 'problems', label: 'DSA & Algorithms' },
-              { id: 'weekly', label: 'Arena Championships' }
+              { id: 'all', label: 'All Specializations', count: categoryCounts['all'] || courses.length },
+              { id: 'courses', label: 'Core Full-Stack', count: categoryCounts['courses'] || 1 },
+              { id: 'aiml', label: 'AI & Data Science', count: categoryCounts['aiml'] || 1 },
+              { id: 'cloud', label: 'Cloud & DevOps', count: categoryCounts['cloud'] || 1 },
+              { id: 'security', label: 'Cybersecurity', count: categoryCounts['security'] || 1 },
+              { id: 'mobile', label: 'Mobile Engineering', count: categoryCounts['mobile'] || 1 },
+              { id: 'languages', label: 'Programming Languages', count: categoryCounts['languages'] || 1 },
+              { id: 'problems', label: 'DSA & Algorithms', count: categoryCounts['problems'] || 1 },
+              { id: 'weekly', label: 'Arena Championships', count: categoryCounts['weekly'] || 1 }
             ].map((f) => (
               <button
                 key={f.id}
                 onClick={() => setActiveCategoryFilter(f.id)}
-                className={'px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ' + (activeCategoryFilter === f.id ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg font-black' : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5')}
+                className={'px-3.5 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ' + (activeCategoryFilter === f.id ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg font-black' : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5')}
               >
-                {f.label}
+                <span>{f.label}</span>
+                <span className={'px-1.5 py-0.2 rounded-full text-[10px] font-mono ' + (activeCategoryFilter === f.id ? 'bg-black/30 text-black font-black' : 'bg-white/10 text-gray-300')}>
+                  {f.count}
+                </span>
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredCourses.map((course) => {
-              const progress = getCourseProgress(course);
-              const testPassed = isGrandTestPassed(course);
-              const isFullyCertified = progress >= 100 && testPassed;
+          {/* Course Cards Catalog Grid */}
+          {filteredCourses.length === 0 ? (
+            <div className="p-12 text-center rounded-3xl bg-[#090e1a] border border-white/10 space-y-3">
+              <p className="text-3xl">🔍</p>
+              <h3 className="text-base font-bold text-white">No engineering track matches "{searchQuery}"</h3>
+              <p className="text-xs text-gray-400 max-w-md mx-auto">
+                Try searching for broader keywords like "Cloud", "Python", "Security", "React", or clear the search query.
+              </p>
+              <button
+                onClick={() => { setSearchQuery(''); setActiveCategoryFilter('all'); }}
+                className="px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-500/30 hover:bg-cyan-500/30 transition-all cursor-pointer"
+              >
+                Reset All Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredCourses.map((course) => {
+                const progress = getCourseProgress(course);
+                const testPassed = isGrandTestPassed(course);
+                const isFullyCertified = progress >= 100 && testPassed;
+                const extras = COURSE_METADATA_EXTRAS[course.id] || {};
 
-              return (
-                <div 
-                  key={course.id}
-                  className="p-6 rounded-3xl bg-gradient-to-br from-[#0c1220] via-[#090e18] to-black border border-white/10 hover:border-cyan-500/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className={'w-12 h-12 rounded-2xl bg-gradient-to-tr ' + course.badgeColor + ' flex items-center justify-center text-2xl shadow-md border border-white/20'}>
-                        {course.badgeIcon}
+                return (
+                  <div 
+                    key={course.id}
+                    className="p-6 md:p-7 rounded-3xl bg-gradient-to-br from-[#0c1220] via-[#090e18] to-black border border-white/10 hover:border-cyan-500/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group hover:shadow-[0_15px_50px_rgba(6,182,212,0.15)]"
+                  >
+                    <div className="space-y-3.5">
+                      {/* Card Top Row: Badge, Duration & Certification Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className={'w-12 h-12 rounded-2xl bg-gradient-to-tr ' + course.badgeColor + ' flex items-center justify-center text-2xl shadow-md border border-white/20 shrink-0'}>
+                          {course.badgeIcon}
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1">
+                          {isFullyCertified ? (
+                            <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Certified Diploma
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono font-bold">
+                                {course.duration}
+                              </span>
+                              <span className={'px-2.5 py-0.5 rounded-full text-[10px] font-bold border ' + (progress > 0 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/10')}>
+                                {progress > 0 ? `${progress}% Syllabus` : 'Not Started'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {isFullyCertified ? (
-                          <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Certified
+                      {/* Course Title & Short Description */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-bold">
+                            {extras.tagline || course.category}
                           </span>
-                        ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
-                            {progress}% Syllabus
+                        </div>
+                        <h3 className="text-lg font-black text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                          {course.title}
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">
+                          {course.shortDescription}
+                        </p>
+                      </div>
+
+                      {/* Capstone Deliverable Badge */}
+                      {extras.capstone && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-cyan-200 text-[10.5px]">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span className="font-semibold truncate">{extras.capstone}</span>
+                        </div>
+                      )}
+
+                      {/* Target Recruiters Chips */}
+                      {extras.targetRecruiters && (
+                        <div className="space-y-1">
+                          <p className="text-[9.5px] uppercase font-mono tracking-wider text-gray-500 font-semibold">
+                            Target Recruiters & Industry Standards:
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {extras.targetRecruiters.map((recruiter, rIdx) => (
+                              <span key={rIdx} className="px-2 py-0.5 rounded-md bg-white/[0.04] text-gray-300 text-[10px] font-mono border border-white/5">
+                                {recruiter}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Skills List */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {course.skills.map((s, idx) => (
+                          <span key={idx} className="px-2.5 py-0.5 rounded-md bg-white/5 text-gray-300 text-[10px] font-medium border border-white/5">
+                            {s}
                           </span>
-                        )}
+                        ))}
                       </div>
                     </div>
 
-                    <div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
-                        {course.title}
-                      </h3>
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
-                        {course.shortDescription}
-                      </p>
-                    </div>
+                    {/* Card Bottom Progress & Actions */}
+                    <div className="pt-4 border-t border-white/10 space-y-3">
+                      {/* Dual Milestone Progress */}
+                      <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                        <div className={'p-2 rounded-xl border ' + (progress >= 100 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-black/30 border-white/5 text-gray-400')}>
+                          <p className="font-bold">1. Textbook: {progress}%</p>
+                          <p className="text-[9px] opacity-80">{progress >= 100 ? '✓ Fully Read (30 Topics)' : '30 Comprehensive Topics'}</p>
+                        </div>
 
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {course.skills.map((s, idx) => (
-                        <span key={idx} className="px-2.5 py-0.5 rounded-md bg-white/5 text-gray-300 text-[10px] font-medium border border-white/5">
-                          {s}
-                        </span>
-                      ))}
+                        <div className={'p-2 rounded-xl border ' + (testPassed ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-black/30 border-white/5 text-gray-400')}>
+                          <p className="font-bold">2. Grand Test (30 Qs)</p>
+                          <p className="text-[9px] opacity-80">{testPassed ? '✓ Passed (≥60%)' : 'Pending (30 Questions)'}</p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2 pt-1">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleOpenFullTextbook(course)}
+                            className="flex-1 py-2.5 rounded-2xl bg-[#008037] hover:bg-[#00682b] text-white font-bold text-xs shadow-md shadow-[#008037]/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <BookOpen className="w-4 h-4 text-white" />
+                            Lumixora Notes (30 Topics)
+                          </button>
+                          <button
+                            onClick={() => handleStartGrandTest(course)}
+                            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:opacity-95 text-black font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Trophy className="w-4 h-4" />
+                            {testPassed ? 'Retake (30 Qs)' : 'Grand Test (30 Qs)'}
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => setSelectedCourse(course)}
+                          className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-semibold text-[11px] border border-white/5 transition-all cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <Layers className="w-3.5 h-3.5 text-gray-400" />
+                          View Syllabus Modules ({course.modules?.length || 4} Modules)
+                        </button>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="pt-4 border-t border-white/10 space-y-3">
-                    {/* Dual Milestone Progress */}
-                    <div className="grid grid-cols-2 gap-2 text-[10.5px]">
-                      <div className={'p-2 rounded-xl border ' + (progress >= 100 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-black/30 border-white/5 text-gray-400')}>
-                        <p className="font-bold">1. Textbook: {progress}%</p>
-                        <p className="text-[9px] opacity-80">{progress >= 100 ? '✓ Fully Read' : 'In Progress'}</p>
-                      </div>
-
-                      <div className={'p-2 rounded-xl border ' + (testPassed ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-black/30 border-white/5 text-gray-400')}>
-                        <p className="font-bold">2. Grand Test (30 Qs)</p>
-                        <p className="text-[9px] opacity-80">{testPassed ? '✓ Passed (≥60%)' : 'Pending (30 Qs)'}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2 pt-1">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleOpenFullTextbook(course)}
-                          className="flex-1 py-2.5 rounded-2xl bg-[#008037] hover:bg-[#00682b] text-white font-bold text-xs shadow-md shadow-[#008037]/25 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <BookOpen className="w-4 h-4 text-white" />
-                          Lumixora Notes (30 Topics)
-                        </button>
-                        <button
-                          onClick={() => handleStartGrandTest(course)}
-                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:opacity-95 text-black font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Trophy className="w-4 h-4" />
-                          Grand Test (30 Qs)
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => setSelectedCourse(course)}
-                        className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-semibold text-[11px] border border-white/5 transition-all cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <Layers className="w-3.5 h-3.5 text-gray-400" />
-                        View Syllabus Modules & Practice
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -875,7 +1107,7 @@ export default function CoursesPortal({ user, setActiveTab }) {
           onClose={() => setSelectedFullTextbook(null)}
           allCourses={courses}
           onSelectCourse={(newCourse) => {
-            const tb = getTextbookForCourse(newCourse.id);
+            const tb = getTextbookForCourse(newCourse.id, newCourse);
             setSelectedCourse(newCourse);
             setSelectedFullTextbook({
               course: newCourse,
