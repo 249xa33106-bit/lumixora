@@ -1,21 +1,21 @@
 /**
  * studentOffersData.js
- * Curated Database of 45+ Verified Student Perks, Developer Packs & Pro Software Offers
- * Modeled after StudentOffers.co and tailored for Lumixora & GPREC engineering scholars.
+ * Curated Database of Verified Student Perks, Developer Packs & Pro Software Offers
+ * Modeled for Lumixora & GPREC engineering scholars.
  */
 
 export const STUDENT_CATEGORIES = [
-  { id: 'all', name: 'All Offers', icon: 'Sparkles', count: 48 },
-  { id: 'dev-tools', name: 'Developer Tools & IDEs', icon: 'Code2', count: 12 },
-  { id: 'ai-ml', name: 'AI & Copilots', icon: 'Bot', count: 8 },
-  { id: 'cloud-devops', name: 'Cloud & Hosting', icon: 'Cloud', count: 8 },
-  { id: 'design-3d', name: 'Design & Creative', icon: 'Palette', count: 6 },
-  { id: 'productivity', name: 'Productivity & Notes', icon: 'Zap', count: 8 },
-  { id: 'domains-web', name: 'Domains & Security', icon: 'Globe', count: 6 }
+  { id: 'all', name: 'All Offers', icon: 'Sparkles', count: 30 },
+  { id: 'dev-tools', name: 'Developer Tools & IDEs', icon: 'Code2', count: 7 },
+  { id: 'ai-ml', name: 'AI & Copilots', icon: 'Bot', count: 7 },
+  { id: 'cloud-devops', name: 'Cloud & Hosting', icon: 'Cloud', count: 6 },
+  { id: 'design-3d', name: 'Design & Creative', icon: 'Palette', count: 3 },
+  { id: 'productivity', name: 'Productivity & Notes', icon: 'Zap', count: 5 },
+  { id: 'domains-web', name: 'Domains & Security', icon: 'Globe', count: 2 }
 ];
 
 export const STUDENT_OFFERS = [
-  // ─── THE HOLY TRINITY (FEATURED PACKS) ───
+  // ─── THE ESSENTIAL TRINITY (FEATURED PACKS) ───
   {
     id: 'github-student-pack',
     title: 'GitHub Student Developer Pack',
@@ -24,6 +24,8 @@ export const STUDENT_OFFERS = [
     featured: true,
     spotlight: true,
     value: '$200,000+ Value',
+    numericValue: 2500,
+    instantGprec: true,
     deal: '100% Free Forever (While Enrolled)',
     dealType: 'pack',
     verification: 'College Email (@gprec.ac.in) or Student ID',
@@ -50,6 +52,8 @@ export const STUDENT_OFFERS = [
     featured: true,
     spotlight: true,
     value: '$650 / Year Value',
+    numericValue: 650,
+    instantGprec: true,
     deal: '100% Free Annual Pro License',
     dealType: 'free-pro',
     verification: 'College Email (@gprec.ac.in)',
@@ -76,6 +80,8 @@ export const STUDENT_OFFERS = [
     featured: true,
     spotlight: true,
     value: '$100 Free Credit + Free Tier',
+    numericValue: 100,
+    instantGprec: true,
     deal: '$100 Credit (No Credit Card Required)',
     dealType: 'credits',
     verification: 'College Email (@gprec.ac.in)',
@@ -103,6 +109,8 @@ export const STUDENT_OFFERS = [
     category: 'ai-ml',
     featured: true,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: false,
     deal: '100% Free Unlimited Copilot',
     dealType: 'free-pro',
     verification: 'GitHub Student Developer Pack',
@@ -121,12 +129,39 @@ export const STUDENT_OFFERS = [
     ]
   },
   {
+    id: 'cursor-student',
+    title: 'Cursor AI Pro for Students',
+    company: 'Anysphere',
+    category: 'ai-ml',
+    featured: true,
+    value: '$240 / Year Value',
+    numericValue: 240,
+    instantGprec: true,
+    deal: 'Free Pro Tier & GPT-4o Copilot',
+    dealType: 'free-pro',
+    verification: 'College Email (@gprec.ac.in)',
+    region: 'Global',
+    logo: 'https://www.cursor.com/assets/images/logo.svg',
+    iconColor: 'from-cyan-500 to-indigo-600',
+    description: 'The AI-native code editor built on VS Code. Features multi-file codebase indexing, interactive terminal debugging, and Claude 3.5 Sonnet / GPT-4o auto-coding copilots.',
+    highlights: ['Full codebase semantic search', 'Claude 3.5 Sonnet code generation', 'Direct terminal command repair'],
+    claimUrl: 'https://www.cursor.com/',
+    requirements: ['College student email ID (@gprec.ac.in)'],
+    howToClaim: [
+      'Download and install Cursor Editor from cursor.com.',
+      'Sign up using your college email address (@gprec.ac.in).',
+      'Receive instant academic trial credits and access to pro AI completions.'
+    ]
+  },
+  {
     id: 'freebuff-ai',
     title: 'Freebuff AI Coding Agent',
     company: 'Freebuff',
     category: 'ai-ml',
     featured: true,
     value: 'Free Pro Tier',
+    numericValue: 120,
+    instantGprec: true,
     deal: 'Free Forever — DeepSeek V4 & Claude',
     dealType: 'free-forever',
     verification: 'Instant Sign-up',
@@ -146,6 +181,8 @@ export const STUDENT_OFFERS = [
     category: 'ai-ml',
     featured: false,
     value: '$35 Free Credit',
+    numericValue: 35,
+    instantGprec: true,
     deal: '$35 Free API Credits for Claude & OpenAI',
     dealType: 'credits',
     verification: 'College Email / Instant',
@@ -159,12 +196,39 @@ export const STUDENT_OFFERS = [
     howToClaim: ['Register at aerolink.ai to receive sandbox credits for AI model testing.']
   },
   {
+    id: 'perplex-pro-student',
+    title: 'Perplexity Pro AI Research Assistant',
+    company: 'Perplexity AI',
+    category: 'ai-ml',
+    featured: true,
+    value: '$200 / Year Value',
+    numericValue: 200,
+    instantGprec: true,
+    deal: '1-Year Free Pro via Student Pass',
+    dealType: 'free-pro',
+    verification: 'College Email (@gprec.ac.in)',
+    region: 'Global',
+    logo: 'https://www.perplexity.ai/favicon.ico',
+    iconColor: 'from-teal-400 to-cyan-600',
+    description: 'Conversational search engine and research copilot with live citations, paper summaries, file analysis, and Claude 3.5 Sonnet / GPT-4o deep research reasoning.',
+    highlights: ['Live academic paper citations', 'Unlimited file & PDF analysis', 'Model switching (Claude, GPT-4o, Sonar)'],
+    claimUrl: 'https://www.perplexity.ai/back-to-school',
+    requirements: ['College email address (@gprec.ac.in)'],
+    howToClaim: [
+      'Go to perplexity.ai/back-to-school.',
+      'Sign in with your @gprec.ac.in college email.',
+      'Verify your college status to activate 12 months of free Pro.'
+    ]
+  },
+  {
     id: 'wispr-flow',
     title: 'Wispr Flow AI Voice Typing',
     company: 'Wispr',
     category: 'ai-ml',
     featured: false,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: true,
     deal: 'Free Pro Plan for Students',
     dealType: 'free-pro',
     verification: 'College Email',
@@ -184,6 +248,8 @@ export const STUDENT_OFFERS = [
     category: 'ai-ml',
     featured: false,
     value: '$65 / Year Value',
+    numericValue: 65,
+    instantGprec: true,
     deal: 'Student Discount & Free Step-by-Step Solver',
     dealType: 'discount',
     verification: 'College Email',
@@ -205,6 +271,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: true,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: true,
     deal: 'Free Zed Pro for 1 Year',
     dealType: 'free-pro',
     verification: 'GitHub Student Pack / .edu',
@@ -224,6 +292,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: false,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: false,
     deal: '100% Free Pro Subscription',
     dealType: 'free-pro',
     verification: 'GitHub Student Developer Pack',
@@ -243,6 +313,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: false,
     value: '$60 / Year Value',
+    numericValue: 60,
+    instantGprec: false,
     deal: '100% Free Pro Tier',
     dealType: 'free-pro',
     verification: 'GitHub Student Pack',
@@ -262,6 +334,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: false,
     value: '$150 Value + Certification',
+    numericValue: 150,
+    instantGprec: true,
     deal: 'Free Pro Workspace + Verified Digital Badge',
     dealType: 'free-forever',
     verification: 'College Student Verification',
@@ -281,6 +355,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: false,
     value: '$60 / Year Value',
+    numericValue: 60,
+    instantGprec: true,
     deal: 'Free Docker Desktop for Education',
     dealType: 'free-forever',
     verification: 'Institutional / Free Tier',
@@ -300,6 +376,8 @@ export const STUDENT_OFFERS = [
     category: 'dev-tools',
     featured: false,
     value: '$49 Value',
+    numericValue: 49,
+    instantGprec: true,
     deal: '50% Student Discount',
     dealType: 'discount',
     verification: 'College Email (@gprec.ac.in)',
@@ -313,7 +391,7 @@ export const STUDENT_OFFERS = [
     howToClaim: ['Send an email from your college ID to TablePlus support to receive a 50% discount coupon.']
   },
 
-  // ─── CLOUD, DEVOPS & DATABASES ───
+  // ─── CLOUD, DEVOPS & MONITORING ───
   {
     id: 'aws-educate',
     title: 'AWS Educate & Student Cloud Hub',
@@ -321,6 +399,8 @@ export const STUDENT_OFFERS = [
     category: 'cloud-devops',
     featured: true,
     value: '$100 Free Credit',
+    numericValue: 100,
+    instantGprec: true,
     deal: 'Free Cloud Labs + No Credit Card Needed',
     dealType: 'credits',
     verification: 'College Email (@gprec.ac.in)',
@@ -344,6 +424,8 @@ export const STUDENT_OFFERS = [
     category: 'cloud-devops',
     featured: true,
     value: '$200 Free Credits',
+    numericValue: 200,
+    instantGprec: false,
     deal: '$200 Free Cloud Credits for 1 Year',
     dealType: 'credits',
     verification: 'GitHub Student Developer Pack',
@@ -363,6 +445,8 @@ export const STUDENT_OFFERS = [
     category: 'cloud-devops',
     featured: false,
     value: '$50 Credit + Free Certification',
+    numericValue: 50,
+    instantGprec: false,
     deal: '$50 Free Credits + 100% Free Certification Voucher',
     dealType: 'credits',
     verification: 'GitHub Student Developer Pack',
@@ -375,6 +459,48 @@ export const STUDENT_OFFERS = [
     requirements: ['GitHub Student Developer Pack'],
     howToClaim: ['Log in to MongoDB for Students via GitHub Student Pack to redeem your credits and exam voucher.']
   },
+  {
+    id: 'datadog-student',
+    title: 'Datadog Pro Infrastructure Monitoring',
+    company: 'Datadog',
+    category: 'cloud-devops',
+    featured: false,
+    value: '$780 / Year Value',
+    numericValue: 780,
+    instantGprec: false,
+    deal: 'Free Pro License for 2 Years (10 Servers)',
+    dealType: 'free-pro',
+    verification: 'GitHub Student Developer Pack',
+    region: 'Global',
+    logo: 'https://img.icons8.com/color/512/datadog.png',
+    iconColor: 'from-purple-600 to-indigo-600',
+    description: 'Full-stack cloud monitoring and APM tracing. Track metrics, server CPU/RAM utilization, logs, and distributed network health with custom dashboards.',
+    highlights: ['Monitoring for up to 10 servers', 'Custom metrics and trace maps', '2-year free license via GitHub Pack'],
+    claimUrl: 'https://www.datadoghq.com/',
+    requirements: ['Active GitHub Student Developer Pack'],
+    howToClaim: ['Activate through your GitHub Student Developer Pack dashboard.']
+  },
+  {
+    id: 'sentry-student',
+    title: 'Sentry Error & Performance Tracking',
+    company: 'Sentry.io',
+    category: 'cloud-devops',
+    featured: false,
+    value: '$348 / Year Value',
+    numericValue: 348,
+    instantGprec: false,
+    deal: 'Free 500k Events/Mo for Students',
+    dealType: 'free-pro',
+    verification: 'GitHub Student Developer Pack',
+    region: 'Global',
+    logo: 'https://sentry.io/_assets/favicon.ico',
+    iconColor: 'from-rose-500 to-pink-600',
+    description: 'Application monitoring software that spots frontend JavaScript bugs, backend exceptions, and API slow points with full stacktraces and user breadcrumbs.',
+    highlights: ['500,000 free events every month', 'Instant stack trace and line error locator', 'React, Python, Java & Node SDKs'],
+    claimUrl: 'https://sentry.io/welcome/',
+    requirements: ['GitHub Student Developer Pack'],
+    howToClaim: ['Sign in via GitHub to claim student event allowances on Sentry.']
+  },
 
   // ─── DESIGN & CREATIVE ───
   {
@@ -384,6 +510,8 @@ export const STUDENT_OFFERS = [
     category: 'design-3d',
     featured: true,
     value: '$144 / Year Value',
+    numericValue: 144,
+    instantGprec: true,
     deal: '100% Free Forever for Students',
     dealType: 'free-pro',
     verification: 'College Email / Student Status',
@@ -408,6 +536,8 @@ export const STUDENT_OFFERS = [
     category: 'design-3d',
     featured: true,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: true,
     deal: '100% Free Pro Creative Suite',
     dealType: 'free-pro',
     verification: 'GitHub Student Pack / .edu',
@@ -427,6 +557,8 @@ export const STUDENT_OFFERS = [
     category: 'design-3d',
     featured: false,
     value: '$1,500+ / Year Value',
+    numericValue: 1500,
+    instantGprec: false,
     deal: '100% Free Educational Licenses',
     dealType: 'free-pro',
     verification: 'College ID Card / SheerID',
@@ -448,6 +580,8 @@ export const STUDENT_OFFERS = [
     category: 'productivity',
     featured: true,
     value: '$120 / Year Value',
+    numericValue: 120,
+    instantGprec: true,
     deal: '100% Free Notion Plus Plan',
     dealType: 'free-pro',
     verification: 'College Email (@gprec.ac.in)',
@@ -471,6 +605,8 @@ export const STUDENT_OFFERS = [
     category: 'productivity',
     featured: false,
     value: '$180 / Year Value',
+    numericValue: 180,
+    instantGprec: true,
     deal: 'Free Educational Collaborations & Discount',
     dealType: 'discount',
     verification: 'College Email',
@@ -490,6 +626,8 @@ export const STUDENT_OFFERS = [
     category: 'productivity',
     featured: false,
     value: '$36 Value',
+    numericValue: 36,
+    instantGprec: false,
     deal: 'Free 1-Year Subscription',
     dealType: 'free-pro',
     verification: 'GitHub Student Developer Pack',
@@ -502,6 +640,27 @@ export const STUDENT_OFFERS = [
     requirements: ['GitHub Student Developer Pack'],
     howToClaim: ['Sign up through the 1Password student promotion portal via GitHub Student Pack.']
   },
+  {
+    id: 'spotify-student',
+    title: 'Spotify Premium Student + Hulu',
+    company: 'Spotify & Hulu',
+    category: 'productivity',
+    featured: false,
+    value: '$70 / Year Value',
+    numericValue: 70,
+    instantGprec: false,
+    deal: '50% Student Discount + Free Hulu',
+    dealType: 'discount',
+    verification: 'SheerID Student Verification',
+    region: 'Global',
+    logo: 'https://cdn-icons-png.flaticon.com/512/174/174872.png',
+    iconColor: 'from-emerald-500 to-green-600',
+    description: 'Ad-free music streaming, offline downloads, unlimited song skips, and complimentary access to Hulu streaming for focused study sessions and deep work.',
+    highlights: ['50% off monthly subscription', 'Ad-free music streaming', 'Includes Hulu with ads at zero extra charge'],
+    claimUrl: 'https://www.spotify.com/student/',
+    requirements: ['Enrolled university student status (SheerID)'],
+    howToClaim: ['Sign up on the Spotify Student portal and complete the quick SheerID verification.']
+  },
 
   // ─── DOMAINS, HOSTING & WEB ───
   {
@@ -511,6 +670,8 @@ export const STUDENT_OFFERS = [
     category: 'domains-web',
     featured: true,
     value: '$30 Value',
+    numericValue: 30,
+    instantGprec: false,
     deal: '100% Free 1-Year .ME Domain + SSL',
     dealType: 'free-forever',
     verification: 'GitHub Student Developer Pack / nc.me',
@@ -534,6 +695,8 @@ export const STUDENT_OFFERS = [
     category: 'domains-web',
     featured: false,
     value: '$25 Value',
+    numericValue: 25,
+    instantGprec: false,
     deal: 'Free Domain (.live, .studio, .tech) + Privacy',
     dealType: 'free-forever',
     verification: 'GitHub Student Developer Pack',
@@ -549,4 +712,4 @@ export const STUDENT_OFFERS = [
 ];
 
 export const TOTAL_CLAIMABLE_SAVINGS = '$14,500+';
-export const TOTAL_VERIFIED_OFFERS_COUNT = '590+';
+export const TOTAL_VERIFIED_OFFERS_COUNT = '30+';
