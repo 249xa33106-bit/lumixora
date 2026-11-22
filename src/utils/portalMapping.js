@@ -10,7 +10,6 @@ export const ALL_PORTALS = [
   { id: 'simulations', label: 'Simulation Portal', category: 'academics', tags: ['academics', 'ece', 'eee', 'mech', 'civil', 'visual', 'practical'] },
   { id: 'courses', label: 'All Courses & Diplomas', category: 'academics', tags: ['academics', 'skills', 'certification'] },
   { id: 'boloclass', label: 'BoloClass AI Classroom', category: 'academics', tags: ['academics', 'lectures', 'ai', 'visual'] },
-  { id: 'my-academics', label: 'My Academics (SGPA/CGPA)', category: 'academics', tags: ['academics', 'grades', 'cgpa'] },
   { id: 'doubts', label: 'Doubt Solver (AI 24/7)', category: 'academics', tags: ['academics', 'exams', 'doubts', 'ai'] },
   { id: 'learning-hub', label: 'Learning & Video Hub', category: 'academics', tags: ['academics', 'notes', 'videos', 'study'] },
   { id: 'previous-papers', label: 'Previous Papers & ML Predictor', category: 'academics', tags: ['academics', 'exams', 'predictor', 'ml', 'previous-papers', 'papers', 'all'] },
@@ -96,7 +95,6 @@ export function analyzeAndRecommendPortals({
   }
 
   if (goalLower.includes('academic') || goalLower.includes('cgpa') || goalLower.includes('exam')) {
-    recommended.add('my-academics');
     recommended.add('doubts');
     recommended.add('learning-hub');
     recommended.add('courses');
@@ -116,7 +114,6 @@ export function analyzeAndRecommendPortals({
     recommended.add('learning-hub');
     recommended.add('courses');
     recommended.add('doubts');
-    recommended.add('my-academics');
   }
 
   if (yearLower.includes('3rd') || yearLower.includes('4th') || yearLower.includes('final') || expLower.includes('advanced')) {
@@ -151,8 +148,7 @@ export function analyzeAndRecommendPortals({
     if (item.includes('exam') || item.includes('notes') || item.includes('syllabus')) {
       recommended.add('doubts');
       recommended.add('learning-hub');
-      recommended.add('my-academics');
-      recommended.add('tasks');
+        recommended.add('tasks');
     }
     if (item.includes('internship') || item.includes('referral')) {
       recommended.add('internships');

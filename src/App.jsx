@@ -18,7 +18,6 @@ import { ThemeProvider } from './context/ThemeContext';
 const CodingPractice = lazy(() => import('./pages/CodingPractice'));
 const CodeEditorPage = lazy(() => import('./pages/CodeEditorPage'));
 const PersonalMentor = lazy(() => import('./pages/PersonalMentor'));
-const MyAcademics = lazy(() => import('./pages/MyAcademics'));
 import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment, KNOWN_PAID_EMAILS } from './data/collegesData';
 import CollegeAccessFeeModal from './components/CollegeAccessFeeModal';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
@@ -116,7 +115,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['previous-papers', 'company-papers', 'papers', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'code-editor', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'my-academics', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'intern-portal', 'student-offers', 'clubs', 'marketplace', 'ai-commander', 'contact', 'report-bug', 'team-workspace', 'our-team'].includes(hash)) return hash;
+        if (['previous-papers', 'company-papers', 'papers', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'code-editor', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'intern-portal', 'student-offers', 'clubs', 'marketplace', 'ai-commander', 'contact', 'report-bug', 'team-workspace', 'our-team'].includes(hash)) return hash;
       }
     }
     return 'dashboard';
@@ -670,7 +669,7 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'my-academics', 'academics', 'academic-tracker', 'marks', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
@@ -1373,12 +1372,6 @@ function App() {
           return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         }
         return <Dashboard setActiveTab={setActiveTab} user={user} />;
-      case 'my-academics':
-      case 'academics':
-      case 'academic-tracker':
-      case 'marks':
-      case 'my-marks':
-        return <MyAcademics user={user} />;
       case 'interview':
       case 'mock-interview':
       case 'ai-interview':
@@ -1766,55 +1759,6 @@ function App() {
         </ThemeProvider>
       );
     }
-
-    // Direct standalone access to My Academics without requiring initial login
-    if (lowerHash.includes('my-academics') || lowerHash === '#academics' || lowerHash.includes('academics')) {
-      return (
-        <ThemeProvider>
-          <ToastProvider>
-            <CursorGlow />
-            <div className="min-h-screen bg-[#030712] text-white p-4 md:p-8">
-              <div className="max-w-7xl mx-auto space-y-6">
-                <div className="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <Realistic3DLogo size="md" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-white">Lumixora by VYOMRA</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30 uppercase">
-                          Academic Performance Tracker
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-cyan-300 font-mono">lumixora.in#my-academics</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <button 
-                      onClick={() => { window.location.hash = ''; }} 
-                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10 cursor-pointer"
-                    >
-                      â† Home
-                    </button>
-                    <button 
-                      onClick={() => setShowLogin('student')} 
-                      className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-blue-600 hover:opacity-95 text-black text-xs font-black rounded-xl transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
-                    >
-                      Student Login
-                    </button>
-                  </div>
-                </div>
-
-                <MyAcademics user={user || { name: 'Student Scholar', email: 'guest_student' }} />
-              </div>
-            </div>
-            {renderUpdateModal()}
-          </ToastProvider>
-        </ThemeProvider>
-      );
-    }
-
-
-    
 
     // Direct standalone public access to LUMIXORA INTERN PORTAL & UNIQUE LOGIN SYSTEM
     if (lowerHash.includes('intern-portal') || lowerHash.includes('intern-workspace') || lowerHash.includes('interns') || lowerHash.includes('intern-hub') || lowerHash.includes('intern-login')) {

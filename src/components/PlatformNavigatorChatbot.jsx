@@ -20,16 +20,6 @@ export const PORTAL_CATALOG = [
     suggestedQueries: ['Where can I see my daily study streak?', 'Take me to main dashboard']
   },
   {
-    id: 'my-academics',
-    name: 'My Academics (SGPA & CGPA)',
-    category: 'Academics & Core',
-    description: 'Track university marks, semester-wise SGPA, cumulative CGPA, and subject credits.',
-    icon: GraduationCap,
-    color: 'emerald',
-    keywords: ['marks', 'sgpa', 'cgpa', 'grades', 'semester', 'percentage', 'result', 'academic score'],
-    suggestedQueries: ['Calculate my SGPA/CGPA', 'Where can I see my semester marks?']
-  },
-  {
     id: 'learning-hub',
     name: 'Learning & Video Hub',
     category: 'Academics & Core',
@@ -370,9 +360,6 @@ export default function PlatformNavigatorChatbot({ isOpen, onClose, onNavigate, 
     }
     if (q.includes('interview') || q.includes('mock') || q.includes('voice') || q.includes('hr') || q.includes('speech')) {
       return `Practice speaking with confidence! 🎤 Enter the **AI Mock Interview Room** for interactive two-way voice simulations with instant AI feedback on technical and behavioral answers.`;
-    }
-    if (q.includes('mark') || q.includes('sgpa') || q.includes('cgpa') || q.includes('grade') || q.includes('semester')) {
-      return `Track your academic excellence! 📊 Open **My Academics** to calculate your SGPA, cumulative CGPA, and review credit breakdown.`;
     }
     if (q.includes('resume') || q.includes('cv') || q.includes('pdf')) {
       return `Build a job-winning resume! 📄 Use the **AI Resume Builder** to generate an ATS-friendly, single-click downloadable PDF.`;

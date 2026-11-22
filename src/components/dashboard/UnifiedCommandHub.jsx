@@ -79,17 +79,6 @@ export const ALL_SYSTEM_PORTALS = [
     iconColor: 'from-amber-500 to-orange-600',
   },
   {
-    id: 'my-academics',
-    label: 'My Academics (SGPA / CGPA)',
-    track: 'academics',
-    trackLabel: 'Academics',
-    desc: 'Track academic progress, semester SGPA, target CGPA, and backlog clearance.',
-    icon: Award,
-    badge: 'Grades',
-    badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-    iconColor: 'from-purple-500 to-pink-600',
-  },
-  {
     id: 'test-portal',
     label: 'Tests & Assessment Hub',
     track: 'academics',
