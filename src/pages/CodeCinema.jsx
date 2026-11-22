@@ -3,8 +3,352 @@ import {
   Film, Play, Pause, SkipForward, SkipBack, RotateCcw, Volume2, VolumeX,
   Sparkles, Code2, GitBranch, GitCommit, Terminal, Cpu, Award, Zap,
   Flame, BookOpen, ChevronRight, Copy, Check, ExternalLink, HelpCircle,
-  Eye, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Info
+  Eye, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Info, Clapperboard,
+  Maximize2, Minimize2, Radio, Activity
 } from 'lucide-react';
+
+/* ─── SYNTHESIZED CINEMATIC AUDIO (Pure Web Audio API - Zero External Dependencies) ─── */
+class CinemaAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.osc1 = null;
+    this.osc2 = null;
+    this.gain = null;
+    this.isPlaying = false;
+  }
+
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+  }
+
+  startAmbience() {
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      if (this.isPlaying) return;
+
+      this.gain = this.ctx.createGain();
+      this.gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+      this.gain.gain.exponentialRampToValueAtTime(0.04, this.ctx.currentTime + 2);
+      this.gain.connect(this.ctx.destination);
+
+      // Deep cinematic low-pass drone (55Hz - A1 note)
+      this.osc1 = this.ctx.createOscillator();
+      this.osc1.type = 'sine';
+      this.osc1.frequency.setValueAtTime(55, this.ctx.currentTime);
+      this.osc1.connect(this.gain);
+      this.osc1.start();
+
+      // Subtle atmospheric harmonic (110Hz - A2 note)
+      this.osc2 = this.ctx.createOscillator();
+      this.osc2.type = 'triangle';
+      this.osc2.frequency.setValueAtTime(110, this.ctx.currentTime);
+      this.osc2.connect(this.gain);
+      this.osc2.start();
+
+      this.isPlaying = true;
+    } catch (e) {
+      console.warn('Audio ambience unavailable', e);
+    }
+  }
+
+  stopAmbience() {
+    try {
+      if (this.gain && this.ctx) {
+        this.gain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.5);
+        setTimeout(() => {
+          if (this.osc1) { this.osc1.stop(); this.osc1.disconnect(); this.osc1 = null; }
+          if (this.osc2) { this.osc2.stop(); this.osc2.disconnect(); this.osc2 = null; }
+          this.isPlaying = false;
+        }, 600);
+      }
+    } catch (e) {}
+  }
+}
+
+const audioCinema = new CinemaAudioEngine();
+
+/* ─── CINEMA VISUAL SIMULATION STAGE (The Living Animated Architecture) ─── */
+function ArchitectureCinemaScreen({ filmId, chapterId, isPlaying, playbackSpeed }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationId = null;
+    let tick = 0;
+
+    const render = () => {
+      tick += 0.03 * playbackSpeed;
+      const w = canvas.width = canvas.offsetWidth;
+      const h = canvas.height = canvas.offsetHeight;
+
+      // Deep dark cinematic canvas background with subtle grid
+      ctx.fillStyle = '#060913';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 1;
+      const gridSize = 30;
+      for (let x = 0; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      /* ─── SCENE 1: REDIS MULTIPLEXING EVENT LOOP RADAR ─── */
+      if (filmId === 'redis') {
+        const cx = w * 0.48;
+        const cy = h * 0.5;
+        const radius = Math.min(w, h) * 0.32;
+
+        // Outer Client Ring (Simulating 10,000 Sockets)
+        const clientCount = 14;
+        for (let i = 0; i < clientCount; i++) {
+          const angle = (i / clientCount) * Math.PI * 2 + (isPlaying ? tick * 0.2 : 0);
+          const px = cx + Math.cos(angle) * (radius + 35);
+          const py = cy + Math.sin(angle) * (radius + 35);
+
+          // Client socket node
+          const isActive = Math.sin(tick * 2 + i) > 0.3;
+          ctx.beginPath();
+          ctx.arc(px, py, isActive ? 6 : 4, 0, Math.PI * 2);
+          ctx.fillStyle = isActive ? '#38bdf8' : 'rgba(255, 255, 255, 0.2)';
+          ctx.shadowColor = isActive ? '#38bdf8' : 'transparent';
+          ctx.shadowBlur = isActive ? 12 : 0;
+          ctx.fill();
+
+          // Incoming data packet streams toward the central epoll ring
+          if (isActive && isPlaying) {
+            const streamProgress = ((tick * 1.5 + i) % 1);
+            const packetX = px + (cx - px) * streamProgress;
+            const packetY = py + (cy - py) * streamProgress;
+
+            ctx.beginPath();
+            ctx.arc(packetX, packetY, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f43f5e';
+            ctx.shadowColor = '#f43f5e';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+
+            // Connecting laser filament
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(cx, cy);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+
+        // The Central Event Multiplexer Ring (epoll_wait)
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Rotating Scanner Sweep (The Single Main Thread)
+        const sweepAngle = isPlaying ? tick * 2.5 : 0;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(sweepAngle);
+
+        const sweepGrad = ctx.createLinearGradient(0, 0, radius, 0);
+        sweepGrad.addColorStop(0, 'rgba(244, 63, 94, 0.9)');
+        sweepGrad.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, 0, Math.PI / 4);
+        ctx.closePath();
+        ctx.fillStyle = sweepGrad;
+        ctx.fill();
+        ctx.restore();
+
+        // Core Hub: Single Sequential Execution Engine
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#f43f5e';
+        ctx.shadowBlur = 18;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('SINGLE', cx, cy - 3);
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('THREAD', cx, cy + 9);
+
+        // Telemetry readout tags
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● epoll_wait(): ACTIVE', 16, 26);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('I/O Mutex Locks: ZERO', 16, 42);
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.9)';
+        ctx.fillText('Ops/Sec: 114,250', 16, 58);
+      } 
+      
+      /* ─── SCENE 2: GIT MERKLE TREE DAG SNAPSHOTS ─── */
+      else if (filmId === 'git') {
+        const startX = 60;
+        const centerY = h * 0.5;
+
+        // Draw Merkle DAG Commit Nodes
+        const commits = [
+          { name: 'C1 (Root)', sha: 'e83c516', x: startX, y: centerY },
+          { name: 'C2 (Tree)', sha: '7bb831a', x: startX + 90, y: centerY },
+          { name: 'C3 (Index)', sha: 'd910fe2', x: startX + 180, y: centerY - 40 },
+          { name: 'C4 (Branch)', sha: '41ca98b', x: startX + 180, y: centerY + 40 },
+          { name: 'C5 (Merge)', sha: '83f9a11', x: startX + 270, y: centerY }
+        ];
+
+        // Draw connections
+        ctx.strokeStyle = 'rgba(249, 115, 22, 0.6)';
+        ctx.lineWidth = 2;
+        commits.forEach((node, i) => {
+          if (i === 1) {
+            ctx.beginPath(); ctx.moveTo(commits[0].x, commits[0].y); ctx.lineTo(node.x, node.y); ctx.stroke();
+          } else if (i === 2 || i === 3) {
+            ctx.beginPath(); ctx.moveTo(commits[1].x, commits[1].y); ctx.lineTo(node.x, node.y); ctx.stroke();
+          } else if (i === 4) {
+            ctx.beginPath(); ctx.moveTo(commits[2].x, commits[2].y); ctx.lineTo(node.x, node.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(commits[3].x, commits[3].y); ctx.lineTo(node.x, node.y); ctx.stroke();
+          }
+        });
+
+        // Draw nodes
+        commits.forEach((node, i) => {
+          const isPulse = isPlaying && ((Math.floor(tick * 2) % commits.length) === i);
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, isPulse ? 14 : 10, 0, Math.PI * 2);
+          ctx.fillStyle = isPulse ? '#fb923c' : '#ea580c';
+          ctx.shadowColor = '#f97316';
+          ctx.shadowBlur = isPulse ? 20 : 6;
+          ctx.fill();
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(node.name, node.x, node.y - 18);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.fillText(node.sha.slice(0, 4), node.x, node.y + 22);
+        });
+
+        // Telemetry readout tags
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(249, 115, 22, 0.9)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● MERKLE DAG: IMMUTABLE SHA-1', 16, 26);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('Direct File Diffing: BYPASSED', 16, 42);
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.9)';
+        ctx.fillText('Tree Diff Speed: O(1) by Hash', 16, 58);
+      }
+
+      /* ─── SCENE 3: REACT FIBER COOPERATIVE WORK LOOP ─── */
+      else {
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+
+        // Browser Frame 16.6ms Deadline Bar
+        const frameWidth = w * 0.6;
+        const frameHeight = 22;
+        const frameX = cx - frameWidth / 2;
+        const frameY = cy - 35;
+
+        // Container
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+        ctx.strokeRect(frameX, frameY, frameWidth, frameHeight);
+
+        // Progress Fill: 16.6ms Time Slice Budget
+        const progress = isPlaying ? (tick % 1.6) / 1.6 : 0.65;
+        ctx.fillStyle = progress > 0.85 ? '#ef4444' : '#06b6d4';
+        ctx.shadowColor = '#06b6d4';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(frameX + 2, frameY + 2, (frameWidth - 4) * progress, frameHeight - 4);
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`FRAME BUDGET: ${(16.6 * (1 - progress)).toFixed(1)}ms REMAINING`, cx, frameY + 15);
+
+        // Yielding & Resuming Arrows
+        ctx.fillStyle = progress > 0.85 ? '#f87171' : '#38bdf8';
+        ctx.font = '9px monospace';
+        ctx.fillText(progress > 0.85 ? 'YIELDING TO USER INPUT (60 FPS)' : 'RECONCILING FIBER TREE NODES...', cx, frameY + 50);
+
+        // Telemetry readout tags
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.9)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● FIBER COOPERATIVE LOOP: ACTIVE', 16, 26);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('Call Stack Blocking: 0ms', 16, 42);
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.9)';
+        ctx.fillText('Frame Rate: Solid 60.0 FPS', 16, 58);
+      }
+
+      animationId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationId);
+  }, [filmId, chapterId, isPlaying, playbackSpeed]);
+
+  return (
+    <div className="w-full h-[220px] sm:h-[260px] md:h-[280px] rounded-3xl overflow-hidden border border-white/10 relative shadow-2xl bg-[#060913]">
+      <canvas ref={canvasRef} className="w-full h-full block" />
+      
+      {/* Film Projector Beam Lighting Gradient */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-full pointer-events-none opacity-20"
+        style={{
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 80%)',
+          clipPath: 'polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)'
+        }}
+      />
+
+      {/* Screen Title Pill */}
+      <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono font-bold text-gray-300 flex items-center gap-1.5 shadow-lg">
+        <Radio className="w-3 h-3 text-rose-400 animate-pulse" />
+        <span>CINEMA ARCHITECTURE SIMULATOR</span>
+      </div>
+
+      {/* Play status watermark */}
+      <div className="absolute bottom-3 right-3 text-[10px] font-mono font-black tracking-widest text-white/30 uppercase">
+        {isPlaying ? '▶ LIVE PROJECTION' : '⏸ THEATER PAUSED'}
+      </div>
+    </div>
+  );
+}
 
 /* ─── LEGENDARY CODEBASE MASTERPIECES ─── */
 const CINEMA_FILMS = [
@@ -131,62 +475,6 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) {
     }
     return x;
 }`
-      },
-      {
-        id: 4,
-        title: 'Zero-Copy SDS: Binary-Safe Strings',
-        commitSha: '31cb541',
-        timestamp: 'Day 89 • August 2009',
-        file: 'sds.h',
-        dilemma: 'Frequent string reallocations caused severe memory fragmentation and buffer overflow vulnerabilities.',
-        tradeoff: 'Created SDS (Simple Dynamic Strings) with pre-allocated buffer padding and explicit length headers.',
-        narration: "Notice line 12: SDS header. By placing the header struct directly BEFORE the char array in memory, standard C printf can still print the pointer, but Redis can inspect string length in zero CPU cycles without scanning for null terminators.",
-        interviewQuestion: 'How does SDS achieve binary safety in Redis?',
-        interviewAnswer: 'Since SDS tracks the explicit length integer in its header, the string can store arbitrary binary data including null characters (\0), image bytes, or Protobuf binaries.',
-        code: `/* sds.h - Simple Dynamic Strings with Memory Prefetch */
-struct sdshdr {
-    int len;      /* Current used length (O(1) lookup!) */
-    int free;     /* Pre-allocated buffer headroom */
-    char buf[];   /* Direct memory pointer compatible with printf */
-};
-
-sds sdsnewlen(const void *init, size_t initlen) {
-    struct sdshdr *sh = malloc(sizeof(struct sdshdr) + initlen + 1);
-    sh->len = initlen;
-    sh->free = 0;
-    if (initlen && init)
-        memcpy(sh->buf, init, initlen);
-    sh->buf[initlen] = '\\0';
-    return (char*)sh->buf; /* Pointer arithmetic trick! */
-}`
-      },
-      {
-        id: 5,
-        title: 'Asynchronous Persistence: The Fork RDB Miracle',
-        commitSha: '94c1a88',
-        timestamp: 'Day 140 • October 2009',
-        file: 'rdb.c',
-        dilemma: 'Writing the whole database to disk froze the single-threaded server for multiple seconds under high traffic.',
-        tradeoff: 'Leveraged Unix copy-on-write OS page tables via fork() to snapshot memory in background while main thread serves traffic.',
-        narration: "The final masterpiece. How do you save 20 gigabytes of data to disk when you only have one thread? Salvatore calls fork(). The Linux kernel duplicates page pointers via Copy-On-Write. The child writes to disk at full speed while the parent keeps serving 100k requests without missing a beat.",
-        interviewQuestion: 'What is Copy-On-Write (COW) and how does Redis exploit it in BGSAVE?',
-        interviewAnswer: 'fork() creates a child process that shares identical physical RAM pages with the parent. Only when the parent writes to a key does the OS copy that specific 4KB page. The child snapshots memory without locking the server.',
-        code: `/* rdb.c - Non-Blocking Background Snapshot */
-int rdbSaveBackground(char *filename) {
-    pid_t childpid;
-    
-    /* Fork leverages OS Copy-On-Write (COW) */
-    if ((childpid = fork()) == 0) {
-        /* Child Process: Writes disk snapshot */
-        closeListeningSockets();
-        rdbSave(filename);
-        exit(0);
-    } else {
-        /* Parent Process: Continues serving 100,000 req/sec in RAM! */
-        server.bgsavechildpid = childpid;
-        return REDIS_OK;
-    }
-}`
       }
     ]
   },
@@ -235,37 +523,6 @@ int write_sha1_file(char *buf, unsigned len, const char *type, unsigned char *re
     SHA1_Final(return_sha1, &c);
     return write_sha1_buffer(return_sha1, buf, len);
 }`
-      },
-      {
-        id: 2,
-        title: 'The Merkle Tree: Instant Directory Snapshots',
-        commitSha: '7bb831a',
-        timestamp: 'Day 5 • April 2005',
-        file: 'tree.c',
-        dilemma: 'How do you represent nested folders and directories without storing thousands of duplicate copies?',
-        tradeoff: 'Hierarchical tree objects: If only one file in a folder changes, only its parent tree hashes update; all other trees remain reused.',
-        narration: "Here Linus connects blobs into Merkle Trees. A folder is just a text file listing child hashes. When you modify one function in one file, 99.9% of the tree nodes are reused by reference. This is why git commit takes 2 milliseconds.",
-        interviewQuestion: 'What is the difference between a Git Blob, Tree, and Commit?',
-        interviewAnswer: 'A Blob holds raw file data without metadata. A Tree holds folder structure mapping filenames and file modes to Blob hashes. A Commit points to a root Tree and parent Commit hashes with author and timestamp metadata.',
-        code: `/* tree.c - The Merkle DAG of Directory Nodes */
-struct tree_entry {
-    unsigned int mode;
-    char *path;
-    unsigned char sha1[20];
-};
-
-struct tree {
-    struct object object;
-    unsigned int entry_count;
-    struct tree_entry *entries;
-};
-
-/* Fast recursive tree matching: Compare root SHA-1 in O(1) */
-int tree_diff(struct tree *t1, struct tree *t2) {
-    if (memcmp(t1->object.sha1, t2->object.sha1, 20) == 0)
-        return 0; /* Identical directory contents with ZERO disk reads! */
-    return recursive_tree_walk(t1, t2);
-}`
       }
     ]
   },
@@ -310,31 +567,6 @@ function createElement(type, config, children) {
         children: children
     };
 }`
-      },
-      {
-        id: 2,
-        title: 'The Fiber Reconciler: Cooperative Scheduling',
-        commitSha: 'f1b903e',
-        timestamp: 'Day 450 • 2016',
-        file: 'ReactFiberScheduler.js',
-        dilemma: 'The original recursive stack reconciler could not be paused. Heavy component trees froze user typing and animation frames.',
-        tradeoff: 'Re-implemented the JavaScript call stack as a singly-linked list of Fiber nodes that can pause, prioritize, and resume work.',
-        narration: "By 2016, large web apps were dropping 60fps frames. Sophie Alpert and the React core team rewrote the entire engine. Meet Fiber: a linked-list work loop that checks the clock. If 16 milliseconds pass, it pauses rendering, yields control to user typing, and resumes later.",
-        interviewQuestion: 'How does React Fiber achieve time-slicing without Web Workers?',
-        interviewAnswer: 'Fiber turns the recursive stack into an iterative loop of linked Fiber nodes. Using requestIdleCallback / MessageChannel, it yields execution to the main thread whenever the browser frame budget is exhausted.',
-        code: `/* ReactFiberScheduler.js - The Cooperative Time-Slice Loop */
-function workLoop(deadline) {
-    while (nextUnitOfWork !== null && deadline.timeRemaining() > 1) {
-        nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
-    }
-    
-    /* If frame time is up, pause and schedule next slice! */
-    if (nextUnitOfWork !== null) {
-        requestIdleCallback(workLoop);
-    } else {
-        commitRoot(workInProgressRoot); /* Flush to screen */
-    }
-}`
       }
     ]
   }
@@ -346,11 +578,12 @@ export default function CodeCinema({ setActiveTab, user }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [isAudioAmbienceEnabled, setIsAudioAmbienceEnabled] = useState(false);
   const [displayedCodeLength, setDisplayedCodeLength] = useState(0);
   const [showForkModal, setShowForkModal] = useState(false);
   const [forkedCode, setForkedCode] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
-  const [activeTabSub, setActiveTabSub] = useState('code'); // 'code', 'blueprint', 'interview'
+  const [activeTabSub, setActiveTabSub] = useState('blueprint'); // 'blueprint', 'code', 'interview'
 
   const film = CINEMA_FILMS[selectedFilmIndex];
   const chapter = film.chapters[selectedChapterIndex] || film.chapters[0];
@@ -371,9 +604,9 @@ export default function CodeCinema({ setActiveTab, user }) {
             setIsPlaying(false);
             return fullCode.length;
           }
-          return Math.min(fullCode.length, prev + Math.max(2, Math.floor(6 * playbackSpeed)));
+          return Math.min(fullCode.length, prev + Math.max(3, Math.floor(8 * playbackSpeed)));
         });
-      }, 35);
+      }, 30);
     }
     return () => clearInterval(interval);
   }, [isPlaying, fullCode, playbackSpeed]);
@@ -398,11 +631,26 @@ export default function CodeCinema({ setActiveTab, user }) {
     };
   }, [isVoiceEnabled, isPlaying, chapter]);
 
+  // Handle Audio Ambience Toggle
+  const toggleAudioAmbience = () => {
+    if (!isAudioAmbienceEnabled) {
+      audioCinema.startAmbience();
+      setIsAudioAmbienceEnabled(true);
+    } else {
+      audioCinema.stopAmbience();
+      setIsAudioAmbienceEnabled(false);
+    }
+  };
+
   const togglePlay = () => {
     if (displayedCodeLength >= fullCode.length) {
       setDisplayedCodeLength(0);
     }
-    setIsPlaying(!isPlaying);
+    const nextState = !isPlaying;
+    setIsPlaying(nextState);
+    if (nextState && isAudioAmbienceEnabled) {
+      audioCinema.startAmbience();
+    }
   };
 
   const handleNextChapter = () => {
@@ -432,10 +680,10 @@ export default function CodeCinema({ setActiveTab, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white pb-20 selection:bg-rose-500/30 selection:text-rose-200">
+    <div className="min-h-screen bg-[#040711] text-white pb-24 selection:bg-rose-500/30 selection:text-rose-200">
       {/* ─── CINEMA HERO HEADER ─── */}
-      <div className="relative border-b border-white/10 bg-gradient-to-b from-[#0e1628] via-[#090e1c] to-[#070b14] px-4 sm:px-6 lg:px-8 py-8 sm:py-10 overflow-hidden">
-        {/* Film projector light sweep effect */}
+      <div className="relative border-b border-white/10 bg-gradient-to-b from-[#0a1020] via-[#070b16] to-[#040711] px-4 sm:px-6 lg:px-8 py-8 sm:py-10 overflow-hidden">
+        {/* Overhead projector light cone */}
         <div 
           className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[300px] rounded-full blur-[100px] pointer-events-none opacity-25"
           style={{ background: `radial-gradient(circle, ${film.accentColor} 0%, transparent 70%)` }}
@@ -444,33 +692,47 @@ export default function CodeCinema({ setActiveTab, user }) {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-black shadow-lg shadow-rose-500/20 mb-3.5">
-              <Film className="w-4 h-4 animate-pulse text-rose-400" />
-              <span>CodeCinema™ 4D Archaeological Theater</span>
-              <span className="px-1.5 py-0.2 text-[9px] rounded-md bg-rose-500 text-white font-extrabold uppercase">NEW</span>
+              <Clapperboard className="w-4 h-4 animate-pulse text-rose-400" />
+              <span>CodeCinema™ • 4D Architectural Theater</span>
+              <span className="px-1.5 py-0.2 text-[9px] rounded-md bg-rose-500 text-white font-extrabold uppercase">IMAX</span>
             </div>
             
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              Watch Code Write Itself.<br />
+              Watch Architecture Unfold.<br />
               <span className={`bg-gradient-to-r ${film.color} bg-clip-text text-transparent`}>
-                The Architectural Cinema.
+                The Living Code Cinema.
               </span>
             </h1>
 
             <p className="text-gray-400 text-xs sm:text-sm font-medium max-w-2xl mt-2.5 leading-relaxed">
-              Step into the minds of legendary software architects. Watch Redis, Git, and React evolve commit-by-commit from Day 1, with animated code diffs, real-time voice commentary, and system design breakdown.
+              Step inside the real-time simulation screen. Watch how single-threaded event loops, Merkle DAGs, and Fiber engines execute visually on the canvas while the code types itself and the AI Director narrates the story.
             </p>
           </div>
 
-          {/* Quick Metrics Bar */}
+          {/* Quick Sound & Theater Controls */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl text-center min-w-[100px]">
-              <div className="text-lg font-black text-white">3 Masterpieces</div>
-              <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Historical Reels</div>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl text-center min-w-[100px]">
-              <div className="text-lg font-black text-rose-400">FAANG Grade</div>
-              <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">System Insights</div>
-            </div>
+            <button
+              onClick={toggleAudioAmbience}
+              className={`px-4 py-3 rounded-2xl border transition-all text-xs font-bold flex items-center gap-2 cursor-pointer shadow-lg ${
+                isAudioAmbienceEnabled
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-rose-500/20'
+                  : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+              }`}
+            >
+              {isAudioAmbienceEnabled ? <Volume2 className="w-4 h-4 text-rose-400" /> : <VolumeX className="w-4 h-4" />}
+              <span>{isAudioAmbienceEnabled ? 'Cinema Synth: ON' : 'Cinema Synth: OFF'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+              className={`px-4 py-3 rounded-2xl border transition-all text-xs font-bold flex items-center gap-2 cursor-pointer shadow-lg ${
+                isVoiceEnabled
+                  ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-purple-500/20'
+                  : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+              }`}
+            >
+              <span>🎙️ Voice: {isVoiceEnabled ? 'ACTIVE' : 'MUTED'}</span>
+            </button>
           </div>
         </div>
 
@@ -504,49 +766,79 @@ export default function CodeCinema({ setActiveTab, user }) {
         </div>
       </div>
 
-      {/* ─── MAIN THEATER STAGE ─── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {/* Film Header Banner */}
-        <div className="p-5 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      {/* ─── MAIN CINEMA SHOWCASE (THE VISUAL SCREEN IS FRONT & CENTER) ─── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+        
+        {/* 🌟 1. THE BIG SCREEN: LIVE VISUAL ARCHITECTURE SIMULATOR CANVAS 🌟 */}
+        <div className="relative group">
+          <ArchitectureCinemaScreen 
+            filmId={film.id}
+            chapterId={chapter.id}
+            isPlaying={isPlaying}
+            playbackSpeed={playbackSpeed}
+          />
+        </div>
+
+        {/* ─── FILM CHAPTER INFO & THEATER CONTROL DECK ─── */}
+        <div className="p-5 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-black uppercase tracking-wider border border-rose-500/30">
                 Chapter {chapter.id} of {film.chapters.length}
               </span>
               <span className="text-xs text-gray-400 font-semibold">• {chapter.timestamp}</span>
-              <span className="text-xs text-rose-400 font-mono font-bold">• commit #{chapter.commitSha}</span>
+              <span className="text-xs text-cyan-400 font-mono font-bold">• commit #{chapter.commitSha}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">{chapter.title}</h2>
             <p className="text-xs text-gray-300 mt-1 max-w-3xl leading-relaxed">{chapter.dilemma}</p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Play/Pause Cinema Button */}
             <button
-              onClick={handleForkMoment}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 flex items-center gap-1.5 cursor-pointer transition-all"
+              onClick={togglePlay}
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white font-black text-xs shadow-xl shadow-rose-500/30 flex items-center gap-2 cursor-pointer transition-all transform active:scale-95"
             >
-              <GitBranch className="w-3.5 h-3.5" />
-              <span>Fork This Moment</span>
+              {isPlaying ? (
+                <>
+                  <Pause className="w-4 h-4 fill-white" />
+                  <span>Pause Cinema</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>{displayedCodeLength >= fullCode.length ? 'Replay Cinema' : 'Play Cinema'}</span>
+                </>
+              )}
             </button>
 
             <button
-              onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                isVoiceEnabled
-                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
-                  : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
-              }`}
-              title={isVoiceEnabled ? 'Voice Commentary: Active' : 'Voice Commentary: Muted'}
+              onClick={handleForkMoment}
+              className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/15 flex items-center gap-1.5 cursor-pointer transition-all"
             >
-              {isVoiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <GitBranch className="w-3.5 h-3.5 text-rose-400" />
+              <span>Fork Moment</span>
             </button>
           </div>
         </div>
 
-        {/* ─── DUAL-DECK STAGE (CODE CINEMA SCREEN + DIRECTOR'S COMMENTARY) ─── */}
+        {/* ─── DIRECTOR'S SUBTITLE BAR (MOVIE CAPTION STYLE) ─── */}
+        <div className="p-4 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-sm shrink-0">
+            🎬
+          </div>
+          <div className="flex-1 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans">
+            <span className="text-rose-400 font-bold uppercase tracking-wider text-[11px] mr-2">
+              [{film.creator}]:
+            </span>
+            "{chapter.narration}"
+          </div>
+        </div>
+
+        {/* ─── DUAL DECK: CODE PROJECTION SCREEN + SYSTEM DOSSIER ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Left: The Code Projector Screen (7 Columns) */}
+          {/* Left: Code Teleprompter (7 Columns) */}
           <div className="lg:col-span-7 bg-[#050811] rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
             {/* Window Topbar */}
             <div className="px-4 py-3 bg-[#0a0f1d] border-b border-white/10 flex items-center justify-between">
@@ -573,8 +865,8 @@ export default function CodeCinema({ setActiveTab, user }) {
               </div>
             </div>
 
-            {/* Code Viewer Body */}
-            <div className="p-4 sm:p-5 font-mono text-xs sm:text-[13px] leading-relaxed overflow-x-auto min-h-[380px] max-h-[500px] overflow-y-auto custom-scrollbar bg-[#03060d]">
+            {/* Code Body */}
+            <div className="p-4 sm:p-5 font-mono text-xs sm:text-[13px] leading-relaxed overflow-x-auto min-h-[300px] max-h-[420px] overflow-y-auto custom-scrollbar bg-[#03060d]">
               <pre className="text-gray-200">
                 <code>
                   {fullCode.slice(0, displayedCodeLength || fullCode.length)}
@@ -585,34 +877,16 @@ export default function CodeCinema({ setActiveTab, user }) {
               </pre>
             </div>
 
-            {/* Cinema Scrubber & Controls Footer */}
-            <div className="px-5 py-4 bg-[#0a0f1d] border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Playback Button Group */}
-              <div className="flex items-center gap-3">
+            {/* Playback Controls Footer */}
+            <div className="px-5 py-3.5 bg-[#0a0f1d] border-t border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={handlePrevChapter}
                   disabled={selectedChapterIndex === 0}
                   className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white transition-all cursor-pointer"
                   title="Previous Chapter"
                 >
-                  <SkipBack className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={togglePlay}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-rose-500/30 flex items-center gap-2 cursor-pointer transition-all transform active:scale-95"
-                >
-                  {isPlaying ? (
-                    <>
-                      <Pause className="w-4 h-4 fill-white" />
-                      <span>Pause Reel</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 fill-white" />
-                      <span>{displayedCodeLength >= fullCode.length ? 'Replay Chapter' : 'Play Cinema'}</span>
-                    </>
-                  )}
+                  <SkipBack className="w-3.5 h-3.5" />
                 </button>
 
                 <button
@@ -620,17 +894,17 @@ export default function CodeCinema({ setActiveTab, user }) {
                   className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all cursor-pointer"
                   title="Next Chapter"
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Speed Controller */}
-              <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+              {/* Speed Buttons */}
+              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/5">
                 {[0.5, 1, 2, 5].map((speed) => (
                   <button
                     key={speed}
                     onClick={() => setPlaybackSpeed(speed)}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold transition-all cursor-pointer ${
                       playbackSpeed === speed
                         ? 'bg-rose-500 text-white shadow-sm'
                         : 'text-gray-400 hover:text-white'
@@ -643,21 +917,11 @@ export default function CodeCinema({ setActiveTab, user }) {
             </div>
           </div>
 
-          {/* Right: The Director's Commentary & System Design Dossier (5 Columns) */}
+          {/* Right: Architecture Blueprint & System Design Dossier (5 Columns) */}
           <div className="lg:col-span-5 space-y-4">
             
             {/* Tab Switcher */}
             <div className="flex items-center p-1 rounded-2xl bg-white/5 border border-white/10">
-              <button
-                onClick={() => setActiveTabSub('code')}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTabSub === 'code' ? 'bg-white/15 text-white shadow-md' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-rose-400" />
-                <span>Director's Audio</span>
-              </button>
-
               <button
                 onClick={() => setActiveTabSub('blueprint')}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -679,39 +943,7 @@ export default function CodeCinema({ setActiveTab, user }) {
               </button>
             </div>
 
-            {/* Tab 1: Director's Narration */}
-            {activeTabSub === 'code' && (
-              <div className="p-6 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4 animate-fade-in text-left">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
-                      🎙️
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-white">Director's Commentary</div>
-                      <div className="text-[10px] text-gray-400">Authentic Architectural Backstory</div>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 text-[10px] font-black border border-rose-500/20">
-                    Live Audio
-                  </span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed italic bg-white/5 p-4 rounded-2xl border border-white/5">
-                  "{chapter.narration}"
-                </p>
-
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 to-indigo-950/40 border border-rose-500/20 flex items-center gap-3">
-                  <Flame className="w-5 h-5 text-rose-400 shrink-0" />
-                  <div className="text-xs text-gray-300">
-                    <strong className="text-white">Core Principle: </strong>
-                    {film.keyTakeaway}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: System Trade-Off Blueprint */}
+            {/* Tab 1: System Trade-Off Blueprint */}
             {activeTabSub === 'blueprint' && (
               <div className="p-6 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4 animate-fade-in text-left">
                 <div className="flex items-center gap-2 border-b border-white/10 pb-3">
@@ -734,11 +966,18 @@ export default function CodeCinema({ setActiveTab, user }) {
                     <strong className="text-emerald-400 block mb-1">The Solution & Trade-off:</strong>
                     {chapter.tradeoff}
                   </div>
+
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 to-indigo-950/40 border border-rose-500/20 flex items-center gap-2.5">
+                    <Flame className="w-4 h-4 text-rose-400 shrink-0" />
+                    <div className="text-xs text-gray-300">
+                      <strong className="text-white">Takeaway: </strong>{film.keyTakeaway}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Tab 3: FAANG Interview Cross-Examination */}
+            {/* Tab 2: FAANG Interview Cross-Examination */}
             {activeTabSub === 'interview' && (
               <div className="p-6 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4 animate-fade-in text-left">
                 <div className="flex items-center gap-2 border-b border-white/10 pb-3">
@@ -764,7 +1003,7 @@ export default function CodeCinema({ setActiveTab, user }) {
 
             {/* Chapter Reel Navigator (Mini Timeline) */}
             <div className="p-4 rounded-3xl bg-slate-900/70 border border-white/10 backdrop-blur-xl space-y-2">
-              <div className="text-[11px] font-black uppercase text-gray-400 px-1 tracking-wider">Chapter Sequence</div>
+              <div className="text-[11px] font-black uppercase text-gray-400 px-1 tracking-wider">Chapter Reel Navigator</div>
               <div className="space-y-1.5">
                 {film.chapters.map((ch, idx) => (
                   <button
