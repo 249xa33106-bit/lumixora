@@ -214,9 +214,9 @@ export default function LandingPage({ onLoginClick }) {
     <div className="min-h-screen bg-[#FAFBFF] text-[#101A35] font-sans selection:bg-[#7553E8]/20 selection:text-[#7553E8] relative overflow-x-hidden">
       
       {/* ─────────────────────────────────────────────────────────────────
-          HEADER & NAVIGATION (Apple Frosted Glass Standard)
+          HEADER & NAVIGATION (Sticky with Campus Ambassador Pill & Logins)
       ───────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-2xl border-b border-[#101A35]/5 shadow-[0_2px_15px_rgba(0,0,0,0.02)] transition-all">
+      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-[#101A35]/10 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
           {/* 3D Realistic Attractive Logo */}
@@ -229,47 +229,61 @@ export default function LandingPage({ onLoginClick }) {
           </div>
 
           {/* Desktop Nav Items */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs xl:text-sm font-semibold text-[#101A35]/70">
-            <a href="#flow" className="hover:text-[#101A35] transition-colors">Lumixora Flow</a>
-            <a href="#career-twin" className="hover:text-[#101A35] transition-colors flex items-center gap-1.5">
+          <nav className="hidden lg:flex items-center gap-7 text-xs xl:text-sm font-semibold text-[#101A35]/80">
+            <a href="#flow" className="hover:text-[#7553E8] transition-colors">Lumixora Flow</a>
+            <a href="#career-twin" className="hover:text-[#7553E8] transition-colors flex items-center gap-1.5">
               <span>Career Twin</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-[#7553E8]/10 text-[#7553E8]">Signature</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#7553E8]/10 text-[#7553E8]">Signature</span>
             </a>
-            <a href="#placement-intelligence" className="hover:text-[#101A35] transition-colors">Placement Intelligence</a>
-            <a href="#ecosystems" className="hover:text-[#101A35] transition-colors">Solutions</a>
+            <a href="#placement-intelligence" className="hover:text-[#7553E8] transition-colors">Placement Intelligence</a>
+            <a href="#ecosystems" className="hover:text-[#7553E8] transition-colors">Solutions</a>
             
             <button 
               onClick={() => setShowTeamPortal(true)} 
-              className="hover:text-[#101A35] transition-colors cursor-pointer bg-transparent border-none text-[#101A35]/70 font-semibold"
+              className="hover:text-[#7553E8] transition-colors cursor-pointer bg-transparent border-none text-[#101A35]/80 font-semibold"
             >
               Team
             </button>
-            <a href="#founder" className="hover:text-[#101A35] transition-colors">About Us</a>
+            <a href="#founder" className="hover:text-[#7553E8] transition-colors">About Us</a>
           </nav>
 
-          {/* Header Action Buttons (Refined Dual-Touchpoint Hierarchy) */}
-          <div className="hidden sm:flex items-center gap-3 shrink-0">
-            {/* Discreet Campus Ambassador Tag */}
+          {/* Header Action Buttons (Campus Ambassador + Logins + CTA) */}
+          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+            {/* Campus Ambassador Button */}
             <button
               onClick={() => setShowAmbassadorModal(true)}
-              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/25 text-amber-800 font-bold text-xs transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border border-amber-500/40 text-amber-700 hover:text-black hover:border-amber-500 font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-xs hover:scale-[1.02] cursor-pointer"
             >
-              <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-              <span>Ambassador</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>Campus Ambassador</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider">
+                Apply
+              </span>
             </button>
 
-            {/* Muted Sign In Link */}
+            {/* Official Cohort 01 Intern Quick Login */}
             <button
-              onClick={() => handleAuth('student')}
-              className="px-3.5 py-2 text-xs font-semibold text-[#101A35]/80 hover:text-[#101A35] transition-colors cursor-pointer"
+              onClick={() => handleAuth('intern')}
+              className="px-3 py-1.5 rounded-xl text-xs font-black text-cyan-800 hover:text-black bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 hover:scale-[1.02]"
+              title="Official Intern Sign In (48 Active Cohort)"
             >
-              Sign In
+              <Briefcase className="w-3.5 h-3.5 text-cyan-600" />
+              <span>Intern Login</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-cyan-600 text-white text-[9px] font-black uppercase tracking-wider">
+                48
+              </span>
             </button>
 
-            {/* Tactile Obsidian Pill Button */}
             <button
               onClick={() => handleAuth('student')}
-              className="px-5 py-2.5 rounded-full bg-[#101A35] hover:bg-[#1E2E5D] active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+              className="px-3 py-2 text-xs font-bold text-[#101A35] hover:text-[#7553E8] transition-colors cursor-pointer"
+            >
+              Log In
+            </button>
+
+            <button
+              onClick={() => handleAuth('student')}
+              className="px-4 py-2 rounded-xl bg-[#101A35] hover:bg-[#1E2E5D] text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all cursor-pointer group"
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#08BFD0]" />
@@ -280,7 +294,7 @@ export default function LandingPage({ onLoginClick }) {
           <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => setShowAmbassadorModal(true)}
-              className="px-2.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-700 font-black text-[11px] flex items-center gap-1 cursor-pointer"
             >
               <Sparkles className="w-3 h-3 text-amber-500" />
               <span>Ambassador</span>
@@ -295,29 +309,27 @@ export default function LandingPage({ onLoginClick }) {
           </div>
         </div>
 
-        {/* Mobile Dropdown (iOS Styled Grouping) */}
+        {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white/95 backdrop-blur-xl border-b border-[#101A35]/10 px-6 py-6 space-y-4 shadow-2xl">
-            <div className="space-y-3">
-              <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Lumixora Flow</a>
-              <a href="#career-twin" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#7553E8]">Career Twin (Signature)</a>
-              <a href="#placement-intelligence" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Placement Intelligence</a>
-              <a href="#campus-ambassador" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-amber-700">Campus Ambassador Program 🌟</a>
-              <a href="#ecosystems" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Solutions (Students, Colleges, Employers)</a>
-              <a href="#ecosystem-modules" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Product Ecosystem</a>
-              <button 
-                onClick={() => { setMobileMenuOpen(false); setShowTeamPortal(true); }}
-                className="block text-left text-sm font-semibold text-[#101A35]"
-              >
-                Engineering & Product Team
-              </button>
-              <a href="#founder" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Founder & Mission</a>
-            </div>
+          <div className="lg:hidden bg-white border-b border-[#101A35]/10 px-6 py-6 space-y-4 shadow-xl">
+            <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Lumixora Flow</a>
+            <a href="#career-twin" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#7553E8]">Career Twin (Signature)</a>
+            <a href="#placement-intelligence" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Placement Intelligence</a>
+            <a href="#campus-ambassador" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-amber-700">Campus Ambassador Program 🌟</a>
+            <a href="#ecosystems" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Solutions (Students, Colleges, Employers)</a>
+            <a href="#ecosystem-modules" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Product Ecosystem</a>
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setShowTeamPortal(true); }}
+              className="block text-left text-sm font-semibold text-[#101A35]"
+            >
+              Engineering & Product Team
+            </button>
+            <a href="#founder" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Founder & Mission</a>
             
             <div className="pt-4 border-t border-gray-100 flex flex-col gap-2.5">
               <button 
                 onClick={() => { setMobileMenuOpen(false); handleAuth('student'); }}
-                className="w-full py-3 rounded-xl bg-[#101A35] text-white font-bold text-xs active:scale-[0.98] transition-transform"
+                className="w-full py-3 rounded-xl bg-[#101A35] text-white font-bold text-xs"
               >
                 Student Sign In
               </button>
@@ -325,7 +337,7 @@ export default function LandingPage({ onLoginClick }) {
                 onClick={() => { setMobileMenuOpen(false); handleAuth('intern'); }}
                 className="w-full py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs"
               >
-                Cohort Intern Portal
+                Intern Portal Sign In
               </button>
               <button 
                 onClick={() => { setMobileMenuOpen(false); handleAuth('faculty'); }}
@@ -339,84 +351,86 @@ export default function LandingPage({ onLoginClick }) {
       </header>
 
       {/* ─────────────────────────────────────────────────────────────────
-          SECTION 01: HERO — FIRST IMPRESSION (Apple-Grade Typographic Focus)
+          SECTION 01: HERO — FIRST IMPRESSION (Light-mode canvas + Tech visualization)
       ───────────────────────────────────────────────────────────────── */}
-      <section className="relative pt-14 pb-20 md:pt-24 md:pb-36 overflow-hidden">
+      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
         {/* Subtle decorative grid and ambient glowing orbs */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#101A3508_1px,transparent_1px),linear-gradient(to_bottom,#101A3508_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-r from-[#7553E8]/15 via-[#08BFD0]/10 to-[#00B987]/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto space-y-6">
+          <div className="text-center max-w-3xl mx-auto space-y-6">
             
             {/* Pill Header */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#7553E8]/20 shadow-xs text-xs font-black uppercase tracking-wider text-[#7553E8]">
-              <span className="w-2 h-2 rounded-full bg-[#00B987] animate-pulse" />
-              <span>THE CAREER TELEMETRY ECOSYSTEM</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#7553E8]/20 shadow-sm text-xs font-black uppercase tracking-wider text-[#7553E8]">
+              <Sparkles className="w-3.5 h-3.5 text-[#7553E8]" />
+              <span>YOUR FUTURE STARTS HERE</span>
             </div>
 
-            {/* Main Headline (Apple 3-Beat Cadence) */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-[#101A35] tracking-tight leading-[1.06] font-sora">
-              Learn less. <br />
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl font-black text-[#101A35] tracking-tight leading-[1.12]">
+              Don't Just Learn Skills. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7553E8] via-[#08BFD0] to-[#00B987]">
-                Prove more. Get hired.
+                Become the Talent Companies Are Looking For.
               </span>
             </h1>
 
             {/* Sub-headline */}
             <p className="text-base sm:text-lg text-[#101A35]/70 max-w-2xl mx-auto leading-relaxed font-normal">
-              The unified career intelligence platform. Real compiler-verified code proofs, academic syllabus mastery, and live Career Twin telemetry — engineered for high-performance scholars.
+              Lumixora is an intelligent career development ecosystem that helps students build real-world skills, prove their capabilities, prepare for placements and connect with opportunities.
             </p>
 
             {/* 3 Core Pillars */}
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-[#101A35]/80 pt-1">
-              <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#101A35]/10 shadow-xs">
-                <Brain className="w-3.5 h-3.5 text-[#7553E8]" /> AI Mentorship
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-[#101A35]/80 pt-2">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Brain className="w-3.5 h-3.5 text-[#7553E8]" /> AI-Powered
               </span>
-              <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#101A35]/10 shadow-xs">
-                <Target className="w-3.5 h-3.5 text-[#08BFD0]" /> Placement Telemetry
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Target className="w-3.5 h-3.5 text-[#08BFD0]" /> Placement-Focused
               </span>
-              <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#101A35]/10 shadow-xs">
-                <Flame className="w-3.5 h-3.5 text-[#00B987]" /> Evidence of Skill
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#101A35]/10 shadow-xs">
+                <Flame className="w-3.5 h-3.5 text-[#00B987]" /> Gamified Learning
               </span>
             </div>
 
-            {/* Action Buttons (One Dominant Primary, One Subtle Secondary) */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <button
                 onClick={() => handleAuth('student')}
-                className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#101A35] hover:bg-[#1E2E5D] text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-[#101A35]/15 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer group"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#101A35] hover:bg-[#1E2E5D] text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-[#101A35]/15 hover:scale-[1.02] transition-all cursor-pointer group"
               >
-                <span>Get Started — Free for Scholars</span>
+                <span>Get Started</span>
                 <ArrowRight className="w-4 h-4 text-[#08BFD0] group-hover:translate-x-1 transition-transform" />
               </button>
               <a
-                href="#career-twin"
-                className="w-full sm:w-auto px-7 py-4 rounded-full bg-white hover:bg-gray-50 border border-[#101A35]/15 text-[#101A35] font-extrabold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+                href="#ecosystem-modules"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-gray-50 border border-[#101A35]/15 text-[#101A35] font-extrabold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
-                <span>Explore the Career Twin</span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <span>Explore the Ecosystem</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
               </a>
             </div>
 
-            {/* Trust Proof Points */}
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500 font-semibold">
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#00B987]" /> 450+ Verified Scholars</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#08BFD0]" /> Autonomous Exam Blueprints</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#7553E8]" /> 100% Compiler-Verified Proofs</span>
+            {/* Trust statement below CTA */}
+            <div className="pt-2 flex items-center justify-center gap-6 text-xs text-gray-500 font-semibold">
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00B987]" /> Built for students</span>
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#08BFD0]" /> Empowering institutions</span>
+              <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#7553E8]" /> Connecting employers</span>
             </div>
 
-            {/* Subtle Institutional Workspace Strip */}
+            {/* Direct Cohort 01 Active Intern Sign In Banner */}
             <div className="pt-2 flex justify-center">
-              <button
+              <div
                 onClick={() => handleAuth('intern')}
-                className="inline-flex items-center gap-2 text-xs text-slate-500 hover:text-[#101A35] font-medium transition-colors cursor-pointer group"
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-emerald-500/10 border border-cyan-500/30 hover:border-cyan-400 text-xs text-[#101A35] font-medium shadow-xs hover:shadow-md transition-all cursor-pointer group"
               >
-                <span>Partner Campus or Cohort Intern?</span>
-                <span className="font-bold text-[#7553E8] group-hover:underline flex items-center gap-0.5">
-                  Sign in to workspace &rarr;
+                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                <span className="font-extrabold text-[#101A35]">Cohort 01 Intern?</span>
+                <span className="text-[#101A35]/70 hidden sm:inline">Software Testing (17) • Research (13) • Marketing (13) • Content Creation (5)</span>
+                <span className="font-black text-[#7553E8] group-hover:underline flex items-center gap-0.5">
+                  Sign In to Track &rarr;
                 </span>
-              </button>
+              </div>
             </div>
           </div>
 
@@ -449,35 +463,14 @@ export default function LandingPage({ onLoginClick }) {
                 <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-4 hover:border-[#08BFD0]/40 transition-colors">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Career Readiness</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#00B987]/20 text-[#00B987] border border-[#00B987]/30">Calculated</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#00B987]/20 text-[#00B987]">Calculated</span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 pt-1">
-                    <div className="space-y-1">
-                      <div className="text-5xl font-black text-white font-mono tracking-tight">78%</div>
-                      <div className="text-xs text-gray-400 font-semibold">Tier 1: Drive Ready</div>
-                    </div>
-                    {/* Apple Activity Ring Style Circular Indicator */}
-                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                        <path
-                          className="text-white/10"
-                          strokeWidth="3.5"
-                          stroke="currentColor"
-                          fill="none"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                        <path
-                          className="text-[#08BFD0]"
-                          strokeDasharray="78, 100"
-                          strokeWidth="3.5"
-                          strokeLinecap="round"
-                          stroke="currentColor"
-                          fill="none"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                      </svg>
-                      <Target className="w-5 h-5 text-[#08BFD0] absolute" />
-                    </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-black text-white font-mono">78%</span>
+                    <span className="text-xs text-gray-400 font-semibold">Tier 2: Drive Ready</span>
+                  </div>
+                  <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-[#7553E8] to-[#08BFD0] h-full w-[78%] rounded-full" />
                   </div>
                   <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] text-gray-300 space-y-1">
                     <span className="font-bold text-white block">Target Career Path:</span>
