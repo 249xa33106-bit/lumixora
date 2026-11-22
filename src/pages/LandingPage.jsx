@@ -1445,8 +1445,133 @@ export default function LandingPage({ onLoginClick }) {
           <div className="p-8 sm:p-12 rounded-3xl bg-[#101A35] text-white border border-white/10 shadow-xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
             
             <div className="w-52 h-52 sm:w-64 sm:h-64 shrink-0 relative group flex items-center justify-center">
-              {/* Soft ambient glowing aura perfectly matching the neon ring */}
-              <div className="absolute inset-4 bg-gradient-to-tr from-[#7553E8]/50 via-[#08BFD0]/40 to-[#00B987]/40 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 pointer-events-none" />
+              {/* ─── SURROUNDING ELEMENTAL CONIC HALO ─── */}
+              <div 
+                className="absolute w-[240px] h-[240px] sm:w-[280px] sm:h-[280px] rounded-full pointer-events-none opacity-80 blur-[26px] -z-10 animate-pulse"
+                style={{
+                  background: 'conic-gradient(from 180deg at 50% 50%, rgba(249,115,22,0.5) 0deg, rgba(239,68,68,0.45) 75deg, rgba(168,85,247,0.3) 140deg, rgba(6,182,212,0.55) 220deg, rgba(59,130,246,0.6) 290deg, rgba(245,158,11,0.5) 360deg)'
+                }}
+              />
+
+              {/* ─── FIRE GLOW EFFECT: LEFT & SURROUNDING ─── */}
+              {/* 1. Fire Ambient Core Glow */}
+              <div 
+                className="absolute -left-10 sm:-left-12 top-1/2 -translate-y-1/2 w-40 sm:w-48 h-40 sm:h-48 rounded-full pointer-events-none opacity-85 blur-[22px] animate-fire-glow -z-10"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,100,0,0.7) 0%, rgba(239,68,68,0.5) 45%, rgba(245,158,11,0.2) 75%, transparent 90%)'
+                }}
+              />
+
+              {/* 2. Rising Fiery Embers & Sparks */}
+              <div className="absolute -left-6 sm:-left-8 bottom-8 sm:bottom-10 w-20 h-40 pointer-events-none overflow-visible z-0">
+                <span className="absolute left-1 bottom-3 w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_8px_#f59e0b,0_0_16px_#ef4444] animate-ember-1" />
+                <span className="absolute left-5 bottom-8 w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_10px_#f97316,0_0_20px_#dc2626] animate-ember-2" style={{ animationDelay: '0.6s' }} />
+                <span className="absolute left-0 bottom-16 w-1.5 h-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_#fde047,0_0_12px_#ea580c] animate-ember-3" style={{ animationDelay: '1.2s' }} />
+                <span className="absolute left-6 bottom-4 w-2 h-2 rounded-full bg-rose-400 shadow-[0_0_8px_#f43f5e,0_0_16px_#b91c1c] animate-ember-1" style={{ animationDelay: '1.8s' }} />
+                <span className="absolute left-3 bottom-20 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24,0_0_12px_#c2410c] animate-ember-2" style={{ animationDelay: '0.3s' }} />
+              </div>
+
+              {/* 3. Dynamic Curved Fire Flame Tongues (SVG) */}
+              <svg 
+                className="absolute -left-8 sm:-left-10 top-1/2 -translate-y-1/2 w-28 h-56 pointer-events-none animate-fire-tongue -z-5 overflow-visible"
+                viewBox="0 0 100 200" 
+                fill="none"
+              >
+                <defs>
+                  <linearGradient id="fireGradLp1" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                    <stop offset="50%" stopColor="#f97316" stopOpacity="0.75" />
+                    <stop offset="90%" stopColor="#fde047" stopOpacity="0.85" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.9" />
+                  </linearGradient>
+                  <linearGradient id="fireGradLp2" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#dc2626" stopOpacity="0.6" />
+                    <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.7" />
+                    <stop offset="100%" stopColor="#fef08a" stopOpacity="0.8" />
+                  </linearGradient>
+                  <filter id="fireBlurLp" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <path 
+                  d="M70 170 C40 150, 10 110, 25 70 C35 90, 45 80, 40 50 C55 75, 70 45, 65 20 C75 55, 85 90, 70 130 Z" 
+                  fill="url(#fireGradLp1)" 
+                  filter="url(#fireBlurLp)"
+                  opacity="0.85"
+                />
+                <path 
+                  d="M68 150 C50 135, 25 105, 38 75 C45 90, 52 85, 48 65 C58 85, 68 65, 66 40 C72 70, 78 100, 68 150 Z" 
+                  fill="url(#fireGradLp2)" 
+                  opacity="0.9"
+                />
+              </svg>
+
+              {/* ─── WATER FOUNTAIN EFFECT: RIGHT & SURROUNDING ─── */}
+              {/* 1. Water Ambient Core Glow */}
+              <div 
+                className="absolute -right-10 sm:-right-12 top-1/2 -translate-y-1/2 w-40 sm:w-48 h-40 sm:h-48 rounded-full pointer-events-none opacity-85 blur-[22px] animate-water-glow -z-10"
+                style={{
+                  background: 'radial-gradient(circle, rgba(6,182,212,0.7) 0%, rgba(14,165,233,0.5) 45%, rgba(59,130,246,0.2) 75%, transparent 90%)'
+                }}
+              />
+
+              {/* 2. Expanding Water Ripple Splash Waves */}
+              <div className="absolute -right-5 sm:-right-6 bottom-10 sm:bottom-12 w-24 h-24 pointer-events-none -z-10">
+                <span className="absolute inset-0 rounded-full border border-cyan-400/50 animate-water-ripple" />
+                <span className="absolute inset-0 rounded-full border border-sky-400/40 animate-water-ripple" style={{ animationDelay: '1.2s' }} />
+              </div>
+
+              {/* 3. Water Fountain Spray Droplets */}
+              <div className="absolute -right-6 sm:-right-8 bottom-10 sm:bottom-12 w-24 h-44 pointer-events-none overflow-visible z-0">
+                <span className="absolute right-3 bottom-3 w-2.5 h-2.5 rounded-full bg-cyan-200 shadow-[0_0_10px_#22d3ee,0_0_20px_#0284c7] animate-fountain-1" />
+                <span className="absolute right-6 bottom-8 w-3 h-3 rounded-full bg-sky-100 shadow-[0_0_12px_#38bdf8,0_0_24px_#2563eb] animate-fountain-2" style={{ animationDelay: '0.5s' }} />
+                <span className="absolute right-1 bottom-14 w-2 h-2 rounded-full bg-teal-200 shadow-[0_0_8px_#2dd4bf,0_0_16px_#0369a1] animate-fountain-3" style={{ animationDelay: '1.1s' }} />
+                <span className="absolute right-7 bottom-5 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#ffffff,0_0_18px_#38bdf8] animate-fountain-1" style={{ animationDelay: '1.6s' }} />
+                <span className="absolute right-4 bottom-20 w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_#67e8f9] animate-fountain-2" style={{ animationDelay: '0.8s' }} />
+              </div>
+
+              {/* 4. Graceful Arched Water Fountain Stream Jets (SVG) */}
+              <svg 
+                className="absolute -right-8 sm:-right-10 top-1/2 -translate-y-1/2 w-30 h-56 pointer-events-none animate-water-jet -z-5 overflow-visible"
+                viewBox="0 0 100 200" 
+                fill="none"
+              >
+                <defs>
+                  <linearGradient id="waterStreamLp1" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#0284c7" stopOpacity="0.75" />
+                    <stop offset="40%" stopColor="#06b6d4" stopOpacity="0.85" />
+                    <stop offset="85%" stopColor="#67e8f9" stopOpacity="0.9" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
+                  </linearGradient>
+                  <linearGradient id="waterStreamLp2" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.6" />
+                    <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.75" />
+                    <stop offset="100%" stopColor="#a5f3fc" stopOpacity="0.85" />
+                  </linearGradient>
+                  <filter id="waterGlintLp" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <path 
+                  d="M30 180 C55 150, 75 110, 70 65 C68 45, 82 25, 92 15 C82 35, 78 60, 55 110 C45 135, 38 160, 30 180 Z" 
+                  fill="url(#waterStreamLp1)" 
+                  filter="url(#waterGlintLp)"
+                  opacity="0.85"
+                />
+                <path 
+                  d="M35 160 C55 130, 85 95, 80 50 C86 70, 70 105, 52 135 Z" 
+                  fill="url(#waterStreamLp2)" 
+                  opacity="0.8"
+                />
+                <circle cx="92" cy="15" r="3" fill="#ffffff" filter="drop-shadow(0 0 6px #67e8f9)" />
+                <circle cx="85" cy="30" r="2.2" fill="#a5f3fc" />
+                <circle cx="78" cy="48" r="2.5" fill="#e0f2fe" />
+                <circle cx="68" cy="80" r="2" fill="#38bdf8" />
+              </svg>
+
+              {/* ─── THE EXACT FOUNDER PORTRAIT (Z-10, CRISP & INTACT) ─── */}
               <img
                 src="/founder.png"
                 alt="Shaik Sowban - Founder"
