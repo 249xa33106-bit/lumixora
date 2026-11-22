@@ -5,6 +5,152 @@ import {
   GraduationCap, Target, Users, Rocket, ExternalLink, Heart
 } from 'lucide-react';
 
+/* ─── ELEMENTAL NEXUS: FIRE GLOW & WATER FOUNTAIN VISUAL ─── */
+function FounderElementalVisual({ maxH = "max-h-[96%]", shadowColor = "rgba(79,70,229,0.4)", children }) {
+  return (
+    <div className="relative h-full flex items-center justify-center py-2 sm:py-3">
+      {/* ─── SURROUNDING ELEMENTAL CONIC HALO ─── */}
+      <div 
+        className="absolute w-[300px] h-[300px] sm:w-[330px] sm:h-[330px] rounded-full pointer-events-none opacity-80 blur-[28px] -z-10 animate-pulse"
+        style={{
+          background: 'conic-gradient(from 180deg at 50% 50%, rgba(249,115,22,0.5) 0deg, rgba(239,68,68,0.45) 75deg, rgba(168,85,247,0.3) 140deg, rgba(6,182,212,0.55) 220deg, rgba(59,130,246,0.6) 290deg, rgba(245,158,11,0.5) 360deg)'
+        }}
+      />
+
+      {/* ─── FIRE GLOW EFFECT: LEFT & SURROUNDING ─── */}
+      {/* 1. Fire Ambient Core Glow */}
+      <div 
+        className="absolute -left-12 sm:-left-16 top-1/2 -translate-y-1/2 w-48 sm:w-56 h-48 sm:h-56 rounded-full pointer-events-none opacity-85 blur-[24px] animate-fire-glow -z-10"
+        style={{
+          background: 'radial-gradient(circle, rgba(255,100,0,0.7) 0%, rgba(239,68,68,0.5) 45%, rgba(245,158,11,0.2) 75%, transparent 90%)'
+        }}
+      />
+
+      {/* 2. Rising Fiery Embers & Sparks */}
+      <div className="absolute -left-8 sm:-left-10 bottom-14 sm:bottom-16 w-24 h-48 pointer-events-none overflow-visible -z-0">
+        <span className="absolute left-2 bottom-4 w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_8px_#f59e0b,0_0_16px_#ef4444] animate-ember-1" />
+        <span className="absolute left-6 bottom-10 w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_10px_#f97316,0_0_20px_#dc2626] animate-ember-2" style={{ animationDelay: '0.6s' }} />
+        <span className="absolute left-0 bottom-20 w-1.5 h-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_#fde047,0_0_12px_#ea580c] animate-ember-3" style={{ animationDelay: '1.2s' }} />
+        <span className="absolute left-8 bottom-6 w-2 h-2 rounded-full bg-rose-400 shadow-[0_0_8px_#f43f5e,0_0_16px_#b91c1c] animate-ember-1" style={{ animationDelay: '1.8s' }} />
+        <span className="absolute left-4 bottom-24 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24,0_0_12px_#c2410c] animate-ember-2" style={{ animationDelay: '0.3s' }} />
+        <span className="absolute left-7 bottom-32 w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_4px_#fef08a] animate-ember-3" style={{ animationDelay: '1.5s' }} />
+      </div>
+
+      {/* 3. Dynamic Curved Fire Flame Tongues (SVG) */}
+      <svg 
+        className="absolute -left-10 sm:-left-12 top-1/2 -translate-y-1/2 w-32 h-64 pointer-events-none animate-fire-tongue -z-5 overflow-visible"
+        viewBox="0 0 100 200" 
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="fireGrad1" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#f97316" stopOpacity="0.75" />
+            <stop offset="90%" stopColor="#fde047" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.9" />
+          </linearGradient>
+          <linearGradient id="fireGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#dc2626" stopOpacity="0.6" />
+            <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#fef08a" stopOpacity="0.8" />
+          </linearGradient>
+          <filter id="fireBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <path 
+          d="M70 170 C40 150, 10 110, 25 70 C35 90, 45 80, 40 50 C55 75, 70 45, 65 20 C75 55, 85 90, 70 130 Z" 
+          fill="url(#fireGrad1)" 
+          filter="url(#fireBlur)"
+          opacity="0.85"
+        />
+        <path 
+          d="M68 150 C50 135, 25 105, 38 75 C45 90, 52 85, 48 65 C58 85, 68 65, 66 40 C72 70, 78 100, 68 150 Z" 
+          fill="url(#fireGrad2)" 
+          opacity="0.9"
+        />
+      </svg>
+
+      {/* ─── WATER FOUNTAIN EFFECT: RIGHT & SURROUNDING ─── */}
+      {/* 1. Water Ambient Core Glow */}
+      <div 
+        className="absolute -right-12 sm:-right-16 top-1/2 -translate-y-1/2 w-48 sm:w-56 h-48 sm:h-56 rounded-full pointer-events-none opacity-85 blur-[24px] animate-water-glow -z-10"
+        style={{
+          background: 'radial-gradient(circle, rgba(6,182,212,0.7) 0%, rgba(14,165,233,0.5) 45%, rgba(59,130,246,0.2) 75%, transparent 90%)'
+        }}
+      />
+
+      {/* 2. Expanding Water Ripple Splash Waves */}
+      <div className="absolute -right-6 sm:-right-8 bottom-12 sm:bottom-14 w-28 h-28 pointer-events-none -z-10">
+        <span className="absolute inset-0 rounded-full border border-cyan-400/50 animate-water-ripple" />
+        <span className="absolute inset-0 rounded-full border border-sky-400/40 animate-water-ripple" style={{ animationDelay: '1.2s' }} />
+      </div>
+
+      {/* 3. Water Fountain Spray Droplets */}
+      <div className="absolute -right-8 sm:-right-10 bottom-14 sm:bottom-16 w-28 h-52 pointer-events-none overflow-visible -z-0">
+        <span className="absolute right-4 bottom-4 w-2.5 h-2.5 rounded-full bg-cyan-200 shadow-[0_0_10px_#22d3ee,0_0_20px_#0284c7] animate-fountain-1" />
+        <span className="absolute right-8 bottom-10 w-3 h-3 rounded-full bg-sky-100 shadow-[0_0_12px_#38bdf8,0_0_24px_#2563eb] animate-fountain-2" style={{ animationDelay: '0.5s' }} />
+        <span className="absolute right-2 bottom-18 w-2 h-2 rounded-full bg-teal-200 shadow-[0_0_8px_#2dd4bf,0_0_16px_#0369a1] animate-fountain-3" style={{ animationDelay: '1.1s' }} />
+        <span className="absolute right-10 bottom-6 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#ffffff,0_0_18px_#38bdf8] animate-fountain-1" style={{ animationDelay: '1.6s' }} />
+        <span className="absolute right-5 bottom-26 w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_#67e8f9] animate-fountain-2" style={{ animationDelay: '0.8s' }} />
+        <span className="absolute right-1 bottom-36 w-1.5 h-1.5 rounded-full bg-blue-200 shadow-[0_0_6px_#93c5fd] animate-fountain-3" style={{ animationDelay: '1.3s' }} />
+        <span className="absolute right-9 bottom-14 w-2 h-2 rounded-full bg-sky-200 shadow-[0_0_8px_#7dd3fc] animate-fountain-1" style={{ animationDelay: '2.0s' }} />
+      </div>
+
+      {/* 4. Graceful Arched Water Fountain Stream Jets (SVG) */}
+      <svg 
+        className="absolute -right-10 sm:-right-12 top-1/2 -translate-y-1/2 w-36 h-64 pointer-events-none animate-water-jet -z-5 overflow-visible"
+        viewBox="0 0 100 200" 
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="waterStream1" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0284c7" stopOpacity="0.75" />
+            <stop offset="40%" stopColor="#06b6d4" stopOpacity="0.85" />
+            <stop offset="85%" stopColor="#67e8f9" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
+          </linearGradient>
+          <linearGradient id="waterStream2" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#a5f3fc" stopOpacity="0.85" />
+          </linearGradient>
+          <filter id="waterGlint" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <path 
+          d="M30 180 C55 150, 75 110, 70 65 C68 45, 82 25, 92 15 C82 35, 78 60, 55 110 C45 135, 38 160, 30 180 Z" 
+          fill="url(#waterStream1)" 
+          filter="url(#waterGlint)"
+          opacity="0.85"
+        />
+        <path 
+          d="M35 160 C55 130, 85 95, 80 50 C86 70, 70 105, 52 135 Z" 
+          fill="url(#waterStream2)" 
+          opacity="0.8"
+        />
+        <circle cx="92" cy="15" r="3" fill="#ffffff" filter="drop-shadow(0 0 6px #67e8f9)" />
+        <circle cx="85" cy="30" r="2.2" fill="#a5f3fc" />
+        <circle cx="78" cy="48" r="2.5" fill="#e0f2fe" />
+        <circle cx="68" cy="80" r="2" fill="#38bdf8" />
+      </svg>
+
+      {/* ─── THE EXACT FOUNDER PORTRAIT (Z-10, CRISP & INTACT) ─── */}
+      <img 
+        src="/dashboard_hero_founder_exact.png?v=5.0" 
+        alt="Shaik Sowban - Founder, Lumixora" 
+        className={`h-full ${maxH} w-auto object-contain drop-shadow-[0_15px_45px_${shadowColor}] relative z-10`}
+      />
+
+      {/* Extra floating badges / children */}
+      {children}
+    </div>
+  );
+}
+
 export default function LumixoraHeroSuite({ onNavigateTab, user }) {
   const [activeSubTab, setActiveSubTab] = useState('placement');
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -124,17 +270,11 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
               </div>
             </div>
 
-            {/* Right Visual (Exact Founder Portrait - Solid, 0 Holes, Fills Frame Cleanly) */}
+            {/* Right Visual (Exact Founder Portrait - Solid, 0 Holes, Fills Frame Cleanly with Elemental Fire & Water Aura) */}
             <div className="hidden md:flex absolute right-2 sm:right-4 md:right-6 lg:right-10 top-0 bottom-0 h-full w-[46%] lg:w-[48%] xl:w-[46%] items-center justify-end pointer-events-none select-none z-0">
-              <div className="relative h-full flex items-center justify-center py-2 sm:py-3">
-                <img 
-                  src="/dashboard_hero_founder_exact.png?v=5.0" 
-                  alt="Shaik Sowban - Founder, Lumixora" 
-                  className="h-full max-h-[96%] w-auto object-contain drop-shadow-[0_15px_45px_rgba(79,70,229,0.4)]"
-                />
-
+              <FounderElementalVisual maxH="max-h-[96%]" shadowColor="rgba(79,70,229,0.4)">
                 {/* Floating 'Dream Bigger!' Vector Typography & Glowing Sparkles (Zero missing glyph boxes) */}
-                <div className="absolute -left-28 lg:-left-36 top-5 lg:top-8 flex items-center gap-2 select-none pointer-events-none transform -rotate-3">
+                <div className="absolute -left-28 lg:-left-36 top-5 lg:top-8 flex items-center gap-2 select-none pointer-events-none transform -rotate-3 z-20">
                   <svg className="w-4 h-4 text-purple-400 animate-pulse drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
                   </svg>
@@ -147,9 +287,9 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 </div>
 
                 {/* Ambient Floating 3D Crystal Diamonds */}
-                <div className="absolute -left-10 bottom-12 w-5 h-7 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-sm rotate-45 border border-purple-300/40 shadow-lg shadow-purple-500/30 opacity-90" />
-                <div className="absolute -right-3 top-14 w-4 h-6 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-sm rotate-45 border border-cyan-300/40 shadow-lg shadow-cyan-500/30 opacity-90" />
-              </div>
+                <div className="absolute -left-10 bottom-12 w-5 h-7 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-sm rotate-45 border border-purple-300/40 shadow-lg shadow-purple-500/30 opacity-90 z-20" />
+                <div className="absolute -right-3 top-14 w-4 h-6 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-sm rotate-45 border border-cyan-300/40 shadow-lg shadow-cyan-500/30 opacity-90 z-20" />
+              </FounderElementalVisual>
             </div>
           </div>
         )}
@@ -172,7 +312,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
               </h1>
 
               <p className="text-slate-300 text-sm md:text-base font-semibold max-w-md mb-6 md:mb-7 leading-relaxed">
-                From solving tier-2 placement disparities to empowering 50,000+ engineers with AI placement radar, zero-cost blueprints, and mentorship.
+                From solving tier-2 placement disparities to empowering 450+ engineering scholars with AI placement radar, zero-cost blueprints, and mentorship.
               </p>
 
               <div className="flex flex-wrap items-center gap-3.5 mb-5 md:mb-6">
@@ -194,26 +334,20 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
               </div>
             </div>
 
-            {/* Right Visual: Founder in Neon Ring with Impact Badges */}
+            {/* Right Visual: Founder in Neon Ring with Impact Badges & Elemental Fire & Water Aura */}
             <div className="hidden md:flex absolute right-4 sm:right-6 md:right-8 lg:right-12 top-0 bottom-0 h-full items-center justify-end pointer-events-none select-none z-0">
-              <div className="relative h-full flex items-center justify-center py-2 sm:py-3">
-                <img 
-                  src="/dashboard_hero_founder_exact.png?v=5.0" 
-                  alt="Shaik Sowban - Founder, Lumixora" 
-                  className="h-full max-h-[94%] w-auto object-contain drop-shadow-[0_15px_45px_rgba(245,158,11,0.35)]"
-                />
-
+              <FounderElementalVisual maxH="max-h-[94%]" shadowColor="rgba(245,158,11,0.35)">
                 {/* Floating Impact Card beside founder */}
-                <div className="absolute -left-28 lg:-left-32 top-10 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5">
+                <div className="absolute -left-28 lg:-left-32 top-10 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5 z-20">
                   <div className="flex items-center gap-1.5 text-amber-400">
                     <Award className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-black uppercase tracking-wider">Mission Impact</span>
                   </div>
-                  <div className="text-sm font-black text-white">50,000+ Students</div>
-                  <p className="text-[10px] text-gray-400">Guided across 100+ Engineering Colleges</p>
+                  <div className="text-sm font-black text-white">450+ Scholars</div>
+                  <p className="text-[10px] text-gray-400">Active across 7+ Campus Innovation Hubs</p>
                 </div>
 
-                <div className="absolute -left-20 lg:-left-24 bottom-10 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl flex items-center gap-2">
+                <div className="absolute -left-20 lg:-left-24 bottom-10 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl flex items-center gap-2 z-20">
                   <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold shrink-0">
                     <Rocket className="w-4 h-4" />
                   </div>
@@ -222,7 +356,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                     <div className="text-[9px] text-purple-300 font-bold">100% Free Core Access</div>
                   </div>
                 </div>
-              </div>
+              </FounderElementalVisual>
             </div>
           </div>
         )}
@@ -389,12 +523,12 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 <div className="text-[11px] font-black uppercase tracking-wider text-amber-400">Milestones & Impact</div>
                 <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
                   <div className="p-2.5 rounded-xl bg-black/30">
-                    <div className="font-black text-white text-base">50,000+</div>
-                    <div className="text-gray-400 text-[11px]">Engineering Students</div>
+                    <div className="font-black text-white text-base">450+</div>
+                    <div className="text-gray-400 text-[11px]">Active Scholars</div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-black/30">
-                    <div className="font-black text-cyan-400 text-base">500+</div>
-                    <div className="text-gray-400 text-[11px]">Recruiter Test Drives</div>
+                    <div className="font-black text-cyan-400 text-base">7+</div>
+                    <div className="text-gray-400 text-[11px]">Accredited Campuses</div>
                   </div>
                 </div>
               </div>
