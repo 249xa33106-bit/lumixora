@@ -14,156 +14,157 @@ import {
  * 3. Compact overlay telemetry badge for active campus placement stats.
  * 4. Removed the redundant left-side vertical campus list so the 3D globe shines without clutter.
  */
+// Accredited Institutional Campus Nodes with rich placement & logo data
+const CAMPUSES = [
+  { 
+    id: 1, 
+    code: 'GPREC',
+    name: 'G. Pulla Reddy Engineering College', 
+    short: 'GPREC Autonomous',
+    city: 'Kurnool', 
+    lat: 15.8281, 
+    lon: 78.0373, 
+    scholars: '240+ Active', 
+    color: '#06b6d4', 
+    glow: 'rgba(6, 182, 212, 0.4)',
+    badge: 'Premier Pilot Core',
+    accreditation: 'Autonomous • NAAC A+',
+    est: 'Est. 1985',
+    topOffer: '₹14.5 LPA (Amazon SDE)', 
+    companies: ['Amazon', 'TCS Digital', 'Infosys SP', 'Cognizant GenC'],
+    activeDrives: 'TCS NQT & Amazon Summer Internship',
+    notesAvailable: '420+ Unit Notes',
+    hiringRate: '94% Placement Rate'
+  },
+  { 
+    id: 2, 
+    code: 'AWEC',
+    name: "Ashoka Women's Engineering College", 
+    short: "Ashoka Women's Engg",
+    city: 'Kurnool', 
+    lat: 15.8150, 
+    lon: 78.0450, 
+    scholars: '145+ Active', 
+    color: '#ec4899', 
+    glow: 'rgba(236, 72, 153, 0.4)',
+    badge: 'Women in Tech Node',
+    accreditation: 'AICTE Approved • JNTUA',
+    est: 'Est. 2008',
+    topOffer: '₹10.5 LPA (Capgemini)', 
+    companies: ['Capgemini', 'Wipro Turbo', 'TCS Ninja', 'Tech Mahindra'],
+    activeDrives: 'Women in Tech Hackathon & Capgemini Exceller',
+    notesAvailable: '185+ Unit Notes',
+    hiringRate: '88% Placement Rate'
+  },
+  { 
+    id: 3, 
+    code: 'RGUKT',
+    name: 'RGUKT RK Valley (IIIT)', 
+    short: 'RGUKT RK Valley (IIIT)',
+    city: 'Idupulapaya', 
+    lat: 14.3312, 
+    lon: 78.5375, 
+    scholars: '110+ Active', 
+    color: '#a855f7', 
+    glow: 'rgba(168, 85, 247, 0.4)',
+    badge: 'AI Research Hub',
+    accreditation: 'Premier State IIIT University',
+    est: 'IIIT Campus',
+    topOffer: '₹16.0 LPA (ThoughtWorks)', 
+    companies: ['ThoughtWorks', 'Zoho', 'Capgemini', 'Hexaware'],
+    activeDrives: 'Zoho Full Stack Drive & Tech Round Prep',
+    notesAvailable: '310+ Unit Notes',
+    hiringRate: '96% Placement Rate'
+  },
+  { 
+    id: 4, 
+    code: 'AITS',
+    name: 'Annamacharya University (AITS)', 
+    short: 'Annamacharya Univ',
+    city: 'Rajampet', 
+    lat: 14.1952, 
+    lon: 79.1558, 
+    scholars: '65+ Active', 
+    color: '#10b981', 
+    glow: 'rgba(16, 185, 129, 0.4)',
+    badge: 'Engineering Core',
+    accreditation: 'UGC Autonomous • NAAC A',
+    est: 'Est. 1998',
+    topOffer: '₹9.0 LPA (Virtusa Tech)', 
+    companies: ['Virtusa', 'Accenture', 'HCLTech', 'Tech Mahindra'],
+    activeDrives: 'Virtusa Neural Hack & Accenture Prep',
+    notesAvailable: '215+ Unit Notes',
+    hiringRate: '89% Placement Rate'
+  },
+  { 
+    id: 5, 
+    code: 'SVCE',
+    name: 'Sri Venkateswara College of Engg (SVCE)', 
+    short: 'SVCE Tirupati',
+    city: 'Tirupati', 
+    lat: 13.6288, 
+    lon: 79.4192, 
+    scholars: '35+ Active', 
+    color: '#f59e0b', 
+    glow: 'rgba(245, 158, 11, 0.4)',
+    badge: 'Cloud Cohort',
+    accreditation: 'Autonomous • JNTUA',
+    est: 'Est. 2007',
+    topOffer: '₹8.5 LPA (LTI Mindtree)', 
+    companies: ['LTI Mindtree', 'Infosys', 'Kyndryl'],
+    activeDrives: 'LTI Mindtree Ignite Assessment',
+    notesAvailable: '140+ Unit Notes',
+    hiringRate: '86% Placement Rate'
+  },
+  { 
+    id: 6, 
+    code: 'NEC',
+    name: 'Narayana Engineering College (NEC)', 
+    short: 'Narayana Nellore',
+    city: 'Nellore', 
+    lat: 14.4426, 
+    lon: 79.9865, 
+    scholars: '20+ Active', 
+    color: '#3b82f6', 
+    glow: 'rgba(59, 130, 246, 0.4)',
+    badge: 'Placement Cell',
+    accreditation: 'Autonomous • NBA Accredited',
+    est: 'Est. 2001',
+    topOffer: '₹7.5 LPA (TCS Ninja)', 
+    companies: ['TCS', 'Wipro', 'Mindgate'],
+    activeDrives: 'TCS Foundation & Advanced Round',
+    notesAvailable: '90+ Unit Notes',
+    hiringRate: '84% Placement Rate'
+  },
+  { 
+    id: 7, 
+    code: 'MITS',
+    name: 'MITS DEEMED TO BE UNIVERSITY', 
+    short: 'MITS Madanapalle',
+    city: 'Madanapalle', 
+    lat: 13.5560, 
+    lon: 78.5010, 
+    scholars: '140+ Active', 
+    color: '#06b6d4', 
+    glow: 'rgba(6, 182, 212, 0.4)',
+    badge: 'Innovation Hub',
+    accreditation: 'Deemed University • NAAC A+',
+    est: 'Est. 1998',
+    topOffer: '₹24.0 LPA (Amazon / Cisco)', 
+    companies: ['Amazon', 'Cisco', 'Cognizant', 'TCS Prime'],
+    activeDrives: 'MITS Innovation Track & Campus Placements',
+    notesAvailable: '240+ Unit Notes',
+    hiringRate: '92% Placement Rate'
+  },
+];
+
 export default function CyberHoloGlobe3D({ onSelectCampus }) {
   const containerRef = useRef(null);
   const globeGroupRef = useRef(null);
-  const photonParticlesRef = useRef([]);
-  const [activeBeacon, setActiveBeacon] = useState(null);
+  const targetRotationRef = useRef(null);
+  const isAutoRotatingRef = useRef(true);
+  const [activeBeacon, setActiveBeacon] = useState(CAMPUSES[0]);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
-
-  // Accredited Institutional Campus Nodes with rich placement & logo data
-  const CAMPUSES = [
-    { 
-      id: 1, 
-      code: 'GPREC',
-      name: 'G. Pulla Reddy Engineering College', 
-      short: 'GPREC Autonomous',
-      city: 'Kurnool', 
-      lat: 15.8281, 
-      lon: 78.0373, 
-      scholars: '240+ Active', 
-      color: '#06b6d4', 
-      glow: 'rgba(6, 182, 212, 0.4)',
-      badge: 'Premier Pilot Core',
-      accreditation: 'Autonomous • NAAC A+',
-      est: 'Est. 1985',
-      topOffer: '₹14.5 LPA (Amazon SDE)', 
-      companies: ['Amazon', 'TCS Digital', 'Infosys SP', 'Cognizant GenC'],
-      activeDrives: 'TCS NQT & Amazon Summer Internship',
-      notesAvailable: '420+ Unit Notes',
-      hiringRate: '94% Placement Rate'
-    },
-    { 
-      id: 2, 
-      code: 'AWEC',
-      name: "Ashoka Women's Engineering College", 
-      short: "Ashoka Women's Engg",
-      city: 'Kurnool', 
-      lat: 15.8150, 
-      lon: 78.0450, 
-      scholars: '145+ Active', 
-      color: '#ec4899', 
-      glow: 'rgba(236, 72, 153, 0.4)',
-      badge: 'Women in Tech Node',
-      accreditation: 'AICTE Approved • JNTUA',
-      est: 'Est. 2008',
-      topOffer: '₹10.5 LPA (Capgemini)', 
-      companies: ['Capgemini', 'Wipro Turbo', 'TCS Ninja', 'Tech Mahindra'],
-      activeDrives: 'Women in Tech Hackathon & Capgemini Exceller',
-      notesAvailable: '185+ Unit Notes',
-      hiringRate: '88% Placement Rate'
-    },
-    { 
-      id: 3, 
-      code: 'RGUKT',
-      name: 'RGUKT RK Valley (IIIT)', 
-      short: 'RGUKT RK Valley (IIIT)',
-      city: 'Idupulapaya', 
-      lat: 14.3312, 
-      lon: 78.5375, 
-      scholars: '110+ Active', 
-      color: '#a855f7', 
-      glow: 'rgba(168, 85, 247, 0.4)',
-      badge: 'AI Research Hub',
-      accreditation: 'Premier State IIIT University',
-      est: 'IIIT Campus',
-      topOffer: '₹16.0 LPA (ThoughtWorks)', 
-      companies: ['ThoughtWorks', 'Zoho', 'Capgemini', 'Hexaware'],
-      activeDrives: 'Zoho Full Stack Drive & Tech Round Prep',
-      notesAvailable: '310+ Unit Notes',
-      hiringRate: '96% Placement Rate'
-    },
-    { 
-      id: 4, 
-      code: 'AITS',
-      name: 'Annamacharya University (AITS)', 
-      short: 'Annamacharya Univ',
-      city: 'Rajampet', 
-      lat: 14.1952, 
-      lon: 79.1558, 
-      scholars: '65+ Active', 
-      color: '#10b981', 
-      glow: 'rgba(16, 185, 129, 0.4)',
-      badge: 'Engineering Core',
-      accreditation: 'UGC Autonomous • NAAC A',
-      est: 'Est. 1998',
-      topOffer: '₹9.0 LPA (Virtusa Tech)', 
-      companies: ['Virtusa', 'Accenture', 'HCLTech', 'Tech Mahindra'],
-      activeDrives: 'Virtusa Neural Hack & Accenture Prep',
-      notesAvailable: '215+ Unit Notes',
-      hiringRate: '89% Placement Rate'
-    },
-    { 
-      id: 5, 
-      code: 'SVCE',
-      name: 'Sri Venkateswara College of Engg (SVCE)', 
-      short: 'SVCE Tirupati',
-      city: 'Tirupati', 
-      lat: 13.6288, 
-      lon: 79.4192, 
-      scholars: '35+ Active', 
-      color: '#f59e0b', 
-      glow: 'rgba(245, 158, 11, 0.4)',
-      badge: 'Cloud Cohort',
-      accreditation: 'Autonomous • JNTUA',
-      est: 'Est. 2007',
-      topOffer: '₹8.5 LPA (LTI Mindtree)', 
-      companies: ['LTI Mindtree', 'Infosys', 'Kyndryl'],
-      activeDrives: 'LTI Mindtree Ignite Assessment',
-      notesAvailable: '140+ Unit Notes',
-      hiringRate: '86% Placement Rate'
-    },
-    { 
-      id: 6, 
-      code: 'NEC',
-      name: 'Narayana Engineering College (NEC)', 
-      short: 'Narayana Nellore',
-      city: 'Nellore', 
-      lat: 14.4426, 
-      lon: 79.9865, 
-      scholars: '20+ Active', 
-      color: '#3b82f6', 
-      glow: 'rgba(59, 130, 246, 0.4)',
-      badge: 'Placement Cell',
-      accreditation: 'Autonomous • NBA Accredited',
-      est: 'Est. 2001',
-      topOffer: '₹7.5 LPA (TCS Ninja)', 
-      companies: ['TCS', 'Wipro', 'Mindgate'],
-      activeDrives: 'TCS Foundation & Advanced Round',
-      notesAvailable: '90+ Unit Notes',
-      hiringRate: '84% Placement Rate'
-    },
-    { 
-      id: 7, 
-      code: 'MITS',
-      name: 'MITS DEEMED TO BE UNIVERSITY', 
-      short: 'MITS Madanapalle',
-      city: 'Madanapalle', 
-      lat: 13.5560, 
-      lon: 78.5010, 
-      scholars: '140+ Active', 
-      color: '#06b6d4', 
-      glow: 'rgba(6, 182, 212, 0.4)',
-      badge: 'Innovation Hub',
-      accreditation: 'Deemed University • NAAC A+',
-      est: 'Est. 1998',
-      topOffer: '₹24.0 LPA (Amazon / Cisco)', 
-      companies: ['Amazon', 'Cisco', 'Cognizant', 'TCS Prime'],
-      activeDrives: 'MITS Innovation Track & Campus Placements',
-      notesAvailable: '240+ Unit Notes',
-      hiringRate: '92% Placement Rate'
-    },
-  ];
 
   useEffect(() => {
     if (!activeBeacon) {
@@ -204,25 +205,11 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
   // Smoothly rotate globe to face clicked campus!
   const rotateToCampus = (campus) => {
     setActiveBeacon(campus);
-    const globe = globeGroupRef.current;
-    if (!globe) return;
+    if (!campus) return;
 
     const targetY = -((campus.lon + 180) * (Math.PI / 180)) + Math.PI / 2;
     const targetX = ((90 - campus.lat) * (Math.PI / 180)) - Math.PI / 2;
-
-    let step = 0;
-    const startX = globe.rotation.x;
-    const startY = globe.rotation.y;
-
-    const animateRotation = () => {
-      step += 0.045;
-      globe.rotation.x = THREE.MathUtils.lerp(startX, targetX, step);
-      globe.rotation.y = THREE.MathUtils.lerp(startY, targetY, step);
-      if (step < 1) {
-        requestAnimationFrame(animateRotation);
-      }
-    };
-    animateRotation();
+    targetRotationRef.current = { x: targetX, y: targetY };
   };
 
   useEffect(() => {
@@ -235,7 +222,7 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
     // 1. Three.js Scene, Camera & Renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 215;
+    camera.position.z = 195;
 
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true, 
@@ -250,6 +237,13 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
     const globeGroup = new THREE.Group();
     globeGroupRef.current = globeGroup;
     scene.add(globeGroup);
+
+    // Initial orientation: Directly face GPREC and Indian campus constellation
+    const initCampus = CAMPUSES[0];
+    const initialY = -((initCampus.lon + 180) * (Math.PI / 180)) + Math.PI / 2;
+    const initialX = ((90 - initCampus.lat) * (Math.PI / 180)) - Math.PI / 2;
+    globeGroup.rotation.y = initialY;
+    globeGroup.rotation.x = initialX;
 
     // 2a. Inner Translucent Core Sphere with Atmospheric Rim
     const coreGeo = new THREE.SphereGeometry(68, 48, 48);
@@ -273,19 +267,50 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
     const glowMesh = new THREE.Mesh(glowGeo, glowMat);
     globeGroup.add(glowMesh);
 
-    // 2c. Cybernetic Hex-Wireframe Cage
-    const wireGeo = new THREE.SphereGeometry(70.8, 32, 32);
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x0ea5e9,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.25
+    // 2c. Cybernetic Latitude & Longitude Geodesic Rings
+    const gridRadius = 70.8;
+    [-60, -30, 0, 30, 60].forEach(lat => {
+      const rad = (lat * Math.PI) / 180;
+      const r = gridRadius * Math.cos(rad);
+      const y = gridRadius * Math.sin(rad);
+      const circlePoints = [];
+      for (let j = 0; j <= 64; j++) {
+        const a = (j / 64) * Math.PI * 2;
+        circlePoints.push(new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a)));
+      }
+      const rGeo = new THREE.BufferGeometry().setFromPoints(circlePoints);
+      const rMat = new THREE.LineBasicMaterial({
+        color: lat === 0 ? 0x06b6d4 : 0x0284c7,
+        transparent: true,
+        opacity: lat === 0 ? 0.45 : 0.22,
+        blending: THREE.AdditiveBlending
+      });
+      globeGroup.add(new THREE.Line(rGeo, rMat));
     });
-    const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-    globeGroup.add(wireMesh);
+
+    // 4 Longitude Meridian Rings
+    [0, 60, 120].forEach(lon => {
+      const circlePoints = [];
+      for (let j = 0; j <= 64; j++) {
+        const a = (j / 64) * Math.PI * 2;
+        circlePoints.push(new THREE.Vector3(
+          gridRadius * Math.sin(a) * Math.cos(lon * Math.PI / 180),
+          gridRadius * Math.cos(a),
+          gridRadius * Math.sin(a) * Math.sin(lon * Math.PI / 180)
+        ));
+      }
+      const mGeo = new THREE.BufferGeometry().setFromPoints(circlePoints);
+      const mMat = new THREE.LineBasicMaterial({
+        color: 0x0284c7,
+        transparent: true,
+        opacity: 0.18,
+        blending: THREE.AdditiveBlending
+      });
+      globeGroup.add(new THREE.Line(mGeo, mMat));
+    });
 
     // 2d. Particle Point Cloud Surface (Star Clusters with Golden Spiral)
-    const particleCount = 2600;
+    const particleCount = 2800;
     const particlePositions = new Float32Array(particleCount * 3);
     const particleColors = new Float32Array(particleCount * 3);
 
@@ -333,7 +358,7 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
     const particles = new THREE.Points(particleGeo, particleMat);
     globeGroup.add(particles);
 
-    // 2e. Multi-layered Orbital Rings (Laser Accelerator)
+    // 2e. Multi-layered Orbital Rings & Swirling Accelerator Stream
     const ringGeo = new THREE.RingGeometry(86, 92, 64);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0x06b6d4,
@@ -360,9 +385,35 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
     outerRingMesh.rotation.z = Math.PI / 4;
     globeGroup.add(outerRingMesh);
 
-    // 2f. 3D Laser Flight Arcs & Interactive Floating Text Sprites
+    // Swirling Photon Particle Stream in Orbit
+    const orbitStreamCount = 180;
+    const streamPos = new Float32Array(orbitStreamCount * 3);
+    for (let i = 0; i < orbitStreamCount; i++) {
+      const angle = (i / orbitStreamCount) * Math.PI * 2;
+      const rStream = 89 + (Math.random() - 0.5) * 5;
+      streamPos[i * 3] = rStream * Math.cos(angle);
+      streamPos[i * 3 + 1] = (Math.random() - 0.5) * 4;
+      streamPos[i * 3 + 2] = rStream * Math.sin(angle);
+    }
+    const streamGeo = new THREE.BufferGeometry();
+    streamGeo.setAttribute('position', new THREE.BufferAttribute(streamPos, 3));
+    const streamMat = new THREE.PointsMaterial({
+      size: 2.2,
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+    const streamPoints = new THREE.Points(streamGeo, streamMat);
+    streamPoints.rotation.x = Math.PI / 2.3;
+    streamPoints.rotation.y = Math.PI / 8;
+    globeGroup.add(streamPoints);
+
+    // 2f. 3D Laser Flight Arcs, Expanding Radar Ripples & Interactive Beacons
     const beaconCoords = [];
     const curveList = [];
+    const interactivePins = [];
+    const rippleMeshes = [];
 
     CAMPUSES.forEach((campus) => {
       const phi = (90 - campus.lat) * (Math.PI / 180);
@@ -375,32 +426,51 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
       beaconCoords.push(pos);
 
       // Glowing beacon node sphere
-      const pinGeo = new THREE.SphereGeometry(3.2, 16, 16);
+      const pinGeo = new THREE.SphereGeometry(3.6, 16, 16);
       const pinMat = new THREE.MeshBasicMaterial({
         color: new THREE.Color(campus.color),
         blending: THREE.AdditiveBlending
       });
       const pinMesh = new THREE.Mesh(pinGeo, pinMat);
       pinMesh.position.copy(pos);
+      pinMesh.userData = { campus };
       globeGroup.add(pinMesh);
+      interactivePins.push(pinMesh);
+
+      // Expanding radar sonar wave ring
+      const rippleGeo = new THREE.RingGeometry(1.2, 2.8, 24);
+      const rippleMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(campus.color),
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      const rippleMesh = new THREE.Mesh(rippleGeo, rippleMat);
+      rippleMesh.position.copy(pos);
+      rippleMesh.lookAt(0, 0, 0);
+      globeGroup.add(rippleMesh);
+      rippleMeshes.push({ mesh: rippleMesh, campusId: campus.id });
 
       // Radiating beacon light tower
       const lineGeo = new THREE.BufferGeometry().setFromPoints([
         pos,
-        new THREE.Vector3(x * 1.35, y * 1.35, z * 1.35)
+        new THREE.Vector3(x * 1.38, y * 1.38, z * 1.38)
       ]);
       const lineMat = new THREE.LineBasicMaterial({
         color: new THREE.Color(campus.color),
         transparent: true,
-        opacity: 0.85
+        opacity: 0.88
       });
       const beamLine = new THREE.Line(lineGeo, lineMat);
       globeGroup.add(beamLine);
 
       // 3D Floating Canvas Label Billboard right in the 3D space!
       const labelSprite = createTextSprite(campus.code, campus.color);
-      labelSprite.position.set(x * 1.32, y * 1.32 + 2, z * 1.32);
+      labelSprite.position.set(x * 1.34, y * 1.34 + 2, z * 1.34);
+      labelSprite.userData = { campus };
       globeGroup.add(labelSprite);
+      interactivePins.push(labelSprite);
     });
 
     // Draw glowing bezier laser arcs between primary nodes
@@ -454,33 +524,65 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
 
     globeGroup.add(satGroup);
 
-    // 3. Mouse Drag Interaction Physics
+    // 3. Mouse Drag Interaction Physics & Raycasting Direct Click
     let isDragging = false;
     let prevMousePos = { x: 0, y: 0 };
     let dragVelocity = { x: 0, y: 0 };
 
     const domEl = renderer.domElement;
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
     const onPointerDown = (e) => {
       isDragging = true;
+      targetRotationRef.current = null;
       prevMousePos = { x: e.clientX, y: e.clientY };
       dragVelocity = { x: 0, y: 0 };
     };
 
     const onPointerMove = (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - prevMousePos.x;
-      const deltaY = e.clientY - prevMousePos.y;
+      const rect = domEl.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
-      globeGroup.rotation.y += deltaX * 0.005;
-      globeGroup.rotation.x += deltaY * 0.005;
+      if (isDragging) {
+        const deltaX = e.clientX - prevMousePos.x;
+        const deltaY = e.clientY - prevMousePos.y;
 
-      dragVelocity = { x: deltaX * 0.005, y: deltaY * 0.005 };
-      prevMousePos = { x: e.clientX, y: e.clientY };
+        globeGroup.rotation.y += deltaX * 0.005;
+        globeGroup.rotation.x += deltaY * 0.005;
+
+        dragVelocity = { x: deltaX * 0.005, y: deltaY * 0.005 };
+        prevMousePos = { x: e.clientX, y: e.clientY };
+        return;
+      }
+
+      // Check hover over 3D beacons
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObjects(interactivePins);
+      if (hits.length > 0) {
+        domEl.style.cursor = 'pointer';
+      } else {
+        domEl.style.cursor = 'grab';
+      }
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e) => {
+      const wasDragging = Math.abs(dragVelocity.x) > 0.002 || Math.abs(dragVelocity.y) > 0.002;
       isDragging = false;
+      if (!wasDragging) {
+        const rect = domEl.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObjects(interactivePins);
+        if (hits.length > 0) {
+          const hitCampus = hits[0].object.userData?.campus;
+          if (hitCampus) {
+            rotateToCampus(hitCampus);
+          }
+        }
+      }
     };
 
     domEl.addEventListener('pointerdown', onPointerDown);
@@ -495,10 +597,20 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
       animId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      // Smooth Rotation
-      if (!isDragging) {
-        if (isAutoRotating) {
-          globeGroup.rotation.y += 0.0025;
+      // Smooth Rotation: Target Lerp when a campus is selected, else continuous orbit
+      if (targetRotationRef.current) {
+        globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, targetRotationRef.current.x, 0.08);
+        let diffY = (targetRotationRef.current.y - globeGroup.rotation.y) % (Math.PI * 2);
+        if (diffY < -Math.PI) diffY += Math.PI * 2;
+        if (diffY > Math.PI) diffY -= Math.PI * 2;
+        globeGroup.rotation.y += diffY * 0.08;
+
+        if (Math.abs(diffY) < 0.003 && Math.abs(targetRotationRef.current.x - globeGroup.rotation.x) < 0.003) {
+          targetRotationRef.current = null;
+        }
+      } else if (!isDragging) {
+        if (isAutoRotatingRef.current) {
+          globeGroup.rotation.y += 0.0022;
         }
         globeGroup.rotation.x *= 0.98;
       } else {
@@ -510,6 +622,20 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
 
       ringMesh.rotation.z += 0.0018;
       outerRingMesh.rotation.z -= 0.0012;
+
+      // Animate expanding radar wave ripples from campus nodes
+      const t = elapsedTime * 2.2;
+      rippleMeshes.forEach((r, idx) => {
+        const phase = (t + idx * 0.7) % 2;
+        const scale = 1 + phase * 2.6;
+        r.mesh.scale.set(scale, scale, 1);
+        r.mesh.material.opacity = Math.max(0, 0.75 - phase * 0.38);
+      });
+
+      // Animate swirling orbital stream
+      if (streamPoints) {
+        streamPoints.rotation.z += 0.005;
+      }
 
       // Pulse Laser Photons Along Curves
       photons.forEach((p) => {
@@ -553,7 +679,7 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
         domEl.parentNode.removeChild(domEl);
       }
     };
-  }, [isAutoRotating]);
+  }, []);
 
   return (
     <div className="relative w-full rounded-3xl p-5 sm:p-8 bg-gradient-to-br from-[#040714] via-[#070c1e] to-[#0e0722] border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.18)] overflow-hidden select-none">
@@ -736,7 +862,12 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
           {/* Quick 3D Orbit Control Floating Badge */}
           <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 flex items-center gap-2 z-20">
             <button
-              onClick={() => setIsAutoRotating(!isAutoRotating)}
+              onClick={() => {
+                setIsAutoRotating(prev => {
+                  isAutoRotatingRef.current = !prev;
+                  return !prev;
+                });
+              }}
               className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 border border-cyan-500/40 backdrop-blur-md text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 transition-all shadow-lg cursor-pointer"
             >
               <Activity className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
