@@ -18,16 +18,10 @@ import {
   query, orderBy, limit, serverTimestamp 
 } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
+import { GPREC_ALLOWED_ROLL_NUMBERS } from '../services/gprecPlacementAuth';
 
 // Whitelist priority roll numbers (Core pilot scholars)
-const PILOT_WHITELIST_ROLLS = [
-  '249xa33106',
-  '249xa33112',
-  '249xa33096',
-  '249xa33091',
-  '259xa05013',
-  '269x105013'
-];
+const PILOT_WHITELIST_ROLLS = GPREC_ALLOWED_ROLL_NUMBERS;
 
 // 6 Distinct Recruitment Funnel Pipeline Stages
 export const PIPELINE_STAGES = [

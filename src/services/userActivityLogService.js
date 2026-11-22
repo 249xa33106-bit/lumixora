@@ -19,9 +19,44 @@ import {
   setDoc
 } from 'firebase/firestore';
 import { cleanScholarName } from './founderNotificationService';
+import { getAllowedGprecRollNumbers, normalizeRollNumber } from './gprecPlacementAuth';
 
 const STORAGE_LOGIN_LOGS_KEY = 'lumixora_login_activity_logs';
 const STORAGE_CURRENT_SESSION_KEY = 'lumixora_current_session_id';
+
+/**
+ * Checks if a user or metadata belongs to GPREC
+ */
+export const isGprecUserEntity = (entity = {}) => {
+  if (!entity) return false;
+  const email = (entity.email || '').toLowerCase().trim();
+  const college = (entity.college || entity.collegeCode || entity.collegeName || '').toUpperCase();
+  const rollNumber = normalizeRollNumber(entity.rollNumber || entity.roll_no || (/\d{10}/.exec(email)?.[0] || ''));
+
+  // 1. Explicit GPREC domains and officer accounts
+  if (
+    email.endsWith('@gprec.ac.in') || 
+    email === 'dean.placements@gprec.ac.in' || 
+    email === 'srikanth.csm@gprec.ac.in'
+  ) {
+    return true;
+  }
+
+  // 2. GPREC college name
+  if (college.includes('GPREC') || college.includes('PULLA REDDY')) {
+    return true;
+  }
+
+  // 3. Allowed or whitelisted GPREC roll numbers
+  if (rollNumber) {
+    const allowed = getAllowedGprecRollNumbers().map(normalizeRollNumber);
+    if (allowed.includes(rollNumber) || allowed.some(r => rollNumber.includes(r))) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 /**
  * Derives user category badge and readable role title
@@ -220,15 +255,21 @@ export const recordSessionHeartbeat = async (user) => {
 /**
  * Fetches all platform login history and time logs
  * Combines Firestore login logs, user directory, and fallback offline records.
+ * Supports filtering strictly for institutional GPREC ecosystem when requested or on GPREC portals.
  */
-export const fetchAllLoginLogs = async () => {
+export const fetchAllLoginLogs = async (options = {}) => {
+  const { gprecOnly = true } = options;
   const mergedMap = new Map();
 
   // 1. Load from local cache first for instant UI response
   try {
     const local = JSON.parse(localStorage.getItem(STORAGE_LOGIN_LOGS_KEY) || '[]');
     local.forEach(log => {
-      if (log.id) mergedMap.set(log.id, log);
+      if (log.id) {
+        if (!gprecOnly || isGprecUserEntity(log)) {
+          mergedMap.set(log.id, log);
+        }
+      }
     });
   } catch (e) {}
 
@@ -243,10 +284,12 @@ export const fetchAllLoginLogs = async () => {
       const snap = await getDocs(q);
       snap.forEach(docSnap => {
         const data = docSnap.data();
-        mergedMap.set(docSnap.id, {
-          id: docSnap.id,
-          ...data
-        });
+        if (!gprecOnly || isGprecUserEntity(data)) {
+          mergedMap.set(docSnap.id, {
+            id: docSnap.id,
+            ...data
+          });
+        }
       });
     } catch (err) {
       console.warn('Error querying user_login_logs:', err.message);
@@ -258,34 +301,36 @@ export const fetchAllLoginLogs = async () => {
       usersSnap.forEach(uDoc => {
         const u = uDoc.data();
         if (u.email && u.lastLoginTimestamp) {
-          const fallbackId = `user_last_${uDoc.id}`;
-          if (!mergedMap.has(fallbackId)) {
-            const roleMeta = deriveUserRoleMeta(u);
-            mergedMap.set(fallbackId, {
-              id: fallbackId,
-              userId: uDoc.id,
-              name: cleanScholarName(u.name || u.displayName, u.email),
-              email: u.email,
-              role: roleMeta.category,
-              roleTitle: roleMeta.title,
-              college: u.college || 'GPREC',
-              department: u.department || u.branch || 'CSE',
-              rollNumber: u.rollNumber || (/\d{10}/.exec(u.email)?.[0] || ''),
-              portal: u.lastPortal || 'Placement Suite',
-              deviceType: 'Desktop',
-              loginTimestamp: u.lastLoginTimestamp,
-              loginTimeFormatted: new Date(u.lastLoginTimestamp).toLocaleString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-              }),
-              lastActiveAt: u.lastLoginTimestamp,
-              durationSeconds: 1800,
-              status: (Date.now() - u.lastLoginTimestamp) < 15 * 60 * 1000 ? 'active' : 'completed'
-            });
+          if (!gprecOnly || isGprecUserEntity(u)) {
+            const fallbackId = `user_last_${uDoc.id}`;
+            if (!mergedMap.has(fallbackId)) {
+              const roleMeta = deriveUserRoleMeta(u);
+              mergedMap.set(fallbackId, {
+                id: fallbackId,
+                userId: uDoc.id,
+                name: cleanScholarName(u.name || u.displayName, u.email),
+                email: u.email,
+                role: roleMeta.category,
+                roleTitle: roleMeta.title,
+                college: u.college || 'GPREC',
+                department: u.department || u.branch || 'CSE',
+                rollNumber: u.rollNumber || (/\d{10}/.exec(u.email)?.[0] || ''),
+                portal: u.lastPortal || 'Placement Suite',
+                deviceType: 'Desktop',
+                loginTimestamp: u.lastLoginTimestamp,
+                loginTimeFormatted: new Date(u.lastLoginTimestamp).toLocaleString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                }),
+                lastActiveAt: u.lastLoginTimestamp,
+                durationSeconds: 1800,
+                status: (Date.now() - u.lastLoginTimestamp) < 15 * 60 * 1000 ? 'active' : 'completed'
+              });
+            }
           }
         }
       });
@@ -307,8 +352,13 @@ export const fetchAllLoginLogs = async () => {
           const m = item.meta || {};
           const id = `supa_log_${item.id}`;
           if (!mergedMap.has(id)) {
-            const timeVal = new Date(item.created_at).getTime();
             const email = (m.email || '').toLowerCase().trim();
+            // Strict filter: Do not mix non-GPREC users into GPREC logs
+            if (gprecOnly && !isGprecUserEntity(m)) {
+              return;
+            }
+
+            const timeVal = new Date(item.created_at).getTime();
             const roleMeta = deriveUserRoleMeta(m);
             const isVeryRecent = (Date.now() - timeVal) < 15 * 60 * 1000;
 

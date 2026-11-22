@@ -39,16 +39,10 @@ import { db } from '../config/firebase';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 import StudentPlacementDatabase from './StudentPlacementDatabase';
+import { GPREC_ALLOWED_ROLL_NUMBERS } from '../services/gprecPlacementAuth';
 
 // Approved priority placement whitelist roll numbers
-const PILOT_WHITELIST_ROLLS = [
-  '249xa33106',
-  '249xa33112',
-  '249xa33096',
-  '249xa33091',
-  '259xa05013',
-  '269x105013'
-];
+const PILOT_WHITELIST_ROLLS = GPREC_ALLOWED_ROLL_NUMBERS;
 
 // 10 Official GPREC Placement Cell Administration Modules
 export const TPO_MODULES = [
