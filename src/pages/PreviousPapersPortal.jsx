@@ -347,252 +347,168 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
   };
 
   return (
-    <div className="space-y-6 animate-fade-in p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="space-y-5 animate-fade-in p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       
-      {/* ── 1. PORTAL HEADER ──────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25 border border-white/20 shrink-0">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 uppercase tracking-wider">
-                Autonomous University Exam Suite
+      {/* ── 1. UNIFIED MINIMALIST TOP BAR (Title + Navigation in 1 clean row) ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span>University Exam Archive & Blueprints</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                SOLVED KEYS INCLUDED
               </span>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Previous Question Papers & Curated Model Blueprints
-              </h1>
-            </div>
-          </div>
-          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-            Verified past university examination papers with step-by-step solved answer keys, 1-click official PDF exports, and 70-mark curated model sets for all engineering branches.
-          </p>
-        </div>
-
-        {/* Quick Metric Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-center">
-            <span className="text-xs font-mono font-bold text-cyan-400">42 Subjects</span>
-            <span className="text-[10px] text-slate-400 block">6 Core Branches</span>
-          </div>
-          <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-center">
-            <span className="text-xs font-mono font-bold text-emerald-400">150+ Papers</span>
-            <span className="text-[10px] text-slate-400 block">2019–2025 Archive</span>
-          </div>
-          <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-center">
-            <span className="text-xs font-mono font-bold text-amber-400">100% Solved</span>
-            <span className="text-[10px] text-slate-400 block">Step-by-Step Keys</span>
+            </h1>
+            <p className="text-xs text-slate-400">
+              Verified university question papers (2020–2025) and 70-mark curated blueprint sets with step-by-step model answer keys.
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* ── 2. MAIN NAVIGATION TABS ────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 bg-[#080c16] p-1.5 rounded-2xl border border-white/10 shadow-inner w-full sm:w-auto overflow-x-auto custom-scrollbar">
-        <button
-          onClick={() => setActivePortalTab('university_papers')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activePortalTab === 'university_papers'
-              ? 'bg-white text-black shadow-lg font-black'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <FolderOpen className="w-4 h-4 text-cyan-500" />
-          <span>Question Papers Archive</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-extrabold bg-cyan-500/20 text-cyan-700">
-            {filteredSubjects.length}
-          </span>
-        </button>
+        {/* Segmented Navigation Controls */}
+        <div className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-xl border border-white/10 shrink-0">
+          <button
+            onClick={() => setActivePortalTab('university_papers')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+              activePortalTab === 'university_papers'
+                ? 'bg-white text-black font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            <span>Papers Archive</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activePortalTab === 'university_papers' ? 'bg-black/15 text-black font-bold' : 'bg-white/10 text-slate-400'}`}>
+              {filteredSubjects.length}
+            </span>
+          </button>
 
-        <button
-          onClick={() => setActivePortalTab('ml_predictor')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activePortalTab === 'ml_predictor'
-              ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-black shadow-lg shadow-rose-500/20 font-black'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Curated Model Papers (Set A & B)</span>
-          <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/30 text-white font-mono">70M Blueprint</span>
-        </button>
+          <button
+            onClick={() => setActivePortalTab('ml_predictor')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+              activePortalTab === 'ml_predictor'
+                ? 'bg-cyan-500 text-black font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Curated Models (Set A & B)</span>
+          </button>
 
-        <button
-          onClick={() => setActivePortalTab('company_papers')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activePortalTab === 'company_papers'
-              ? 'bg-cyan-500 text-black shadow-md font-extrabold'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          <span>Company Drives</span>
-        </button>
+          <button
+            onClick={() => setActivePortalTab('company_papers')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+              activePortalTab === 'company_papers'
+                ? 'bg-white text-black font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>Company Drives</span>
+          </button>
+        </div>
       </div>
 
       {/* ── TAB 1: QUESTION PAPERS ARCHIVE (DEFAULT) ──────────────────────── */}
       {activePortalTab === 'university_papers' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* ── 3. CLEAN SINGLE FILTER BAR ────────────────────────────────────── */}
-          <div className="bg-[#090d16] p-4 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
-            {/* Left: Search input */}
-            <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-              <Search className="w-4 h-4 text-slate-500 shrink-0" />
-              <input
-                type="text"
-                value={uniSearch}
-                onChange={(e) => setUniSearch(e.target.value)}
-                placeholder="Search papers by subject name or code (e.g. Thermodynamics, DSP, DBMS, SOM)..."
-                className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
-              />
-              {uniSearch && (
-                <button
-                  onClick={() => setUniSearch('')}
-                  className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Right: Branch & Semester Selectors */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Branch Dropdown */}
-              <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
-                <span className="text-slate-400 font-mono text-[11px]">Branch:</span>
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => handleBranchChange(e.target.value)}
-                  className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
-                >
-                  <option value="All" className="bg-[#090d16] text-white">All Branches (42)</option>
-                  <option value="CSE" className="bg-[#090d16] text-white">CSE (6 Core)</option>
-                  <option value="CSM" className="bg-[#090d16] text-white">CSM (AI & ML) (6)</option>
-                  <option value="Civil" className="bg-[#090d16] text-white">Civil Engineering (6)</option>
-                  <option value="ECE" className="bg-[#090d16] text-white">ECE (6 Core)</option>
-                  <option value="EEE" className="bg-[#090d16] text-white">EEE (6 Core)</option>
-                  <option value="Mechanical" className="bg-[#090d16] text-white">Mechanical Engineering (6)</option>
-                  <option value="Common" className="bg-[#090d16] text-white">1st Year Foundation (6)</option>
-                </select>
-              </div>
-
-              {/* Semester Dropdown */}
-              <div className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
-                <span className="text-slate-400 font-mono text-[11px]">Sem:</span>
-                <select
-                  value={selectedSemester}
-                  onChange={(e) => setSelectedSemester(e.target.value)}
-                  className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
-                >
-                  <option value="All" className="bg-[#090d16] text-white">All Semesters</option>
-                  <option value="Sem 1" className="bg-[#090d16] text-white">Sem 1</option>
-                  <option value="Sem 2" className="bg-[#090d16] text-white">Sem 2</option>
-                  <option value="Sem 3" className="bg-[#090d16] text-white">Sem 3</option>
-                  <option value="Sem 4" className="bg-[#090d16] text-white">Sem 4</option>
-                  <option value="Sem 5" className="bg-[#090d16] text-white">Sem 5</option>
-                  <option value="Sem 6" className="bg-[#090d16] text-white">Sem 6</option>
-                </select>
-              </div>
-
-              {(selectedBranch !== 'All' || selectedSemester !== 'All' || uniSearch) && (
-                <button
-                  onClick={() => {
-                    setSelectedBranch('All');
-                    setSelectedSemester('All');
-                    setUniSearch('');
-                  }}
-                  className="px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* ── 4. QUICK BRANCH PILL STRIP ────────────────────────────────────── */}
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 text-xs">
-            {[
-              { id: 'All', label: 'All Branches', count: 42 },
-              { id: 'CSE', label: 'CSE', count: 6 },
-              { id: 'CSM', label: 'CSM (AI & ML)', count: 6 },
-              { id: 'Civil', label: 'Civil', count: 6 },
-              { id: 'ECE', label: 'ECE', count: 6 },
-              { id: 'EEE', label: 'EEE', count: 6 },
-              { id: 'Mechanical', label: 'Mechanical', count: 6 },
-              { id: 'Common', label: '1st Year Common', count: 6 }
-            ].map(b => (
-              <button
-                key={b.id}
-                onClick={() => handleBranchChange(b.id)}
-                className={`px-3 py-1.5 rounded-xl font-bold font-mono text-xs shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
-                  selectedBranch === b.id
-                    ? 'bg-white text-black border-white shadow-md'
-                    : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 border-white/5'
-                }`}
-              >
-                <span>{b.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${selectedBranch === b.id ? 'bg-black/20 text-black font-extrabold' : 'bg-white/10 text-slate-400'}`}>
-                  {b.count}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="space-y-5 animate-fade-in">
           
-          {/* Solved Papers & Answer Keys Announcement Banner */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#090d16] to-cyan-950/30 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          {/* ── UNIFIED FILTER & BRANCH BAR ── */}
+          <div className="bg-[#090d16] p-3 rounded-2xl border border-white/10 space-y-3">
+            {/* Top row: Search input + Semester + Drive Link */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-1 min-w-[240px] bg-black/40 px-3 py-1.5 rounded-xl border border-white/10">
+                <Search className="w-4 h-4 text-slate-500 shrink-0" />
+                <input
+                  type="text"
+                  value={uniSearch}
+                  onChange={(e) => setUniSearch(e.target.value)}
+                  placeholder="Search 42 subjects or codes (e.g. OS, DBMS, Thermodynamics, SOM)..."
+                  className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-sans"
+                />
+                {uniSearch && (
+                  <button
+                    onClick={() => setUniSearch('')}
+                    className="p-0.5 rounded text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-              <div>
-                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span>Verified Autonomous Papers Archive (2020–2025)</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-bold">
-                    SOLVED KEYS INCLUDED
-                  </span>
-                </h4>
-                <p className="text-[11px] text-slate-300">
-                  Every subject includes authentic university question papers paired with <strong>step-by-step solved model answer keys</strong> and 1-click PDF downloads.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => {
-                  setActivePortalTab('ml_predictor');
-                  addToast({ message: 'Switched to Curated Model Examination Blueprints!', type: 'info' });
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 border border-white/15 transition-all cursor-pointer"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Curated Model Sets</span>
-              </button>
-            </div>
-          </div>
 
-          {/* Quick Drive Repositories Bar */}
-          <div className="bg-[#090d16] p-3 rounded-2xl border border-white/10 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2 text-xs font-bold text-white">
-              <FolderOpen className="w-4 h-4 text-cyan-400 shrink-0" />
-              <span>Official Drive Repositories:</span>
+              {/* Semester Dropdown + Reset */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 px-2.5 py-1.5 rounded-xl text-xs">
+                  <span className="text-slate-400 font-mono text-[11px]">Sem:</span>
+                  <select
+                    value={selectedSemester}
+                    onChange={(e) => setSelectedSemester(e.target.value)}
+                    className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer pr-1"
+                  >
+                    <option value="All" className="bg-[#090d16] text-white">All Semesters</option>
+                    <option value="Sem 1" className="bg-[#090d16] text-white">Sem 1</option>
+                    <option value="Sem 2" className="bg-[#090d16] text-white">Sem 2</option>
+                    <option value="Sem 3" className="bg-[#090d16] text-white">Sem 3</option>
+                    <option value="Sem 4" className="bg-[#090d16] text-white">Sem 4</option>
+                    <option value="Sem 5" className="bg-[#090d16] text-white">Sem 5</option>
+                    <option value="Sem 6" className="bg-[#090d16] text-white">Sem 6</option>
+                  </select>
+                </div>
+
+                {GOOGLE_DRIVE_REPOSITORIES[1] && (
+                  <a
+                    href={GOOGLE_DRIVE_REPOSITORIES[1].url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-cyan-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    title="Open Lumixora Master Drive"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Master Drive</span>
+                    <ExternalLink className="w-3 h-3 text-slate-500" />
+                  </a>
+                )}
+
+                {(selectedBranch !== 'All' || selectedSemester !== 'All' || uniSearch) && (
+                  <button
+                    onClick={() => {
+                      setSelectedBranch('All');
+                      setSelectedSemester('All');
+                      setUniSearch('');
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 flex-1">
-              {GOOGLE_DRIVE_REPOSITORIES.map(repo => (
-                <a
-                  key={repo.id}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/40 text-xs text-slate-300 hover:text-cyan-300 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer group"
-                  title="Open live Google Drive examination archive"
+
+            {/* Bottom row: Inline Branch Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-xs">
+              {[
+                { id: 'All', label: 'All Branches' },
+                { id: 'CSE', label: 'CSE' },
+                { id: 'CSM', label: 'CSM' },
+                { id: 'Civil', label: 'Civil' },
+                { id: 'ECE', label: 'ECE' },
+                { id: 'EEE', label: 'EEE' },
+                { id: 'Mechanical', label: 'Mechanical' },
+                { id: 'Common', label: '1st Year' }
+              ].map(b => (
+                <button
+                  key={b.id}
+                  onClick={() => handleBranchChange(b.id)}
+                  className={`px-3 py-1 rounded-lg font-mono text-xs shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
+                    selectedBranch === b.id
+                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-bold shadow-sm'
+                      : 'bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/10 border-white/5'
+                  }`}
                 >
-                  <span className="font-semibold">{repo.title}</span>
-                  <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-black/40 text-cyan-300 border border-white/5">
-                    {repo.count}
-                  </span>
-                  <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-cyan-400" />
-                </a>
+                  <span>{b.label}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -619,34 +535,20 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSubjects.map(subj => {
-                const branchColor = 
-                  subj.branch === 'CSE' ? { border: 'border-blue-500/30', bg: 'bg-blue-500/10', text: 'text-blue-400' } :
-                  subj.branch === 'CSM' ? { border: 'border-purple-500/30', bg: 'bg-purple-500/10', text: 'text-purple-400' } :
-                  subj.branch === 'Civil' ? { border: 'border-teal-500/30', bg: 'bg-teal-500/10', text: 'text-teal-400' } :
-                  subj.branch === 'Mechanical' ? { border: 'border-orange-500/30', bg: 'bg-orange-500/10', text: 'text-orange-400' } :
-                  subj.branch === 'EEE' ? { border: 'border-amber-500/30', bg: 'bg-amber-500/10', text: 'text-amber-400' } :
-                  subj.branch === 'ECE' ? { border: 'border-emerald-500/30', bg: 'bg-emerald-500/10', text: 'text-emerald-400' } :
-                  { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-400' };
-
                 return (
                   <div 
                     key={subj.subjectId} 
-                    className="rounded-2xl bg-[#090d16] border border-white/10 hover:border-white/25 p-5 flex flex-col justify-between transition-all hover:shadow-xl space-y-4"
+                    className="rounded-2xl bg-[#090d16] border border-white/10 hover:border-cyan-500/30 p-5 flex flex-col justify-between transition-all hover:shadow-xl space-y-4"
                   >
                     <div className="space-y-3">
-                      {/* Card Top Badges */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-lg border ${branchColor.border} ${branchColor.bg} ${branchColor.text}`}>
-                            {subj.branch}
-                          </span>
-                          <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-lg bg-white/5 text-slate-300 border border-white/10">
-                            {subj.semester}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
+                      {/* Clean 1-Line Meta: Branch & Sem on Left, Subject Code on Right */}
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="font-bold text-cyan-400">
+                          {subj.branch} &bull; {subj.semester}
+                        </span>
+                        <span className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">
                           {subj.subjectCode}
                         </span>
                       </div>
@@ -656,60 +558,50 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                         <h4 className="text-base font-bold text-white leading-snug">
                           {subj.subjectName}
                         </h4>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mt-1">
-                          <span>{subj.scheme}</span>
-                          <span>&bull;</span>
-                          <span className="text-emerald-400 font-semibold">{subj.drivePapers?.length || 0} Sets Available</span>
+                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          {subj.scheme} &bull; {subj.drivePapers?.length || 0} Sets Available
                         </div>
                       </div>
 
-                      {/* Question Papers List (Clean clickable pill tags with Solved Answer Key) */}
+                      {/* Question Papers List */}
                       <div className="space-y-1.5 pt-2 border-t border-white/5">
-                        <span className="text-[10px] uppercase font-mono font-bold text-slate-400 tracking-wider block">
-                          Verified University Papers & Solved Keys:
-                        </span>
-                        <div className="space-y-1.5">
-                          {(subj.drivePapers || []).map((dp, pIdx) => (
-                            <div
-                              key={pIdx}
-                              className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 transition-all text-xs group/p"
-                            >
-                              <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-                                <FileText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                                <span className="text-slate-200 group-hover/p:text-white truncate font-medium text-[11px]">
-                                  {dp.title}
-                                </span>
-                                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-black/40 text-slate-400 shrink-0 border border-white/5">
-                                  {dp.year}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <a
-                                  href={dp.viewUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
-                                  title="Open original question paper PDF"
-                                >
-                                  <span>Paper</span>
-                                  <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
-                                </a>
-                                <button
-                                  onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', true)}
-                                  className="px-2 py-0.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                                  title="Download complete step-by-step solved answer key PDF"
-                                >
-                                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
-                                  <span>Solved Key</span>
-                                </button>
-                              </div>
+                        {(subj.drivePapers || []).map((dp, pIdx) => (
+                          <div
+                            key={pIdx}
+                            className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-xs"
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                              <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="text-slate-200 truncate font-medium text-[11px]">
+                                {dp.title}
+                              </span>
                             </div>
-                          ))}
-                        </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <a
+                                href={dp.viewUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
+                                title="Open original question paper PDF"
+                              >
+                                <span>Paper</span>
+                                <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+                              </a>
+                              <button
+                                onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', true)}
+                                className="px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                title="Download complete step-by-step solved answer key PDF"
+                              >
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                                <span>Solved</span>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Single Primary Action + Single Secondary Ghost Action */}
                     <div className="pt-3 border-t border-white/5 flex items-center gap-2">
                       <button
                         onClick={() => {
@@ -717,27 +609,18 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                           setActivePortalTab('ml_predictor');
                           addToast({ message: `Loaded ${subj.subjectName} Model Blueprint!`, type: 'info' });
                         }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/30 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                        className="flex-1 py-2 px-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       >
                         <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Model Blueprint</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', true)}
-                        className="py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shrink-0"
-                        title="Download Complete Solved Solutions & Answer Key PDF"
-                      >
-                        <Award className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Solved PDF</span>
+                        <span>View Model Blueprint</span>
                       </button>
 
                       <button
                         onClick={() => handleDownloadOfficialPDF(subj.subjectId, 'set1', false)}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer shrink-0"
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer shrink-0"
                         title="Download Question Paper PDF"
                       >
-                        <Printer className="w-4 h-4" />
+                        <Printer className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -751,71 +634,58 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
       {/* ── TAB 2: CURATED MODEL PAPERS & SOLVED BLUEPRINTS (SET A & SET B) ─── */}
       {activePortalTab === 'ml_predictor' && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-5 animate-fade-in">
           
-          {/* Clean Curated Examination Blueprint Header (Zero Gimmicks / Zero Friction) */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#090d16] border border-white/10 shadow-xl space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                    OFFICIAL UNIVERSITY 70-MARK BLUEPRINT PATTERN
-                  </span>
-                  <span className="text-xs text-slate-400 font-mono">
-                    Scheme-2023 / Autonomous &bull; 100% Syllabus Coverage
-                  </span>
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-                  <span>Curated Model Examination Blueprint & Solved Keys</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono font-bold">
-                    Set A & Set B
+          {/* Streamlined Model Paper Control Bar */}
+          <div className="bg-[#090d16] p-4 rounded-2xl border border-white/10 space-y-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>{activeSubject.subjectName} ({activeSubject.subjectCode})</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
+                    {activeSubject.branch} &bull; {activeSubject.semester}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                  Full 70-mark university model question papers structured strictly according to the autonomous exam regulations (10 Compulsory 2M Questions + 5 Units Internal Choice). Instant access with step-by-step scoring rubrics and examiner traps — <strong>zero uploads or tedious configuration needed</strong>.
+                <p className="text-xs text-slate-400">
+                  70-Mark University Model Exam Blueprint with step-by-step scoring rubrics and examiner traps.
                 </p>
               </div>
 
-              {/* 1-Click Fast Actions */}
-              <div className="flex items-center gap-2 flex-wrap shrink-0">
+              {/* 1-Click Direct Downloads */}
+              <div className="flex items-center gap-2 shrink-0">
                 <button
-                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', false)}
-                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
-                  title={`Export ${activeModelSet === 'set2' ? 'Set B' : 'Set A'} Question Paper PDF`}
+                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', true)}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  title="Download Full Step-by-Step Solved Solutions PDF"
                 >
-                  <Printer className="w-3.5 h-3.5 text-slate-300" />
-                  <span>Paper PDF</span>
+                  <Award className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>⚡ Solved Key (PDF)</span>
                 </button>
 
                 <button
-                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', true)}
-                  className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/40 transition-all cursor-pointer shadow-md"
-                  title="Download Full Step-by-Step Model Solutions PDF"
+                  onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', false)}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Download Question Paper PDF"
                 >
-                  <Award className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>⚡ Download Solved Key (PDF)</span>
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Paper (PDF)</span>
                 </button>
 
                 <button
                   onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both', false)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-500/20 transition-all cursor-pointer"
-                  title="Download Complete 2-Set Exam Pack (Set A + Set B)"
+                  className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Download Complete 2-Set Pack (Set A + Set B)"
                 >
-                  <FileSpreadsheet className="w-4 h-4" />
-                  <span>2-Set Pack PDF</span>
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>2-Set Pack</span>
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Subject Navigation Ribbon (Synchronized with filtered branch) */}
-          <div className="flex items-center justify-between gap-4 flex-wrap bg-[#080c16] p-3 rounded-2xl border border-white/10">
-            
-            {/* Subject Selector Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 max-w-full flex-1">
-              <span className="text-xs font-mono text-slate-400 shrink-0 uppercase tracking-wider pl-1">
-                {selectedBranch === 'All' ? 'All Subjects' : `${selectedBranch} Subjects`} ({filteredSubjects.length}):
+            {/* Subject Selector Pills (Branch Synced) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-2 border-t border-white/5 text-xs">
+              <span className="text-[11px] font-mono text-slate-500 shrink-0 uppercase tracking-wider pl-1">
+                Subjects:
               </span>
               {filteredSubjects.map(s => {
                 const isSelected = activeSubject.subjectId === s.subjectId;
@@ -826,200 +696,137 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                       setSelectedSubjectId(s.subjectId);
                       setSelectedUnit('all');
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
                       isSelected
-                        ? 'bg-gradient-to-r from-rose-500/20 to-amber-500/20 text-white border-rose-500 shadow-md'
-                        : 'bg-white/5 text-slate-400 hover:text-white border-white/5 hover:border-white/15'
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-bold shadow-sm'
+                        : 'bg-white/[0.02] text-slate-400 hover:text-white border-white/5'
                     }`}
                   >
                     <span>{s.subjectName}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${isSelected ? 'bg-rose-500 text-black font-extrabold' : 'bg-white/10 text-slate-400'}`}>
-                      {s.subjectCode}
-                    </span>
                   </button>
                 );
               })}
             </div>
-
-            {/* Right: View Switcher & 2-Set Export Actions */}
-            <div className="flex items-center gap-2 shrink-0 flex-wrap">
-              <button
-                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', false)}
-                className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 transition-all cursor-pointer"
-                title={`Export ${activeModelSet === 'set2' ? 'Set B' : 'Set A'} PDF`}
-              >
-                <Printer className="w-3.5 h-3.5 text-rose-400" />
-                <span>Export {activeModelSet === 'set2' ? 'Set B' : 'Set A'} PDF</span>
-              </button>
-
-              <button
-                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, activeModelSet === 'set2' ? 'set2' : 'set1', true)}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-500/40 transition-all cursor-pointer shadow-md"
-                title="Export Complete Model Solutions & Marking Scheme PDF"
-              >
-                <Award className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Export Solutions PDF</span>
-              </button>
-
-              <button
-                onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both', false)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
-                title="Export Complete 2-Set Exam Pack (Set A + Set B)"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Export 2-Set Pack PDF</span>
-              </button>
-            </div>
-
           </div>
 
-          {/* ── DUAL MODEL SET SWITCHER RIBBON ── */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* ── DUAL MODEL SET SWITCHER RIBBON (Clean Segment Control) ── */}
+          <div className="flex items-center gap-2 bg-[#090d16] p-1.5 rounded-2xl border border-white/10">
             <button
               onClick={() => setActiveModelSet('set1')}
-              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer space-y-1 relative overflow-hidden ${
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                 activeModelSet === 'set1'
-                  ? 'bg-gradient-to-r from-rose-500/20 to-amber-500/10 border-rose-500 text-white shadow-xl shadow-rose-500/15'
-                  : 'bg-[#080c16] border-white/10 text-slate-400 hover:border-white/20'
+                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-black uppercase text-rose-400 tracking-wider">
-                  MODEL SET 1 (SET A)
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono font-bold">
-                  98.4% YIELD
-                </span>
-              </div>
-              <div className="text-sm font-bold text-white">Primary Examination Blueprint</div>
-              <div className="text-[11px] text-slate-300">
-                10 Part-A Compulsory + 5 Part-B Internal Choice Pairs
-              </div>
+              <span>Model Set 1 (Set A)</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set1' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
+                Primary
+              </span>
             </button>
 
             <button
               onClick={() => setActiveModelSet('set2')}
-              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer space-y-1 relative overflow-hidden ${
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                 activeModelSet === 'set2'
-                  ? 'bg-gradient-to-r from-amber-500/20 to-cyan-500/10 border-amber-500 text-white shadow-xl shadow-amber-500/15'
-                  : 'bg-[#080c16] border-white/10 text-slate-400 hover:border-white/20'
+                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-black uppercase text-amber-400 tracking-wider">
-                  MODEL SET 2 (SET B)
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
-                  96.8% YIELD
-                </span>
-              </div>
-              <div className="text-sm font-bold text-white">Alternate Contingency Blueprint</div>
-              <div className="text-[11px] text-slate-300">
-                10 Distinct Part-A + 5 Alternate Part-B Pairs
-              </div>
+              <span>Model Set 2 (Set B)</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeModelSet === 'set2' ? 'bg-black/20 text-black' : 'bg-white/10 text-slate-400'}`}>
+                Alternate
+              </span>
             </button>
 
             <button
               onClick={() => setActiveModelSet('compare')}
-              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer space-y-1 relative overflow-hidden ${
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                 activeModelSet === 'compare'
-                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 border-cyan-500 text-white shadow-xl shadow-cyan-500/15'
-                  : 'bg-[#080c16] border-white/10 text-slate-400 hover:border-white/20'
+                  ? 'bg-cyan-500 text-black shadow-md font-extrabold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-black uppercase text-cyan-400 tracking-wider">
-                  SET COMPARISON
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono font-bold">
-                  MATRIX
-                </span>
-              </div>
-              <div className="text-sm font-bold text-white">Side-by-Side Set A vs Set B</div>
-              <div className="text-[11px] text-slate-300">
-                Unit 1 to 5 Syllabus Coverage Matrix
-              </div>
+              <Layers className="w-3.5 h-3.5" />
+              <span>Unit Coverage Matrix</span>
             </button>
           </div>
 
           {/* VIEW MODE A/B: OFFICIAL 70-MARK BLUEPRINT EXAMINATION PAPER */}
           {activeModelSet !== 'compare' ? (
-            <div className="p-6 sm:p-8 rounded-3xl bg-[#090d16] border border-white/15 shadow-2xl space-y-6 text-slate-100 font-serif">
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#090d16] border border-white/10 shadow-2xl space-y-6 text-slate-100">
               
               {/* University Exam Paper Header */}
-              <div className="text-center border-b border-white/15 pb-6 space-y-1">
-                <div className="inline-block px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 font-mono text-xs font-bold border border-rose-500/30 mb-2">
+              <div className="text-center border-b border-white/10 pb-5 space-y-1">
+                <div className="inline-block px-3 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-mono text-[11px] font-bold border border-cyan-500/30 mb-2">
                   AUTONOMOUS MODEL QUESTION PAPER &bull; {activePaper.setModelCode}
                 </div>
-                <h2 className="text-base sm:text-xl font-bold tracking-wide uppercase text-white font-sans">
+                <h2 className="text-base sm:text-lg font-bold tracking-wide uppercase text-white font-sans">
                   {activePaper.institution}
                 </h2>
-                <p className="text-xs text-slate-300 font-sans">{activePaper.affiliatedTo}</p>
-                <p className="text-xs text-amber-300 font-mono font-bold">{activePaper.examTitle}</p>
+                <p className="text-xs text-slate-400 font-sans">{activePaper.affiliatedTo}</p>
+                <p className="text-xs text-slate-300 font-mono">{activePaper.examTitle}</p>
                 
-                <div className="pt-4 grid grid-cols-2 text-left text-xs font-sans text-slate-300 border-t border-white/10 mt-3">
+                <div className="pt-3 grid grid-cols-2 text-left text-xs font-sans text-slate-300 border-t border-white/10 mt-3">
                   <div>
-                    <span className="font-bold text-white">Subject: </span>{activePaper.subjectName} ({activePaper.subjectCode})<br/>
-                    <span className="font-bold text-white">Branch / Semester: </span>B.Tech {activePaper.branch} - {activePaper.semester}
+                    <span className="font-semibold text-white">Subject: </span>{activePaper.subjectName} ({activePaper.subjectCode})<br/>
+                    <span className="font-semibold text-white">Branch / Semester: </span>B.Tech {activePaper.branch} - {activePaper.semester}
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-white">Time: </span>3 Hours<br/>
-                    <span className="font-bold text-white">Max. Marks: </span>{activePaper.maxMarks} Marks
+                    <span className="font-semibold text-white">Time: </span>3 Hours<br/>
+                    <span className="font-semibold text-white">Max. Marks: </span>{activePaper.maxMarks} Marks
                   </div>
                 </div>
 
-                <div className="pt-2 text-left flex items-center justify-between flex-wrap gap-2">
-                  <div className="inline-block px-3 py-1 rounded border border-white/20 font-mono text-[11px] text-slate-300">
+                <div className="pt-2 text-left flex items-center justify-between flex-wrap gap-2 text-xs">
+                  <div className="inline-block px-2.5 py-0.5 rounded border border-white/15 font-mono text-[11px] text-slate-400">
                     Candidate Hall Ticket No: [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]
                   </div>
-                  <div className="font-mono text-[11px] text-amber-400 font-bold">
-                    {activePaper.setName} &bull; Scheme-2023 / Scheme-2026
+                  <div className="font-mono text-[11px] text-slate-400 font-medium">
+                    {activePaper.setName} &bull; {activePaper.scheme}
                   </div>
                 </div>
               </div>
 
               {/* ── SYLLABUS COVERAGE & 5-YEAR RECURRENCE HEATMAP ── */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-purple-950/20 to-black border border-white/10 space-y-3 font-sans">
+              <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3 font-sans">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center">
-                      <Flame className="w-4 h-4 text-amber-400" />
+                    <div className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-300 flex items-center justify-center border border-cyan-500/20">
+                      <Flame className="w-4 h-4 text-cyan-400" />
                     </div>
                     <div>
                       <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 font-mono">
-                        <span>Syllabus Coverage & 5-Year Recurrence Heatmap</span>
-                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                        <span>Syllabus Coverage & Recurrence Breakdown</span>
+                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
                           100% University Blueprint Quota
                         </span>
                       </h4>
-                      <p className="text-[11px] text-slate-400">Unit-wise examination weightage and high-yield topics based on autonomous archives.</p>
+                      <p className="text-[11px] text-slate-400">Unit-wise examination weightage and high-yield topics.</p>
                     </div>
                   </div>
                   
                   {/* Global Expand/Collapse All Rubrics Action */}
                   <button
                     onClick={handleToggleAllAnswers}
-                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-cyan-300 hover:text-cyan-200 text-xs font-bold font-mono border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
+                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 hover:text-cyan-200 text-xs font-semibold font-mono border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
                   >
                     {areAllAnswersExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    <span>{areAllAnswersExpanded ? 'Collapse All Rubrics' : '⚡ Expand All Model Solutions'}</span>
+                    <span>{areAllAnswersExpanded ? 'Collapse Rubrics' : '⚡ Expand All Solutions'}</span>
                   </button>
                 </div>
 
                 {/* 5-Unit Heatmap Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1">
                   {unitCoverageStats.map((uStat) => {
-                    const isVeryHigh = uStat.recurrenceScore >= 94;
                     return (
                       <div 
                         key={uStat.unit}
-                        className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 hover:border-amber-500/40 transition-all"
+                        className="p-3 rounded-xl bg-[#090d16] border border-white/10 space-y-2 hover:border-cyan-500/30 transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-xs font-bold text-white">UNIT {uStat.unit}</span>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
-                            isVeryHigh ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          }`}>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
                             {uStat.recurrenceScore}% YIELD
                           </span>
                         </div>
@@ -1028,9 +835,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                         <div className="space-y-1">
                           <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                isVeryHigh ? 'bg-gradient-to-r from-rose-500 to-amber-400' : 'bg-gradient-to-r from-amber-400 to-cyan-400'
-                              }`}
+                              className="h-full rounded-full bg-cyan-500 transition-all duration-500"
                               style={{ width: `${uStat.recurrenceScore}%` }}
                             />
                           </div>
@@ -1042,7 +847,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
                         {/* High Yield Topic Tags */}
                         <div className="space-y-1 pt-1 border-t border-white/5">
-                          <span className="text-[9px] font-mono uppercase text-slate-400 font-bold tracking-wider">Top Recurrence:</span>
+                          <span className="text-[9px] font-mono uppercase text-slate-500 font-bold tracking-wider">Core Topics:</span>
                           <div className="flex flex-wrap gap-1">
                             {uStat.topics.map((top, tIdx) => (
                               <span key={tIdx} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-300 font-medium truncate max-w-full">
@@ -1060,7 +865,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
               {/* PART - A: 10 Compulsory 2-Mark Questions (20 Marks) */}
               <div className="space-y-4 font-sans">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <h3 className="text-sm font-bold tracking-wider text-cyan-300 uppercase font-mono">
+                  <h3 className="text-xs sm:text-sm font-bold tracking-wider text-cyan-300 uppercase font-mono">
                     PART - A (Answer ALL Questions: 10 x 2 = 20 Marks) &bull; {activePaper.setModelCode}
                   </h3>
                   <span className="text-xs text-slate-400 font-mono">Compulsory Questions</span>
@@ -1068,15 +873,10 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {activePaper.partA.map((q, idx) => (
-                    <div key={q.id || idx} className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
+                    <div key={q.id || idx} className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/25 transition-all">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-cyan-400">Q{idx + 1} &bull; Unit {q.unit}</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${q.mlScore?.badgeColor}`}>
-                            {q.mlScore?.probability}% CONFIDENCE
-                          </span>
-                          <span className="text-xs font-bold text-amber-400 font-mono">{q.marks}M</span>
-                        </div>
+                        <span className="text-xs font-bold text-slate-300 font-mono">{q.marks}M</span>
                       </div>
 
                       <p className="text-xs text-slate-200 leading-relaxed font-medium">{q.question}</p>
@@ -1084,7 +884,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                       <div className="pt-2 flex items-center justify-between text-[11px] border-t border-white/5">
                         <button
                           onClick={() => toggleAnswer(q.id)}
-                          className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                          className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer transition-colors"
                         >
                           <span>{expandedModelAnswers[q.id] ? 'Hide Answer Rubric' : 'View Answer Rubric'}</span>
                           {expandedModelAnswers[q.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -1101,15 +901,15 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                       {/* Expandable Model Answer */}
                       {expandedModelAnswers[q.id] && (
                         <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-2 text-xs animate-fade-in font-mono">
-                          <div className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Evaluation Rubric:</div>
+                          <div className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">Evaluation Rubric:</div>
                           <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
                             {q.modelAnswer?.keyPoints?.map((pt, pIdx) => (
                               <li key={pIdx}>{pt}</li>
                             ))}
                           </ul>
                           {q.modelAnswer?.examinerTip && (
-                            <div className="text-[10px] text-rose-300 bg-rose-500/10 p-2 rounded border border-rose-500/20">
-                              <strong>Examiner Trap:</strong> {q.modelAnswer.examinerTip}
+                            <div className="text-[10px] text-amber-300 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                              <strong>Examiner Tip:</strong> {q.modelAnswer.examinerTip}
                             </div>
                           )}
                         </div>
@@ -1120,19 +920,19 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
               </div>
 
               {/* PART - B: 5 Units with Internal Choice (5 x 10 = 50 Marks) */}
-              <div className="space-y-6 font-sans pt-4 border-t border-white/10">
+              <div className="space-y-5 font-sans pt-3 border-t border-white/10">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <h3 className="text-sm font-bold tracking-wider text-emerald-300 uppercase font-mono">
+                  <h3 className="text-xs sm:text-sm font-bold tracking-wider text-emerald-400 uppercase font-mono">
                     PART - B (Answer ONE question from EACH Unit: 5 x 10 = 50 Marks) &bull; {activePaper.setModelCode}
                   </h3>
                   <span className="text-xs text-slate-400 font-mono">Internal Choice [OR]</span>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {activePaper.partB.map((pair, pIdx) => (
-                    <div key={pIdx} className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+                    <div key={pIdx} className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                        <span className="font-mono text-xs font-bold text-amber-300 uppercase tracking-wider">
+                        <span className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-wider">
                           UNIT {pair.unit} &bull; 10 MARKS
                         </span>
                         <span className="text-[10px] font-mono text-slate-400">
@@ -1141,12 +941,10 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                       </div>
 
                       {/* Question Option A */}
-                      <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-emerald-500/40 transition-all">
+                      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberA}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${pair.questionA.mlScore?.badgeColor}`}>
-                            {pair.questionA.mlScore?.probability}% YIELD
-                          </span>
+                          <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
                         </div>
                         <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionA.question}</p>
 
@@ -1158,12 +956,11 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                             <span>{expandedModelAnswers[pair.questionA.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
                             {expandedModelAnswers[pair.questionA.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                           </button>
-                          <span className="text-xs font-mono font-bold text-amber-400">10 Marks</span>
                         </div>
 
                         {expandedModelAnswers[pair.questionA.id] && (
                           <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
-                            <div className="text-[11px] font-bold text-amber-300">10/10 Score Structure:</div>
+                            <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
                             <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
                               {pair.questionA.modelAnswer?.structure?.map((st, sIdx) => (
                                 <li key={sIdx}>{st}</li>
@@ -1184,19 +981,17 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                       </div>
 
                       {/* OR Divider */}
-                      <div className="text-center">
-                        <span className="px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[11px] font-extrabold uppercase tracking-widest">
+                      <div className="text-center py-1">
+                        <span className="px-3 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10 font-mono text-[10px] font-bold uppercase tracking-widest">
                           [ OR ]
                         </span>
                       </div>
 
                       {/* Question Option B */}
-                      <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-emerald-500/40 transition-all">
+                      <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 hover:border-cyan-500/30 transition-all">
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-xs font-bold text-emerald-400">Q{pair.questionNumberB}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${pair.questionB.mlScore?.badgeColor}`}>
-                            {pair.questionB.mlScore?.probability}% YIELD
-                          </span>
+                          <span className="text-xs font-mono font-bold text-slate-300">10 Marks</span>
                         </div>
                         <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">{pair.questionB.question}</p>
 
@@ -1208,12 +1003,11 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                             <span>{expandedModelAnswers[pair.questionB.id] ? 'Hide Answer Blueprint' : 'View Answer Blueprint'}</span>
                             {expandedModelAnswers[pair.questionB.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                           </button>
-                          <span className="text-xs font-mono font-bold text-amber-400">10 Marks</span>
                         </div>
 
                         {expandedModelAnswers[pair.questionB.id] && (
                           <div className="p-3 rounded-lg bg-black/50 border border-white/10 space-y-2 text-xs font-mono">
-                            <div className="text-[11px] font-bold text-amber-300">10/10 Score Structure:</div>
+                            <div className="text-[11px] font-bold text-cyan-300">10/10 Score Structure:</div>
                             <ul className="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
                               {pair.questionB.modelAnswer?.structure?.map((st, sIdx) => (
                                 <li key={sIdx}>{st}</li>
@@ -1241,7 +1035,7 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
             </div>
           ) : (
             /* VIEW MODE: SIDE-BY-SIDE MATRIX COMPARISON BETWEEN SET 1 & SET 2 */
-            <div className="p-6 rounded-3xl bg-[#090d16] border border-white/10 space-y-5">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#090d16] border border-white/10 space-y-4">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-white font-mono flex items-center gap-2">
@@ -1254,14 +1048,14 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                 </div>
                 <button
                   onClick={() => handleDownloadOfficialPDF(activeSubject.subjectId, 'both')}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Download Both Sets</span>
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map(u => {
                   const s1Pair = predictedModelSets.set1.partB.find(p => p.unit === u);
                   const s2Pair = predictedModelSets.set2.partB.find(p => p.unit === u);
@@ -1270,39 +1064,39 @@ export default function PreviousPapersPortal({ setActiveTab, user, setSelectedPr
                   return (
                     <div key={u} className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-black text-amber-400">UNIT {u}: {unitTitle}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-slate-300">14 Marks Quota</span>
+                        <span className="font-mono text-xs font-bold text-cyan-400">UNIT {u}: {unitTitle}</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">14 Marks Quota</span>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* SET 1 */}
-                        <div className="p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-mono font-bold text-rose-400">
+                        <div className="p-3.5 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
                             <span>MODEL SET 1 (SET A)</span>
-                            <span className="text-[10px] text-slate-400">Primary Forecast</span>
+                            <span className="text-[10px] text-slate-400">Primary</span>
                           </div>
                           <div className="text-xs text-slate-200">
-                            <span className="font-bold text-emerald-400">Q{s1Pair?.questionNumberA}: </span>
+                            <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberA}: </span>
                             {s1Pair?.questionA.question}
                           </div>
-                          <div className="text-[10px] text-amber-400 font-mono text-center font-bold">[ OR ]</div>
+                          <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
                           <div className="text-xs text-slate-200">
-                            <span className="font-bold text-emerald-400">Q{s1Pair?.questionNumberB}: </span>
+                            <span className="font-bold text-cyan-400">Q{s1Pair?.questionNumberB}: </span>
                             {s1Pair?.questionB.question}
                           </div>
                         </div>
 
                         {/* SET 2 */}
-                        <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-mono font-bold text-amber-400">
+                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-300">
                             <span>MODEL SET 2 (SET B)</span>
-                            <span className="text-[10px] text-slate-400">Alternate Contingency</span>
+                            <span className="text-[10px] text-slate-400">Alternate</span>
                           </div>
                           <div className="text-xs text-slate-200">
                             <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberA}: </span>
                             {s2Pair?.questionA.question}
                           </div>
-                          <div className="text-[10px] text-amber-400 font-mono text-center font-bold">[ OR ]</div>
+                          <div className="text-[10px] text-slate-400 font-mono text-center font-bold">[ OR ]</div>
                           <div className="text-xs text-slate-200">
                             <span className="font-bold text-emerald-400">Q{s2Pair?.questionNumberB}: </span>
                             {s2Pair?.questionB.question}
