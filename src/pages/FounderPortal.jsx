@@ -2983,7 +2983,9 @@ export default function FounderPortal({ user, setActiveTab }) {
   </div>
 
 
-      {activeView === 'revenue' ? (
+      {activeView === 'logins' ? (
+        <FounderLoginAuditManager />
+      ) : activeView === 'revenue' ? (
         <FounderRevenueManager usersList={usersList} onRefresh={loadUsersData} />
       ) : activeView === 'submissions' ? (
         <FounderSubmissionsManager />

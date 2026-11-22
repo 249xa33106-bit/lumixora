@@ -5,6 +5,7 @@
  */
 
 import { db } from '../config/firebase';
+import { supabase } from '../config/supabase';
 import { 
   collection, 
   addDoc, 
@@ -291,45 +292,60 @@ export const fetchAllLoginLogs = async () => {
     } catch (e) {}
   }
 
-  // 4. Always ensure verified GPREC TPO accounts and known faculty are represented if not logged yet
-  const ensureOfficial = (email, name, roleTitle, portal) => {
-    const hasLog = Array.from(mergedMap.values()).some(item => item.email?.toLowerCase() === email.toLowerCase());
-    if (!hasLog) {
-      const now = Date.now();
-      const mockOffset = email.includes('dean') ? 25 * 60 * 1000 : 50 * 60 * 1000;
-      const logTime = now - mockOffset;
-      const id = `official_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-      mergedMap.set(id, {
-        id,
-        userId: id,
-        name,
-        email,
-        role: 'tpo',
-        roleTitle,
-        college: 'G. Pulla Reddy Engineering College (Autonomous)',
-        collegeCode: 'GPREC',
-        department: 'T&P Cell',
-        rollNumber: 'GPREC-OFFICER',
-        portal,
-        deviceType: 'Desktop (Office Console)',
-        loginTimestamp: logTime,
-        loginTimeFormatted: new Date(logTime).toLocaleString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }),
-        lastActiveAt: now - 3 * 60 * 1000,
-        durationSeconds: Math.floor(mockOffset / 1000),
-        status: 'active'
-      });
-    }
-  };
+  // 4. Query real login audit telemetry from Supabase founder_notifications
+  if (supabase) {
+    try {
+      const { data: supaLogins, error: supaErr } = await supabase
+        .from('founder_notifications')
+        .select('*')
+        .eq('type', 'login')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
-  ensureOfficial('dean.placements@gprec.ac.in', 'Dean of Placements & Training (GPREC)', 'Dean of Placements (TPO)', 'TPO Admin Portal');
-  ensureOfficial('srikanth.csm@gprec.ac.in', 'Srikanth (CSM TPO Coordinator)', 'CSM TPO Coordinator', 'TPO Operations Suite');
+      if (!supaErr && Array.isArray(supaLogins)) {
+        supaLogins.forEach(item => {
+          const m = item.meta || {};
+          const id = `supa_log_${item.id}`;
+          if (!mergedMap.has(id)) {
+            const timeVal = new Date(item.created_at).getTime();
+            const email = (m.email || '').toLowerCase().trim();
+            const roleMeta = deriveUserRoleMeta(m);
+            const isVeryRecent = (Date.now() - timeVal) < 15 * 60 * 1000;
+
+            mergedMap.set(id, {
+              id,
+              userId: m.userId || m.appId || id,
+              name: cleanScholarName(m.name || item.title?.replace('Active Scholar Login: ', ''), email),
+              email,
+              role: roleMeta.category,
+              roleTitle: roleMeta.title,
+              college: m.college || 'G. Pulla Reddy Engineering College (Autonomous)',
+              collegeCode: 'GPREC',
+              department: m.department || 'CSE',
+              rollNumber: m.rollNumber || (/\d{10}/.exec(email)?.[0] || ''),
+              portal: m.portal || 'Placement Suite',
+              deviceType: m.deviceType || 'Desktop (Web Browser)',
+              userAgent: m.userAgent || 'Web Browser',
+              loginTimestamp: timeVal,
+              loginTimeFormatted: new Date(timeVal).toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              }),
+              lastActiveAt: timeVal,
+              durationSeconds: isVeryRecent ? Math.floor((Date.now() - timeVal) / 1000) : 1800,
+              status: isVeryRecent ? 'active' : 'completed'
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Supabase login logs fetch notice:', err);
+    }
+  }
 
   // Convert map to array sorted by loginTimestamp desc
   const result = Array.from(mergedMap.values()).sort((a, b) => {
