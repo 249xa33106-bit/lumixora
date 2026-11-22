@@ -303,18 +303,18 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
       particlePositions[i * 3 + 2] = z;
 
       const rand = Math.random();
-      if (rand > 0.6) {
-        particleColors[i * 3] = 0.05;
-        particleColors[i * 3 + 1] = 0.85;
-        particleColors[i * 3 + 2] = 0.98; // Neon Cyan
-      } else if (rand > 0.28) {
-        particleColors[i * 3] = 0.70;
-        particleColors[i * 3 + 1] = 0.35;
-        particleColors[i * 3 + 2] = 0.98; // Purple Violet
-      } else {
-        particleColors[i * 3] = 0.98;
+      if (rand > 0.45) {
+        particleColors[i * 3] = 0.02;
         particleColors[i * 3 + 1] = 0.78;
-        particleColors[i * 3 + 2] = 0.22; // Radiant Gold
+        particleColors[i * 3 + 2] = 0.95; // Electric Cyan
+      } else if (rand > 0.15) {
+        particleColors[i * 3] = 0.58;
+        particleColors[i * 3 + 1] = 0.28;
+        particleColors[i * 3 + 2] = 0.96; // Cosmic Violet
+      } else {
+        particleColors[i * 3] = 0.92;
+        particleColors[i * 3 + 1] = 0.96;
+        particleColors[i * 3 + 2] = 1.0; // Starlight Diamond
       }
     }
 
@@ -598,14 +598,14 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
               <button
                 key={c.id}
                 onClick={() => rotateToCampus(c)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30 scale-[1.02]'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30 scale-[1.03] border border-cyan-300/40'
                     : 'bg-black/50 hover:bg-white/10 text-gray-300 border border-white/10'
                 }`}
               >
                 <span 
-                  className="w-2 h-2 rounded-full"
+                  className={`w-2 h-2 rounded-full ${isSelected ? 'animate-pulse' : ''}`}
                   style={{ backgroundColor: c.color }}
                 />
                 <span>{c.code}</span>
@@ -615,92 +615,139 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
         </div>
       </div>
 
-      {/* Clean Full-Width 3D Canvas with Focused Telemetry Badge */}
-      <div className="relative w-full h-[480px] sm:h-[560px] flex items-center justify-center cursor-grab active:cursor-grabbing">
+      {/* ── SPLIT STAGE: Focused Telemetry HUD (Left) + Unobstructed 3D WebGL Sphere (Right) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center pt-3">
         
-        <div ref={containerRef} className="w-full h-full" />
-
-        {/* Quick 3D Orbit Control Pill */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
-          <button
-            onClick={() => setIsAutoRotating(!isAutoRotating)}
-            className="px-3 py-1.5 rounded-xl bg-black/75 hover:bg-black/90 border border-cyan-500/40 backdrop-blur-md text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 transition-all shadow-lg cursor-pointer"
-          >
-            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Orbit: {isAutoRotating ? 'ON' : 'PAUSED'}</span>
-          </button>
-          <div className="px-3 py-1.5 rounded-xl bg-black/75 border border-white/10 backdrop-blur-md text-[10px] font-mono text-gray-300 flex items-center gap-1.5 pointer-events-none">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>Drag Globe &bull; Click Node Pills</span>
-          </div>
-        </div>
-
-        {/* ACTIVE CAMPUS TELEMETRY HUD OVERLAY (Clean, non-intrusive card) */}
-        {activeBeacon && (
-          <div className="absolute top-3 left-3 sm:left-4 max-w-sm w-full p-4 rounded-3xl bg-black/85 border border-cyan-400/50 backdrop-blur-2xl text-white shadow-[0_0_35px_rgba(6,182,212,0.25)] animate-fade-in z-20 space-y-3">
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] border shadow-xs"
-                  style={{ 
-                    backgroundColor: `${activeBeacon.color}33`, 
-                    borderColor: activeBeacon.color,
-                    color: activeBeacon.color 
-                  }}
-                >
-                  {activeBeacon.code}
+        {/* Left Side (5 cols): Active Campus Telemetry HUD */}
+        <div className="lg:col-span-5 order-2 lg:order-1">
+          {activeBeacon && (
+            <div 
+              className="p-5 sm:p-6 rounded-3xl bg-[#070D1C]/80 border border-white/10 backdrop-blur-2xl text-white shadow-2xl transition-all duration-300 relative overflow-hidden space-y-3.5"
+              style={{
+                boxShadow: `0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px ${activeBeacon.glow || 'rgba(6, 182, 212, 0.25)'}`
+              }}
+            >
+              {/* Top ambient color glow accent bar */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{
+                  backgroundImage: `linear-gradient(to right, transparent, ${activeBeacon.color}, transparent)`
+                }}
+              />
+              
+              {/* Header with Badge & Live Status */}
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div 
+                    className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs border shadow-xs"
+                    style={{ 
+                      backgroundColor: `${activeBeacon.color}25`, 
+                      borderColor: activeBeacon.color,
+                      color: activeBeacon.color 
+                    }}
+                  >
+                    {activeBeacon.code}
+                  </div>
+                  <div>
+                    <span 
+                      className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border inline-block"
+                      style={{
+                        backgroundColor: `${activeBeacon.color}15`,
+                        borderColor: `${activeBeacon.color}40`,
+                        color: activeBeacon.color
+                      }}
+                    >
+                      {activeBeacon.badge}
+                    </span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">{activeBeacon.city}, Andhra Pradesh</span>
+                  </div>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                  {activeBeacon.badge}
+                
+                <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  {activeBeacon.scholars}
                 </span>
               </div>
-              
-              <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-                {activeBeacon.scholars}
-              </span>
-            </div>
 
-            <div>
-              <h4 className="text-sm font-black text-white font-sora">{activeBeacon.name}</h4>
-              <p className="text-[11px] text-gray-300 mt-0.5">
-                Accreditation: <span className="text-gray-400 font-medium">{activeBeacon.accreditation}</span>
-              </p>
-              <div className="mt-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-gray-300">Top Verified Offer:</span>
-                <span className="text-xs font-black text-emerald-300 font-mono">{activeBeacon.topOffer}</span>
+              {/* Campus Name & Accreditation */}
+              <div className="space-y-1">
+                <h4 className="text-base sm:text-lg font-black text-white font-sora tracking-tight leading-snug">
+                  {activeBeacon.name}
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Accreditation: <span className="text-slate-300 font-medium">{activeBeacon.accreditation}</span>
+                </p>
               </div>
-            </div>
 
-            {/* Target Campus Recruitment Drives */}
-            <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1.5">
-              <span className="text-[9px] font-black uppercase tracking-wider text-cyan-300 block">
-                Target Recruiters:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {activeBeacon.companies.map((comp, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-lg bg-white/10 text-[10px] font-semibold text-gray-200 border border-white/5">
-                    {comp}
-                  </span>
-                ))}
+              {/* Metrics Highlights Grid (Apple Activity / Telemetry Cards) */}
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Top Verified Offer</span>
+                  <span className="text-xs sm:text-sm font-black text-emerald-300 font-mono tracking-tight">{activeBeacon.topOffer}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 space-y-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Placement Rate</span>
+                  <span className="text-xs sm:text-sm font-black text-cyan-300 font-mono tracking-tight">{activeBeacon.hiringRate}</span>
+                </div>
               </div>
-            </div>
 
-            {/* Action Button */}
-            <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/10">
-              <span className="text-gray-400 font-medium text-[10px]">{activeBeacon.hiringRate}</span>
-              <a
-                href="#flow"
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-black text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(6,182,212,0.4)] cursor-pointer"
-              >
-                <span>Explore Hub</span>
-                <ChevronRight className="w-3 h-3" />
-              </a>
-            </div>
+              {/* Target Recruiters Chips */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold flex items-center justify-between">
+                  <span>Active Campus Recruiters</span>
+                  <span className="text-cyan-400 font-mono text-[9px]">Direct Drive Partners</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {activeBeacon.companies.map((comp, idx) => (
+                    <span 
+                      key={idx} 
+                      className="px-2.5 py-1 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-[11px] font-semibold text-slate-200 border border-white/10 transition-colors"
+                    >
+                      {comp}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
+              {/* Active Drives & Action Link */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3">
+                <div className="space-y-0.5 truncate max-w-[200px]">
+                  <span className="text-[9px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Upcoming Drive</span>
+                  <span className="text-[11px] text-amber-300 font-medium truncate block">{activeBeacon.activeDrives}</span>
+                </div>
+                <a
+                  href="#flow"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-[0_0_20px_rgba(6,182,212,0.35)] shrink-0 cursor-pointer"
+                >
+                  <span>Explore Hub</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+            </div>
+          )}
+        </div>
+
+        {/* Right Side (7 cols): Full Unobstructed Interactive 3D Sphere Canvas */}
+        <div className="lg:col-span-7 order-1 lg:order-2 relative w-full h-[400px] sm:h-[480px] lg:h-[520px] flex items-center justify-center cursor-grab active:cursor-grabbing">
+          
+          <div ref={containerRef} className="w-full h-full" />
+
+          {/* Quick 3D Orbit Control Floating Badge */}
+          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 flex items-center gap-2 z-20">
+            <button
+              onClick={() => setIsAutoRotating(!isAutoRotating)}
+              className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 border border-cyan-500/40 backdrop-blur-md text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 transition-all shadow-lg cursor-pointer"
+            >
+              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+              <span>Orbit: {isAutoRotating ? 'ON' : 'PAUSED'}</span>
+            </button>
+            <div className="hidden sm:flex px-3 py-1.5 rounded-full bg-black/70 border border-white/10 backdrop-blur-md text-[10px] font-mono text-gray-300 items-center gap-1.5 pointer-events-none">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Drag to Spin &bull; Click Node Pills</span>
+            </div>
           </div>
-        )}
+        </div>
 
       </div>
 
