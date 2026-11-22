@@ -163,6 +163,7 @@ export default function CyberHoloGlobe3D({ onSelectCampus }) {
   const globeGroupRef = useRef(null);
   const targetRotationRef = useRef(null);
   const isAutoRotatingRef = useRef(true);
+  const photonParticlesRef = useRef([]);
   const [activeBeacon, setActiveBeacon] = useState(CAMPUSES[0]);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
 
