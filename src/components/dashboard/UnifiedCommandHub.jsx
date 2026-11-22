@@ -4,7 +4,7 @@ import {
   Code, Award, UserCheck, HelpCircle, Briefcase, Zap, 
   Rocket, Video, GraduationCap, Cpu, Layers, Users, ShoppingCart, 
   Map, Gift, ShieldCheck, Mail, Bug, Terminal, FileCheck, CheckCircle2,
-  TrendingUp, Radio, Sliders, ChevronRight
+  TrendingUp, Radio, Sliders, ChevronRight, Film
 } from 'lucide-react';
 
 export const ALL_SYSTEM_PORTALS = [
@@ -157,6 +157,18 @@ export const ALL_SYSTEM_PORTALS = [
     badge: 'DSA Arena',
     badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
     iconColor: 'from-blue-600 to-cyan-600',
+    popular: true,
+  },
+  {
+    id: 'code-cinema',
+    label: 'CodeCinema™',
+    track: 'placement',
+    trackLabel: 'Placement',
+    desc: 'Cinematic code archaeology & narrated evolution of Redis, Git, and React from Day 1.',
+    icon: Film,
+    badge: 'NEW • 4D Theater',
+    badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+    iconColor: 'from-rose-500 to-indigo-600',
     popular: true,
   },
   {

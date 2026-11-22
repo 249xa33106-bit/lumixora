@@ -28,6 +28,7 @@ const TAB_TO_WORKSPACE = {
   'interviews': 'career',
   'techpulse': 'career',
   'coding-practice': 'career',
+  'code-cinema': 'career',
   'certificates': 'career',
   'internships': 'career',
   'referrals': 'career',
@@ -202,6 +203,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
       title: '🎓 Learning & Academics',
       items: [
         { id: 'dashboard', label: 'Omiverse Hub', icon: LayoutDashboard },
+        { id: 'mentor', label: 'Lumina AI Mentor', icon: Sparkles, badge: 'NEW ✨' },
         { id: 'learning-hub', label: 'Notes & Curriculum', icon: BookOpen },
         { id: 'previous-papers', label: 'Previous Papers & Predictor', icon: FileText, badge: 'ML 🧠' },
         { id: 'doubts', label: 'AI Doubt Solver', icon: HelpCircle },
@@ -221,6 +223,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         { id: 'interview', label: 'AI Mock Interviews', icon: Video },
         { id: 'tech-pulse', label: 'TechPulse Radar', icon: Radio },
         { id: 'coding-practice', label: 'Code Arena & DSA', icon: Code },
+        { id: 'code-cinema', label: 'CodeCinema™', icon: Film, badge: 'NEW' },
         { id: 'certificates', label: 'Skill Certifications', icon: Award },
         { id: 'internships', label: 'Student Internships', icon: Briefcase },
         { id: 'alumni-referrals', label: 'Alumni Referrals', icon: Users },

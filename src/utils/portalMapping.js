@@ -21,6 +21,7 @@ export const ALL_PORTALS = [
   { id: 'ai-commander', label: 'AI Placement Commander™', category: 'career', tags: ['placement', 'career', 'resume', 'jobs'] },
   { id: 'interview', label: 'AI Mock Interview Room', category: 'career', tags: ['interview', 'placement', 'communication', 'mock'] },
   { id: 'coding-practice', label: 'Code Arena & 30D Java', category: 'career', tags: ['coding', 'dsa', 'programming', 'placement', 'cse', 'csm', 'csd'] },
+  { id: 'code-cinema', label: 'CodeCinema™', category: 'career', tags: ['coding', 'cinema', 'architecture', 'redis', 'git', 'react', 'history', 'popular', 'new'] },
   { id: 'certificates', label: 'Proof-of-Skill Badges', category: 'career', tags: ['placement', 'certification', 'linkedin'] },
   { id: 'internships', label: 'Lumixora Internships', category: 'career', tags: ['internship', 'career', 'jobs'] },
   { id: 'alumni-referrals', label: 'Alumni & Off-Campus Jobs', category: 'career', tags: ['placement', 'referrals', 'jobs', 'career'] },

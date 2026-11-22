@@ -51,6 +51,7 @@ const TeamWorkspacePortal = lazy(() => import('./pages/TeamWorkspacePortal'));
 const OurTeamPortal = lazy(() => import('./pages/OurTeamPortal'));
 const AlumniReferralBridge = lazy(() => import('./pages/AlumniReferralBridge'));
 const PreviousPapersPortal = lazy(() => import('./pages/PreviousPapersPortal'));
+const CodeCinema = lazy(() => import('./pages/CodeCinema'));
 const CompanyPlacementPapers = lazy(() => import('./pages/CompanyPlacementPapers'));
 const AptitudeArena = lazy(() => import('./components/AptitudeArena'));
 import PlatformTourModal from './components/PlatformTourModal';
@@ -115,7 +116,7 @@ function App() {
       if (window.location.hash) {
         const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
         if (['verify', 'verify-cert', 'cert-verify', 'credential-verify'].includes(hash)) return 'verify';
-        if (['previous-papers', 'company-papers', 'papers', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'code-editor', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'intern-portal', 'student-offers', 'clubs', 'marketplace', 'ai-commander', 'contact', 'report-bug', 'team-workspace', 'our-team'].includes(hash)) return hash;
+        if (['previous-papers', 'company-papers', 'papers', 'code-cinema', 'cinema', 'speakverse', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'interview', 'coding-practice', 'code-editor', 'resume', 'courses', 'boloclass', 'notes', 'learning-hub', 'hackathons', 'simulations', 'test-portal', 'future-twin', 'career-roadmap', 'internships', 'intern-portal', 'student-offers', 'clubs', 'marketplace', 'ai-commander', 'contact', 'mentor', 'personal-mentor', 'lumina', 'report-bug', 'team-workspace', 'our-team'].includes(hash)) return hash;
       }
     }
     return 'dashboard';
@@ -669,7 +670,7 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'code-cinema', 'cinema', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'personal-mentor', 'lumina', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {
@@ -680,6 +681,8 @@ function App() {
             setActiveTab('contribute');
           } else if (['intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
             setActiveTab('intern-portal');
+          } else if (['personal-mentor', 'lumina'].includes(tab)) {
+            setActiveTab('mentor');
           } else {
             setActiveTab(tab);
           }
@@ -1292,6 +1295,9 @@ function App() {
           return <AiMockInterviewRoom user={user} setActiveTab={handleTabChange} />;
         case 'coding-practice':
           return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
+        case 'code-cinema':
+        case 'cinema':
+          return <CodeCinema setActiveTab={handleTabChange} user={user} />;
         case 'code-editor':
           return <CodeEditorPage problem={selectedProblem} setActiveTab={setActiveTab} user={user} />;
         case 'test-portal':
@@ -1402,6 +1408,9 @@ function App() {
         return <LumixoraTechPulse user={user} setActiveTab={handleTabChange} />;
       case 'coding-practice':
         return <CodingPractice setSelectedProblem={setSelectedProblem} setActiveTab={setActiveTab} user={user} />;
+      case 'code-cinema':
+      case 'cinema':
+        return <CodeCinema setActiveTab={handleTabChange} user={user} />;
       case 'code-editor':
         return <CodeEditorPage problem={selectedProblem} setActiveTab={setActiveTab} user={user} />;
       case 'hackathons':
@@ -1483,7 +1492,8 @@ function App() {
         return <ContactUs user={user} />;
       case 'mentor':
       case 'personal-mentor':
-        return <PersonalMentor user={user} />;
+      case 'lumina':
+        return <PersonalMentor user={user} setActiveTab={handleTabChange} />;
       case 'study-with-me':
       case 'study-room':
         return <Dashboard user={user} setActiveTab={handleTabChange} />;
@@ -1798,6 +1808,25 @@ function App() {
                 <InternshipPortal user={user || { name: 'Guest Candidate', email: 'applicant@lumixora.in', role: 'student' }} setActiveTab={handleTabChange} />
               </div>
             </div>
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
+    // Direct standalone public access to Lumina - Personal AI Mentor (#mentor, #personal-mentor, #lumina)
+    if (lowerHash.includes('mentor') || lowerHash.includes('lumina')) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <PersonalMentor 
+              user={user || { name: 'Scholar Guest', email: 'guest@lumixora.in', role: 'student' }} 
+              setActiveTab={handleTabChange} 
+              onBackHome={() => {
+                window.location.hash = '';
+                handleTabChange('dashboard');
+              }}
+            />
             {renderUpdateModal()}
           </ToastProvider>
         </ThemeProvider>
