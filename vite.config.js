@@ -10,6 +10,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    port: 5173,
+    strictPort: false,
     proxy: {
       '/api': {
         target: 'https://lumixora.in',
