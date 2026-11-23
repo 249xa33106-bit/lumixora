@@ -358,7 +358,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
         {currentSlide === 1 && (
           <div className="w-full flex items-center justify-between animate-fade-in">
             {/* Content Left */}
-            <div className="relative z-10 max-w-full md:max-w-[56%] lg:max-w-[52%] xl:max-w-xl text-left">
+            <div className="relative z-10 max-w-full md:max-w-[52%] lg:max-w-[48%] xl:max-w-xl text-left">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-black shadow-sm mb-4 md:mb-5">
                 <span>Shaik Sowban • Founder's Vision</span>
                 <span className="text-sm">🌟</span>
@@ -371,7 +371,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 </span>
               </h1>
 
-              <p className="text-slate-300 text-sm md:text-base font-semibold max-w-md mb-6 md:mb-7 leading-relaxed">
+              <p className="text-slate-300 text-sm md:text-base font-semibold max-w-md md:max-w-sm lg:max-w-md mb-6 md:mb-7 leading-relaxed">
                 From solving tier-2 placement disparities to empowering 450+ engineering scholars with AI placement radar, zero-cost blueprints, and mentorship.
               </p>
 
@@ -396,9 +396,9 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
 
             {/* Right Visual: Founder in Neon Ring with Impact Badges & Elemental Fire & Water Aura */}
             <div className="hidden md:flex absolute right-4 sm:right-6 md:right-8 lg:right-12 top-0 bottom-0 h-full items-center justify-end pointer-events-none select-none z-0">
-              <FounderElementalVisual maxH="max-h-[84%] sm:max-h-[86%] md:max-h-[88%]" shadowColor="rgba(245,158,11,0.35)">
-                {/* Floating Impact Card beside founder */}
-                <div className="absolute -left-28 lg:-left-32 top-8 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5 z-20">
+              <FounderElementalVisual maxH="max-h-[82%] sm:max-h-[84%] md:max-h-[86%]" shadowColor="rgba(245,158,11,0.35)">
+                {/* Floating Impact Card beside founder - shown on lg screens to preserve breathing space */}
+                <div className="hidden lg:block absolute -left-28 lg:-left-32 top-8 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5 z-20">
                   <div className="flex items-center gap-1.5 text-amber-400">
                     <Award className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-black uppercase tracking-wider">Mission Impact</span>
@@ -407,7 +407,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                   <p className="text-[10px] text-gray-400">Active across 7+ Campus Innovation Hubs</p>
                 </div>
 
-                <div className="absolute -left-20 lg:-left-24 bottom-8 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl flex items-center gap-2 z-20">
+                <div className="hidden lg:flex absolute -left-20 lg:-left-24 bottom-8 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl items-center gap-2 z-20">
                   <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold shrink-0">
                     <Rocket className="w-4 h-4" />
                   </div>
@@ -494,52 +494,54 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
           </div>
         )}
 
-        {/* ── Desktop Prev / Next Slide Arrows ── */}
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentSlide((prev) => (prev - 1 + 3) % 3);
-          }}
-          className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 cursor-pointer backdrop-blur-sm"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
+        {/* ── WORKABLE CAROUSEL CONTROL DOCK (Prev + Indicator Dots + Next) ── */}
+        <div className="absolute left-6 sm:left-8 md:left-10 lg:left-12 bottom-5 sm:bottom-6 z-20 flex items-center gap-2.5 bg-black/60 backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/15 shadow-xl">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+            }}
+            className="w-6 h-6 rounded-full hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
 
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentSlide((prev) => (prev + 1) % 3);
-          }}
-          className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 cursor-pointer backdrop-blur-sm"
-          aria-label="Next Slide"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
+          <div className="flex items-center gap-1.5">
+            {[0, 1, 2].map((idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide(idx);
+                }}
+                aria-label={`Slide ${idx + 1}`}
+                className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
+                  currentSlide === idx
+                    ? idx === 1 
+                      ? 'w-7 bg-gradient-to-r from-amber-400 to-rose-500 shadow-md shadow-rose-500/50' 
+                      : idx === 2 
+                      ? 'w-7 bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md shadow-cyan-500/50'
+                      : 'w-7 bg-gradient-to-r from-blue-500 to-purple-500 shadow-md shadow-purple-500/50'
+                    : 'w-2 bg-white/30 hover:bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
 
-        {/* ── WORKABLE CAROUSEL INDICATOR DOTS (Clickable + Active Pill) ── */}
-        <div className="absolute left-6 sm:left-8 md:left-10 lg:left-12 bottom-5 sm:bottom-6 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg">
-          {[0, 1, 2].map((idx) => (
-            <button
-              key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentSlide(idx);
-              }}
-              aria-label={`Slide ${idx + 1}`}
-              className={`h-2.5 transition-all duration-300 rounded-full cursor-pointer ${
-                currentSlide === idx
-                  ? idx === 1 
-                    ? 'w-8 bg-gradient-to-r from-amber-400 to-rose-500 shadow-md shadow-rose-500/50' 
-                    : idx === 2 
-                    ? 'w-8 bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md shadow-cyan-500/50'
-                    : 'w-8 bg-gradient-to-r from-blue-500 to-purple-500 shadow-md shadow-purple-500/50'
-                  : 'w-2.5 bg-white/30 hover:bg-white/60'
-              }`}
-            />
-          ))}
-          <span className="text-[10px] text-slate-300 font-bold ml-1.5 hidden sm:inline-block">
-            {currentSlide === 0 ? '1 of 3 • Career' : currentSlide === 1 ? '2 of 3 • Founder\'s Journey' : '3 of 3 • AI Predictor'}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentSlide((prev) => (prev + 1) % 3);
+            }}
+            className="w-6 h-6 rounded-full hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            aria-label="Next Slide"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="text-[10px] text-slate-300 font-bold ml-1 hidden sm:inline-block">
+            {currentSlide === 0 ? 'Career' : currentSlide === 1 ? 'Founder' : 'Predictor'}
           </span>
         </div>
       </div>
