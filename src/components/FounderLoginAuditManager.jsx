@@ -24,9 +24,13 @@ import {
   FileText,
   KeyRound,
   Edit3,
-  X
+  X,
+  Zap,
+  Printer
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { 
   fetchAllLoginLogs, 
   formatTimeAgo, 
@@ -70,6 +74,10 @@ export default function FounderLoginAuditManager() {
   const [editDept, setEditDept] = useState('CSE');
   const [editYear, setEditYear] = useState('3rd Year');
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  // Quick Whitelist Bar State
+  const [quickRollInput, setQuickRollInput] = useState('');
+  const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
 
   // Load audit logs on mount
   const loadLogs = async (showToast = false) => {
@@ -152,6 +160,37 @@ export default function FounderLoginAuditManager() {
       addToast({ message: err.message || 'Failed to bulk add scholars.', type: 'error' });
     } finally {
       setIsSubmittingRoster(false);
+    }
+  };
+
+  // 1-Click Quick Whitelist Submission
+  const handleQuickWhitelist = async (e) => {
+    e.preventDefault();
+    const cleanInput = quickRollInput.trim();
+    if (!cleanInput) {
+      addToast({ message: 'Please enter a student roll number (e.g. 259XA04138).', type: 'error' });
+      return;
+    }
+
+    setIsQuickSubmitting(true);
+    try {
+      // Check if multiple roll numbers separated by comma or space
+      if (cleanInput.includes(',') || cleanInput.includes(' ') || cleanInput.includes('\n')) {
+        const added = await bulkAddGprecScholarRolls(cleanInput, { addedBy: 'Founder Quick Bar' });
+        await syncCustomRollsFromCloud();
+        setRoster(getGprecScholarRoster());
+        addToast({ message: `⚡ Successfully whitelisted ${added.length} scholars in real cloud database!`, type: 'success' });
+      } else {
+        await addGprecScholarRoll(cleanInput, { addedBy: 'Founder Quick Bar' });
+        await syncCustomRollsFromCloud();
+        setRoster(getGprecScholarRoster());
+        addToast({ message: `⚡ Successfully whitelisted ${cleanInput.toUpperCase()}!`, type: 'success' });
+      }
+      setQuickRollInput('');
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to whitelist roll number.', type: 'error' });
+    } finally {
+      setIsQuickSubmitting(false);
     }
   };
 
@@ -313,8 +352,134 @@ export default function FounderLoginAuditManager() {
     }
   };
 
+  // Export Institutional Placement Summary to PDF
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      doc.setFillColor(11, 19, 43);
+      doc.rect(0, 0, 210, 297, 'F');
+
+      // Title & Header
+      doc.setTextColor(197, 160, 89);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('G. PULLA REDDY ENGINEERING COLLEGE (AUTONOMOUS)', 14, 18);
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Institutional Placement Suite · Scholar Activity & Readiness Audit Report', 14, 25);
+
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Generated: ${new Date().toLocaleString('en-IN')} | Total Whitelisted Scholars: ${roster.length} | Sessions Recorded: ${filteredLogs.length}`, 14, 31);
+
+      // Table Data
+      const tableData = filteredLogs.map((l, i) => [
+        i + 1,
+        l.name || 'Scholar',
+        l.rollNumber || (l.email ? l.email.split('@')[0] : 'N/A'),
+        l.department || 'CSE',
+        l.roleTitle || l.role || 'Scholar',
+        l.loginTimeFormatted || 'N/A',
+        formatDuration(l.durationSeconds, l.status === 'active'),
+        l.status === 'active' ? 'Active Now' : 'Completed'
+      ]);
+
+      autoTable(doc, {
+        startY: 36,
+        head: [['#', 'Scholar Name', 'Roll Number', 'Dept', 'Role Scope', 'Login Timestamp', 'Duration', 'Status']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [17, 28, 68],
+          textColor: [197, 160, 89],
+          fontSize: 8,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fillColor: [11, 19, 43],
+          textColor: [241, 245, 249],
+          fontSize: 7.5
+        },
+        alternateRowStyles: {
+          fillColor: [15, 23, 42]
+        },
+        styles: {
+          lineColor: [51, 65, 85],
+          lineWidth: 0.1
+        }
+      });
+
+      doc.save(`GPREC_Placement_Readiness_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      addToast({ message: 'Institutional Placement PDF generated and downloaded successfully.', type: 'success' });
+    } catch (e) {
+      console.error(e);
+      addToast({ message: 'Failed to generate PDF report.', type: 'error' });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in text-white pb-12">
+      {/* 1-Click Founder Quick Whitelist Persistent Bar */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#111C44] to-[#0B132B] border border-amber-500/40 shadow-xl shadow-amber-950/20 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center shadow-lg shadow-amber-400/20">
+            <Zap className="w-5 h-5 fill-current" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-400 font-sora">
+                ⚡ 1-Click Quick Whitelist
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                Instant Cloud Sync
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 mt-0.5">
+              Enter student roll number when they pay. Auto-assigns branch, grants access, and syncs to Supabase.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleQuickWhitelist} className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto">
+          <div className="relative flex-1 sm:w-80">
+            <input
+              type="text"
+              value={quickRollInput}
+              onChange={(e) => setQuickRollInput(e.target.value)}
+              placeholder="e.g. 259XA04138 (or 249XA33112, 259XA33030)"
+              className="w-full px-3.5 py-2 pl-9 rounded-xl bg-[#070D1E] border border-amber-500/30 text-white placeholder-slate-500 text-xs font-mono uppercase focus:outline-none focus:border-amber-400 transition-colors"
+            />
+            <KeyRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isQuickSubmitting || !quickRollInput.trim()}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-400/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 whitespace-nowrap"
+          >
+            {isQuickSubmitting ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <UserPlus className="w-3.5 h-3.5" />
+            )}
+            <span>Approve & Whitelist</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAddMode('bulk');
+              setIsAddModalOpen(true);
+            }}
+            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <span>Bulk CSV / List</span>
+          </button>
+        </form>
+      </div>
       {/* Top Header Card */}
       <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0B132B] via-[#111C44] to-[#0B132B] border border-[#C5A059]/40 shadow-xl shadow-black/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -345,6 +510,14 @@ export default function FounderLoginAuditManager() {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#C5A059]' : 'text-slate-300'}`} />
             <span>{isRefreshing ? 'Syncing...' : 'Sync Live'}</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-xs font-bold text-purple-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+            title="Export Institutional Placement Report to PDF"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>PDF Report</span>
           </button>
           <button
             onClick={handleExportExcel}
