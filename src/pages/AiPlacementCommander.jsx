@@ -61,6 +61,18 @@ const GprecPlacementCertificateModal = lazy(() => import('../components/gprec/Gp
 const GprecTpoPortal = lazy(() => import('./GprecTpoPortal'));
 const FacultyPortal = lazy(() => import('./FacultyPortal'));
 
+// Dedicated GPREC Storage Key Names (100% Isolated from main lumixora.in)
+const GPREC_STORAGE_KEYS = {
+  RESUME: 'gprec_isolated_resume_data',
+  SOLVED_CODING: 'gprec_isolated_solved_coding',
+  VERIFIED_SUBMISSIONS: 'gprec_isolated_verified_submissions',
+  APTITUDE_COUNT: 'gprec_isolated_aptitude_scores_count',
+  TELEMETRY: 'gprec_isolated_placement_telemetry',
+  ANNOUNCEMENTS: 'gprec_isolated_announcements',
+  SIDEBAR: 'gprec_sidebar_collapsed',
+  FOUNDER_MODE: 'lumixora_founder_mode'
+};
+
 function GprecSubPortalFallback({ label = 'Calibrating Portal...' }) {
   return (
     <div className="min-h-[45vh] flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-200">
@@ -254,7 +266,7 @@ const BENCHMARK_TIERS = [
 // Candidate Resume Extractor for Grounded Viva Generation
 const getCandidateResumeHighlights = (user) => {
   try {
-    const saved = localStorage.getItem('lumixora_resume_data');
+    const saved = localStorage.getItem(GPREC_STORAGE_KEYS.RESUME);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed) {
@@ -520,15 +532,15 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   // Core Activity Tracking State (Hoisted to top to guarantee initialization before any telemetry hook)
   const [solvedProblemIds, setSolvedProblemIds] = useState(() => {
     try {
-      const saved = localStorage.getItem('lumixora_solved_coding');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.SOLVED_CODING);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
-          const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
+          const hasRealSubmission = !!localStorage.getItem(GPREC_STORAGE_KEYS.VERIFIED_SUBMISSIONS);
           const isLegacy = parsed.length <= 4 || parsed.every(id => legacyMockIds.has(id));
           if (!isLegacy && hasRealSubmission && parsed.length > 0) return parsed;
-          localStorage.removeItem('lumixora_solved_coding');
+          localStorage.removeItem(GPREC_STORAGE_KEYS.SOLVED_CODING);
         }
       }
     } catch (e) {}
@@ -690,13 +702,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   // Core Placement Telemetry Scores (Default clean-slate 0% readiness)
   const [twinScores, setTwinScores] = useState(() => {
     try {
-      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
-      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const savedSolved = JSON.parse(localStorage.getItem(GPREC_STORAGE_KEYS.SOLVED_CODING) || '[]');
+      const savedApt = Number(localStorage.getItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT) || 0);
       const hasRealActivity = (Array.isArray(savedSolved) && savedSolved.length > 0) || savedApt > 0;
       if (!hasRealActivity) {
         return REAL_PLACEMENT_BENCHMARKS.twinScores;
       }
-      const saved = localStorage.getItem('lumixora_placement_telemetry');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.TELEMETRY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed?.twinScores && typeof parsed.twinScores.dsa === 'number') {
@@ -711,13 +723,13 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const [overallReadiness, setOverallReadiness] = useState(() => {
     try {
-      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
-      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const savedSolved = JSON.parse(localStorage.getItem(GPREC_STORAGE_KEYS.SOLVED_CODING) || '[]');
+      const savedApt = Number(localStorage.getItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT) || 0);
       const hasRealActivity = (Array.isArray(savedSolved) && savedSolved.length > 0) || savedApt > 0;
       if (!hasRealActivity) {
         return 0;
       }
-      const saved = localStorage.getItem('lumixora_placement_telemetry');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.TELEMETRY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed?.overallReadiness === 'number' && parsed.overallReadiness !== 92 && parsed.overallReadiness !== 78 && parsed.overallReadiness !== 9) {
@@ -757,8 +769,8 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const [dailyMissions, setDailyMissions] = useState(() => {
     try {
-      const savedSolved = JSON.parse(localStorage.getItem('lumixora_solved_coding') || '[]');
-      const savedApt = Number(localStorage.getItem('lumixora_aptitude_scores_count') || 0);
+      const savedSolved = JSON.parse(localStorage.getItem(GPREC_STORAGE_KEYS.SOLVED_CODING) || '[]');
+      const savedApt = Number(localStorage.getItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT) || 0);
       const sCount = Array.isArray(savedSolved) ? savedSolved.length : 0;
       return getAdaptiveDailyMissions(sCount, savedApt);
     } catch (e) {
@@ -864,7 +876,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
         if (isMounted && cloudProgress && Array.isArray(cloudProgress.solvedProblems) && cloudProgress.solvedProblems.length > 0) {
           setSolvedProblemIds(prev => {
             const merged = Array.from(new Set([...prev, ...cloudProgress.solvedProblems]));
-            try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(merged)); } catch (e) {}
+            try { localStorage.setItem(GPREC_STORAGE_KEYS.SOLVED_CODING, JSON.stringify(merged)); } catch (e) {}
             return merged;
           });
         }
@@ -879,7 +891,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const toggleProblemSolved = (id) => {
     setSolvedProblemIds(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
-      try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(next)); } catch (e) {}
+      try { localStorage.setItem(GPREC_STORAGE_KEYS.SOLVED_CODING, JSON.stringify(next)); } catch (e) {}
       if (user && !prev.includes(id)) {
         saveCodingSubmissionToSupabase(user, {
           problemId: id,
@@ -1004,7 +1016,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [aptNetScore, setAptNetScore] = useState(0);
   const [aptitudeScoreCount, setAptitudeScoreCount] = useState(() => {
     try {
-      const saved = localStorage.getItem('lumixora_aptitude_scores_count');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT);
       if (saved) {
         const val = parseInt(saved, 10);
         if (!isNaN(val) && val !== 7) return val;
@@ -1045,7 +1057,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   const [applications, setApplications] = useState(() => {
     try {
-      const saved = localStorage.getItem(`lumixora_applications_${user?.id || 'guest'}`);
+      const saved = localStorage.getItem(`gprec_isolated_applications_${user?.id || 'guest'}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
@@ -1063,7 +1075,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
   useEffect(() => {
     try {
-      localStorage.setItem(`lumixora_applications_${user?.id || 'guest'}`, JSON.stringify(applications));
+      localStorage.setItem(`gprec_isolated_applications_${user?.id || 'guest'}`, JSON.stringify(applications));
     } catch (e) {}
   }, [applications, user?.id]);
 
@@ -1088,7 +1100,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   const [notificationsList, setNotificationsList] = useState(() => {
     try {
       const readSet = getReadNotifIdsSet();
-      const saved = localStorage.getItem('lumixora_gprec_announcements');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -1126,7 +1138,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   useEffect(() => {
     let unsub = () => {};
     try {
-      const q = query(collection(db, 'placement_announcements'), orderBy('createdAt', 'desc'), limit(30));
+      const q = query(collection(db, 'gprec_isolated_announcements'), orderBy('createdAt', 'desc'), limit(30));
       unsub = onSnapshot(q, (snapshot) => {
         const readSet = getReadNotifIdsSet();
         if (!snapshot.empty) {
@@ -1157,7 +1169,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
           setNotificationsList(merged);
           try {
-            localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(remoteDocs));
+            localStorage.setItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(remoteDocs));
           } catch (e) {}
         }
       }, (err) => {
@@ -1237,17 +1249,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
     try {
       // 1. Save to Firestore
-      await setDoc(doc(db, 'placement_announcements', newNotifId), newAnn, { merge: true });
+      await setDoc(doc(db, 'gprec_isolated_announcements', newNotifId), newAnn, { merge: true });
 
       // 2. Save to localStorage
       const existingLocal = (() => {
         try {
-          const s = localStorage.getItem('lumixora_gprec_announcements');
+          const s = localStorage.getItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS);
           return s ? JSON.parse(s) : [];
         } catch (e) { return []; }
       })();
       const updatedLocal = [newAnn, ...existingLocal.filter(x => x.id !== newNotifId)];
-      localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(updatedLocal));
+      localStorage.setItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(updatedLocal));
 
       // 3. Prepend to state
       setNotificationsList(prev => [
@@ -1275,12 +1287,12 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
       // Local resilience fallback
       const existingLocal = (() => {
         try {
-          const s = localStorage.getItem('lumixora_gprec_announcements');
+          const s = localStorage.getItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS);
           return s ? JSON.parse(s) : [];
         } catch (e) { return []; }
       })();
       const updatedLocal = [newAnn, ...existingLocal];
-      localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(updatedLocal));
+      localStorage.setItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(updatedLocal));
       setNotificationsList(prev => [{ ...newAnn, read: false, isBroadcast: true }, ...prev]);
       addToast({ message: 'Broadcast dispatched (offline resilient mode).', type: 'info' });
       setShowBroadcastModal(false);
@@ -1297,14 +1309,14 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
     setNotificationsList(prev => prev.filter(n => n.id !== notifId));
     try {
-      await deleteDoc(doc(db, 'placement_announcements', notifId));
+      await deleteDoc(doc(db, 'gprec_isolated_announcements', notifId));
     } catch (e) {}
     try {
-      const saved = localStorage.getItem('lumixora_gprec_announcements');
+      const saved = localStorage.getItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS);
       if (saved) {
         const parsed = JSON.parse(saved);
         const filtered = parsed.filter(n => n.id !== notifId);
-        localStorage.setItem('lumixora_gprec_announcements', JSON.stringify(filtered));
+        localStorage.setItem(GPREC_STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(filtered));
       }
     } catch (e) {}
     addToast({ message: 'Broadcast notification deleted.', type: 'info' });
@@ -1337,17 +1349,17 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
   // Purge legacy mock dummy data and synchronize clean slate
   useEffect(() => {
     try {
-      const savedSolved = localStorage.getItem('lumixora_solved_coding');
+      const savedSolved = localStorage.getItem(GPREC_STORAGE_KEYS.SOLVED_CODING);
       if (savedSolved) {
         const parsed = JSON.parse(savedSolved);
         const legacyMockIds = new Set(['two_sum', 'contains_duplicate', 'valid_anagram', 'group_anagrams', 'reverse_linked_list', 'diagonal_difference', 'valid_parentheses', 'best_time_stock']);
-        const hasRealSubmission = !!localStorage.getItem('lumixora_verified_submissions');
+        const hasRealSubmission = !!localStorage.getItem(GPREC_STORAGE_KEYS.VERIFIED_SUBMISSIONS);
         if (Array.isArray(parsed) && (parsed.length <= 4 || parsed.some(id => legacyMockIds.has(id)) || !hasRealSubmission)) {
-          localStorage.removeItem('lumixora_solved_coding');
+          localStorage.removeItem(GPREC_STORAGE_KEYS.SOLVED_CODING);
           setSolvedProblemIds([]);
         }
       }
-      const savedTelemetry = localStorage.getItem('lumixora_placement_telemetry');
+      const savedTelemetry = localStorage.getItem(GPREC_STORAGE_KEYS.TELEMETRY);
       if (savedTelemetry) {
         const parsed = JSON.parse(savedTelemetry);
         if (
@@ -1359,7 +1371,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           parsed?.overallReadiness === 78 || 
           parsed?.overallReadiness === 9
         ) {
-          localStorage.removeItem('lumixora_placement_telemetry');
+          localStorage.removeItem(GPREC_STORAGE_KEYS.TELEMETRY);
           setOverallReadiness(0);
           setTwinScores(REAL_PLACEMENT_BENCHMARKS.twinScores);
         }
@@ -1996,7 +2008,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
           setSolvedProblemIds(prev => {
             if (!prev.includes(activeCodeProblem.id)) {
               const next = [...prev, activeCodeProblem.id];
-              try { localStorage.setItem('lumixora_solved_coding', JSON.stringify(next)); } catch (e) {}
+              try { localStorage.setItem(GPREC_STORAGE_KEYS.SOLVED_CODING, JSON.stringify(next)); } catch (e) {}
               if (user) {
                 saveCodingSubmissionToSupabase(user, {
                   problemId: activeCodeProblem.id,
@@ -2107,7 +2119,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
 
       // Persist to localStorage
       try {
-        localStorage.setItem('lumixora_placement_telemetry', JSON.stringify({
+        localStorage.setItem(GPREC_STORAGE_KEYS.TELEMETRY, JSON.stringify({
           twinScores: newScores,
           overallReadiness: newOverall,
           calibratedAt: new Date().toISOString()
@@ -2146,10 +2158,10 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
     setProjectVivaReport(null);
     setInterviewReport(null);
     try {
-      localStorage.removeItem('lumixora_solved_coding');
-      localStorage.removeItem('lumixora_aptitude_scores_count');
-      localStorage.removeItem('lumixora_placement_telemetry');
-      localStorage.removeItem('lumixora_verified_submissions');
+      localStorage.removeItem(GPREC_STORAGE_KEYS.SOLVED_CODING);
+      localStorage.removeItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT);
+      localStorage.removeItem(GPREC_STORAGE_KEYS.TELEMETRY);
+      localStorage.removeItem(GPREC_STORAGE_KEYS.VERIFIED_SUBMISSIONS);
       if (user?.id) {
         const userDocRef = doc(db, 'users', user.id);
         await updateDoc(userDocRef, { careerDna: baseDna, overallReadiness: 0, placementReadinessScore: 0 });
@@ -5332,7 +5344,7 @@ Return ONLY a valid JSON object without markdown:
                                 setAptNetScore(s => +(s + 1.0).toFixed(2));
                                 setAptitudeScoreCount(c => {
                                   const nextCount = c + 1;
-                                  try { localStorage.setItem('lumixora_aptitude_scores_count', String(nextCount)); } catch (e) {}
+                                  try { localStorage.setItem(GPREC_STORAGE_KEYS.APTITUDE_COUNT, String(nextCount)); } catch (e) {}
                                   return nextCount;
                                 });
                                 updateTwinSkill('aptitude', 2, 'Solved Aptitude Drill');
