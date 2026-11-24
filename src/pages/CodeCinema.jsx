@@ -751,19 +751,26 @@ function directMovieFromUserCode(code, language = 'Python', customTitle = '') {
 }
 
 /* ─── LIVING ARCHITECTURE SIMULATION ENGINE (60 FPS CANVAS) ─── */
-function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) {
+function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playbackSpeed }) {
   const canvasRef = useRef(null);
-  const filmId = film.id;
+  const animFrameRef = useRef(null);
+  const tickRef = useRef(0);
+  const isPlayingRef = useRef(isPlaying);
+  const progressRef = useRef(progress);
+  const playbackSpeedRef = useRef(playbackSpeed);
+
+  const filmId = film?.id || 'user-film';
 
   // Real-time Dynamic Archetype & Data Extraction (Auto-upgrades any film or code)
-  const rawCode = (film.chapters && film.chapters[0]?.code) || '';
+  const currentChapter = chapter || (film?.chapters && film.chapters[0]) || {};
+  const rawCode = currentChapter.code || (film?.chapters && film.chapters[0]?.code) || '';
   const cleanCode = rawCode.trim();
   const lowerCode = cleanCode.toLowerCase();
 
   const arithmeticMatch = cleanCode.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/\%\^])\s*(\d+(?:\.\d+)?)/);
   const isPrintOrCalc = lowerCode.includes('print') || lowerCode.includes('console.log') || arithmeticMatch;
 
-  let simType = film.simulationType;
+  let simType = film?.simulationType;
   if (!simType || simType === 'memory_stack') {
     if (arithmeticMatch || isPrintOrCalc) {
       simType = 'ast_expression';
@@ -774,12 +781,12 @@ function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) 
     } else if (lowerCode.includes('async') || lowerCode.includes('channel') || lowerCode.includes('queue')) {
       simType = 'event_loop';
     } else {
-      simType = (filmId === 'redis' ? 'redis' : (filmId === 'git' ? 'git' : (filmId === 'react' ? 'react' : 'memory_stack')));
+      simType = (filmId === 'redis' ? 'redis' : (filmId === 'git' ? 'git' : (filmId === 'react' ? 'react' : 'general_execution')));
     }
   }
 
   // Extract Expression Data on the fly if not already provided
-  let exprData = film.expressionData;
+  let exprData = film?.expressionData;
   if (!exprData && (arithmeticMatch || isPrintOrCalc)) {
     if (arithmeticMatch) {
       const l = arithmeticMatch[1];
@@ -800,17 +807,27 @@ function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) 
     }
   }
 
+  // Keep live refs updated without restarting the continuous 60fps render loop
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    progressRef.current = progress;
+    playbackSpeedRef.current = playbackSpeed;
+  }, [isPlaying, progress, playbackSpeed]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let animationId = null;
-    let tick = 0;
 
     const render = () => {
-      tick += 0.035 * playbackSpeed;
-      const w = canvas.width = canvas.offsetWidth;
-      const h = canvas.height = canvas.offsetHeight;
+      // Continuous smooth tick that NEVER resets to 0!
+      tickRef.current += 0.035 * (playbackSpeedRef.current || 1);
+      const tick = tickRef.current;
+      const curProgress = progressRef.current ?? 0;
+      const curIsPlaying = isPlayingRef.current ?? false;
+
+      const w = canvas.width = Math.max(300, canvas.offsetWidth || 500);
+      const h = canvas.height = Math.max(240, canvas.offsetHeight || 380);
 
       // Dark auditorium canvas backing
       ctx.fillStyle = '#08080a';
@@ -826,6 +843,11 @@ function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) 
       for (let y = 0; y < h; y += step) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
+
+      // Code line stepping analysis
+      const codeLines = cleanCode.split('\n').filter(l => l.trim().length > 0);
+      const activeLineIdx = Math.min(codeLines.length - 1, Math.floor(curProgress * codeLines.length));
+      const activeLineText = codeLines[activeLineIdx] || cleanCode.slice(0, 32);
 
       /* ─── SCENE: REDIS MULTIPLEXING RADAR ─── */
       if (simType === 'redis') {
@@ -1419,12 +1441,14 @@ function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) 
         ctx.fillText('BUS FREQ: 4.8 GHz | STACK DEPTH: 3 FRAMES | ZERO MUTEX LOCKS', 14, 40);
       }
 
-      animationId = requestAnimationFrame(render);
+      animFrameRef.current = requestAnimationFrame(render);
     };
 
-    render();
-    return () => cancelAnimationFrame(animationId);
-  }, [film, progress, isPlaying, playbackSpeed]);
+    animFrameRef.current = requestAnimationFrame(render);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [film, chapter]);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#08080a]">
@@ -1937,13 +1961,14 @@ export default function CodeCinema({ setActiveTab, user }) {
                 <div className="md:col-span-6 h-full relative border-r border-[#2b2520]">
                   <LivingArchitectureCanvas 
                     film={film}
+                    chapter={chapter}
                     progress={progressRatio}
                     isPlaying={isPlaying && countdownNumber === null}
                     playbackSpeed={playbackSpeed}
                   />
                 </div>
 
-                {/* Right Deck (6 Cols): 70mm Code Projector */}
+                {/* Right Deck (6 Cols): 70mm Synchronized Code Projector */}
                 <div className="md:col-span-6 h-full bg-[#08080c] flex flex-col overflow-hidden">
                   <div className="px-4 py-2 bg-[#0e0d14] border-b border-[#2b2520] flex items-center justify-between text-xs font-mono">
                     <div className="flex items-center gap-2 text-[#d4af37]">
@@ -1953,19 +1978,37 @@ export default function CodeCinema({ setActiveTab, user }) {
                     </div>
                     <div className="text-[10px] text-[#4ade80] font-bold uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse" />
-                      <span>{isPlaying ? 'STREAMING REEL' : 'PAUSED'}</span>
+                      <span>{isPlaying ? 'EXECUTING LIVE' : 'PAUSED'}</span>
                     </div>
                   </div>
 
                   <div className="p-4 sm:p-5 font-mono text-xs sm:text-[13px] leading-relaxed overflow-x-auto flex-1 overflow-y-auto custom-scrollbar bg-[#050508]">
-                    <pre className="text-[#ede8de]">
-                      <code>
-                        {fullCode.slice(0, displayedCodeLength || fullCode.length)}
-                        {isPlaying && (
-                          <span className="inline-block w-2.5 h-4 bg-[#d4af37] ml-0.5 animate-pulse align-middle" />
-                        )}
-                      </code>
-                    </pre>
+                    <div className="space-y-1">
+                      {fullCode.split('\n').map((lineText, lineIdx, allLines) => {
+                        const activeLineIdx = Math.min(allLines.length - 1, Math.floor(progressRatio * allLines.length));
+                        const isLineActive = isPlaying && lineIdx === activeLineIdx;
+                        return (
+                          <div 
+                            key={lineIdx} 
+                            className={`flex items-center px-2 py-0.5 rounded transition-all ${
+                              isLineActive 
+                                ? 'bg-[#d4af37]/20 border-l-2 border-[#d4af37] text-[#fff4d6] shadow-[0_0_12px_rgba(212,175,55,0.25)] font-bold' 
+                                : 'text-[#c2b6a2] hover:text-[#ede8de]'
+                            }`}
+                          >
+                            <span className="w-7 text-[10px] text-[#6b6456] select-none font-mono shrink-0">
+                              {lineIdx + 1}
+                            </span>
+                            <span className="flex-1 font-mono">
+                              {lineText || ' '}
+                              {isLineActive && (
+                                <span className="inline-block w-2 h-3.5 bg-[#d4af37] ml-1.5 animate-pulse align-middle" />
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1976,6 +2019,7 @@ export default function CodeCinema({ setActiveTab, user }) {
               <div className="w-full h-full relative">
                 <LivingArchitectureCanvas 
                   film={film}
+                  chapter={chapter}
                   progress={progressRatio}
                   isPlaying={isPlaying && countdownNumber === null}
                   playbackSpeed={playbackSpeed}
