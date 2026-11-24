@@ -200,7 +200,7 @@ export function isAllowedGprecPlacementTab(tab) {
     'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar',
     'speakverse',
     'interview', 'mock-interview', 'ai-interview', 'interview-room',
-    'coding-practice', 'code-editor',
+    'coding-practice', 'code-editor', 'code-cinema', 'cinema',
     'test-portal', 'tests', 'assignments', 'tests-assignments',
     'company-papers', 'placement-papers',
     'aptitude-arena', 'aptitude',

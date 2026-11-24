@@ -874,5 +874,286 @@ public class TrainBookingSystem {
       'Computer Architecture: Pipelining, Hazards, Endianness (Little vs Big Endian)',
       'Digital Logic: Setup & Hold Time, Metastability, FSMs'
     ]
+  },
+  {
+    id: 'cisco-campus-sde-2026',
+    company: 'Cisco Systems',
+    companyLogo: '🌐',
+    tier: 'Tier-1 Product & Cloud',
+    driveName: 'Cisco SDE-1 & Cloud Systems Software Engineer Campus Drive',
+    year: '2025 - 2026 Batch',
+    salaryPackages: [
+      { cadre: 'Software Engineer (SDE-1)', ctc: '₹15.0 - ₹18.0 LPA' },
+      { cadre: 'Cloud & Network Systems Engineer', ctc: '₹16.5 - ₹19.2 LPA' }
+    ],
+    examPattern: [
+      { section: 'Computer Networks & Protocols (Subnetting, TCP/IP, OSI)', questions: 15, time: '20 Mins', negativeMarking: 'Yes (0.25)' },
+      { section: 'Operating Systems & Concurrency (Threads, Deadlocks, Mutex)', questions: 15, time: '20 Mins', negativeMarking: 'Yes (0.25)' },
+      { section: 'Data Structures & Algorithms MCQs', questions: 10, time: '15 Mins', negativeMarking: 'Yes (0.25)' },
+      { section: 'Hands-on Coding (Graphs, Bitwise & Two-Pointers)', questions: 2, time: '60 Mins', negativeMarking: 'No' }
+    ],
+    difficulty: 'Hard (Strict Core CS & Graph DSA)',
+    eligibility: '7.5 CGPA or 75% in B.Tech with No Active Backlogs. CSE, IT, ECE, EEE branches eligible.',
+    questionsPaperUrl: 'https://lumixora.com/drives/cisco-sde-slot-master.pdf',
+    aptitudeMCQs: [
+      {
+        id: 'cisco-net-1',
+        section: 'Computer Networks',
+        question: 'An organization is granted the block 130.56.0.0/16. The administrator wants to create 1024 subnets. What is the new subnet mask and how many usable hosts per subnet?',
+        options: [
+          'Subnet mask: 255.255.255.192, 62 usable hosts',
+          'Subnet mask: 255.255.255.0, 254 usable hosts',
+          'Subnet mask: 255.255.255.192, 64 usable hosts',
+          'Subnet mask: 255.255.254.0, 510 usable hosts'
+        ],
+        correctAnswer: 'Subnet mask: 255.255.255.192, 62 usable hosts',
+        explanation: 'To create 1024 (2^10) subnets, 10 bits must be borrowed from host ID: 16 + 10 = 26 (/26). /26 gives 255.255.255.192. Remaining host bits = 32 - 26 = 6 bits. Usable hosts = 2^6 - 2 = 62 hosts.'
+      },
+      {
+        id: 'cisco-os-2',
+        section: 'Operating Systems',
+        question: 'Which of the following is TRUE regarding a counting semaphore with an initial value of 7, on which 20 P (wait) operations and 15 V (signal) operations are executed?',
+        options: ['Value is 2', 'Value is 12', 'Value is 0 with 2 processes waiting', 'Value is -2'],
+        correctAnswer: 'Value is 2',
+        explanation: 'Semaphore value = Initial + Signals - Waits = 7 + 15 - 20 = 2.'
+      },
+      {
+        id: 'cisco-net-3',
+        section: 'Computer Networks',
+        question: 'During the TCP 3-way handshake, if client sends SYN with sequence number 1000, what will be the ACK number in the server\'s SYN-ACK response?',
+        options: ['1000', '1001', '1002', '0'],
+        correctAnswer: '1001',
+        explanation: 'The server acknowledges the SYN by replying with an ACK number equal to the client sequence number + 1 (1000 + 1 = 1001).'
+      }
+    ],
+    codingQuestions: [
+      {
+        title: 'Problem 1: Network Delay Time (Dijkstra Shortest Path in Router Mesh)',
+        description: 'You are given a network of n routers labeled 1 to n, and times list where times[i] = (u, v, w) represents travel time w from router u to v. Compute the minimum time required for all routers to receive a broadcast signal sent from router k. Return -1 if impossible.',
+        sampleInput: 'times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2',
+        sampleOutput: '2',
+        approach: 'Dijkstra algorithm using Min-Heap priority queue. Time complexity O(E log V).',
+        javaCode: `import java.util.*;
+
+public class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        Map<Integer, List<int[]>> graph = new HashMap<>();
+        for (int[] t : times) {
+            graph.computeIfAbsent(t[0], x -> new ArrayList<>()).add(new int[]{t[1], t[2]});
+        }
+        
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+        pq.offer(new int[]{k, 0});
+        Map<Integer, Integer> dist = new HashMap<>();
+        
+        while (!pq.isEmpty()) {
+            int[] curr = pq.poll();
+            int u = curr[0], d = curr[1];
+            if (dist.containsKey(u)) continue;
+            dist.put(u, d);
+            
+            if (graph.containsKey(u)) {
+                for (int[] next : graph.get(u)) {
+                    if (!dist.containsKey(next[0])) {
+                        pq.offer(new int[]{next[0], d + next[1]});
+                    }
+                }
+            }
+        }
+        
+        if (dist.size() != n) return -1;
+        int max = 0;
+        for (int d : dist.values()) max = Math.max(max, d);
+        return max;
+    }
+}`
+      }
+    ],
+    aptitudeTopics: [
+      'CIDR Subnetting, VLSM & Routing Protocols (OSPF, BGP)',
+      'TCP Congestion Control (Slow Start, Tahoe vs Reno)',
+      'OS Concurrency: Deadlock Detection, Coffman Conditions, CAS Atomic Operations',
+      'Graph Shortest Paths: Dijkstra, Bellman-Ford, Floyd-Warshall'
+    ]
+  },
+  {
+    id: 'accolite-digital-elevate-2026',
+    company: 'Accolite Digital',
+    companyLogo: '⚡',
+    tier: 'Product Engineering (₹11.0 - ₹14.0 LPA)',
+    driveName: 'Accolite Digital Elevate Elite Campus Hiring Program',
+    year: '2025 - 2026 Batch',
+    salaryPackages: [
+      { cadre: 'Software Engineer', ctc: '₹11.0 - ₹14.0 LPA' },
+      { cadre: 'Cloud Data Engineer', ctc: '₹12.5 - ₹15.0 LPA' }
+    ],
+    examPattern: [
+      { section: 'Core CS Fundamentals (DBMS, OS, OOPs)', questions: 20, time: '30 Mins', negativeMarking: 'No' },
+      { section: 'Quantitative & Analytical Reasoning', questions: 20, time: '30 Mins', negativeMarking: 'No' },
+      { section: 'Advanced Hands-on Coding (Trees, Tries & DP)', questions: 2, time: '60 Mins', negativeMarking: 'No' }
+    ],
+    difficulty: 'Moderate to Hard',
+    eligibility: '65% or 6.5 CGPA in graduation. No active backlogs at the time of joining.',
+    questionsPaperUrl: 'https://lumixora.com/drives/accolite-elevate-master.pdf',
+    aptitudeMCQs: [
+      {
+        id: 'accolite-db-1',
+        section: 'Database Management Systems',
+        question: 'Which SQL clause is used to assign a rank to each row within a partition, leaving gaps in rank values when there are ties?',
+        options: ['DENSE_RANK()', 'RANK()', 'ROW_NUMBER()', 'LEAD()'],
+        correctAnswer: 'RANK()',
+        explanation: 'RANK() assigns duplicate ranks to ties and skips subsequent numbers (e.g., 1, 2, 2, 4), whereas DENSE_RANK() does not skip (1, 2, 2, 3).'
+      },
+      {
+        id: 'accolite-tree-2',
+        section: 'Data Structures',
+        question: 'What is the maximum number of nodes in a complete binary tree of depth d (root is at depth 0)?',
+        options: ['2^d', '2^(d+1) - 1', '2^d - 1', '2^(d-1)'],
+        correctAnswer: '2^(d+1) - 1',
+        explanation: 'A binary tree of depth d has at most 1 + 2 + 4 + ... + 2^d = 2^(d+1) - 1 nodes.'
+      }
+    ],
+    codingQuestions: [
+      {
+        title: 'Problem 1: Lowest Common Ancestor (LCA) in a Binary Tree',
+        description: 'Given a binary tree, find the lowest common ancestor (LCA) of two given nodes p and q in $O(N)$ time and $O(H)$ space.',
+        sampleInput: 'root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1',
+        sampleOutput: '3',
+        approach: 'Post-order DFS traversal returning non-null nodes when matches found.',
+        javaCode: `class TreeNode {
+    int val;
+    TreeNode left, right;
+    TreeNode(int x) { val = x; }
+}
+
+public class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null || root == p || root == q) return root;
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if (left != null && right != null) return root;
+        return left != null ? left : right;
+    }
+}`
+      }
+    ],
+    aptitudeTopics: [
+      'Binary Trees & Traversals: Inorder, Preorder, Postorder, Morris Traversal',
+      'DBMS Indexing: B+ Tree structures, Index Clustered vs Non-Clustered',
+      'SQL Window Functions: RANK, DENSE_RANK, NTILE, PARTITION BY',
+      'Dynamic Programming: Longest Common Subsequence & 0/1 Knapsack'
+    ]
+  },
+  {
+    id: 'darwinbox-product-sde-2026',
+    company: 'Darwinbox',
+    companyLogo: '🦄',
+    tier: 'Product Unicorn (₹12.0 - ₹16.0 LPA)',
+    driveName: 'Darwinbox Software Development Engineer - Product Engineering',
+    year: '2025 - 2026 Batch',
+    salaryPackages: [
+      { cadre: 'Associate Software Engineer', ctc: '₹12.0 - ₹15.5 LPA' },
+      { cadre: 'SDE-1 (Backend & Distributed Systems)', ctc: '₹14.0 - ₹16.5 LPA' }
+    ],
+    examPattern: [
+      { section: 'Advanced Data Structures (Sliding Window, Heaps, Trees)', questions: 15, time: '20 Mins', negativeMarking: 'No' },
+      { section: 'System Architecture & Concurrency Scenarios', questions: 15, time: '20 Mins', negativeMarking: 'No' },
+      { section: 'Hands-on Coding: High-Concurrency & Cache Algorithms', questions: 2, time: '60 Mins', negativeMarking: 'No' }
+    ],
+    difficulty: 'Hard (Product Scalability & Concurrency)',
+    eligibility: '7.0 CGPA throughout academics. Strong foundation in OOPS, REST APIs, and System Design.',
+    questionsPaperUrl: 'https://lumixora.com/drives/darwinbox-product-master.pdf',
+    aptitudeMCQs: [
+      {
+        id: 'darwinbox-arch-1',
+        section: 'System Design',
+        question: 'Which caching strategy guarantees that data is written to the cache and the primary database simultaneously before returning a success response?',
+        options: ['Write-Back (Write-Behind)', 'Write-Through', 'Cache-Aside (Lazy Loading)', 'Read-Through'],
+        correctAnswer: 'Write-Through',
+        explanation: 'In Write-Through caching, data is written into the cache and the permanent database store at the same time, ensuring strong consistency at the expense of higher write latency.'
+      },
+      {
+        id: 'darwinbox-sql-2',
+        section: 'Database Engineering',
+        question: 'What is a Phantom Read anomaly in transaction isolation levels, and which SQL standard isolation level prevents it?',
+        options: [
+          'Reading modified data not yet committed; prevented by Read Committed',
+          'A transaction reads a set of rows matching a condition, and a second transaction inserts a new row matching that condition; prevented by Serializable',
+          'Reading duplicate rows in an outer join; prevented by Repeatable Read',
+          'Lock escalation on primary key indexes; prevented by Read Uncommitted'
+        ],
+        correctAnswer: 'A transaction reads a set of rows matching a condition, and a second transaction inserts a new row matching that condition; prevented by Serializable',
+        explanation: 'Phantom Reads occur when new rows are added matching a search criteria during an active transaction. Only Serializable isolation prevents phantom reads using range locks.'
+      }
+    ],
+    codingQuestions: [
+      {
+        title: 'Problem 1: LRU (Least Recently Used) Cache Design in O(1)',
+        description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache with get(key) and put(key, value) operations running in $O(1)$ average time complexity.',
+        sampleInput: '["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]\n[[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]',
+        sampleOutput: '[null, null, null, 1, null, -1, null, -1, 3, 4]',
+        approach: 'Combine a HashMap for O(1) key lookups with a Doubly Linked List for O(1) node removal and insertion at head.',
+        javaCode: `import java.util.*;
+
+public class LRUCache {
+    class Node {
+        int key, value;
+        Node prev, next;
+        Node(int k, int v) { key = k; value = v; }
+    }
+    
+    private Map<Integer, Node> map = new HashMap<>();
+    private int capacity;
+    private Node head, tail;
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        head = new Node(0, 0);
+        tail = new Node(0, 0);
+        head.next = tail;
+        tail.prev = head;
+    }
+    
+    private void remove(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+    
+    private void insertToHead(Node node) {
+        node.next = head.next;
+        node.next.prev = node;
+        head.next = node;
+        node.prev = head;
+    }
+    
+    public int get(int key) {
+        if (!map.containsKey(key)) return -1;
+        Node node = map.get(key);
+        remove(node);
+        insertToHead(node);
+        return node.value;
+    }
+    
+    public void put(int key, int value) {
+        if (map.containsKey(key)) {
+            remove(map.get(key));
+        }
+        if (map.size() == capacity) {
+            map.remove(tail.prev.key);
+            remove(tail.prev);
+        }
+        Node node = new Node(key, value);
+        insertToHead(node);
+        map.put(key, node);
+    }
+}`
+      }
+    ],
+    aptitudeTopics: [
+      'Low-Level System Design (LLD): LRU Cache, Rate Limiter, In-Memory Queue',
+      'Database Concurrency: Isolation Levels, Pessimistic vs Optimistic Locking',
+      'High-Throughput Caching Strategies: Cache-Aside, Write-Through, Cache Stampede Mitigation',
+      'API Scalability: Idempotency keys, JWT Token Revocation, Connection Pools'
+    ]
   }
 ];

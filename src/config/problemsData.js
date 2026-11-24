@@ -2048,6 +2048,397 @@ public:
     return 0
 }`
     }
+  },
+  {
+    id: 'course-schedule',
+    title: 'Course Schedule (Topological Sort)',
+    difficulty: 'Medium',
+    acceptanceRate: '46.2%',
+    category: 'Graphs',
+    frequency: 94,
+    popularity: 96,
+    solved: false,
+    companies: ['Cisco', 'Amazon', 'TCS Prime', 'Google'],
+    statement: `There are a total of \`numCourses\` courses you have to take, labeled from \`0\` to \`numCourses - 1\`. You are given an array \`prerequisites\` where \`prerequisites[i] = [a_i, b_i]\` indicates that you **must** take course \`b_i\` first if you want to take course \`a_i\`.
+
+Return \`true\` if you can finish all courses. Otherwise, return \`false\`.`,
+    inputFormat: 'An integer \`numCourses\` and an array of prerequisite pairs.',
+    outputFormat: 'Boolean \`true\` or \`false\`.',
+    constraints: [
+      '1 <= numCourses <= 2000',
+      '0 <= prerequisites.length <= 5000',
+      'prerequisites[i].length == 2',
+      'All the pairs prerequisites[i] are unique.'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'numCourses = 2, prerequisites = [[1,0]]',
+        output: 'true',
+        explanation: 'There are 2 courses to take. To take course 1 you should have finished course 0. So it is possible.'
+      },
+      {
+        input: 'numCourses = 2, prerequisites = [[1,0],[0,1]]',
+        output: 'false',
+        explanation: 'There is a cycle between course 0 and 1, so it is impossible.'
+      }
+    ],
+    testCases: [
+      { input: '2\n[[1,0]]', output: 'true' },
+      { input: '2\n[[1,0],[0,1]]', output: 'false' },
+      { input: '3\n[[0,1],[0,2],[1,2]]', output: 'true' }
+    ],
+    hiddenTestCases: [
+      { input: '4\n[[2,0],[1,0],[3,1],[3,2],[1,3]]', output: 'false' }
+    ],
+    hints: [
+      'This problem is equivalent to finding if a cycle exists in a directed graph.',
+      'You can use Kahn\'s Algorithm (BFS using in-degrees) or DFS with recursion stack tracking.'
+    ],
+    functionName: 'canFinish',
+    starterTemplates: {
+      javascript: `/**
+ * @param {number} numCourses
+ * @param {number[][]} prerequisites
+ * @return {boolean}
+ */
+function canFinish(numCourses, prerequisites) {
+  const inDegree = new Array(numCourses).fill(0);
+  const adj = Array.from({ length: numCourses }, () => []);
+  
+  for (const [course, prereq] of prerequisites) {
+    adj[prereq].push(course);
+    inDegree[course]++;
+  }
+  
+  const queue = [];
+  for (let i = 0; i < numCourses; i++) {
+    if (inDegree[i] === 0) queue.push(i);
+  }
+  
+  let taken = 0;
+  while (queue.length > 0) {
+    const curr = queue.shift();
+    taken++;
+    for (const next of adj[curr]) {
+      inDegree[next]--;
+      if (inDegree[next] === 0) queue.push(next);
+    }
+  }
+  
+  return taken === numCourses;
+}`,
+      python: `class Solution:
+    def canFinish(self, numCourses: int, prerequisites: list[list[int]]) -> bool:
+        # Write your code here
+        return True`,
+      cpp: `#include <vector>
+#include <queue>
+using namespace std;
+
+class Solution {
+public:
+    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+        // Write your code here
+        return true;
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        // Write your code here
+        return true;
+    }
+}`
+    }
+  },
+  {
+    id: 'lowest-common-ancestor',
+    title: 'Lowest Common Ancestor of Binary Tree',
+    difficulty: 'Medium',
+    acceptanceRate: '60.1%',
+    category: 'Trees',
+    frequency: 91,
+    popularity: 94,
+    solved: false,
+    companies: ['Accolite', 'Amazon', 'Cisco', 'Microsoft'],
+    statement: `Given a binary tree, find the lowest common ancestor (LCA) of two given nodes in the tree.
+
+According to the definition of LCA on Wikipedia: "The lowest common ancestor is defined between two nodes \`p\` and \`q\` as the lowest node in \`T\` that has both \`p\` and \`q\` as descendants (where we allow a node to be a descendant of itself)."`,
+    inputFormat: 'A binary tree root and two target values p and q.',
+    outputFormat: 'The value of the lowest common ancestor node.',
+    constraints: [
+      'The number of nodes in the tree is in the range [2, 10^5].',
+      '-10^9 <= Node.val <= 10^9',
+      'All Node.val are unique.',
+      'p != q and both p and q will exist in the tree.'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1',
+        output: '3',
+        explanation: 'The LCA of nodes 5 and 1 is 3.'
+      }
+    ],
+    testCases: [
+      { input: '[3,5,1,6,2,0,8]\n5\n1', output: '3' },
+      { input: '[3,5,1,6,2,0,8,null,null,7,4]\n5\n4', output: '5' }
+    ],
+    hiddenTestCases: [
+      { input: '[1,2]\n1\n2', output: '1' }
+    ],
+    hints: [
+      'Traverse the tree from root in a post-order traversal (DFS).',
+      'If the current node is equal to p or q, return the current node.',
+      'If both left and right recursive calls return non-null, the current node is the LCA.'
+    ],
+    functionName: 'lowestCommonAncestor',
+    starterTemplates: {
+      javascript: `function lowestCommonAncestor(root, p, q) {
+  if (!root || root === p || root === q) return root;
+  const left = lowestCommonAncestor(root.left, p, q);
+  const right = lowestCommonAncestor(root.right, p, q);
+  if (left && right) return root;
+  return left || right;
+}`,
+      python: `class Solution:
+    def lowestCommonAncestor(self, root, p, q):
+        if not root or root == p or root == q:
+            return root
+        left = self.lowestCommonAncestor(root.left, p, q)
+        right = self.lowestCommonAncestor(root.right, p, q)
+        return root if left and right else left or right`,
+      cpp: `class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if (!root || root == p || root == q) return root;
+        TreeNode* left = lowestCommonAncestor(root->left, p, q);
+        TreeNode* right = lowestCommonAncestor(root->right, p, q);
+        return (left && right) ? root : (left ? left : right);
+    }
+};`,
+      java: `class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null || root == p || root == q) return root;
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if (left != null && right != null) return root;
+        return left != null ? left : right;
+    }
+}`
+    }
+  },
+  {
+    id: 'daily-temperatures',
+    title: 'Daily Temperatures (Monotonic Stack)',
+    difficulty: 'Medium',
+    acceptanceRate: '66.4%',
+    category: 'Stacks',
+    frequency: 89,
+    popularity: 92,
+    solved: false,
+    companies: ['Darwinbox', 'Cisco', 'Amazon', 'Meta'],
+    statement: `Given an array of integers \`temperatures\` represents the daily temperatures, return an array \`answer\` such that \`answer[i]\` is the number of days you have to wait after the \`i^th\` day to get a warmer temperature. If there is no future day for which this is possible, keep \`answer[i] == 0\` instead.`,
+    inputFormat: 'An array of integer temperatures.',
+    outputFormat: 'An array of wait day counts.',
+    constraints: [
+      '1 <= temperatures.length <= 10^5',
+      '30 <= temperatures[i] <= 100'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'temperatures = [73,74,75,71,69,72,76,73]',
+        output: '[1,1,4,2,1,1,0,0]'
+      }
+    ],
+    testCases: [
+      { input: '[73,74,75,71,69,72,76,73]', output: '[1,1,4,2,1,1,0,0]' },
+      { input: '[30,40,50,60]', output: '[1,1,1,0]' },
+      { input: '[30,60,90]', output: '[1,1,0]' }
+    ],
+    hiddenTestCases: [
+      { input: '[90,80,70,60]', output: '[0,0,0,0]' }
+    ],
+    hints: [
+      'Use a monotonic decreasing stack that stores indices of temperatures.',
+      'When you see a temperature higher than the stack\'s top, pop and calculate the day difference.'
+    ],
+    functionName: 'dailyTemperatures',
+    starterTemplates: {
+      javascript: `function dailyTemperatures(temperatures) {
+  const n = temperatures.length;
+  const res = new Array(n).fill(0);
+  const stack = []; // stores indices
+  
+  for (let i = 0; i < n; i++) {
+    while (stack.length > 0 && temperatures[i] > temperatures[stack[stack.length - 1]]) {
+      const prevIdx = stack.pop();
+      res[prevIdx] = i - prevIdx;
+    }
+    stack.push(i);
+  }
+  
+  return res;
+}`,
+      python: `class Solution:
+    def dailyTemperatures(self, temperatures: list[int]) -> list[int]:
+        n = len(temperatures)
+        res = [0] * n
+        stack = []
+        for i, t in enumerate(temperatures):
+            while stack and t > temperatures[stack[-1]]:
+                prev = stack.pop()
+                res[prev] = i - prev
+            stack.append(i)
+        return res`,
+      cpp: `#include <vector>
+#include <stack>
+using namespace std;
+
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        int n = temperatures.size();
+        vector<int> res(n, 0);
+        stack<int> st;
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && temperatures[i] > temperatures[st.top()]) {
+                int prev = st.top(); st.pop();
+                res[prev] = i - prev;
+            }
+            st.push(i);
+        }
+        return res;
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public int[] dailyTemperatures(int[] temperatures) {
+        int n = temperatures.length;
+        int[] res = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
+                int prev = stack.pop();
+                res[prev] = i - prev;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
+}`
+    }
+  },
+  {
+    id: 'longest-increasing-subsequence',
+    title: 'Longest Increasing Subsequence (LIS)',
+    difficulty: 'Medium',
+    acceptanceRate: '54.5%',
+    category: 'Dynamic Programming',
+    frequency: 93,
+    popularity: 95,
+    solved: false,
+    companies: ['TCS Prime', 'Accolite', 'Amazon', 'Cisco'],
+    statement: `Given an integer array \`nums\`, return the length of the longest strictly increasing subsequence.
+
+A **subsequence** is an array that can be derived from another array by deleting some or no elements without changing the order of the remaining elements.`,
+    inputFormat: 'An integer array nums.',
+    outputFormat: 'An integer representing the length of the LIS.',
+    constraints: [
+      '1 <= nums.length <= 2500',
+      '-10^4 <= nums[i] <= 10^4'
+    ],
+    timeLimit: '1000ms',
+    memoryLimit: '256MB',
+    examples: [
+      {
+        input: 'nums = [10,9,2,5,3,7,101,18]',
+        output: '4',
+        explanation: 'The longest increasing subsequence is [2,3,7,101], therefore the length is 4.'
+      }
+    ],
+    testCases: [
+      { input: '[10,9,2,5,3,7,101,18]', output: '4' },
+      { input: '[0,1,0,3,2,3]', output: '4' },
+      { input: '[7,7,7,7,7,7,7]', output: '1' }
+    ],
+    hiddenTestCases: [
+      { input: '[1,3,6,7,9,4,10,5,6]', output: '6' }
+    ],
+    hints: [
+      'Dynamic Programming O(N^2): dp[i] = max(dp[j] + 1) for all j < i where nums[j] < nums[i].',
+      'Can you optimize it to O(N log N) using binary search (Patience Sorting)?'
+    ],
+    functionName: 'lengthOfLIS',
+    starterTemplates: {
+      javascript: `function lengthOfLIS(nums) {
+  const tails = [];
+  for (const x of nums) {
+    let l = 0, r = tails.length;
+    while (l < r) {
+      const mid = Math.floor((l + r) / 2);
+      if (tails[mid] < x) l = mid + 1;
+      else r = mid;
+    }
+    tails[l] = x;
+  }
+  return tails.length;
+}`,
+      python: `import bisect
+
+class Solution:
+    def lengthOfLIS(self, nums: list[int]) -> int:
+        tails = []
+        for x in nums:
+            idx = bisect.bisect_left(tails, x)
+            if idx == len(tails):
+                tails.append(x)
+            else:
+                tails[idx] = x
+        return len(tails)`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> tails;
+        for (int x : nums) {
+            auto it = lower_bound(tails.begin(), tails.end(), x);
+            if (it == tails.end()) tails.push_back(x);
+            else *it = x;
+        }
+        return tails.size();
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int[] tails = new int[nums.length];
+        int size = 0;
+        for (int x : nums) {
+            int i = 0, j = size;
+            while (i != j) {
+                int m = (i + j) / 2;
+                if (tails[m] < x) i = m + 1;
+                else j = m;
+            }
+            tails[i] = x;
+            if (i == size) ++size;
+        }
+        return size;
+    }
+}`
+    }
   }
 ];
 

@@ -8,6 +8,10 @@ export const COMPANY_PRESETS = [
   { id: 'infosys', name: 'Infosys SP / DSE', logo: '💻', color: 'from-blue-500 to-indigo-700', focus: 'Java, Python & Problem Solving' },
   { id: 'accenture', name: 'Accenture ASE', logo: '⚡', color: 'from-purple-500 to-pink-500', focus: 'Coding, Pseudo-code & Communication' },
   { id: 'goldman', name: 'Goldman Sachs', logo: '📈', color: 'from-cyan-600 to-blue-700', focus: 'Math, Quant, Algorithms & C++' },
+  { id: 'cisco', name: 'Cisco Systems (₹15L-18L)', logo: '🌐', color: 'from-cyan-500 to-blue-600', focus: 'Computer Networks, Subnetting, OS Concurrency & C++' },
+  { id: 'accolite', name: 'Accolite Digital (₹11L-14L)', logo: '⚡', color: 'from-amber-500 to-orange-600', focus: 'Binary Trees, Tries, Dynamic Programming & DBMS' },
+  { id: 'tcs_prime', name: 'TCS Prime (₹9L-11.5L)', logo: '🏢', color: 'from-purple-500 to-indigo-600', focus: 'Advanced Algorithmic Graph/DP, System Thinking' },
+  { id: 'darwinbox', name: 'Darwinbox Product (₹12L-16L)', logo: '🦄', color: 'from-pink-500 to-purple-600', focus: 'High-Throughput APIs, Redis Caching & Concurrency' },
   { id: 'startup', name: 'Fast-Paced AI Startup', logo: '🚀', color: 'from-emerald-500 to-teal-600', focus: 'Full Stack, APIs & Pragmatic Problem Solving' }
 ];
 
@@ -493,10 +497,10 @@ ${pastQuestionsTextList}
 
 EVALUATE:
 1. "marksAwarded": 0 to ${maxMarks} based on technical accuracy.
-2. "feedback": 1-2 concise sentences.
+2. "feedback": 1-2 concise sentences identifying technical gaps.
 3. "aiModelAnswer": 2-3 paragraphs of gold-standard answer for Round #${currentRound} (${currentStage.title}).
 4. "comparisonAnalysis": 2 sentences comparing candidate answer with ideal answer.
-5. "nextQuestion": ${isFinalQuestion ? '""' : `Formulate next question for ${isLastQuestionInRound ? `Round ${nextRoundNum} (${nextStage.title})` : `Round ${currentRound} Q${nextQuestionIndex}`}`}.
+5. "nextQuestion": ${isFinalQuestion ? '""' : `Formulate next question for ${isLastQuestionInRound ? `Round ${nextRoundNum} (${nextStage.title})` : `Round ${currentRound} Q${nextQuestionIndex}`}. FOR TECHNICAL ROUNDS, PROBE DEEPLY on Time/Space Complexity O(...), boundary edge cases, and why this architectural approach was chosen over alternatives.`}.
 
 JSON SCHEMA ONLY:
 {

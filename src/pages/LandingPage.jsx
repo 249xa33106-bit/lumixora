@@ -15,11 +15,13 @@ import Realistic3DLogo from '../components/Realistic3DLogo';
 import HolographicGlassCockpit from '../components/HolographicGlassCockpit';
 import StudentEvolutionSlider from '../components/StudentEvolutionSlider';
 import LandingCodeCinema from '../components/landing/LandingCodeCinema';
+import PlacementGapDiagnosticModal from '../components/PlacementGapDiagnosticModal';
 
 export default function LandingPage({ onLoginClick }) {
   // Navigation & modals
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showTeamPortal, setShowTeamPortal] = useState(false);
+  const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
   const [showAmbassadorModal, setShowAmbassadorModal] = useState(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
       const h = window.location.hash.toLowerCase();
@@ -454,6 +456,70 @@ export default function LandingPage({ onLoginClick }) {
           {/* ── INTERACTIVE STUDENT EVOLUTION SLIDER (YEAR 1 TO YEAR 4) ── */}
           <div className="mt-14 max-w-5xl mx-auto">
             <StudentEvolutionSlider onGetStarted={handleAuth} />
+          </div>
+
+          {/* ── 1-CLICK TIER-1 PLACEMENT ACCELERATOR STRIP (₹10L–16L) ── */}
+          <div className="mt-12 max-w-5xl mx-auto p-6 rounded-3xl bg-[#0B1120] border border-cyan-500/30 shadow-xl text-white">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+                  <span className="text-[11px] font-mono font-black uppercase tracking-wider text-cyan-400">
+                    4th-Year Tier-1 Campus Accelerator
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    ₹10L – ₹16L TARGET
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-white">
+                  Realistic Drive Readiness Diagnostic & Test-Drive Modules
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setShowDiagnosticModal(true)}
+                className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 hover:scale-105 transition-transform text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer shrink-0"
+              >
+                <Sparkles className="w-4 h-4 fill-black" />
+                <span>Take 3-Min Placement Diagnostic</span>
+              </button>
+            </div>
+
+            {/* Quick-Launch Pills Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+              <a
+                href="#previous-papers"
+                className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all flex items-center justify-between group"
+              >
+                <div className="space-y-0.5">
+                  <div className="text-[10px] font-mono text-cyan-400 uppercase font-bold">Drive Papers & Simulation</div>
+                  <div className="text-xs font-bold text-white group-hover:text-cyan-300">Cisco, Darwinbox, Accolite</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:translate-x-1 group-hover:text-cyan-300 transition-all" />
+              </a>
+
+              <a
+                href="#coding-practice"
+                className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all flex items-center justify-between group"
+              >
+                <div className="space-y-0.5">
+                  <div className="text-[10px] font-mono text-purple-400 uppercase font-bold">Algorithmic Crucible</div>
+                  <div className="text-xs font-bold text-white group-hover:text-purple-300">Course Schedule, LCA, LIS</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:translate-x-1 group-hover:text-purple-300 transition-all" />
+              </a>
+
+              <a
+                href="#previous-papers"
+                className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all flex items-center justify-between group"
+              >
+                <div className="space-y-0.5">
+                  <div className="text-[10px] font-mono text-emerald-400 uppercase font-bold">Core CS Flashcards</div>
+                  <div className="text-xs font-bold text-white group-hover:text-emerald-300">OS, DBMS, System Viva</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:translate-x-1 group-hover:text-emerald-300 transition-all" />
+              </a>
+            </div>
           </div>
 
         </div>
@@ -1669,6 +1735,16 @@ export default function LandingPage({ onLoginClick }) {
       {showAmbassadorModal && (
         <CampusAmbassadorModal onClose={() => setShowAmbassadorModal(false)} />
       )}
+
+      {/* ── PLACEMENT GAP DIAGNOSTIC MODAL ── */}
+      <PlacementGapDiagnosticModal
+        isOpen={showDiagnosticModal}
+        onClose={() => setShowDiagnosticModal(false)}
+        onNavigate={(tab) => {
+          if (tab === 'papers') window.location.hash = '#previous-papers';
+          else if (tab === 'coding') window.location.hash = '#coding-practice';
+        }}
+      />
 
     </div>
   );

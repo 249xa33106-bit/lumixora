@@ -1302,3 +1302,19 @@ html {
 .animate-water-ripple {
   animation: waterRipplePulse 3s ease-out infinite;
 }
+
+/* 🌟 Lumina 3D Embodied Avatar Breathing & Life Motion */
+@keyframes luminaBreathe {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.008);
+  }
+}
+
+.animate-lumina-breathe {
+  animation: luminaBreathe 4.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+

@@ -1289,3 +1289,132 @@ export async function summarizeChatMessages(messagesText) {
     };
   }
 }
+
+
+/**
+ * 🌟 LUMINA: Universal Polymath AI Personal Mentor Engine
+ * Master of Arts (Singing, Dance, Art), Deep Sciences, Code, Placement & Life Mastery.
+ */
+export async function generateLuminaMentorResponse(messages, userContext = {}, activeCategory = 'all') {
+  try {
+    const studentName = userContext?.name || userContext?.displayName || 'Scholar';
+    const college = userContext?.college || 'Lumixora Campus';
+    const dept = userContext?.branch || userContext?.department || 'Engineering';
+
+    const systemPrompt = `You are Lumina, the premier AI Personal Mentor and Universal Polymath on the Lumixora platform.
+You look, speak, and interact like a world-class human mentor—warm, deeply articulate, creative, and an authentic expert in EVERYTHING across arts, culture, sciences, and professional life.
+
+🌟 YOUR UNIVERSAL DOMAINS OF MASTERY:
+1. 🎤 SINGING & MUSIC:
+   - Vocal coaching: Diaphragmatic breath support, pitch accuracy, head/chest resonance, vocal agility, vibrato, warm-up scales.
+   - Music theory: Chords, intervals, rhythm/BPM, cadences, and Indian Classical Ragas & Taals (Yaman, Bhairav, Bilawal, Teentaal).
+   - Songwriting: Lyrics, rap rhyming schemes, melody composition, song structure (Verse-Chorus-Bridge).
+2. 💃 DANCING & CHOREOGRAPHY:
+   - Movement breakdown on musical 8-counts (1-2-3-4-5-6-7-8).
+   - Styles: Hip-hop (popping, locking, tutting, waving, isolations), Contemporary, Indian Classical (Kathak, Bharatanatyam mudras), Salsa, and K-Pop routines.
+   - Stage presence, musicality, transitions, posture, and expressive performance.
+3. 🎨 FINE ART, VISUAL DESIGN & AESTHETICS:
+   - Drawing fundamentals: 1/2-point perspective, anatomical proportions, dynamic gesture sketching, lighting & chiaroscuro shading.
+   - Color psychology: Complementary, analogous, and triadic color harmonies, mood palettes.
+   - Art critique: Composition (Rule of Thirds, Golden Ratio), digital illustration, UI/UX aesthetics.
+4. 💻 COMPUTER SCIENCE, CODING & ARCHITECTURE:
+   - DSA, system architecture, microservices, cloud edge, full-stack development, debugging.
+   - Clean production code snippets with space/time complexity.
+5. 📐 MATHEMATICS & DEEP SCIENCE:
+   - Rigorous mathematical proofs and LaTeX formulas ($...$ and $$...$$).
+   - Calculus, linear algebra, quantum computing, signals & systems, thermodynamics.
+6. 💼 PLACEMENT & EXECUTIVE CAREER:
+   - FAANG/MNC interview grilling, STAR-method answers, ATS resume optimization, salary negotiation.
+7. 🧘 LIFE, PHILOSOPHY & MINDSET:
+   - Empathetic active listening, focus stamina, habit architecture, creativity unblocking.
+
+GUIDELINES FOR YOUR RESPONSES:
+- Address the user as ${studentName} with warmth and confidence.
+- Be highly professional, inspiring, and concise. Never use generic corporate robotic phrases.
+- Use clean Markdown formatting: bold highlights, bullet points, musical notations, choreography counts, or code blocks where applicable.
+- Conclude naturally with an encouraging, actionable follow-up step.`;
+
+    const formattedMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.slice(-8)
+    ];
+
+    let reply = null;
+    try {
+      reply = await callAICompletion({
+        messages: formattedMessages,
+        temperature: 0.7,
+        maxTokens: 1100
+      });
+    } catch (apiErr) {
+      console.warn("Lumina AI Completion note:", apiErr);
+    }
+
+    if (reply && typeof reply === 'string' && reply.trim().length > 10) {
+      return reply.trim();
+    }
+
+    // High-Fidelity Polymath Fallback Response
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+    const qLower = (typeof lastUserMessage === 'string' ? lastUserMessage : '').toLowerCase();
+
+    if (qLower.includes('sing') || qLower.includes('vocal') || qLower.includes('song') || qLower.includes('music') || qLower.includes('pitch') || qLower.includes('raga')) {
+      return `Hey ${studentName}! 🎤 Let's unlock your voice. Singing is equal parts vocal physiology and pure emotion.
+
+### 🎵 3 Golden Vocal Keys to Practice Right Now:
+1. **Diaphragmatic Expansion**: Place a hand on your stomach. Inhale deeply through your nose—your stomach should expand outward, keeping your shoulders relaxed.
+2. **Lip Trills & Humming**: Warm up for 3 minutes on a gentle five-tone scale (*Do-Re-Mi-Fa-Sol-Fa-Mi-Re-Do*). This relieves vocal cord tension.
+3. **Pitch Resonance**: Aim your sound forward toward the "mask" of your face (cheekbones and nasal bridge) rather than squeezing your throat.
+
+*Tell me: Are you working on a specific song, contemporary pop, or classical scales? I can analyze your melody or write an original verse for you!*`;
+    }
+
+    if (qLower.includes('dance') || qLower.includes('choreograph') || qLower.includes('step') || qLower.includes('hip hop') || qLower.includes('rhythm') || qLower.includes('beat')) {
+      return `Hey ${studentName}! 💃 Let's get moving. Dance begins with musicality and clean rhythm isolation.
+
+### 🌟 8-Count Routine Breakdown (Hip-Hop / Groove):
+- **Count 1–2**: Step right foot out, chest pop forward on the downbeat (*1*), then drop into a soft knee bounce (*2*).
+- **Count 3–4**: Snap-turn shoulders left, sweep right arm across your chest (*3*), and lock your wrist with an isolation (*4*).
+- **Count 5–6**: Double foot slide to the right with torso wave (*5*), drop level low (*6*).
+- **Count 7–8**: Quick cross-step kick (*7*), freeze in power stance with chin tilted up (*8*).
+
+*Tip*: Always listen for the bass kick and snare rim—they dictate your accent. Which dance style would you like to master next?`;
+    }
+
+    if (qLower.includes('art') || qLower.includes('draw') || qLower.includes('sketch') || qLower.includes('paint') || qLower.includes('color') || qLower.includes('design')) {
+      return `Hello ${studentName}! 🎨 Art is visual poetry. Whether you're sketching on paper or designing digital interfaces, strong fundamentals make all the difference.
+
+### 🖌️ Core Aesthetic Principles for Your Work:
+1. **The Rule of Thirds & Focal Anchors**: Never place your subject dead-center unless you intend strict symmetry. Position key focal points at the intersections of a 3x3 grid.
+2. **Value Contrast (Light & Shadow)**: A drawing succeeds through values (light to dark) before color. Establish your single light source and maintain consistent cast shadows.
+3. **Harmonic Color Palettes**: Pick one dominant color (60%), a secondary tone (30%), and a bold accent pop (10%) using complementary color theory.
+
+*Would you like feedback on a specific sketch, character concept, or UI palette you're building?*`;
+    }
+
+    if (qLower.includes('code') || qLower.includes('dsa') || qLower.includes('algorithm') || qLower.includes('python') || qLower.includes('react') || qLower.includes('system design')) {
+      return `Hey ${studentName}! 💻 Let's engineer something great. Clean code and architectural clarity are superpowers in today's tech landscape.
+
+### ⚡ Technical Execution Framework:
+- **Deconstruct First**: Before writing code, write out the state transitions or algorithmic invariant in plain English.
+- **Space-Time Tradeoffs**: Can you trade $O(N)$ memory (like a Hash Map or memoization table) to drop from $O(N^2)$ to $O(N)$ time?
+- **Edge-Case Resilience**: Test empty inputs, boundary values, null pointers, and concurrency race conditions.
+
+*What specific problem, API route, or architectural challenge are you tackling today? Paste your code and let's optimize it!*`;
+    }
+
+    return `Hello ${studentName}! ✨ I'm **Lumina**, your personal AI mentor and creative polymath partner.
+
+I'm here to guide you across every frontier of your journey—from **singing, music composition & dance choreography**, to **fine art & visual design**, to **algorithms, university academics, and executive career strategy**.
+
+How can I support your growth or creative spark right now? You can ask me to:
+- 💡 **Explain any concept** in intuitive terms or deep mathematical proofs.
+- 🎤 **Coach your singing** or compose original lyrics and chord progressions.
+- 💃 **Break down dance choreography** on an 8-count beat.
+- 🎨 **Critique your art & color palettes** with professional design principles.
+- 🗺️ **Plan your personalized learning path** for college and placements.`;
+  } catch (err) {
+    console.error("Lumina AI Error:", err);
+    return "Hello Scholar! I'm Lumina, your AI Mentor. Let me know what you'd like to explore today—from creative arts to engineering mastery!";
+  }
+}

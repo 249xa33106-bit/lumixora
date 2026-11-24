@@ -7,6 +7,8 @@ import {
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { COMPANY_DRIVES_DATA } from '../data/companyDrivesData';
+import CoreCsVivaCrucible from '../components/CoreCsVivaCrucible';
+import TimedMockDriveAssessment from '../components/TimedMockDriveAssessment';
 import { useToast } from '../context/ToastContext';
 
 export default function CompanyPlacementPapers({ setActiveTab, user, setSelectedProblem }) {
@@ -454,6 +456,28 @@ export default function CompanyPlacementPapers({ setActiveTab, user, setSelected
                       >
                         <Clock className="w-3.5 h-3.5" /> Exam Pattern & Cutoffs
                       </button>
+
+                      <button
+                        onClick={() => setDriveTabMap(prev => ({ ...prev, [drive.id]: 'viva' }))}
+                        className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                          currentTab === 'viva'
+                            ? 'bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 font-black shadow-md'
+                            : 'text-cyan-300 hover:text-white hover:bg-white/5 border border-cyan-500/20'
+                        }`}
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Core CS Viva & LLD (₹10L-16L)
+                      </button>
+
+                      <button
+                        onClick={() => setDriveTabMap(prev => ({ ...prev, [drive.id]: 'simulate' }))}
+                        className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                          currentTab === 'simulate'
+                            ? 'bg-gradient-to-r from-amber-400 to-emerald-400 text-black font-black shadow-md'
+                            : 'text-amber-300 hover:text-white hover:bg-white/5 border border-amber-500/30'
+                        }`}
+                      >
+                        <Clock className="w-3.5 h-3.5 text-amber-400" /> Simulate Drive (45 Min)
+                      </button>
                     </div>
 
                     {/* TAB 1: CODING PROBLEMS */}
@@ -637,6 +661,23 @@ export default function CompanyPlacementPapers({ setActiveTab, user, setSelected
                             ))}
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* TAB 4: CORE CS VIVA CRUCIBLE */}
+                    {currentTab === 'viva' && (
+                      <div className="animate-fade-in pt-2">
+                        <CoreCsVivaCrucible />
+                      </div>
+                    )}
+
+                    {/* TAB 5: TIMED MOCK ASSESSMENT SIMULATION */}
+                    {currentTab === 'simulate' && (
+                      <div className="animate-fade-in pt-2">
+                        <TimedMockDriveAssessment 
+                          drive={drive} 
+                          onExit={() => setDriveTabMap(prev => ({ ...prev, [drive.id]: 'coding' }))} 
+                        />
                       </div>
                     )}
 

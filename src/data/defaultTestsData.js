@@ -465,7 +465,8 @@ int main() {
   },
   {
     id: 'assignment-frontend-component',
-    title: 'Assignment: Responsive Navigation & Dashboard Card',
+    title: 'Assignment: Responsive Navigation & Session Manager',
+    subject: 'Web Technologies',
     duration: 60,
     type: 'code',
     category: 'assignment',
@@ -475,6 +476,14 @@ int main() {
     targetSem: 'All',
     targetSec: 'All',
     resultsReleased: true,
+    dueDate: '2026-12-02T23:59:59Z',
+    rubric: [
+      { criterion: 'Correctness & Logic', weight: 40 },
+      { criterion: 'Code Cleanliness & ES6 Standards', weight: 30 },
+      { criterion: 'Edge Case & Expiry Math', weight: 20 },
+      { criterion: 'Documentation', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
     questions: [
       {
         id: 'assign_q1',
@@ -506,6 +515,454 @@ console.log("Minutes left:", session.getRemainingMinutes());
 `,
         expectedOutput: 'Valid: true, Minutes left: ~45',
         explanation: '`UserSession` records epoch timestamps and compares current `Date.now()` with expiration boundary to validate active authentication tokens.'
+      }
+    ]
+  },
+  {
+    id: 'assignment-os-cpu-scheduler',
+    title: 'Assignment 01: OS CPU Round-Robin Scheduler with Gantt Metrics',
+    subject: 'Operating Systems',
+    duration: 120,
+    type: 'code',
+    category: 'assignment',
+    requireCamera: false,
+    active: true,
+    targetBranch: 'All',
+    targetSem: 'All',
+    targetSec: 'All',
+    resultsReleased: true,
+    dueDate: '2026-12-05T23:59:59Z',
+    rubric: [
+      { criterion: 'Turnaround Time (TAT) & Waiting Time (WT) Accuracy', weight: 40 },
+      { criterion: 'Gantt Queue Timeline Construction', weight: 30 },
+      { criterion: 'Time Quantum Boundary Handling', weight: 20 },
+      { criterion: 'Algorithmic Complexity & Comments', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
+    questions: [
+      {
+        id: 'os_q1',
+        type: 'code',
+        question: 'Implement a Round-Robin CPU Scheduler function `calculateRoundRobin(processes, timeQuantum)` that returns the sequence of process execution, average waiting time (AWT), and average turnaround time (ATAT).',
+        language: 'javascript',
+        initialCode: `// Round-Robin CPU Scheduler Implementation
+// processes = [{ id: 'P1', arrival: 0, burst: 5 }, { id: 'P2', arrival: 1, burst: 3 }, { id: 'P3', arrival: 2, burst: 1 }]
+function calculateRoundRobin(processes, quantum = 2) {
+    let time = 0;
+    const queue = [];
+    const remainingBurst = {};
+    const completionTime = {};
+    const waitingTime = {};
+    const turnaroundTime = {};
+    const executionGantt = [];
+
+    // Initialize remaining burst times
+    processes.forEach(p => { remainingBurst[p.id] = p.burst; });
+
+    let completed = 0;
+    let n = processes.length;
+    let visited = new Set();
+
+    // Push initial arrived processes
+    processes.filter(p => p.arrival <= time).forEach(p => {
+        queue.push(p);
+        visited.add(p.id);
+    });
+
+    while (completed < n) {
+        if (queue.length === 0) {
+            // Find next arriving process
+            const nextP = processes.filter(p => !visited.has(p.id)).sort((a,b) => a.arrival - b.arrival)[0];
+            if (nextP) {
+                time = nextP.arrival;
+                queue.push(nextP);
+                visited.add(nextP.id);
+            }
+        }
+
+        const curr = queue.shift();
+        const executeTime = Math.min(quantum, remainingBurst[curr.id]);
+        executionGantt.push({ process: curr.id, start: time, end: time + executeTime });
+        time += executeTime;
+        remainingBurst[curr.id] -= executeTime;
+
+        // Check for new arrivals during this execution window
+        processes.filter(p => p.arrival <= time && !visited.has(p.id)).forEach(p => {
+            queue.push(p);
+            visited.add(p.id);
+        });
+
+        if (remainingBurst[curr.id] > 0) {
+            queue.push(curr);
+        } else {
+            completionTime[curr.id] = time;
+            turnaroundTime[curr.id] = completionTime[curr.id] - curr.arrival;
+            waitingTime[curr.id] = turnaroundTime[curr.id] - curr.burst;
+            completed++;
+        }
+    }
+
+    const avgWT = Object.values(waitingTime).reduce((a, b) => a + b, 0) / n;
+    const avgTAT = Object.values(turnaroundTime).reduce((a, b) => a + b, 0) / n;
+
+    return {
+        gantt: executionGantt.map(g => \`\${g.process}(\${g.start}-\${g.end})\`).join(' -> '),
+        avgWaitingTime: avgWT.toFixed(2),
+        avgTurnaroundTime: avgTAT.toFixed(2)
+    };
+}
+
+// Sample Test
+const sampleProcesses = [
+    { id: 'P1', arrival: 0, burst: 4 },
+    { id: 'P2', arrival: 1, burst: 5 },
+    { id: 'P3', arrival: 2, burst: 2 }
+];
+console.log(calculateRoundRobin(sampleProcesses, 2));
+`,
+        expectedOutput: 'Gantt execution timeline with accurate Average Waiting Time & Turnaround Time metrics.',
+        explanation: 'Round-Robin allocates CPU quantum slices cyclically. Context switches occur preemptively when quantum expires, keeping interactive systems responsive.'
+      }
+    ]
+  },
+  {
+    id: 'assignment-dbms-window-analytics',
+    title: 'Assignment 02: SQL Financial Transactions & Window Function Analytics',
+    subject: 'Database Management Systems',
+    duration: 90,
+    type: 'code',
+    category: 'assignment',
+    requireCamera: false,
+    active: true,
+    targetBranch: 'All',
+    targetSem: 'All',
+    targetSec: 'All',
+    resultsReleased: true,
+    dueDate: '2026-12-07T23:59:59Z',
+    rubric: [
+      { criterion: 'Window Function Syntax & Partitioning', weight: 40 },
+      { criterion: 'Rolling Average Calculation Logic', weight: 30 },
+      { criterion: 'Fraud Anomaly Spike Detection Filter', weight: 20 },
+      { criterion: 'Execution Plan Index Strategy', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
+    questions: [
+      {
+        id: 'dbms_q1',
+        type: 'code',
+        question: 'Write an SQL/JavaScript query simulation that computes the 3-transaction moving average per account and flags transactions that exceed 2.5x of their historical rolling average.',
+        language: 'javascript',
+        initialCode: `// Simulation of SQL Window Function:
+// SELECT txn_id, account_id, amount,
+//        AVG(amount) OVER (PARTITION BY account_id ORDER BY txn_time ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_avg,
+//        CASE WHEN amount > 2.5 * AVG(amount) OVER (PARTITION BY account_id ORDER BY txn_time ROWS BETWEEN 2 PRECEDING AND 1 PRECEDING) THEN 'FLAGGED_SPIKE' ELSE 'NORMAL' END AS fraud_flag
+// FROM transactions;
+
+function analyzeTransactionWindow(transactions) {
+    const accountTxns = {};
+
+    transactions.forEach(t => {
+        if (!accountTxns[t.accountId]) accountTxns[t.accountId] = [];
+        accountTxns[t.accountId].push(t);
+    });
+
+    const results = [];
+
+    Object.keys(accountTxns).forEach(accId => {
+        const txns = accountTxns[accId].sort((a,b) => a.timestamp - b.timestamp);
+
+        txns.forEach((curr, idx) => {
+            // Window of current + past 2 transactions
+            const start = Math.max(0, idx - 2);
+            const windowSlice = txns.slice(start, idx + 1);
+            const rollingAvg = windowSlice.reduce((sum, item) => sum + item.amount, 0) / windowSlice.length;
+
+            // Prior transactions baseline for spike detection
+            let isAnomaly = false;
+            if (idx > 0) {
+                const priorSlice = txns.slice(Math.max(0, idx - 3), idx);
+                const priorAvg = priorSlice.reduce((sum, item) => sum + item.amount, 0) / priorSlice.length;
+                if (curr.amount >= priorAvg * 2.5) {
+                    isAnomaly = true;
+                }
+            }
+
+            results.push({
+                txnId: curr.id,
+                accountId: curr.accountId,
+                amount: curr.amount,
+                rolling3TxnAvg: Number(rollingAvg.toFixed(2)),
+                status: isAnomaly ? 'ALERT_FRAUD_SPIKE' : 'VERIFIED_NORMAL'
+            });
+        });
+    });
+
+    return results;
+}
+
+// Sample Data
+const mockTransactions = [
+    { id: 'TX_01', accountId: 'ACC_900', amount: 1200, timestamp: 100 },
+    { id: 'TX_02', accountId: 'ACC_900', amount: 1500, timestamp: 200 },
+    { id: 'TX_03', accountId: 'ACC_900', amount: 1100, timestamp: 300 },
+    { id: 'TX_04', accountId: 'ACC_900', amount: 9500, timestamp: 400 } // Anomaly
+];
+console.log(analyzeTransactionWindow(mockTransactions));
+`,
+        expectedOutput: 'Transactions annotated with rolling window averages and anomaly alerts.',
+        explanation: 'SQL Window Functions calculate aggregates over related sets of rows without collapsing them into a single row, preserving individual ledger audit trails.'
+      }
+    ]
+  },
+  {
+    id: 'assignment-dsa-lru-cache',
+    title: 'Assignment 03: High-Performance O(1) LRU Cache Eviction Engine',
+    subject: 'Data Structures & Algorithms',
+    duration: 90,
+    type: 'code',
+    category: 'assignment',
+    requireCamera: false,
+    active: true,
+    targetBranch: 'All',
+    targetSem: 'All',
+    targetSec: 'All',
+    resultsReleased: true,
+    dueDate: '2026-12-09T23:59:59Z',
+    rubric: [
+      { criterion: 'Strict O(1) Time Complexity for GET & PUT', weight: 40 },
+      { criterion: 'Doubly Linked List + Hash Map Node Wiring', weight: 30 },
+      { criterion: 'Least Recently Used Eviction on Overflow', weight: 20 },
+      { criterion: 'Clean Separation of Concerns & Types', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
+    questions: [
+      {
+        id: 'dsa_lru_q1',
+        type: 'code',
+        question: 'Implement an LRUCache class with capacity K. Support `get(key)` and `put(key, value)` both running in guaranteed O(1) average time complexity using a Doubly Linked List and Hash Table.',
+        language: 'javascript',
+        initialCode: `class Node {
+    constructor(key, value) {
+        this.key = key;
+        this.value = value;
+        this.prev = null;
+        this.next = null;
+    }
+}
+
+class LRUCache {
+    constructor(capacity) {
+        this.capacity = capacity;
+        this.map = new Map();
+        // Dummy head and tail to eliminate null pointer checks
+        this.head = new Node(0, 0);
+        this.tail = new Node(0, 0);
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    _remove(node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    _insertAtHead(node) {
+        node.next = this.head.next;
+        node.next.prev = node;
+        this.head.next = node;
+        node.prev = this.head;
+    }
+
+    get(key) {
+        if (!this.map.has(key)) return -1;
+        const node = this.map.get(key);
+        // Move to most recently used (head)
+        this._remove(node);
+        this._insertAtHead(node);
+        return node.value;
+    }
+
+    put(key, value) {
+        if (this.map.has(key)) {
+            this._remove(this.map.get(key));
+        }
+        if (this.map.size >= this.capacity) {
+            // Evict Least Recently Used (node before tail)
+            const lru = this.tail.prev;
+            this._remove(lru);
+            this.map.delete(lru.key);
+        }
+        const newNode = new Node(key, value);
+        this._insertAtHead(newNode);
+        this.map.set(key, newNode);
+    }
+}
+
+// Test Runner
+const cache = new LRUCache(2);
+cache.put(1, 100);
+cache.put(2, 200);
+console.log("Get 1:", cache.get(1)); // returns 100, moves 1 to MRU
+cache.put(3, 300);                  // evicts key 2
+console.log("Get 2 (should be -1):", cache.get(2)); // returns -1
+console.log("Get 3:", cache.get(3)); // returns 300
+`,
+        expectedOutput: 'Get 1: 100, Get 2: -1, Get 3: 300',
+        explanation: 'The combination of a Hash Map (for O(1) lookup) and a Doubly Linked List (for O(1) node detachment and insertion) fulfills the strict O(1) LRU specification.'
+      }
+    ]
+  },
+  {
+    id: 'assignment-fullstack-jwt-microservice',
+    title: 'Assignment 04: RESTful JWT Microservice with Dockerfile & Rate Limiter',
+    subject: 'Cloud & Full-Stack Systems',
+    duration: 120,
+    type: 'code',
+    category: 'assignment',
+    requireCamera: false,
+    active: true,
+    targetBranch: 'All',
+    targetSem: 'All',
+    targetSec: 'All',
+    resultsReleased: true,
+    dueDate: '2026-12-12T23:59:59Z',
+    rubric: [
+      { criterion: 'Token Bucket Rate Limiting Algorithm', weight: 40 },
+      { criterion: 'HMAC Signature Verification & Claims Parsing', weight: 30 },
+      { criterion: 'Production Dockerfile Multi-Stage Build', weight: 20 },
+      { criterion: 'Error Handlers & HTTP 429 Status Codes', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
+    questions: [
+      {
+        id: 'jwt_q1',
+        type: 'code',
+        question: 'Implement a Token Bucket Rate Limiter middleware in JavaScript/Node that limits requests to 5 tokens per 10-second window, refilling at 0.5 tokens/sec.',
+        language: 'javascript',
+        initialCode: `// Token Bucket Rate Limiter Engine
+class TokenBucketRateLimiter {
+    constructor(capacity = 5, refillRatePerSec = 0.5) {
+        this.capacity = capacity;
+        this.refillRate = refillRatePerSec;
+        this.buckets = new Map(); // IP -> { tokens, lastRefill }
+    }
+
+    _refill(bucket) {
+        const now = Date.now();
+        const elapsedSec = (now - bucket.lastRefill) / 1000;
+        bucket.tokens = Math.min(this.capacity, bucket.tokens + elapsedSec * this.refillRate);
+        bucket.lastRefill = now;
+    }
+
+    tryConsume(clientIp, cost = 1) {
+        if (!this.buckets.has(clientIp)) {
+            this.buckets.set(clientIp, {
+                tokens: this.capacity,
+                lastRefill: Date.now()
+            });
+        }
+
+        const bucket = this.buckets.get(clientIp);
+        this._refill(bucket);
+
+        if (bucket.tokens >= cost) {
+            bucket.tokens -= cost;
+            return {
+                allowed: true,
+                remainingTokens: Math.floor(bucket.tokens),
+                statusCode: 200
+            };
+        }
+
+        const retryAfter = Math.ceil((cost - bucket.tokens) / this.refillRate);
+        return {
+            allowed: false,
+            remainingTokens: 0,
+            retryAfterSec: retryAfter,
+            statusCode: 429 // Too Many Requests
+        };
+    }
+}
+
+// Verification Test
+const limiter = new TokenBucketRateLimiter(3, 1);
+const ip = '192.168.1.42';
+console.log('Req 1:', limiter.tryConsume(ip));
+console.log('Req 2:', limiter.tryConsume(ip));
+console.log('Req 3:', limiter.tryConsume(ip));
+console.log('Req 4 (Should be 429):', limiter.tryConsume(ip));
+`,
+        expectedOutput: 'Req 1-3 allowed (200), Req 4 rejected with HTTP 429 Too Many Requests.',
+        explanation: 'Token bucket smoothly handles short bursts while enforcing a strict steady-state limit, making it ideal for API protection and microservice gateways.'
+      }
+    ]
+  },
+  {
+    id: 'assignment-system-design-tinyurl',
+    title: 'Assignment 05: High-Concurrency URL Shortener (Base62 & Distributed Sharding)',
+    subject: 'System Architecture',
+    duration: 120,
+    type: 'code',
+    category: 'assignment',
+    requireCamera: false,
+    active: true,
+    targetBranch: 'All',
+    targetSem: 'All',
+    targetSec: 'All',
+    resultsReleased: true,
+    dueDate: '2026-12-15T23:59:59Z',
+    rubric: [
+      { criterion: 'Base62 Bijective Encoding / Decoding Core', weight: 40 },
+      { criterion: 'Collision Avoidance & Range Counter Strategy', weight: 30 },
+      { criterion: 'Cache Lookup Layer (Redis 80-20 Rule)', weight: 20 },
+      { criterion: 'System Architecture & Capacity Estimates', weight: 10 }
+    ],
+    submissionModes: ['code', 'github', 'pdf'],
+    questions: [
+      {
+        id: 'sys_q1',
+        type: 'code',
+        question: 'Implement a Base62 Bijective Encoder/Decoder that turns a 64-bit auto-incrementing database ID into a compact 7-character alphanumeric short code, and reverses short codes back to database IDs.',
+        language: 'javascript',
+        initialCode: `// Base62 Bijective Codec for Distributed URL Shortener
+const BASE62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function encodeId(num) {
+    if (num === 0) return BASE62_CHARS[0];
+    let encoded = '';
+    while (num > 0) {
+        const remainder = num % 62;
+        encoded = BASE62_CHARS[remainder] + encoded;
+        num = Math.floor(num / 62);
+    }
+    // Pad to 7 characters for uniform URLs
+    return encoded.padStart(7, '0');
+}
+
+function decodeShortCode(code) {
+    let num = 0;
+    const cleanCode = code.replace(/^0+/, ''); // strip padding
+    for (let i = 0; i < cleanCode.length; i++) {
+        const char = cleanCode[i];
+        const index = BASE62_CHARS.indexOf(char);
+        if (index === -1) throw new Error(\`Invalid Base62 character: \${char}\`);
+        num = num * 62 + index;
+    }
+    return num;
+}
+
+// Verification Test
+const dbId = 12530948572;
+const shortCode = encodeId(dbId);
+const recoveredId = decodeShortCode(shortCode);
+
+console.log("Original Database ID:", dbId);
+console.log("Short URL Code:", \`https://lumix.in/\${shortCode}\`);
+console.log("Recovered ID:", recoveredId);
+console.log("Lossless Integrity:", dbId === recoveredId);
+`,
+        expectedOutput: 'Original ID encoded to compact 7-char string and decoded losslessly back to exact ID.',
+        explanation: 'Base62 encoding of 7 characters provides 62^7 = ~3.5 trillion unique URLs without hash collisions or random generation retries.'
       }
     ]
   }

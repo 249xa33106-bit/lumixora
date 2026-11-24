@@ -108,6 +108,60 @@ export default function TestPortal({ user, setActiveTab }) {
   const [aiTrapAnalysis, setAiTrapAnalysis] = useState({});
   const [loadingAiTrap, setLoadingAiTrap] = useState(null);
 
+  // ── 📁 DEDICATED ASSIGNMENT SUITE & SUBMISSION MODAL ──
+  const [activeAssignmentModal, setActiveAssignmentModal] = useState(null);
+  const [assignmentSubmissions, setAssignmentSubmissions] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('lumixora_assignment_submissions') || '{}');
+    } catch (_) {
+      return {};
+    }
+  });
+  const [assignmentSubmissionForm, setAssignmentSubmissionForm] = useState({
+    mode: 'code', // 'code' | 'github' | 'pdf'
+    codeAnswer: '',
+    githubUrl: '',
+    commitBranch: 'main',
+    liveDemoUrl: '',
+    fileName: '',
+    fileSize: '',
+    studentNotes: ''
+  });
+  const [isSubmittingAssignment, setIsSubmittingAssignment] = useState(false);
+
+  // ── 🛡️ ACCIDENTAL VIOLATION GRACE TIMER (10s Recovery) ──
+  const [violationGraceSeconds, setViolationGraceSeconds] = useState(null);
+  const [violationGraceReason, setViolationGraceReason] = useState('');
+  const graceTimerRef = useRef(null);
+
+  // ── 📊 PALETTE QUICK-FILTER (ALL / UNANSWERED / MARKED / ANSWERED) ──
+  const [paletteStatusFilter, setPaletteStatusFilter] = useState('all'); // 'all' | 'unanswered' | 'marked' | 'answered'
+
+  // ── 🧠 POST-TEST AI LUMINA EXPLANATION STATES ──
+  const [luminaAiExplainingId, setLuminaAiExplainingId] = useState(null);
+  const [luminaAiExplainingText, setLuminaAiExplainingText] = useState({});
+
+  // ── 🚀 FACULTY AI TEST GENERATOR & BATCH IMPORTER MODALS ──
+  const [showAiTestGeneratorModal, setShowAiTestGeneratorModal] = useState(false);
+  const [aiGeneratorForm, setAiGeneratorForm] = useState({
+    prompt: '',
+    count: 5,
+    difficulty: 'Medium',
+    category: 'test',
+    targetBranch: 'All',
+    targetSem: 'All'
+  });
+  const [isAiGeneratingTest, setIsAiGeneratingTest] = useState(false);
+
+  const [showBatchImportModal, setShowBatchImportModal] = useState(false);
+  const [batchImportText, setBatchImportText] = useState('');
+  const [batchImportFormat, setBatchImportFormat] = useState('csv'); // 'csv' | 'json'
+  const [batchImportMeta, setBatchImportMeta] = useState({
+    title: 'Departmental Imported Question Bank',
+    category: 'test',
+    duration: 30
+  });
+
   // Safe Calculator Evaluation
   const handleCalcButton = (val) => {
     if (val === 'C') {

@@ -10,6 +10,7 @@ import { isGprecPlacementSubdomain, isAllowedGprecPlacementTab } from '../utils/
 
 const SEARCHABLE_PORTALS = [
   { id: 'dashboard', title: 'Dashboard', desc: 'Main academic home, stats & daily roadmap', category: 'General', icon: Sparkles, keywords: ['home', 'overview', 'stats', 'analytics'] },
+  { id: 'mentor', title: 'Lumina AI — Personal Polymath Mentor', desc: 'Real-time interactive voice & chat mentor expert in singing, dancing, fine art, code & placements', category: 'General', icon: Sparkles, badge: 'NEW', keywords: ['lumina', 'mentor', 'bot', 'singing', 'dancing', 'art', 'voice', 'polymath', 'human', 'interactive'] },
   { id: 'doubts', title: 'Doubt Solver', desc: 'Instant AI & mentor step-by-step LaTeX academic solutions', category: 'Academics', icon: HelpCircle, badge: 'AI 24/7', keywords: ['questions', 'help', 'math', 'derivation', 'homework', 'equations'] },
   { id: 'learning-hub', title: 'Learning & Video Hub', desc: 'Video lectures, enhanced AI study notes & PPTs', category: 'Academics', icon: BookOpen, keywords: ['notes', 'lectures', 'videos', 'courses', 'curriculum'] },
   { id: 'test-portal', title: 'Test & Assessment Portal', desc: 'Practice online tests, quizzes & placement evaluations', category: 'Academics', icon: ClipboardList, keywords: ['exams', 'quizzes', 'mock tests', 'assessments'] },

@@ -768,11 +768,15 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
   const lowerCode = cleanCode.toLowerCase();
 
   const arithmeticMatch = cleanCode.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/\%\^])\s*(\d+(?:\.\d+)?)/);
-  const isPrintOrCalc = lowerCode.includes('print') || lowerCode.includes('console.log') || arithmeticMatch;
+  const isPrint = lowerCode.includes('print') || lowerCode.includes('console.log') || lowerCode.includes('echo') || lowerCode.includes('stdout');
+  const strMatch = cleanCode.match(/["'](.*?)["']/);
+  const extractedString = strMatch ? strMatch[1] : (cleanCode.replace(/^(print|console\.log)\s*[\(\[]?|[\)\];]?$/gi, '').trim() || 'sowban');
 
   let simType = film?.simulationType;
   if (!simType || simType === 'memory_stack') {
-    if (arithmeticMatch || isPrintOrCalc) {
+    if (isPrint) {
+      simType = 'runtime_io_stream';
+    } else if (arithmeticMatch) {
       simType = 'ast_expression';
     } else if (lowerCode.includes('sort') || lowerCode.includes('swap') || lowerCode.includes('arr[')) {
       simType = 'array_sort';
@@ -787,7 +791,7 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
 
   // Extract Expression Data on the fly if not already provided
   let exprData = film?.expressionData;
-  if (!exprData && (arithmeticMatch || isPrintOrCalc)) {
+  if (!exprData) {
     if (arithmeticMatch) {
       const l = arithmeticMatch[1];
       const op = arithmeticMatch[2];
@@ -801,9 +805,8 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
       else if (op === '%') res = n1 % n2;
       else if (op === '^') res = Math.pow(n1, n2);
       exprData = { leftVal: l, op: op, rightVal: r, result: String(res), rawExpr: `${l} ${op} ${r}` };
-    } else {
-      const strMatch = cleanCode.match(/["'](.*?)["']/);
-      exprData = { leftVal: 'IO', op: 'PRINT', rightVal: 'STDOUT', result: strMatch ? strMatch[1] : 'OK', rawExpr: cleanCode.slice(0, 20) };
+    } else if (isPrint) {
+      exprData = { outputText: extractedString, funcName: lowerCode.includes('console.log') ? 'console.log' : 'print', rawExpr: cleanCode.slice(0, 32) };
     }
   }
 
@@ -1135,11 +1138,140 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
         ctx.fillText('ACTIVE TASKS: 8 | DEADLOCK: 0.00%', 14, 40);
       }
 
+      /* ─── SCENE: RUNTIME IO STREAM & STDOUT DISPATCH (FOR PRINT / CONSOLE.LOG) ─── */
+      else if (simType === 'runtime_io_stream') {
+        const outText = exprData?.outputText || 'sowban';
+        const func = exprData?.funcName || 'print';
+        const cx = w * 0.5;
+
+        // Top Telemetry Header
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● PYTHON RUNTIME STREAM & BYTECODE DISPATCH', 14, 22);
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+        ctx.fillText(`TARGET: sys.stdout | ENCODING: UTF-8 | FLUSH: 0.01ms`, 14, 38);
+
+        // Stage 1: Left Node - String Literal Heap Object
+        const leftX = cx - 95;
+        const topY = 65;
+
+        ctx.fillStyle = '#081326';
+        ctx.strokeStyle = '#00f5d4';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(leftX - 55, topY - 16, 110, 32);
+        ctx.fillRect(leftX - 55, topY - 16, 110, 32);
+
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#00f5d4';
+        ctx.textAlign = 'center';
+        ctx.fillText('PyUnicodeObject', leftX, topY - 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`"${outText.slice(0, 14)}"`, leftX, topY + 10);
+
+        // Stage 1: Right Node - Function Dispatcher
+        const rightX = cx + 95;
+        ctx.fillStyle = '#1c1503';
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(rightX - 55, topY - 16, 110, 32);
+        ctx.fillRect(rightX - 55, topY - 16, 110, 32);
+
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#d4af37';
+        ctx.fillText('BUILTIN_FUNCTION', rightX, topY - 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`${func}()`, rightX, topY + 10);
+
+        // Center Dispatch Nucleus
+        const coreY = topY + 40;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(leftX, topY + 16);
+        ctx.lineTo(cx, coreY);
+        ctx.lineTo(rightX, topY + 16);
+        ctx.stroke();
+
+        // Glowing Core Pulse
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = '#38bdf8';
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(cx, coreY, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText('EXEC', cx, coreY + 3);
+
+        // Traveling Stream Packets from Core to Terminal
+        const termY = coreY + 28;
+        const termW = Math.min(340, w * 0.90);
+        const termX = cx - termW / 2;
+        const termH = 46;
+
+        // Vertical down conduit
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, coreY + 13);
+        ctx.lineTo(cx, termY);
+        ctx.stroke();
+
+        const pulse = (tick * 2.5) % 1;
+        const pY = (coreY + 13) + (termY - (coreY + 13)) * pulse;
+        ctx.beginPath();
+        ctx.arc(cx, pY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#4ade80';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#4ade80';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // CRT Standard Output Terminal
+        ctx.fillStyle = '#050a08';
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(termX, termY, termW, termH);
+        ctx.fillRect(termX, termY, termW, termH);
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#34d399';
+        ctx.textAlign = 'left';
+        ctx.fillText(`$ python3 -u ${film.chapters?.[0]?.file || 'eval_runtime.py'}`, termX + 10, termY + 15);
+
+        // Printed Output with Bright Green Highlight
+        ctx.font = 'bold 13px monospace';
+        ctx.fillStyle = '#4ade80';
+        ctx.fillText(`>>> ${outText}`, termX + 10, termY + 34);
+
+        // Blinking Cursor
+        if (Math.floor(tick * 3) % 2 === 0) {
+          const cursorX = termX + 10 + (outText.length * 8) + 38;
+          ctx.fillRect(cursorX, termY + 23, 6, 12);
+        }
+
+        // Live Audio/Frequency Waveform along bottom of visualizer
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        const waveY = termY + termH + 10;
+        for (let x = 0; x < w; x += 4) {
+          const wy = waveY + Math.sin(x * 0.04 + tick * 3) * 4;
+          if (x === 0) ctx.moveTo(x, wy); else ctx.lineTo(x, wy);
+        }
+        ctx.stroke();
+      }
+
       /* ─── SCENE: HOLLYWOOD QUANTUM ARITHMETIC & AST FUSION REACTOR ─── */
       else if (simType === 'ast_expression') {
         const expr = exprData || { leftVal: '5', op: '+', rightVal: '7', result: '12', rawExpr: '5 + 7' };
         const cx = w * 0.5;
-        const topY = h * 0.28;
+        const topY = 65;
 
         // Radial glow background behind reactor
         const bgGlow = ctx.createRadialGradient(cx, topY, 10, cx, topY, 150);
@@ -1148,14 +1280,14 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
         ctx.fillStyle = bgGlow;
         ctx.fillRect(0, 0, w, h);
 
-        const leftX = cx - 85;
-        const rightX = cx + 85;
+        const leftX = cx - 75;
+        const rightX = cx + 75;
         const opX = cx;
         const opY = topY;
 
         // Dynamic electric laser tracks connecting operands to operator
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(leftX, topY); ctx.lineTo(opX, opY);
         ctx.moveTo(rightX, topY); ctx.lineTo(opX, opY);
@@ -1166,139 +1298,101 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
         const p1x = leftX + (opX - leftX) * pulse;
         const p2x = rightX + (opX - rightX) * pulse;
         ctx.beginPath();
-        ctx.arc(p1x, opY, 4, 0, Math.PI * 2);
-        ctx.arc(p2x, opY, 4, 0, Math.PI * 2);
+        ctx.arc(p1x, opY, 3.5, 0, Math.PI * 2);
+        ctx.arc(p2x, opY, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = '#38bdf8';
         ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 12;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // Left Operand Plasma Sphere (5)
-        ctx.beginPath();
-        ctx.arc(leftX, topY, 22, 0, Math.PI * 2);
-        ctx.fillStyle = '#091e3a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 18;
-        ctx.fill(); ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Rotating orbital dot around left operand
-        const lAngle = tick * 2.5;
-        const lox = leftX + Math.cos(lAngle) * 30;
-        const loy = topY + Math.sin(lAngle) * 30;
-        ctx.beginPath(); ctx.arc(lox, loy, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#38bdf8'; ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(expr.leftVal, leftX, topY + 5);
-
-        ctx.font = '8px monospace';
-        ctx.fillStyle = '#7dd3fc';
-        ctx.fillText('LITERAL R0', leftX, topY + 36);
-
-        // Right Operand Plasma Sphere (7)
-        ctx.beginPath();
-        ctx.arc(rightX, topY, 22, 0, Math.PI * 2);
-        ctx.fillStyle = '#091e3a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 18;
-        ctx.fill(); ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Rotating orbital dot around right operand
-        const rox = rightX + Math.cos(-lAngle) * 30;
-        const roy = topY + Math.sin(-lAngle) * 30;
-        ctx.beginPath(); ctx.arc(rox, roy, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#38bdf8'; ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px monospace';
-        ctx.fillText(expr.rightVal, rightX, topY + 5);
-
-        ctx.font = '8px monospace';
-        ctx.fillStyle = '#7dd3fc';
-        ctx.fillText('LITERAL R1', rightX, topY + 36);
-
-        // Center Operator Fusion Core (+)
-        ctx.beginPath();
-        ctx.arc(opX, opY, 26, 0, Math.PI * 2);
-        ctx.fillStyle = '#1c1503';
-        ctx.strokeStyle = '#d4af37';
-        ctx.lineWidth = 3;
-        ctx.shadowColor = '#d4af37';
-        ctx.shadowBlur = 24;
-        ctx.fill(); ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Expanding shockwave ripple ring from operator core
-        if (isPlaying) {
-          const ripR = 26 + ((tick * 30) % 25);
-          ctx.beginPath();
-          ctx.arc(opX, opY, ripR, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(212, 175, 55, ${Math.max(0, 1 - ripR / 51)})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
-
-        ctx.fillStyle = '#fef08a';
-        ctx.font = 'bold 20px monospace';
-        ctx.fillText(expr.op || '+', opX, opY + 7);
-
-        ctx.font = 'bold 8px monospace';
-        ctx.fillStyle = '#d4af37';
-        ctx.fillText('BINARY_OP', opX, opY - 33);
-
-        // Vertical Laser Beam downward to ALU Output Result
-        const resY = topY + 80;
-        ctx.strokeStyle = '#4ade80';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(opX, opY + 26);
-        ctx.lineTo(opX, resY - 22);
-        ctx.stroke();
-
-        // Pulsing down-beam photon
-        const downProg = (tick * 2.8) % 1;
-        const dpy = (opY + 26) + (resY - 22 - (opY + 26)) * downProg;
-        ctx.beginPath();
-        ctx.arc(opX, dpy, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#4ade80';
-        ctx.shadowColor = '#4ade80';
         ctx.shadowBlur = 10;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Result Accumulator Sphere (12)
+        // Left Operand Plasma Sphere
         ctx.beginPath();
-        ctx.arc(opX, resY, 22, 0, Math.PI * 2);
-        ctx.fillStyle = '#062817';
-        ctx.strokeStyle = '#4ade80';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = '#4ade80';
-        ctx.shadowBlur = 20;
+        ctx.arc(leftX, topY, 18, 0, Math.PI * 2);
+        ctx.fillStyle = '#091e3a';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 14;
         ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(expr.leftVal, leftX, topY + 4);
+
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#7dd3fc';
+        ctx.fillText('LITERAL R0', leftX, topY + 28);
+
+        // Right Operand Plasma Sphere
+        ctx.beginPath();
+        ctx.arc(rightX, topY, 18, 0, Math.PI * 2);
+        ctx.fillStyle = '#091e3a';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 14;
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText(expr.rightVal, rightX, topY + 4);
+
+        ctx.font = '8px monospace';
+        ctx.fillStyle = '#7dd3fc';
+        ctx.fillText('LITERAL R1', rightX, topY + 28);
+
+        // Center Operator Fusion Core
+        ctx.beginPath();
+        ctx.arc(opX, opY, 22, 0, Math.PI * 2);
+        ctx.fillStyle = '#1c1503';
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 18;
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#fef08a';
         ctx.font = 'bold 16px monospace';
-        ctx.fillText(expr.result, opX, resY + 5);
+        ctx.fillText(expr.op || '+', opX, opY + 5);
 
-        ctx.font = 'bold 9px monospace';
-        ctx.fillStyle = '#4ade80';
-        ctx.fillText(`ALU ACCUMULATOR: ${expr.result}`, opX, resY + 36);
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#d4af37';
+        ctx.fillText('BINARY_OP', opX, opY - 26);
 
-        // High-Tech CRT Phosphor Terminal Monitor (Bottom)
-        const termY = h * 0.76;
+        // Vertical Laser Beam downward to ALU Output Result
+        const resY = topY + 56;
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(opX, opY + 22);
+        ctx.lineTo(opX, resY - 18);
+        ctx.stroke();
+
+        // Result Accumulator Sphere
+        ctx.beginPath();
+        ctx.arc(opX, resY, 18, 0, Math.PI * 2);
+        ctx.fillStyle = '#062817';
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#4ade80';
+        ctx.shadowBlur = 16;
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText(expr.result, opX, resY + 4);
+
+        // High-Tech CRT Phosphor Terminal Monitor (Compact)
+        const termY = resY + 26;
         const termW = Math.min(320, w * 0.88);
         const termX = cx - termW / 2;
-        const termH = 48;
+        const termH = 44;
 
         ctx.fillStyle = '#050a08';
         ctx.strokeStyle = '#10b981';
@@ -1309,35 +1403,19 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
         ctx.font = '9px monospace';
         ctx.fillStyle = '#34d399';
         ctx.textAlign = 'left';
-        ctx.fillText(`$ python -u ${film.chapters[0]?.file || 'eval_runtime.py'}`, termX + 10, termY + 16);
+        ctx.fillText(`$ python -u ${film.chapters[0]?.file || 'eval_runtime.py'}`, termX + 8, termY + 15);
 
-        // Live stdout printout with blinking cursor
         ctx.font = 'bold 12px monospace';
         ctx.fillStyle = '#4ade80';
-        ctx.fillText(`>>> ${expr.result}`, termX + 10, termY + 35);
-
-        if (Math.floor(tick * 3) % 2 === 0) {
-          const cursorX = termX + 10 + (expr.result.length * 8) + 38;
-          ctx.fillRect(cursorX, termY + 24, 7, 12);
-        }
-
-        // Live Oscilloscope Waveform along bottom
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.lineWidth = 1.5;
-        for (let x = 0; x < w; x += 4) {
-          const wy = h * 0.65 + Math.sin(x * 0.035 + tick * 3) * 6;
-          if (x === 0) ctx.moveTo(x, wy); else ctx.lineTo(x, wy);
-        }
-        ctx.stroke();
+        ctx.fillText(`>>> ${expr.result}`, termX + 8, termY + 33);
 
         // Top Telemetry Header
         ctx.font = '10px monospace';
         ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
         ctx.textAlign = 'left';
-        ctx.fillText('● QUANTUM ARITHMETIC & AST BYTECODE REACTOR', 14, 24);
+        ctx.fillText('● QUANTUM ARITHMETIC & AST BYTECODE REACTOR', 14, 22);
         ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
-        ctx.fillText(`EXPR: ${expr.rawExpr} = ${expr.result} | CONSTANT FOLDING: 100% | 60 FPS`, 14, 40);
+        ctx.fillText(`EXPR: ${expr.rawExpr} = ${expr.result} | CONSTANT FOLDING: 100% | 60 FPS`, 14, 38);
       }
 
       /* ─── SCENE: LIVING MICRO-ARCHITECTURE BUS & CPU REGISTERS (GENERAL CODE) ─── */
@@ -1519,7 +1597,14 @@ export default function CodeCinema({ setActiveTab, user }) {
   const isCalcOrPrint = cleanFullCode.toLowerCase().includes('print') || activeArith;
   let effectiveNarration = chapter.narration;
 
-  if (isCalcOrPrint && (chapter.narration.includes('algorithmicengine') || chapter.narration.includes('initialization block') || chapter.narration.includes('null boundaries'))) {
+  if (isCalcOrPrint && (
+    chapter.narration.includes('algorithmicengine') || 
+    chapter.narration.includes('initialization block') || 
+    chapter.narration.includes('null boundaries') ||
+    chapter.narration.includes('STR and IO') ||
+    chapter.narration.includes('binary operator \'EVAL\'') ||
+    (cleanFullCode.toLowerCase().includes('print') && chapter.narration.includes('binary operator'))
+  )) {
     if (activeArith) {
       const l = activeArith[1], op = activeArith[2], r = activeArith[3];
       const res = op === '+' ? (Number(l) + Number(r)) : (op === '*' ? (Number(l) * Number(r)) : (Number(l) - Number(r)));
@@ -1527,7 +1612,9 @@ export default function CodeCinema({ setActiveTab, user }) {
         ? `Act I: Lexical Tokenization & AST Construction. The Python parser evaluates '${cleanFullCode}'. Operands ${l} and ${r} fuse through binary operator '${op}'. Compile-time constant folding evaluates ${l} ${op} ${r} into ${res} before runtime bytecode dispatch.`
         : `Act II: PVM Bytecode & Stdout Flush. Opcode BINARY_OP executes in 1 clock cycle. Operands resolve to ${res}, and the standard output stream flushes '${res}' to stdout in 0.01ms without heap allocation.`;
     } else {
-      effectiveNarration = `Act I: Output Stream Dispatch. The runtime evaluates '${cleanFullCode}', binding the literal to sys.stdout and flushing to the terminal interface in 0.01ms.`;
+      const strMatch = cleanFullCode.match(/["'](.*?)["']/);
+      const val = strMatch ? strMatch[1] : 'output';
+      effectiveNarration = `Act I: Python Runtime & Stdout Stream. The parser compiles '${cleanFullCode}', loads string literal "${val}" from the heap, and flushes directly to sys.stdout in 0.01ms.`;
     }
   }
 

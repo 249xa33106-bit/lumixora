@@ -218,11 +218,19 @@ export default function AiMockInterviewRoom({ user, setActiveTab }) {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event) => {
-        let currentText = '';
+        let finalChunk = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentText += event.results[i][0].transcript;
+          const res = event.results[i];
+          if (res.isFinal) {
+            finalChunk += res[0].transcript + ' ';
+          }
         }
-        setCandidateAnswer(prev => prev + (prev && !prev.endsWith(' ') ? ' ' : '') + currentText);
+        if (finalChunk.trim()) {
+          setCandidateAnswer(prev => {
+            const trimmed = prev.trim();
+            return trimmed ? `${trimmed} ${finalChunk.trim()}` : finalChunk.trim();
+          });
+        }
       };
 
       recognition.onerror = (err) => {

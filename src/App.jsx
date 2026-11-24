@@ -2062,6 +2062,14 @@ function App() {
                   </Suspense>
                 </div>
               </div>
+            ) : ['mentor', 'personal-mentor', 'lumina'].includes(activeTab) ? (
+              <Suspense fallback={<PortalFallback />}>
+                <PersonalMentor 
+                  user={user} 
+                  setActiveTab={handleTabChange} 
+                  onBackHome={() => handleTabChange('dashboard')} 
+                />
+              </Suspense>
             ) : isGprecPlacementSubdomain() ? (
               <Suspense fallback={<PortalFallback />}>
                 <AiPlacementCommander 
