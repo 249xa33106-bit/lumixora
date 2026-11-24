@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Film, Play, Pause, SkipForward, SkipBack, RotateCcw, Volume2, VolumeX,
   Sparkles, Code2, Terminal, Cpu, Award, Zap, Shield, Flame, BookOpen,
   ChevronRight, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Maximize2,
   Tv, Compass, Check, Clapperboard, Star, Brain, GraduationCap, Mic, MicOff,
-  Eye, Monitor
+  Eye, Monitor, Radio, Activity
 } from 'lucide-react';
 
 /* ─── HOLLYWOOD-GRADE DYNAMIC AUDIO SYNTHESIZER (WEB AUDIO API) ─── */
@@ -35,7 +35,7 @@ class CinemaDynamicAudio {
       const now = this.ctx.currentTime;
       const master = this.ctx.createGain();
       master.gain.setValueAtTime(0.01, now);
-      master.gain.exponentialRampToValueAtTime(0.10, now + 1.8);
+      master.gain.exponentialRampToValueAtTime(0.12, now + 1.8);
       master.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
       master.connect(this.ctx.destination);
 
@@ -60,7 +60,7 @@ class CinemaDynamicAudio {
       const g = this.ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      g.gain.setValueAtTime(0.07, this.ctx.currentTime);
+      g.gain.setValueAtTime(0.08, this.ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.12);
       osc.connect(g);
       g.connect(this.ctx.destination);
@@ -177,7 +177,7 @@ export async function computePlacementReadiness(scholarId) {
   const twin = await CareerTwin.hydrate(scholarId);
   const benchmark = await AIPlacementRadar.getTier1Expectations({
     targetRole: 'Full-Stack Software Architect',
-    firms: ['Amazon', 'Google', 'TCS Prime', 'Cognizant']
+    firms: ['Amazon', 'Google Cloud', 'TCS Prime', 'Microsoft']
   });
 
   // Evaluate code rigor, mock communication, and verified projects
@@ -192,7 +192,7 @@ export async function computePlacementReadiness(scholarId) {
         '>>> [LUMIXORA RADAR] Initializing Placement Twin telemetry...',
         '>>> [LUMIXORA RADAR] Ingesting 450+ campus drives across GPREC, RGUKT & partner nodes...',
         '>>> [LUMIXORA RADAR] AI Mock Interview & ATS diagnostic score: 94.8% (TIER 1 READY)',
-        '>>> [LUMIXORA RADAR] Active matching: Amazon, Google Cloud, TCS Prime, Cognizant.'
+        '>>> [LUMIXORA RADAR] Active matching: Amazon, Google Cloud, Microsoft, TCS Prime.'
       ],
       commentary: 'Welcome to Lumixora. Act one opens with the Autonomous Placement Radar. We bridge the gap between academic textbooks and real industry careers, evaluating student readiness with AI mock interviews, skills verification, and direct employer matching.'
     },
@@ -324,10 +324,9 @@ export async function issueVerifiableDiploma(studentId, completedHubs) {
 /* ─── HELPER TO COLORIZE SYNTAX IN CODE PROJECTOR ─── */
 function renderSyntaxHighlighted(line) {
   if (line.trim().startsWith('//')) {
-    return <span className="text-amber-400/80 italic font-mono">{line}</span>;
+    return <span className="text-amber-400/90 italic font-mono">{line}</span>;
   }
   
-  // Highlight keywords
   const parts = line.split(/(\b(?:import|from|export|async|function|const|let|var|return|await|new|class|true|false)\b|'[^']*'|"[^"]*"|\d+)/g);
 
   return (
@@ -341,13 +340,13 @@ function renderSyntaxHighlighted(line) {
           return <span key={i} className="text-amber-300 font-bold">{part}</span>;
         }
         if (/^['"].*['"]$/.test(part)) {
-          return <span key={i} className="text-emerald-400">{part}</span>;
+          return <span key={i} className="text-emerald-400 font-medium">{part}</span>;
         }
         if (/^\d+$/.test(part)) {
           return <span key={i} className="text-cyan-300 font-semibold">{part}</span>;
         }
         if (part.includes('//')) {
-          return <span key={i} className="text-amber-400/80 italic">{part}</span>;
+          return <span key={i} className="text-amber-400/90 italic">{part}</span>;
         }
         return <span key={i} className="text-slate-200">{part}</span>;
       })}
@@ -362,7 +361,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
   const [activeActIndex, setActiveActIndex] = useState(0);
   const [timelineTime, setTimelineTime] = useState(0);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true); // ENABLED BY DEFAULT!
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true); // Sweet Voice Enabled by Default
   const [viewMode, setViewMode] = useState('split'); // 'split' | 'visuals' | 'code'
   const [activeLine, setActiveLine] = useState(0);
   const [availableVoices, setAvailableVoices] = useState([]);
@@ -396,14 +395,13 @@ export default function LandingCodeCinema({ onGetStarted }) {
   const getSweetVoice = () => {
     if (availableVoices.length === 0) return null;
 
-    // Sweet Female Natural Voice Keywords
     const sweetNames = ['jenny', 'aria', 'samantha', 'victoria', 'karen', 'serena', 'zira', 'natural', 'neural', 'female'];
 
-    // 1. High-priority natural online/neural female voice (Edge/Windows/Chrome)
+    // 1. Natural online/neural female voice (Edge/Windows/Chrome)
     let found = availableVoices.find(v => {
       const name = v.name.toLowerCase();
       const isEn = v.lang.toLowerCase().startsWith('en');
-      return isEn && (name.includes('natural') || name.includes('online')) && (name.includes('jenny') || name.includes('aria') || name.includes('female'));
+      return isEn && (name.includes('natural') || name.includes('neural')) && (name.includes('jenny') || name.includes('aria') || name.includes('female'));
     });
 
     // 2. Named female sweet voices
@@ -437,9 +435,8 @@ export default function LandingCodeCinema({ onGetStarted }) {
       if (sweetVoice) {
         utterance.voice = sweetVoice;
       }
-      // Sweet, warm, friendly cadence
-      utterance.rate = 0.94;
-      utterance.pitch = 1.16;
+      utterance.rate = 0.94; // Sweet, natural pacing
+      utterance.pitch = 1.16; // Sweet, melodic, friendly tone
       utterance.volume = 1.0;
 
       window.speechSynthesis.speak(utterance);
@@ -450,7 +447,6 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
   // 🎬 Trigger Curtains Open and 3-2-1 Countdown
   const handleStartMovie = () => {
-    // Resume browser audio and speech synthesis contexts on user gesture
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.resume();
     }
@@ -481,7 +477,6 @@ export default function LandingCodeCinema({ onGetStarted }) {
         if (isAudioEnabled) {
           landingAudio.startScore();
         }
-        // Speak the first act with sweet voice immediately!
         playSweetVoiceNarration(LUMIXORA_FEATURE_FILM.acts[0].commentary);
       }, 2550);
     }, 1100);
@@ -524,7 +519,6 @@ export default function LandingCodeCinema({ onGetStarted }) {
     const interval = setInterval(() => {
       setTimelineTime((prev) => {
         if (prev >= activeAct.duration) {
-          // Advance to next act or loop to beginning
           const nextIndex = (activeActIndex < LUMIXORA_FEATURE_FILM.acts.length - 1) ? activeActIndex + 1 : 0;
           setActiveActIndex(nextIndex);
           playSweetVoiceNarration(LUMIXORA_FEATURE_FILM.acts[nextIndex].commentary);
@@ -546,7 +540,6 @@ export default function LandingCodeCinema({ onGetStarted }) {
     setActiveLine(lineIndex);
   }, [timelineTime, activeAct]);
 
-  // Handle manual act select
   const handleSelectAct = (idx) => {
     setActiveActIndex(idx);
     setTimelineTime(0);
@@ -555,7 +548,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
     }
   };
 
-  // ─── 60 FPS SPECTACULAR CINEMATIC LIVING ARCHITECTURE CANVAS ───
+  // ─── ULTRA-HIGH PRODUCTION 60 FPS HTML5 LIVING ARCHITECTURE CANVAS ───
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -564,14 +557,15 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
     let running = true;
 
-    // Floating background particle dust motes
-    const particles = Array.from({ length: 45 }, () => ({
-      x: Math.random() * 600,
-      y: Math.random() * 400,
-      radius: Math.random() * 1.8 + 0.6,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      alpha: Math.random() * 0.6 + 0.2
+    // Rich floating nebula stardust particles
+    const starParticles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * 800,
+      y: Math.random() * 500,
+      radius: Math.random() * 2.2 + 0.6,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: (Math.random() - 0.5) * 0.45,
+      hue: Math.random() > 0.5 ? 45 : (Math.random() > 0.5 ? 180 : 280),
+      alpha: Math.random() * 0.7 + 0.3
     }));
 
     const render = () => {
@@ -584,16 +578,16 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
       ctx.clearRect(0, 0, width, height);
 
-      // Deep space cinema background with vignette
-      const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 40, width / 2, height / 2, width);
-      bgGrad.addColorStop(0, '#0d0c18');
-      bgGrad.addColorStop(0.7, '#07060e');
+      // Deep Cosmic Background with Glowing Radial Flare
+      const bgGrad = ctx.createRadialGradient(width / 2, height / 2 - 20, 20, width / 2, height / 2, width);
+      bgGrad.addColorStop(0, '#100e1f');
+      bgGrad.addColorStop(0.5, '#090814');
       bgGrad.addColorStop(1, '#030206');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw floating cosmic particles
-      particles.forEach((p) => {
+      // Swirling Cosmic Star Particles
+      starParticles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
         if (p.x < 0) p.x = width;
@@ -601,62 +595,92 @@ export default function LandingCodeCinema({ onGetStarted }) {
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
 
-        ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha * (0.6 + Math.sin(tick * 0.05) * 0.4)})`;
+        const pulseAlpha = p.alpha * (0.6 + Math.sin(tick * 0.05 + p.hue) * 0.4);
+        ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${pulseAlpha})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Perspective horizon grid
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.07)';
+      // 3D Perspective Cyber Floor Grid
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.09)';
       ctx.lineWidth = 1;
-      const horizonY = height * 0.82;
-      for (let x = -width; x < width * 2; x += 40) {
+      const horizonY = height * 0.84;
+      for (let x = -width * 0.5; x < width * 1.5; x += 45) {
         ctx.beginPath();
-        ctx.moveTo(width / 2, horizonY * 0.5);
+        ctx.moveTo(width / 2, horizonY * 0.48);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
-      for (let y = horizonY * 0.5; y < height; y += 22) {
+      for (let y = horizonY * 0.48; y < height; y += 20) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
         ctx.stroke();
       }
 
+      // Overhead Projection Light Ray Cone
+      ctx.save();
+      const projGrad = ctx.createLinearGradient(width / 2, 0, width / 2, height * 0.7);
+      projGrad.addColorStop(0, 'rgba(212, 175, 55, 0.16)');
+      projGrad.addColorStop(0.6, 'rgba(212, 175, 55, 0.04)');
+      projGrad.addColorStop(1, 'rgba(212, 175, 55, 0.0)');
+      ctx.fillStyle = projGrad;
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 20, 0);
+      ctx.lineTo(width / 2 + 20, 0);
+      ctx.lineTo(width * 0.9, height * 0.75);
+      ctx.lineTo(width * 0.1, height * 0.75);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
       const cx = width / 2;
       const cy = height / 2 - 10;
 
-      // ─── ACT 1: AUTONOMOUS PLACEMENT RADAR & AI COMMANDER ───
+      // ───────────────────────────────────────────────────────────
+      // ACT 1: AUTONOMOUS PLACEMENT RADAR & TIER-1 COMPANY GALAXY
+      // ───────────────────────────────────────────────────────────
       if (activeActIndex === 0) {
         const radius = Math.min(width, height) * 0.40;
 
-        // Glowing outer radar shield
-        const outerGlow = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.15);
-        outerGlow.addColorStop(0, 'rgba(16, 185, 129, 0.0)');
-        outerGlow.addColorStop(0.7, 'rgba(16, 185, 129, 0.15)');
-        outerGlow.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
-        ctx.fillStyle = outerGlow;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 3 Concentric Glowing Rings
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
+        // Outer Neon Glow Shield
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(16, 185, 129, 0.6)';
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.35)';
+        // Tilted 3D Gyroscope Gimbal Rings
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(tick * 0.015);
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
         ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius * 0.95, radius * 0.40, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.rotate(Math.PI / 2.5);
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius * 0.95, radius * 0.40, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // 3 Concentric Rings with Degree Marks
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(cx, cy, radius * 0.70, 0, Math.PI * 2);
         ctx.arc(cx, cy, radius * 0.40, 0, Math.PI * 2);
         ctx.arc(cx, cy, radius * 0.15, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Crosshairs with degree markers
+        // Crosshairs
         ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
         ctx.beginPath();
         ctx.moveTo(cx - radius, cy);
@@ -665,357 +689,389 @@ export default function LandingCodeCinema({ onGetStarted }) {
         ctx.lineTo(cx, cy + radius);
         ctx.stroke();
 
-        // High-tech rotating radar sweep with lingering phosphorescent trail
-        const sweepAngle = (tick * 0.035) % (Math.PI * 2);
+        // Phosphorescent Rotating Sweep Beam with Luminous Gradient
+        const sweepAngle = (tick * 0.038) % (Math.PI * 2);
         const sweepGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-        sweepGrad.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-        sweepGrad.addColorStop(0.6, 'rgba(6, 182, 212, 0.35)');
+        sweepGrad.addColorStop(0, 'rgba(16, 185, 129, 0.7)');
+        sweepGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.4)');
         sweepGrad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
         ctx.fillStyle = sweepGrad;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, sweepAngle - 0.7, sweepAngle);
+        ctx.arc(cx, cy, radius, sweepAngle - 0.75, sweepAngle);
         ctx.closePath();
         ctx.fill();
 
-        // Orbiting Company Targets & Student Nodes
-        const targets = [
-          { name: 'AMAZON (Tier 1)', dist: 0.82, angle: 0.5, color: '#f59e0b', ping: true },
-          { name: 'GOOGLE CLOUD', dist: 0.65, angle: 2.2, color: '#38bdf8', ping: true },
-          { name: 'TCS PRIME', dist: 0.50, angle: 3.8, color: '#a855f7', ping: false },
-          { name: 'COGNIZANT', dist: 0.75, angle: 5.1, color: '#10b981', ping: false }
+        // Orbiting Tier-1 Company Satellites
+        const companyNodes = [
+          { name: 'AMAZON TIER 1', dist: 0.82, angle: 0.6, color: '#f59e0b', ping: true },
+          { name: 'GOOGLE CLOUD', dist: 0.66, angle: 2.3, color: '#38bdf8', ping: true },
+          { name: 'MICROSOFT', dist: 0.76, angle: 4.1, color: '#06b6d4', ping: false },
+          { name: 'TCS PRIME', dist: 0.48, angle: 5.3, color: '#a855f7', ping: false }
         ];
 
-        targets.forEach((t) => {
-          const tx = cx + Math.cos(t.angle + tick * 0.005) * radius * t.dist;
-          const ty = cy + Math.sin(t.angle + tick * 0.005) * radius * t.dist;
+        companyNodes.forEach((node) => {
+          const nx = cx + Math.cos(node.angle + tick * 0.006) * radius * node.dist;
+          const ny = cy + Math.sin(node.angle + tick * 0.006) * radius * node.dist;
 
-          // Glowing node
-          ctx.fillStyle = t.color;
+          // Glowing Node & Halo
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = node.color;
+          ctx.fillStyle = node.color;
           ctx.beginPath();
-          ctx.arc(tx, ty, 6, 0, Math.PI * 2);
+          ctx.arc(nx, ny, 7, 0, Math.PI * 2);
           ctx.fill();
+          ctx.shadowBlur = 0;
 
-          // Laser lock-on beam from center
-          ctx.strokeStyle = `${t.color}40`;
-          ctx.lineWidth = 1;
+          // Laser targeting lock-on from center
+          ctx.strokeStyle = `${node.color}50`;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.lineTo(tx, ty);
+          ctx.lineTo(nx, ny);
           ctx.stroke();
 
-          // Pulse ripple
+          // Expanding Sonar Ping Ring
           const ripple = (tick * 0.08) % 1;
-          ctx.strokeStyle = `${t.color}${Math.floor((1 - ripple) * 255).toString(16).padStart(2, '0')}`;
+          ctx.strokeStyle = `${node.color}${Math.floor((1 - ripple) * 220).toString(16).padStart(2, '0')}`;
           ctx.beginPath();
-          ctx.arc(tx, ty, 6 + ripple * 16, 0, Math.PI * 2);
+          ctx.arc(nx, ny, 7 + ripple * 20, 0, Math.PI * 2);
           ctx.stroke();
 
-          // Label
+          // Company Badge
           ctx.fillStyle = '#ffffff';
           ctx.font = 'bold 10px monospace';
-          ctx.fillText(t.name, tx + 10, ty + 4);
+          ctx.fillText(node.name, nx + 12, ny + 4);
         });
 
-        // Center Student Twin Pulse
+        // Center Student Twin Node with High-Energy Pulsing Corona
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = '#10b981';
         ctx.fillStyle = '#10b981';
         ctx.beginPath();
-        ctx.arc(cx, cy, 10 + Math.sin(tick * 0.1) * 3, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 12 + Math.sin(tick * 0.12) * 3, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.shadowBlur = 0;
 
-        // 94.8% Holographic Readiness Pill in Center Top
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 1.5;
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(cx - 75, cy - radius - 24, 150, 24, [6]);
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 94.8% Holographic Match Pill
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.25)';
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(cx - 85, cy - radius - 26, 170, 26, [8]);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('94.8% READINESS CONFIRMED', cx, cy - radius - 8);
+        ctx.fillText('★ 94.8% AI READINESS ★', cx, cy - radius - 9);
         ctx.textAlign = 'left';
       }
 
-      // ─── ACT 2: CODECINEMA™ QUANTUM AST REACTOR ───
+      // ───────────────────────────────────────────────────────────
+      // ACT 2: CODECINEMA™ QUANTUM AST RECTOR & CONSTANT FOLDING
+      // ───────────────────────────────────────────────────────────
       else if (activeActIndex === 1) {
-        const pulse = Math.sin(tick * 0.08) * 8;
+        const pulse = Math.sin(tick * 0.08) * 10;
 
-        // Central Quantum Fusion Core
-        const coreGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 65 + pulse);
-        coreGrad.addColorStop(0, 'rgba(255, 240, 200, 0.9)');
-        coreGrad.addColorStop(0.3, 'rgba(212, 175, 55, 0.7)');
-        coreGrad.addColorStop(0.7, 'rgba(245, 158, 11, 0.3)');
+        // Blazing Central Plasma Fusion Reactor
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#f59e0b';
+        const coreGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 75 + pulse);
+        coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        coreGrad.addColorStop(0.25, 'rgba(212, 175, 55, 0.85)');
+        coreGrad.addColorStop(0.65, 'rgba(245, 158, 11, 0.4)');
         coreGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
-
         ctx.fillStyle = coreGrad;
         ctx.beginPath();
-        ctx.arc(cx, cy, 65 + pulse, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 75 + pulse, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
 
-        // Orbiting Plasma Electron Ring
+        // 3D Orbital Electron Rings
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(tick * 0.04);
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 95, 38, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.rotate(Math.PI / 3);
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 95, 38, 0, 0, Math.PI * 2);
-        ctx.stroke();
+        for (let ring = 0; ring < 3; ring++) {
+          ctx.rotate((tick * 0.03) + (ring * Math.PI / 3));
+          ctx.strokeStyle = ring === 0 ? '#38bdf8' : (ring === 1 ? '#d4af37' : '#ec4899');
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 105, 42, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.restore();
 
-        // Left Operand Node [5]
-        const leftX = cx - 110;
+        // Left Node: NUM 5 (Electric Cyan)
+        const leftX = cx - 120;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#38bdf8';
         ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
         ctx.beginPath();
-        ctx.arc(leftX, cy, 34 + Math.sin(tick * 0.1) * 3, 0, Math.PI * 2);
+        ctx.arc(leftX, cy, 36 + Math.sin(tick * 0.1) * 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px monospace';
+        ctx.font = 'bold 16px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('NUM [5]', leftX, cy + 5);
 
-        // Right Operand Node [7]
-        const rightX = cx + 110;
+        // Right Node: NUM 7 (Hot Magenta)
+        const rightX = cx + 120;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ec4899';
         ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
         ctx.beginPath();
-        ctx.arc(rightX, cy, 34 + Math.sin(tick * 0.1 + 1) * 3, 0, Math.PI * 2);
+        ctx.arc(rightX, cy, 36 + Math.sin(tick * 0.1 + 1) * 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#ec4899';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#ffffff';
         ctx.fillText('NUM [7]', rightX, cy + 5);
 
-        // High Voltage Lightning Electric Arcs Connecting into Center
-        ctx.strokeStyle = '#fde047';
-        ctx.lineWidth = 2;
+        // Jagged High-Voltage Lightning Bolts connecting to central ALU
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(leftX + 34, cy);
-        const midY1 = cy + (Math.random() - 0.5) * 16;
-        ctx.lineTo((leftX + cx) / 2, midY1);
-        ctx.lineTo(cx - 30, cy);
+        ctx.moveTo(leftX + 36, cy);
+        ctx.lineTo((leftX + cx) / 2, cy + (Math.random() - 0.5) * 22);
+        ctx.lineTo(cx - 36, cy);
 
-        ctx.moveTo(rightX - 34, cy);
-        const midY2 = cy + (Math.random() - 0.5) * 16;
-        ctx.lineTo((rightX + cx) / 2, midY2);
-        ctx.lineTo(cx + 30, cy);
+        ctx.moveTo(rightX - 36, cy);
+        ctx.lineTo((rightX + cx) / 2, cy + (Math.random() - 0.5) * 22);
+        ctx.lineTo(cx + 36, cy);
         ctx.stroke();
 
-        // Center ALU Output Result [12]
+        // Central ALU Fusion Core Result [12]
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 20px monospace';
-        ctx.fillText('ALU: 12', cx, cy + 7);
+        ctx.font = 'bold 22px monospace';
+        ctx.fillText('ALU: 12', cx, cy + 8);
 
-        // Header Title
+        // Header Pill
         ctx.font = 'bold 11px monospace';
         ctx.fillStyle = '#fde047';
-        ctx.fillText('CONSTANT FOLDING AST PIPELINE', cx, cy - 70);
+        ctx.fillText('⚡ REAL-TIME AST CONSTANT FOLDING ⚡', cx, cy - 80);
         ctx.textAlign = 'left';
       }
 
-      // ─── ACT 3: AI 70M BLUEPRINT EXAM PAPER PREDICTOR ───
+      // ───────────────────────────────────────────────────────────
+      // ACT 3: AI 70M BLUEPRINT EXAM PAPER PREDICTOR
+      // ───────────────────────────────────────────────────────────
       else if (activeActIndex === 2) {
         // Multi-frequency harmonic spectrum oscilloscope waves
-        const colors = ['#22d3ee', '#a855f7', '#10b981'];
-        colors.forEach((col, idx) => {
+        const waveColors = ['#22d3ee', '#a855f7', '#10b981'];
+        waveColors.forEach((col, idx) => {
           ctx.strokeStyle = col;
-          ctx.lineWidth = 2.5 - idx * 0.5;
+          ctx.lineWidth = 3 - idx * 0.5;
           ctx.beginPath();
           for (let x = 0; x < width; x += 4) {
-            const freq = 0.025 + idx * 0.01;
-            const phase = tick * (0.06 + idx * 0.02);
-            const y = cy + Math.sin(x * freq + phase) * (36 - idx * 8) * Math.cos(x * 0.008);
+            const freq = 0.024 + idx * 0.012;
+            const phase = tick * (0.07 + idx * 0.025);
+            const y = cy + Math.sin(x * freq + phase) * (42 - idx * 10) * Math.cos(x * 0.007);
             if (x === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
           ctx.stroke();
         });
 
-        // 2 Glowing Holographic Examination Sets
-        const setWidth = 135;
-        const setHeight = 110;
-        const setY = cy - 55;
+        // 2 Glowing Holographic Examination Dossier Cards
+        const cardW = 145;
+        const cardH = 125;
+        const cardY = cy - 62;
 
         // Set 1 (Derivations & Theory)
-        const set1X = cx - setWidth - 14;
-        ctx.fillStyle = 'rgba(34, 211, 238, 0.15)';
+        const set1X = cx - cardW - 16;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#22d3ee';
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.2)';
         ctx.beginPath();
-        ctx.roundRect(set1X, setY, setWidth, setHeight, [12]);
+        ctx.roundRect(set1X, cardY, cardW, cardH, [14]);
         ctx.fill();
         ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         ctx.textAlign = 'center';
         ctx.fillStyle = '#22d3ee';
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText('PREDICTED SET 1', set1X + setWidth / 2, setY + 24);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('PREDICTED SET 1', set1X + cardW / 2, cardY + 26);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '10px monospace';
-        ctx.fillText('High-Frequency Theory', set1X + setWidth / 2, setY + 48);
-        ctx.fillText('& Derivations', set1X + setWidth / 2, setY + 64);
+        ctx.font = '11px monospace';
+        ctx.fillText('High-Frequency Theory', set1X + cardW / 2, cardY + 52);
+        ctx.fillText('& Derivations', set1X + cardW / 2, cardY + 70);
         
         ctx.fillStyle = '#10b981';
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText('✓ 100% MATCH', set1X + setWidth / 2, setY + 92);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('✓ 100% EXAM ACCURACY', set1X + cardW / 2, cardY + 102);
 
         // Set 2 (Problems & Modeling)
-        const set2X = cx + 14;
-        ctx.fillStyle = 'rgba(168, 85, 247, 0.15)';
+        const set2X = cx + 16;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#a855f7';
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.2)';
         ctx.beginPath();
-        ctx.roundRect(set2X, setY, setWidth, setHeight, [12]);
+        ctx.roundRect(set2X, cardY, cardW, cardH, [14]);
         ctx.fill();
         ctx.strokeStyle = '#a855f7';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#a855f7';
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText('PREDICTED SET 2', set2X + setWidth / 2, setY + 24);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('PREDICTED SET 2', set2X + cardW / 2, cardY + 26);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '10px monospace';
-        ctx.fillText('Analytical Problems', set2X + setWidth / 2, setY + 48);
-        ctx.fillText('& Algorithms', set2X + setWidth / 2, setY + 64);
+        ctx.font = '11px monospace';
+        ctx.fillText('Analytical Problems', set2X + cardW / 2, cardY + 52);
+        ctx.fillText('& Architecture', set2X + cardW / 2, cardY + 70);
         
         ctx.fillStyle = '#f59e0b';
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText('✓ FULLY SOLVED', set2X + setWidth / 2, setY + 92);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('✓ VERIFIED SOLUTIONS', set2X + cardW / 2, cardY + 102);
 
-        // Vertical Laser Scanning Line
-        const laserX = cx - 140 + ((tick * 3) % 280);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 2;
+        // Vertical Laser Scanner Sweep Ray
+        const laserX = cx - 160 + ((tick * 3.5) % 320);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(laserX, cy - 70);
-        ctx.lineTo(laserX, cy + 70);
+        ctx.moveTo(laserX, cy - 80);
+        ctx.lineTo(laserX, cy + 80);
         ctx.stroke();
 
         ctx.textAlign = 'left';
       }
 
-      // ─── ACT 4: BOLOCLASS & LUMINA 3D AI CLASSROOM ───
+      // ───────────────────────────────────────────────────────────
+      // ACT 4: BOLOCLASS & LUMINA 3D AI CLASSROOM
+      // ───────────────────────────────────────────────────────────
       else if (activeActIndex === 3) {
         // Glowing Central Audio Sphere (Lumina's Voice Avatar)
-        const orbRadius = 38 + Math.sin(tick * 0.12) * 5;
-        const orbGrad = ctx.createRadialGradient(cx, cy - 20, 5, cx, cy - 20, orbRadius + 20);
+        const orbRadius = 42 + Math.sin(tick * 0.12) * 6;
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#a855f7';
+        const orbGrad = ctx.createRadialGradient(cx, cy - 22, 5, cx, cy - 22, orbRadius + 22);
         orbGrad.addColorStop(0, '#ffffff');
-        orbGrad.addColorStop(0.4, '#a855f7');
-        orbGrad.addColorStop(0.8, '#6366f1');
+        orbGrad.addColorStop(0.35, '#c084fc');
+        orbGrad.addColorStop(0.7, '#6366f1');
         orbGrad.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-
         ctx.fillStyle = orbGrad;
         ctx.beginPath();
-        ctx.arc(cx, cy - 20, orbRadius + 20, 0, Math.PI * 2);
+        ctx.arc(cx, cy - 22, orbRadius + 22, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
 
-        // Lumina Voice Core Icon
+        // Core Avatar Emblem
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(cx, cy - 20, orbRadius, 0, Math.PI * 2);
+        ctx.arc(cx, cy - 22, orbRadius, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#4f46e5';
-        ctx.font = 'bold 14px monospace';
+        ctx.font = 'bold 16px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('LUMINA', cx, cy - 15);
+        ctx.fillText('LUMINA', cx, cy - 16);
 
-        // Dynamic 32-Bar Soundwave Equalizer at Bottom
-        const barCount = 28;
+        // Vibrant 32-Band Equalizer Soundwave Spectrum
+        const barCount = 32;
         const bWidth = 6;
         const totalW = barCount * (bWidth + 4);
         const startX = cx - totalW / 2;
 
         for (let i = 0; i < barCount; i++) {
-          const h = 15 + Math.abs(Math.sin((i * 0.3) + (tick * 0.15))) * 55;
+          const h = 18 + Math.abs(Math.sin((i * 0.32) + (tick * 0.16))) * 65;
           const bx = startX + (i * (bWidth + 4));
-          const by = cy + 50 - h;
+          const by = cy + 54 - h;
 
-          ctx.fillStyle = `hsl(${260 + i * 4}, 85%, 65%)`;
+          ctx.fillStyle = `hsl(${260 + i * 4}, 90%, 65%)`;
           ctx.beginPath();
           ctx.roundRect(bx, by, bWidth, h, [3]);
           ctx.fill();
         }
 
-        // Floating Chalkboard Math Equations
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = 'italic 12px serif';
-        ctx.fillText('O(N log N)', cx - 110, cy - 50);
-        ctx.fillText('f(x) = λe^-λx', cx + 110, cy - 50);
-        ctx.fillText('QuickSort(A, p, r)', cx - 100, cy + 15);
-        ctx.fillText('∇f(θ) = E[g]', cx + 100, cy + 15);
+        // Floating Chalkboard Math & Algorithm Proofs
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.font = 'italic bold 13px serif';
+        ctx.fillText('O(N log N)', cx - 120, cy - 55);
+        ctx.fillText('f(x) = λe^-λx', cx + 120, cy - 55);
+        ctx.fillText('QuickSort(A, p, r)', cx - 110, cy + 18);
+        ctx.fillText('P(A|B) = \frac{P(B|A)}{P(B)}', cx + 110, cy + 18);
 
-        ctx.font = 'bold 11px monospace';
-        ctx.fillStyle = '#a855f7';
-        ctx.fillText('0.4s NEURAL VOICE LATENCY • INSTANT DOUBTS', cx, cy + 75);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = '#c084fc';
+        ctx.fillText('⚡ 0.3s NEURAL VOICE LATENCY • INSTANT DOUBTS ⚡', cx, cy + 80);
         ctx.textAlign = 'left';
       }
 
-      // ─── ACT 5: CRYPTOGRAPHIC PROOF OF SKILL ───
+      // ───────────────────────────────────────────────────────────
+      // ACT 5: CRYPTOGRAPHIC PROOF OF SKILL PROTOCOL
+      // ───────────────────────────────────────────────────────────
       else {
         // Rotating 3D Isometric Blockchain Cube
-        const cubeSize = 52 + Math.sin(tick * 0.05) * 4;
+        const cubeSize = 56 + Math.sin(tick * 0.05) * 5;
 
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(Math.PI / 6);
 
-        // Outer Hex Ring
+        // Outer Hexagonal Block
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = '#f59e0b';
         ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
           const angle = (i * Math.PI) / 3;
-          const hx = Math.cos(angle) * (cubeSize + 25);
-          const hy = Math.sin(angle) * (cubeSize + 25);
+          const hx = Math.cos(angle) * (cubeSize + 28);
+          const hy = Math.sin(angle) * (cubeSize + 28);
           if (i === 0) ctx.moveTo(hx, hy);
           else ctx.lineTo(hx, hy);
         }
         ctx.closePath();
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
         ctx.fill();
+        ctx.shadowBlur = 0;
         ctx.restore();
 
-        // Center Verified Emblem
+        // Center Verified Shield
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#10b981';
         ctx.fillStyle = '#10b981';
         ctx.beginPath();
-        ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 28, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 20px monospace';
+        ctx.font = 'bold 22px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('✓', cx, cy + 7);
+        ctx.fillText('✓', cx, cy + 8);
 
-        // Floating SHA-256 Hashes
-        ctx.font = 'bold 10px monospace';
+        // Floating Cryptographic Hashes
+        ctx.font = 'bold 11px monospace';
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText('SHA-256: 0x8F4A92...E17B', cx, cy - 65);
-        ctx.fillText('12 PROJECTS • 60+ COMMITS VERIFIED', cx, cy + 70);
+        ctx.fillText('SHA-256: 0x8F4A92...E17B', cx, cy - 72);
+        ctx.fillText('12 PROJECTS • 60+ COMMITS VERIFIED', cx, cy + 74);
         ctx.fillStyle = '#34d399';
-        ctx.fillText('PUBLIC RECRUITER AUDIT LINK ACTIVE', cx, cy + 86);
+        ctx.fillText('★ 100% RECRUITER VERIFIED CREDENTIAL ★', cx, cy + 92);
         ctx.textAlign = 'left';
       }
 
@@ -1031,17 +1087,17 @@ export default function LandingCodeCinema({ onGetStarted }) {
   }, [activeActIndex]);
 
   return (
-    <section id="code-cinema" className="py-20 md:py-28 bg-[#050409] text-white relative overflow-hidden select-none">
+    <section id="code-cinema" className="py-20 md:py-28 bg-[#040308] text-white relative overflow-hidden select-none">
       
       {/* ── BACKGROUND PROJECTION LIGHT & CINEMA ATMOSPHERE ── */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-96 bg-gradient-to-b from-[#d4af37]/20 via-purple-600/15 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="absolute -bottom-20 left-0 right-0 h-60 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-[420px] bg-gradient-to-b from-[#d4af37]/25 via-purple-600/20 to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute -bottom-20 left-0 right-0 h-64 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* ── SECTION HEADER & THEATER TITLE ── */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] text-xs font-black tracking-widest uppercase shadow-md">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] text-xs font-black tracking-widest uppercase shadow-md">
             <Film className="w-3.5 h-3.5 text-[#d4af37]" />
             <span>Lumixora CinemaScope 70MM</span>
           </div>
@@ -1050,24 +1106,24 @@ export default function LandingCodeCinema({ onGetStarted }) {
             CodeCinema™ — The Living Code Theater
           </h2>
           <p className="text-sm sm:text-base text-gray-400 font-medium">
-            Step inside our virtual IMAX theater. Watch real code transform into living visual architectures with audio narration.
+            Step inside our virtual IMAX theater. Watch real code transform into living visual architectures with sweet voice narration.
           </p>
         </div>
 
         {/* ── AUDITORIUM PROSCENIUM FRAME ── */}
-        <div className="relative rounded-[28px] md:rounded-[36px] overflow-hidden border-2 border-[#d4af37]/40 bg-[#0a0812] shadow-[0_25px_80px_rgba(0,0,0,0.95)]">
+        <div className="relative rounded-[28px] md:rounded-[36px] overflow-hidden border-2 border-[#d4af37]/50 bg-[#08060f] shadow-[0_30px_90px_rgba(0,0,0,0.98)]">
           
-          {/* Top Marquee Header Bar */}
-          <div className="h-11 bg-[#120f1c] border-b border-[#d4af37]/30 px-4 sm:px-6 flex items-center justify-between text-xs font-mono text-[#d4af37]">
+          {/* Top Marquee Header Bar with Film Sprockets */}
+          <div className="h-12 bg-[#120f1e] border-b border-[#d4af37]/35 px-4 sm:px-6 flex items-center justify-between text-xs font-mono text-[#d4af37]">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
               <span className="font-bold tracking-wider hidden sm:inline">35MM OPTICAL • DOLBY ATMOS</span>
               <span className="text-gray-400">|</span>
-              <span className="text-gray-300 font-bold uppercase">{activeAct.title}</span>
+              <span className="text-gray-200 font-bold uppercase">{activeAct.title}</span>
             </div>
 
-            {/* View Mode Switcher + Voice Status */}
-            <div className="flex items-center gap-3">
+            {/* View Mode Switcher + Sweet Voice Status */}
+            <div className="flex items-center gap-2.5">
               {/* Sweet Voice Active Badge */}
               <button
                 onClick={() => {
@@ -1079,32 +1135,32 @@ export default function LandingCodeCinema({ onGetStarted }) {
                     window.speechSynthesis.cancel();
                   }
                 }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
                   isVoiceEnabled 
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' 
+                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-sm' 
                     : 'bg-white/5 border-white/10 text-gray-500'
                 }`}
                 title="Toggle Sweet Voice Narration"
               >
-                {isVoiceEnabled ? <Mic className="w-3 h-3 text-emerald-400 animate-pulse" /> : <MicOff className="w-3 h-3" />}
+                {isVoiceEnabled ? <Mic className="w-3.5 h-3.5 text-purple-400 animate-pulse" /> : <MicOff className="w-3.5 h-3.5" />}
                 <span>{isVoiceEnabled ? 'Sweet Voice: ON' : 'Voice: OFF'}</span>
               </button>
 
               {/* View Mode Toggle */}
-              <div className="hidden md:flex items-center gap-1 bg-black/60 p-0.5 rounded-lg border border-white/10">
+              <div className="hidden md:flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-white/10">
                 <button
                   onClick={() => setViewMode('split')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                    viewMode === 'split' ? 'bg-[#d4af37] text-black' : 'text-gray-400 hover:text-white'
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    viewMode === 'split' ? 'bg-[#d4af37] text-black shadow-sm' : 'text-gray-400 hover:text-white'
                   }`}
                   title="Split Stage"
                 >
-                  Split Screen
+                  Split Stage
                 </button>
                 <button
                   onClick={() => setViewMode('visuals')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                    viewMode === 'visuals' ? 'bg-[#d4af37] text-black' : 'text-gray-400 hover:text-white'
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    viewMode === 'visuals' ? 'bg-[#d4af37] text-black shadow-sm' : 'text-gray-400 hover:text-white'
                   }`}
                   title="Full Visualizer"
                 >
@@ -1112,8 +1168,8 @@ export default function LandingCodeCinema({ onGetStarted }) {
                 </button>
                 <button
                   onClick={() => setViewMode('code')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                    viewMode === 'code' ? 'bg-[#d4af37] text-black' : 'text-gray-400 hover:text-white'
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    viewMode === 'code' ? 'bg-[#d4af37] text-black shadow-sm' : 'text-gray-400 hover:text-white'
                   }`}
                   title="Code Projector"
                 >
@@ -1127,29 +1183,29 @@ export default function LandingCodeCinema({ onGetStarted }) {
             </div>
           </div>
 
-          {/* Screen Content: Dynamic View Modes */}
-          <div className={`grid ${viewMode === 'split' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} min-h-[480px] sm:min-h-[520px] relative`}>
+          {/* Screen Content: Dynamic View Modes with Full-Height Canvas */}
+          <div className={`grid ${viewMode === 'split' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} min-h-[500px] sm:min-h-[540px] relative`}>
             
             {/* Left Screen: Living Architecture Simulator */}
             {(viewMode === 'split' || viewMode === 'visuals') && (
-              <div className="relative border-b md:border-b-0 md:border-r border-[#d4af37]/20 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-b from-[#090812] to-[#040308]">
+              <div className="relative border-b md:border-b-0 md:border-r border-[#d4af37]/25 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-b from-[#0a0815] to-[#040308]">
                 <div className="flex items-center justify-between text-xs font-mono text-gray-400 mb-2">
                   <span className="text-[#d4af37] font-bold flex items-center gap-1.5">
                     <Cpu className="w-3.5 h-3.5" />
                     <span>LIVING ARCHITECTURE SIMULATION</span>
                   </span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded border border-emerald-500/30 font-bold">
+                  <span className="text-[10px] bg-emerald-500/15 text-emerald-300 px-2.5 py-0.5 rounded border border-emerald-500/40 font-bold">
                     60 FPS HARDWARE ACCELERATED
                   </span>
                 </div>
 
-                {/* HTML5 Canvas Simulator */}
-                <div className="relative w-full h-72 sm:h-80 md:h-[340px] rounded-2xl overflow-hidden border border-[#d4af37]/20 shadow-2xl">
+                {/* HTML5 Canvas Simulator with Deep High-End Sizing */}
+                <div className="relative w-full h-80 sm:h-96 md:h-[380px] rounded-2xl overflow-hidden border border-[#d4af37]/25 shadow-2xl">
                   <canvas ref={canvasRef} className="w-full h-full block" />
                 </div>
 
                 {/* Simulation Concept Footer */}
-                <div className="mt-3 p-3 rounded-xl bg-black/75 border border-[#d4af37]/20 text-xs font-mono flex items-center justify-between">
+                <div className="mt-3 p-3 rounded-xl bg-black/80 border border-[#d4af37]/25 text-xs font-mono flex items-center justify-between">
                   <div>
                     <span className="text-gray-400 block text-[10px]">CONCEPT MODEL:</span>
                     <span className="text-white font-bold">{activeAct.concept}</span>
@@ -1161,7 +1217,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
             {/* Right Screen: Code Projector Terminal */}
             {(viewMode === 'split' || viewMode === 'code') && (
-              <div className="relative flex flex-col justify-between p-4 sm:p-6 bg-[#08070d] font-mono text-xs">
+              <div className="relative flex flex-col justify-between p-4 sm:p-6 bg-[#07060c] font-mono text-xs">
                 <div className="flex items-center justify-between text-gray-400 border-b border-white/10 pb-2 mb-3">
                   <span className="flex items-center gap-2 text-cyan-400 font-bold">
                     <Terminal className="w-3.5 h-3.5" />
@@ -1173,7 +1229,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
                 </div>
 
                 {/* Code Display with Active Line Highlight & Rich Syntax Colors */}
-                <div className="flex-1 bg-[#050409] p-4 rounded-xl border border-white/10 overflow-x-auto text-[11px] leading-relaxed select-text space-y-0.5 max-h-72 sm:max-h-80 md:max-h-[300px] overflow-y-auto">
+                <div className="flex-1 bg-[#050409] p-4 rounded-xl border border-white/10 overflow-x-auto text-[11px] leading-relaxed select-text space-y-0.5 max-h-80 sm:max-h-96 md:max-h-[340px] overflow-y-auto">
                   {activeAct.code.split('\n').map((line, idx) => {
                     const isCurrent = idx === activeLine;
                     return (
@@ -1243,7 +1299,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
           </div>
 
           {/* ── CINEMA CONTROL BAR (Play, Curtains, Sound, Act Skip, CTA) ── */}
-          <div className="bg-[#090710] border-t border-[#d4af37]/20 p-3 sm:p-4 px-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-[#08060e] border-t border-[#d4af37]/25 p-3 sm:p-4 px-6 flex flex-wrap items-center justify-between gap-4">
             
             <div className="flex items-center gap-3">
               {/* Play / Pause Button */}
