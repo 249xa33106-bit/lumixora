@@ -189,13 +189,30 @@ export const recordUserLogin = async (user, portal = 'Placement Suite') => {
       localStorage.setItem(STORAGE_LOGIN_LOGS_KEY, JSON.stringify(updated));
     } catch (e) {}
 
-    // 2. Persist to Firestore collection `user_login_logs`
+    // 2. Persist to dedicated Firestore collection `gprec_placement_login_logs` if GPREC user, else general `user_login_logs`
     if (db) {
       try {
-        await setDoc(doc(db, 'user_login_logs', sessionId), {
+        const isGprec = isGprecUserEntity({ email, rollNumber: loginRecord.rollNumber });
+        const targetCollection = isGprec ? 'gprec_placement_login_logs' : 'user_login_logs';
+
+        await setDoc(doc(db, targetCollection, sessionId), {
           ...loginRecord,
           createdAt: serverTimestamp()
         });
+
+        if (isGprec && supabase) {
+          // Record dedicated isolated GPREC cloud session log
+          supabase.from('founder_notifications').insert([{
+            type: 'gprec_isolated_session_log',
+            title: `GPREC Scholar Session: ${name}`,
+            message: `Placement portal session for ${loginRecord.rollNumber || email}`,
+            meta: {
+              ...loginRecord,
+              isGprecIsolated: true
+            },
+            read: true
+          }]).then(() => {}).catch(() => {});
+        }
 
         // Update user document with lastLoginAt
         if (user.id || user.uid) {
@@ -274,11 +291,12 @@ export const fetchAllLoginLogs = async (options = {}) => {
     });
   } catch (e) {}
 
-  // 2. Fetch from Firestore `user_login_logs` collection
+  // 2. Fetch from Firestore dedicated collection `gprec_placement_login_logs` if gprecOnly
   if (db) {
     try {
+      const collectionName = gprecOnly ? 'gprec_placement_login_logs' : 'user_login_logs';
       const q = query(
-        collection(db, 'user_login_logs'), 
+        collection(db, collectionName), 
         orderBy('loginTimestamp', 'desc'), 
         limit(200)
       );
@@ -293,68 +311,38 @@ export const fetchAllLoginLogs = async (options = {}) => {
         }
       });
     } catch (err) {
-      console.warn('Error querying user_login_logs:', err.message);
-    }
-
-    // 3. Merge users collection with lastLoginAt info if not already captured
-    try {
-      const usersSnap = await getDocs(query(collection(db, 'users'), limit(150)));
-      usersSnap.forEach(uDoc => {
-        const u = uDoc.data();
-        if (u.email && u.lastLoginTimestamp) {
-          if (!gprecOnly || isGprecUserEntity(u)) {
-            const fallbackId = `user_last_${uDoc.id}`;
-            if (!mergedMap.has(fallbackId)) {
-              const roleMeta = deriveUserRoleMeta(u);
-              mergedMap.set(fallbackId, {
-                id: fallbackId,
-                userId: uDoc.id,
-                name: cleanScholarName(u.name || u.displayName, u.email),
-                email: u.email,
-                role: roleMeta.category,
-                roleTitle: roleMeta.title,
-                college: u.college || 'GPREC',
-                department: u.department || u.branch || 'CSE',
-                rollNumber: u.rollNumber || (/\d{10}/.exec(u.email)?.[0] || ''),
-                portal: u.lastPortal || 'Placement Suite',
-                deviceType: 'Desktop',
-                loginTimestamp: u.lastLoginTimestamp,
-                loginTimeFormatted: new Date(u.lastLoginTimestamp).toLocaleString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true
-                }),
-                lastActiveAt: u.lastLoginTimestamp,
-                durationSeconds: 1800,
-                status: (Date.now() - u.lastLoginTimestamp) < 15 * 60 * 1000 ? 'active' : 'completed'
-              });
+      // Graceful fallback to user_login_logs if empty
+      if (gprecOnly) {
+        try {
+          const fallbackSnap = await getDocs(query(collection(db, 'user_login_logs'), limit(100)));
+          fallbackSnap.forEach(docSnap => {
+            const data = docSnap.data();
+            if (isGprecUserEntity(data)) {
+              mergedMap.set(docSnap.id, { id: docSnap.id, ...data });
             }
-          }
-        }
-      });
-    } catch (e) {}
+          });
+        } catch (e) {}
+      }
+    }
   }
 
-  // 4. Query real login audit telemetry from Supabase founder_notifications
+  // 3. Query dedicated isolated GPREC cloud session logs from Supabase
   if (supabase) {
     try {
+      const targetType = gprecOnly ? 'gprec_isolated_session_log' : 'login';
       const { data: supaLogins, error: supaErr } = await supabase
         .from('founder_notifications')
         .select('*')
-        .eq('type', 'login')
+        .eq('type', targetType)
         .order('created_at', { ascending: false })
         .limit(200);
 
       if (!supaErr && Array.isArray(supaLogins)) {
         supaLogins.forEach(item => {
           const m = item.meta || {};
-          const id = `supa_log_${item.id}`;
+          const id = `supa_iso_${item.id}`;
           if (!mergedMap.has(id)) {
             const email = (m.email || '').toLowerCase().trim();
-            // Strict filter: Do not mix non-GPREC users into GPREC logs
             if (gprecOnly && !isGprecUserEntity(m)) {
               return;
             }
@@ -366,7 +354,7 @@ export const fetchAllLoginLogs = async (options = {}) => {
             mergedMap.set(id, {
               id,
               userId: m.userId || m.appId || id,
-              name: cleanScholarName(m.name || item.title?.replace('Active Scholar Login: ', ''), email),
+              name: cleanScholarName(m.name || item.title?.replace('GPREC Scholar Session: ', ''), email),
               email,
               role: roleMeta.category,
               roleTitle: roleMeta.title,
@@ -394,7 +382,7 @@ export const fetchAllLoginLogs = async (options = {}) => {
         });
       }
     } catch (err) {
-      console.warn('Supabase login logs fetch notice:', err);
+      console.warn('Supabase isolated login logs notice:', err);
     }
   }
 
