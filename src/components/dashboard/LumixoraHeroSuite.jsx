@@ -217,11 +217,11 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
     }
   };
 
-  // Auto-advance slides every 9 seconds (pauses on interaction)
+  // Auto-advance slides every 5 seconds (pauses on interaction or advances)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 9000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -246,8 +246,83 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
         {/* Ambient background glow */}
         <div className="absolute right-8 top-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* ── SLIDE 0: YOUR CAREER. OUR COMMITMENT. ── */}
+        {/* ── SLIDE 0: FOUNDER'S JOURNEY (DEFAULT FIRST SLIDE ON LOAD) ── */}
         {currentSlide === 0 && (
+          <div className="w-full flex items-center justify-between animate-fade-in">
+            {/* Content Left */}
+            <div className="relative z-10 max-w-full md:max-w-[52%] lg:max-w-[48%] xl:max-w-xl text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-black shadow-sm mb-4 md:mb-5">
+                <span>Shaik Sowban • Founder's Vision</span>
+                <span className="text-sm">🌟</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white tracking-tight leading-[1.08] mb-3 md:mb-4">
+                Built by Students.<br />
+                <span className="bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">
+                  Founder's Journey.
+                </span>
+              </h1>
+
+              <p className="text-slate-300 text-sm md:text-base font-semibold max-w-md md:max-w-sm lg:max-w-md mb-6 md:mb-7 leading-relaxed">
+                From solving tier-2 placement disparities to empowering 450+ engineering scholars with AI placement radar, zero-cost blueprints, and mentorship.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3.5 mb-5 md:mb-6">
+                <button 
+                  onClick={() => setShowFounderJourneyModal(true)}
+                  className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-rose-500/30 hover:shadow-rose-500/50 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Explore Founder's Story</span>
+                </button>
+
+                <button 
+                  onClick={handleWatchOverview}
+                  className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 shadow-md backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span>Watch Journey Video</span>
+                </button>
+
+                <button
+                  onClick={() => setCurrentSlide(1)}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/20 transition-all cursor-pointer"
+                >
+                  <span>Career Nexus</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right Visual: Founder in Neon Ring with Impact Badges & Elemental Fire & Water Aura */}
+            <div className="hidden md:flex absolute right-4 sm:right-6 md:right-8 lg:right-12 top-0 bottom-0 h-full items-center justify-end pointer-events-none select-none z-0">
+              <FounderElementalVisual maxH="max-h-[82%] sm:max-h-[84%] md:max-h-[86%]" shadowColor="rgba(245,158,11,0.35)">
+                {/* Floating Impact Card beside founder */}
+                <div className="hidden lg:block absolute -left-28 lg:-left-32 top-8 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5 z-20">
+                  <div className="flex items-center gap-1.5 text-amber-400">
+                    <Award className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Mission Impact</span>
+                  </div>
+                  <div className="text-sm font-black text-white">450+ Scholars</div>
+                  <p className="text-[10px] text-gray-400">Active across 7+ Campus Innovation Hubs</p>
+                </div>
+
+                <div className="hidden lg:flex absolute -left-20 lg:-left-24 bottom-8 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl items-center gap-2 z-20">
+                  <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold shrink-0">
+                    <Rocket className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-black text-white">AI Placement</div>
+                    <div className="text-[9px] text-purple-300 font-bold">100% Free Core Access</div>
+                  </div>
+                </div>
+              </FounderElementalVisual>
+            </div>
+          </div>
+        )}
+
+        {/* ── SLIDE 1: YOUR CAREER. OUR COMMITMENT. ── */}
+        {currentSlide === 1 && (
           <div className="w-full flex items-center justify-between animate-fade-in">
             {/* Content Left */}
             <div className="relative z-10 max-w-full md:max-w-[54%] lg:max-w-[50%] xl:max-w-xl text-left">
@@ -285,10 +360,10 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 </button>
 
                 <button
-                  onClick={() => setCurrentSlide(1)}
+                  onClick={() => setCurrentSlide(0)}
                   className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/20 transition-all cursor-pointer"
                 >
-                  <span>Swipe for Founder's Story</span>
+                  <span>Founder's Story</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -334,7 +409,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                     <div className="text-[9px] text-purple-300">Amazon • TCS • Cognizant • Infosys</div>
                   </div>
                   <button 
-                    onClick={() => setCurrentSlide(1)}
+                    onClick={() => setCurrentSlide(0)}
                     className="pointer-events-auto px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30 text-[10px] font-bold cursor-pointer transition-all"
                   >
                     Founder ➔
@@ -350,73 +425,6 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                   <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── SLIDE 1: FOUNDER'S JOURNEY ── */}
-        {currentSlide === 1 && (
-          <div className="w-full flex items-center justify-between animate-fade-in">
-            {/* Content Left */}
-            <div className="relative z-10 max-w-full md:max-w-[52%] lg:max-w-[48%] xl:max-w-xl text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-black shadow-sm mb-4 md:mb-5">
-                <span>Shaik Sowban • Founder's Vision</span>
-                <span className="text-sm">🌟</span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white tracking-tight leading-[1.08] mb-3 md:mb-4">
-                Built by Students.<br />
-                <span className="bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">
-                  Founder's Journey.
-                </span>
-              </h1>
-
-              <p className="text-slate-300 text-sm md:text-base font-semibold max-w-md md:max-w-sm lg:max-w-md mb-6 md:mb-7 leading-relaxed">
-                From solving tier-2 placement disparities to empowering 450+ engineering scholars with AI placement radar, zero-cost blueprints, and mentorship.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3.5 mb-5 md:mb-6">
-                <button 
-                  onClick={() => setShowFounderJourneyModal(true)}
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-rose-500/30 hover:shadow-rose-500/50 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Explore Founder's Story</span>
-                </button>
-
-                <button 
-                  onClick={handleWatchOverview}
-                  className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 shadow-md backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span>Watch Journey Video</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Visual: Founder in Neon Ring with Impact Badges & Elemental Fire & Water Aura */}
-            <div className="hidden md:flex absolute right-4 sm:right-6 md:right-8 lg:right-12 top-0 bottom-0 h-full items-center justify-end pointer-events-none select-none z-0">
-              <FounderElementalVisual maxH="max-h-[82%] sm:max-h-[84%] md:max-h-[86%]" shadowColor="rgba(245,158,11,0.35)">
-                {/* Floating Impact Card beside founder - shown on lg screens to preserve breathing space */}
-                <div className="hidden lg:block absolute -left-28 lg:-left-32 top-8 w-44 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-xl shadow-2xl space-y-1.5 z-20">
-                  <div className="flex items-center gap-1.5 text-amber-400">
-                    <Award className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Mission Impact</span>
-                  </div>
-                  <div className="text-sm font-black text-white">450+ Scholars</div>
-                  <p className="text-[10px] text-gray-400">Active across 7+ Campus Innovation Hubs</p>
-                </div>
-
-                <div className="hidden lg:flex absolute -left-20 lg:-left-24 bottom-8 w-40 p-2.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 backdrop-blur-xl shadow-2xl items-center gap-2 z-20">
-                  <div className="w-7 h-7 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold shrink-0">
-                    <Rocket className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-black text-white">AI Placement</div>
-                    <div className="text-[9px] text-purple-300 font-bold">100% Free Core Access</div>
-                  </div>
-                </div>
-              </FounderElementalVisual>
             </div>
           </div>
         )}
@@ -518,11 +526,11 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 aria-label={`Slide ${idx + 1}`}
                 className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
                   currentSlide === idx
-                    ? idx === 1 
+                    ? idx === 0 
                       ? 'w-7 bg-gradient-to-r from-amber-400 to-rose-500 shadow-md shadow-rose-500/50' 
-                      : idx === 2 
-                      ? 'w-7 bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md shadow-cyan-500/50'
-                      : 'w-7 bg-gradient-to-r from-blue-500 to-purple-500 shadow-md shadow-purple-500/50'
+                      : idx === 1 
+                      ? 'w-7 bg-gradient-to-r from-blue-500 to-purple-500 shadow-md shadow-purple-500/50'
+                      : 'w-7 bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md shadow-cyan-500/50'
                     : 'w-2 bg-white/30 hover:bg-white/60'
                 }`}
               />
@@ -541,7 +549,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
           </button>
 
           <span className="text-[10px] text-slate-300 font-bold ml-1 hidden sm:inline-block">
-            {currentSlide === 0 ? 'Career' : currentSlide === 1 ? 'Founder' : 'Predictor'}
+            {currentSlide === 0 ? 'Founder' : currentSlide === 1 ? 'Career' : 'Predictor'}
           </span>
         </div>
       </div>
