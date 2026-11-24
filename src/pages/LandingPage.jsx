@@ -6,12 +6,15 @@ import {
   Trophy, Users, Target, Activity, Zap, Shield, Flame, Briefcase, Building2, 
   GraduationCap, Globe, ExternalLink, Play, ChevronDown, Check, Star, 
   Compass, Laptop, Award, BarChart3, TrendingUp, Layers, Terminal, Sparkle,
-  Search, BookOpen, Clock, Heart, Send, HelpCircle, X, Lock, CheckCircle, Mail
+  Search, BookOpen, Clock, Heart, Send, HelpCircle, X, Lock, CheckCircle, Mail,
+  Film
 } from 'lucide-react';
 import CampusAmbassadorModal from '../components/CampusAmbassadorModal';
 import OurTeamPortal from './OurTeamPortal';
 import Realistic3DLogo from '../components/Realistic3DLogo';
-import CyberHoloGlobe3D from '../components/CyberHoloGlobe3D';
+import HolographicGlassCockpit from '../components/HolographicGlassCockpit';
+import StudentEvolutionSlider from '../components/StudentEvolutionSlider';
+import LandingCodeCinema from '../components/landing/LandingCodeCinema';
 
 export default function LandingPage({ onLoginClick }) {
   // Navigation & modals
@@ -230,6 +233,11 @@ export default function LandingPage({ onLoginClick }) {
 
           {/* Desktop Nav Items */}
           <nav className="hidden lg:flex items-center gap-7 text-xs xl:text-sm font-semibold text-[#101A35]/80">
+            <a href="#code-cinema" className="hover:text-[#7553E8] transition-colors flex items-center gap-1.5 text-[#101A35] font-bold">
+              <Film className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>CodeCinema™</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#d4af37]/15 text-[#b38728] border border-[#d4af37]/30">Movie</span>
+            </a>
             <a href="#flow" className="hover:text-[#7553E8] transition-colors">Lumixora Flow</a>
             <a href="#career-twin" className="hover:text-[#7553E8] transition-colors flex items-center gap-1.5">
               <span>Career Twin</span>
@@ -312,6 +320,10 @@ export default function LandingPage({ onLoginClick }) {
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-b border-[#101A35]/10 px-6 py-6 space-y-4 shadow-xl">
+            <a href="#code-cinema" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-sm font-bold text-[#b38728]">
+              <Film className="w-4 h-4 text-[#d4af37]" />
+              <span>CodeCinema™ (Start Your Movie 🍿)</span>
+            </a>
             <a href="#flow" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Lumixora Flow</a>
             <a href="#career-twin" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#7553E8]">Career Twin (Signature)</a>
             <a href="#placement-intelligence" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-semibold text-[#101A35]">Placement Intelligence</a>
@@ -434,140 +446,23 @@ export default function LandingPage({ onLoginClick }) {
             </div>
           </div>
 
-          {/* ── HERO VISUAL CONCEPT: Career Twin + 3 Floating Intelligence Panels ── */}
+          {/* ── HERO VISUAL CONCEPT: 3D Holographic Glass Cockpit ── */}
           <div className="mt-14 max-w-5xl mx-auto relative">
-            <div className="rounded-3xl p-4 sm:p-8 bg-[#101A35] border border-white/10 shadow-2xl relative overflow-hidden text-white">
-              
-              {/* Background ambient mesh */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-[#7553E8]/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#08BFD0]/15 rounded-full blur-3xl pointer-events-none" />
-              
-              {/* Window Bar */}
-              <div className="flex items-center justify-between pb-6 border-b border-white/10 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                  <span className="ml-2 font-mono text-gray-400 text-[11px]">lumixora.in/career-twin/live-preview</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#00B987] animate-pulse" />
-                  <span className="text-[11px] font-bold text-[#00B987] uppercase tracking-wider">Active Intelligence Stream</span>
-                </div>
-              </div>
-
-              {/* 3 Columns / Floating Panels */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-                
-                {/* Panel 1: Career Readiness Score */}
-                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-4 hover:border-[#08BFD0]/40 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Career Readiness</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#00B987]/20 text-[#00B987]">Calculated</span>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black text-white font-mono">78%</span>
-                    <span className="text-xs text-gray-400 font-semibold">Tier 2: Drive Ready</span>
-                  </div>
-                  <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#7553E8] to-[#08BFD0] h-full w-[78%] rounded-full" />
-                  </div>
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] text-gray-300 space-y-1">
-                    <span className="font-bold text-white block">Target Career Path:</span>
-                    <span className="text-[#08BFD0] font-semibold">Software Developer / Cloud SDE</span>
-                  </div>
-                </div>
-
-                {/* Panel 2: Skill Intelligence Breakdown */}
-                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-3.5 hover:border-[#7553E8]/40 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Skill Intelligence</span>
-                    <span className="text-[10px] text-gray-400 font-mono">4 Assessed Vectors</span>
-                  </div>
-
-                  <div className="space-y-2.5 text-xs">
-                    <div>
-                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
-                        <span>Problem Solving (DSA)</span>
-                        <span className="text-[#08BFD0] font-mono">85%</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-[#08BFD0] h-full w-[85%]" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
-                        <span>Programming Execution</span>
-                        <span className="text-[#7553E8] font-mono">76%</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-[#7553E8] h-full w-[76%]" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
-                        <span>Practical Projects</span>
-                        <span className="text-[#00B987] font-mono">72%</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-[#00B987] h-full w-[72%]" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between font-semibold text-gray-300 mb-1">
-                        <span>Interview Communication</span>
-                        <span className="text-amber-400 font-mono">62%</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-amber-400 h-full w-[62%]" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Panel 3: Placement Journey & Next Actions */}
-                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-3.5 hover:border-[#00B987]/40 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Placement Journey</span>
-                    <span className="text-[10px] text-[#00B987] font-bold">12 Milestones Built</span>
-                  </div>
-
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">Core Java & SQL Grand Test Passed</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">Project Milestone: Auth & API Verified</span>
-                    </div>
-                  </div>
-
-                  {/* AI Recommendation Alert */}
-                  <div className="p-3 rounded-xl bg-[#7553E8]/20 border border-[#7553E8]/30 space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#08BFD0] flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> AI Recommendation
-                    </span>
-                    <p className="text-[11px] text-gray-200 leading-snug">
-                      Improve communication and complete two practical projects before your next interview simulation.
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+            <HolographicGlassCockpit onActionClick={handleAuth} />
           </div>
 
-          {/* ── 3D CYBER HOLO-GLOBE & LIVE CAMPUS NETWORK ── */}
-          <div className="mt-12 max-w-5xl mx-auto">
-            <CyberHoloGlobe3D />
+          {/* ── INTERACTIVE STUDENT EVOLUTION SLIDER (YEAR 1 TO YEAR 4) ── */}
+          <div className="mt-14 max-w-5xl mx-auto">
+            <StudentEvolutionSlider onGetStarted={handleAuth} />
           </div>
 
         </div>
       </section>
 
-      
-      
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 01.5: CODECINEMA™ — THE LIVING CODE THEATER
+      ───────────────────────────────────────────────────────────────── */}
+      <LandingCodeCinema onGetStarted={() => handleAuth('student')} />
 
       {/* ─────────────────────────────────────────────────────────────────
           SECTION 02: THE PROBLEM — THE GAP BETWEEN LEARNING AND GETTING HIRED
