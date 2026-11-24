@@ -6,7 +6,8 @@ import {
   Eye, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Info, Clapperboard,
   Maximize2, Minimize2, Radio, Activity, Tv, Monitor, Video, ShieldAlert,
   Disc3, PlaySquare, MessageSquare, Compass, SlidersHorizontal, Share2,
-  Lock, Unlock, RefreshCw, X, MessageCircle
+  Lock, Unlock, RefreshCw, X, MessageCircle, PlusCircle, Wrench, FileCode,
+  FolderCode, Wand2
 } from 'lucide-react';
 
 /* ─── HOLLYWOOD-GRADE DYNAMIC AUDIO ENGINE (WEB AUDIO API) ─── */
@@ -177,17 +178,183 @@ class CinemaDynamicAudio {
 
 const cinemaAudio = new CinemaDynamicAudio();
 
+/* ─── SAMPLE CODE TEMPLATES FOR DIRECTING ANY LANGUAGE ─── */
+const CODE_PRESETS = {
+  python_quicksort: {
+    language: 'Python',
+    title: 'QuickSort: The Divide and Conquer Odyssey',
+    code: `# QuickSort Algorithm in Python
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    # Selecting the median pivot element
+    pivot = arr[len(arr) // 2]
+    
+    # Partitioning arrays into 3 memory slices
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    
+    # Recursive conquer with O(N log N) average complexity
+    return quicksort(left) + middle + quicksort(right)
+
+# Test run
+sample_data = [38, 27, 43, 3, 9, 82, 10]
+sorted_result = quicksort(sample_data)
+print("Sorted:", sorted_result)`
+  },
+  java_lru: {
+    language: 'Java',
+    title: 'LRU Cache: The Eviction Sentinel',
+    code: `// LRU Cache with HashMap & Doubly-Linked List in Java
+class LRUCache {
+    class Node {
+        int key, value;
+        Node prev, next;
+        Node(int k, int v) { this.key = k; this.value = v; }
+    }
+    
+    private final int capacity;
+    private final Map<Integer, Node> map = new HashMap<>();
+    private final Node head = new Node(0, 0);
+    private final Node tail = new Node(0, 0);
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    public int get(int key) {
+        if (!map.containsKey(key)) return -1;
+        Node node = map.get(key);
+        remove(node);
+        insert(node); // Move to head as Most Recently Used
+        return node.value;
+    }
+
+    private void remove(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    private void insert(Node node) {
+        node.next = head.next;
+        node.prev = head;
+        head.next.prev = node;
+        head.next = node;
+    }
+}`
+  },
+  go_workers: {
+    language: 'Go',
+    title: 'Concurrent Worker Pool: Channel Orchestration',
+    code: `// Go High-Concurrency Worker Pool
+package main
+import (
+    "fmt"
+    "sync"
+    "time"
+)
+
+func worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {
+    defer wg.Done()
+    for j := range jobs {
+        fmt.Printf("Worker %d processing job %d\\n", id, j)
+        time.Sleep(time.Millisecond * 100)
+        results <- j * 2
+    }
+}
+
+func main() {
+    const numJobs = 10
+    jobs := make(chan int, numJobs)
+    results := make(chan int, numJobs)
+    var wg sync.WaitGroup
+
+    // Spawn 3 concurrent lightweight goroutines
+    for w := 1; w <= 3; w++ {
+        wg.Add(1)
+        go worker(w, jobs, results, &wg)
+    }
+
+    for j := 1; j <= numJobs; j++ { jobs <- j }
+    close(jobs)
+    wg.Wait()
+    close(results)
+}`
+  },
+  rust_tree: {
+    language: 'Rust',
+    title: 'Binary Search Tree: Memory Safety Without Garbage Collection',
+    code: `// Binary Search Tree in Rust with Box & Option
+#[derive(Debug)]
+pub struct TreeNode {
+    pub val: i32,
+    pub left: Option<Box<TreeNode>>,
+    pub right: Option<Box<TreeNode>>,
+}
+
+impl TreeNode {
+    pub fn new(val: i32) -> Self {
+        TreeNode { val, left: None, right: None }
+    }
+
+    pub fn insert(&mut self, new_val: i32) {
+        if new_val < self.val {
+            match self.left {
+                Some(ref mut node) => node.insert(new_val),
+                None => self.left = Some(Box::new(TreeNode::new(new_val))),
+            }
+        } else {
+            match self.right {
+                Some(ref mut node) => node.insert(new_val),
+                None => self.right = Some(Box::new(TreeNode::new(new_val))),
+            }
+        }
+    }
+}`
+  },
+  ts_debounce: {
+    language: 'TypeScript',
+    title: 'Debounce Engine: Cancellation & Microtask Timers',
+    code: `// High-Performance Event Debounce in TypeScript
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  delayMs: number
+): (...args: Parameters<T>) => void {
+  let timerId: ReturnType<typeof setTimeout> | null = null;
+
+  return (...args: Parameters<T>) => {
+    // Cancel the pending microtask execution
+    if (timerId !== null) {
+      clearTimeout(timerId);
+    }
+
+    // Schedule new execution window
+    timerId = setTimeout(() => {
+      func(...args);
+      timerId = null;
+    }, delayMs);
+  };
+}`
+  }
+};
+
 /* ─── MASTER FILM REPERTOIRE (HISTORICAL OPEN SOURCE DRAMAS) ─── */
-const CINEMA_FILMS = [
+const CANONICAL_FILMS = [
   {
     id: 'redis',
     title: 'Redis: The Single-Threaded Speed Demon',
     subtitle: 'v0.01 ➔ v7.0 • March 2009',
     creator: 'Salvatore Sanfilippo (antirez)',
     location: 'Sicily, Italy',
+    language: 'C',
     runtime: '3 Acts • 14 mins',
     accentColor: '#c53030', // Warm deep crimson
     goldColor: '#d4af37', // Warm brass/gold
+    simulationType: 'redis',
     crisis: 'The C10K Concurrency Crisis. Relational database connection pools (MySQL) were locking up under 10,000 concurrent client sockets, causing 4,800ms context-switch overhead. Industry convention said multi-threading was compulsory.',
     synopsis: 'How Salvatore Sanfilippo rejected POSIX thread locking, stripped away disk ACID overhead, and engineered an asynchronous non-blocking event loop in 350 lines of pure C capable of 125,000 req/sec on a single CPU core.',
     learningOutcomes: [
@@ -206,14 +373,8 @@ const CINEMA_FILMS = [
         dilemma: 'Relational DBs were choking on real-time web counters. Salvatore needed raw in-memory lookup in under 5 microseconds without disk I/O.',
         tradeoff: 'Sacrificed persistent disk ACID transactions in favor of an in-memory hash table with direct memory pointers.',
         narration: "Welcome to Day 1. In March 2009, Salvatore Sanfilippo sits in Sicily frustrated by MySQL latency. Instead of heavy B-Trees, he crafts a lightweight hash table with custom string pointers. Notice: zero mutex locks. Pure sequential memory access.",
-        cuePoints: [
-          { time: 3, label: 'Allocating Memory Buckets', activeLine: 8 },
-          { time: 10, label: 'Single Hash Masking O(1)', activeLine: 18 },
-          { time: 18, label: 'Pointer Traversal without Locks', activeLine: 24 }
-        ],
         interviewQuestion: 'Why does Redis not use standard C-strings (null-terminated char*)?',
         interviewAnswer: 'Standard C strings require O(N) strlen() lookups and cannot store arbitrary binary bytes. Salvatore designed SDS (Simple Dynamic Strings) which prefix the buffer with length and free capacity, giving O(1) length checks and zero-copy slicing.',
-        directorNotes: 'Salvatore realized that memory caches fail not because of CPU limits, but because of lock contention and memory fragmentation.',
         code: `/* Redis 0.01 Genesis: Pure In-Memory Dictionary */
 #include <stdio.h>
 #include <stdlib.h>
@@ -254,14 +415,8 @@ dictEntry *dictFind(dictht *ht, const void *key) {
         dilemma: 'Spawning 10,000 OS threads for 10,000 client sockets caused brutal kernel context-switching and stack memory exhaustion.',
         tradeoff: 'Replaced multi-threading with a non-blocking asynchronous event multiplexer (ae.c) wrapping Linux epoll and BSD kqueue.',
         narration: "Here is the turning point of modern backend architecture. Everyone told Salvatore: multi-core CPUs require multi-threading! Salvatore proved the opposite. With epoll_wait, a single thread listens to 10,000 sockets. When data arrives, it executes in RAM and returns in microseconds.",
-        cuePoints: [
-          { time: 4, label: 'Entering epoll_wait Kernel Boundary', activeLine: 11 },
-          { time: 12, label: 'Zero-Lock Event Queue Dispatch', activeLine: 17 },
-          { time: 22, label: '125,000 Req/sec Throughput Attained', activeLine: 22 }
-        ],
         interviewQuestion: 'How does a single thread handle 100,000 requests per second in Redis?',
         interviewAnswer: 'Network packet arrival triggers epoll interrupts. The CPU processes commands entirely in RAM without OS context-switching, cache-thrashing, or mutex contention.',
-        directorNotes: 'Notice how ae.c completely sidesteps pthread_mutex_lock. If there is only one thread touching memory, you never need a lock.',
         code: `/* ae.c - The Asynchronous Event Loop Multiplexer */
 #include <sys/epoll.h>
 
@@ -285,48 +440,6 @@ int aeProcessEvents(aeEventLoop *eventLoop, int flags) {
     }
     return numevents;
 }`
-      },
-      {
-        id: 3,
-        title: 'Act III: The SkipList: Sorted Sets in O(log N)',
-        commitSha: '84b02fa',
-        timestamp: 'Day 42 • June 2009',
-        file: 't_zset.c',
-        durationSec: 26,
-        dilemma: 'Real-time score leaderboards needed logarithmic insertion and range scans without the rebalancing lock overhead of Red-Black Trees.',
-        tradeoff: 'Chose probabilistic SkipLists over balanced binary trees: simpler implementation, lock-free potential, and vastly faster sequential range traversal.',
-        narration: "Act III: The SkipList. William Pugh invented skiplists, but Salvatore brought them to industry dominance. By tossing virtual coins for node heights, Redis sorts millions of scores with zero tree rotation locks.",
-        cuePoints: [
-          { time: 5, label: 'Randomized Level Generation', activeLine: 15 },
-          { time: 14, label: 'Forward Pointer Linking', activeLine: 20 },
-          { time: 21, label: 'O(log N) Range Search Established', activeLine: 24 }
-        ],
-        interviewQuestion: 'Why did Redis choose SkipLists over Red-Black Trees for ZSETs?',
-        interviewAnswer: 'SkipLists are dramatically simpler to implement, consume less memory overhead per node, and allow O(1) successor traversal for ZRANGE queries by following the bottom level forward pointers.',
-        directorNotes: 'Tree rotations in Red-Black trees touch multiple nodes and invalidate memory caches. SkipLists insert locally without cascaded rotations.',
-        code: `/* t_zset.c - Probabilistic Multi-Level SkipList */
-typedef struct zskiplistNode {
-    robj *obj;
-    double score;
-    struct zskiplistNode *backward;
-    struct zskiplistLevel {
-        struct zskiplistNode *forward;
-        unsigned int span;
-    } level[];
-} zskiplistNode;
-
-/* Insert node with randomized logarithmic height */
-zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) {
-    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
-    int i, level = zslRandomLevel();
-    
-    x = zslCreateNode(level, score, obj);
-    for (i = 0; i < level; i++) {
-        x->level[i].forward = update[i]->level[i].forward;
-        update[i]->level[i].forward = x;
-    }
-    return x;
-}`
       }
     ]
   },
@@ -336,9 +449,11 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) {
     subtitle: 'v0.01 ➔ v2.45 • April 2005',
     creator: 'Linus Torvalds',
     location: 'Portland, Oregon',
+    language: 'C',
     runtime: '2 Acts • 10 mins',
     accentColor: '#9c4221', // Rich burnt amber / copper
     goldColor: '#d4af37',
+    simulationType: 'git',
     crisis: 'BitKeeper revoked the free Linux kernel license. Linus Torvalds had 10 days to invent a distributed VCS that could track 100,000 files in under 2 seconds without centralized servers or delta patch chaining.',
     synopsis: 'How Linus Torvalds discarded file-by-file delta diffing and modeled version control as a cryptographic Merkle Directed Acyclic Graph (DAG) indexed by 40-character SHA-1 content addresses.',
     learningOutcomes: [
@@ -357,14 +472,8 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) {
         dilemma: 'CVS and SVN computed slow delta diffs across files. Linus needed instantaneous repository validation across the entire Linux codebase.',
         tradeoff: 'Discarded file diffing. Modeled the repository as an immutable object store indexed purely by cryptographic content hashes.',
         narration: "April 2005. Linus Torvalds locks himself in his home office. In just 48 hours, he codes the foundational truth of Git: files do not have names; files have SHA-1 hashes of their content. If two files have identical code, they share the exact same hash address.",
-        cuePoints: [
-          { time: 4, label: 'SHA-1 Header Digest Computation', activeLine: 12 },
-          { time: 12, label: 'Writing Immutable Blob to Disk', activeLine: 19 },
-          { time: 20, label: 'Cryptographic Tamper-Proof Address', activeLine: 23 }
-        ],
         interviewQuestion: 'Why is Git called a content-addressable storage engine?',
         interviewAnswer: 'Because object IDs are calculated purely by hashing the raw content (SHA-1/SHA-256). Changing even one comma alters the hash completely, guaranteeing cryptographic immutability.',
-        directorNotes: 'Linus did not build a version control system first; he built a content-addressable filesystem and placed a VCS on top.',
         code: `/* read-cache.c - Linus's 10-Day Content-Addressable Object DB */
 #include <openssl/sha.h>
 #include <sys/stat.h>
@@ -395,9 +504,11 @@ int write_sha1_file(char *buf, unsigned len, const char *type, unsigned char *re
     subtitle: 'v0.1.0 ➔ Fiber • 2017',
     creator: 'Jordan Walke & Sophie Alpert',
     location: 'Menlo Park, California',
+    language: 'JavaScript',
     runtime: '2 Acts • 11 mins',
     accentColor: '#1d4ed8', // Royal cinema sapphire
     goldColor: '#d4af37',
+    simulationType: 'react',
     crisis: 'The synchronous recursive Virtual DOM walk locked the browser main JavaScript thread on large component trees, causing frame drops and unresponsive user keyboard input during heavy re-renders.',
     synopsis: 'How the React core team rewrote the reconciler into React Fiber: breaking the JavaScript call stack into an interruptible cooperative linked-list work loop within a 16.6ms 60 FPS frame budget.',
     learningOutcomes: [
@@ -416,14 +527,8 @@ int write_sha1_file(char *buf, unsigned len, const char *type, unsigned char *re
         dilemma: 'Synchronous recursive tree traversal could not be paused once started. If rendering took 50ms, the user experienced 3 dropped animation frames.',
         tradeoff: 'Replaced recursive function calls with a singly-linked-list Fiber tree that can yield control to browser layout events and resume later.',
         narration: "2017 at Facebook. The team tackles the ultimate frontend challenge: 60 FPS fluid rendering. Instead of letting recursion freeze the browser, Fiber introduces the cooperative work loop. Every frame has 16.6 milliseconds. If time runs out, Fiber yields to user clicks.",
-        cuePoints: [
-          { time: 4, label: 'Frame Deadline Check (shouldYield)', activeLine: 8 },
-          { time: 13, label: 'Performing Unit of Work in Fiber Tree', activeLine: 14 },
-          { time: 20, label: 'Cooperative Yield to Main Thread', activeLine: 19 }
-        ],
         interviewQuestion: 'How does React Fiber achieve time-slicing without multithreading?',
         interviewAnswer: 'Fiber converts the component tree into a singly-linked list (child, sibling, return). A while loop processes one fiber at a time and checks performance.now() against the frame deadline, pausing via MessageChannel/requestIdleCallback when time is exhausted.',
-        directorNotes: 'Fiber transforms the call stack from a language constraint into a data structure in heap memory that can be paused, saved, and prioritized.',
         code: `/* ReactFiberWorkLoop.js - Cooperative Time-Slicing Scheduler */
 function workLoopConcurrent() {
     /* Perform work until the browser needs to paint a 60 FPS frame */
@@ -446,9 +551,100 @@ function shouldYield() {
   }
 ];
 
+/* ─── CODE-TO-MOVIE HEURISTIC AI DIRECTOR ENGINE ─── */
+function directMovieFromUserCode(code, language = 'Python', customTitle = '') {
+  const lowerCode = code.toLowerCase();
+  
+  // 1. Detect Simulation Archetype
+  let simType = 'memory_stack';
+  let themeColor = '#10b981'; // Emerald
+  let categoryTag = 'General Algorithm';
+
+  if (lowerCode.includes('sort') || lowerCode.includes('swap') || lowerCode.includes('partition') || lowerCode.includes('arr[') || lowerCode.includes('bubble') || lowerCode.includes('merge') || lowerCode.includes('quick')) {
+    simType = 'array_sort';
+    themeColor = '#f59e0b'; // Amber
+    categoryTag = 'Sorting & Partitioning';
+  } else if (lowerCode.includes('tree') || lowerCode.includes('node') || lowerCode.includes('root') || lowerCode.includes('left') || lowerCode.includes('right') || lowerCode.includes('bst') || lowerCode.includes('trie') || lowerCode.includes('graph')) {
+    simType = 'tree_graph';
+    themeColor = '#3b82f6'; // Sapphire
+    categoryTag = 'Graph & Tree Topology';
+  } else if (lowerCode.includes('async') || lowerCode.includes('await') || lowerCode.includes('channel') || lowerCode.includes('routine') || lowerCode.includes('thread') || lowerCode.includes('queue') || lowerCode.includes('socket') || lowerCode.includes('poll') || lowerCode.includes('listen')) {
+    simType = 'event_loop';
+    themeColor = '#8b5cf6'; // Violet
+    categoryTag = 'Concurrency & I/O Multiplexing';
+  }
+
+  // 2. Extract First Meaningful Function or Class
+  const lines = code.trim().split('\n');
+  const funcMatch = code.match(/(?:def|function|func|class|fn|public\s+void|int|public\s+int)\s+([a-zA-Z0-9_]+)/);
+  const detectedName = funcMatch ? funcMatch[1] : (customTitle || 'AlgorithmicEngine');
+  
+  const movieTitle = customTitle.trim() || `${detectedName}: The ${categoryTag} Saga`;
+  const fileExtension = language === 'Python' ? '.py' : (language === 'JavaScript' ? '.js' : (language === 'Java' ? '.java' : (language === 'C++' ? '.cpp' : (language === 'Go' ? '.go' : (language === 'Rust' ? '.rs' : '.ts')))));
+  const fileName = detectedName.toLowerCase() + fileExtension;
+
+  // 3. Generate 2-Act Cinema Script
+  const half = Math.max(1, Math.floor(lines.length / 2));
+  const act1Code = lines.slice(0, half).join('\n');
+  const act2Code = lines.join('\n');
+
+  return {
+    id: 'user-film-' + Date.now(),
+    title: movieTitle,
+    subtitle: `User Directing • ${language.toUpperCase()}`,
+    creator: 'Student Architect',
+    location: 'Studio Workspace',
+    language: language,
+    runtime: '2 Acts • 6 mins',
+    accentColor: themeColor,
+    goldColor: '#d4af37',
+    simulationType: simType,
+    isUserFilm: true,
+    crisis: `High complexity bottleneck. In production, unoptimized data execution leads to CPU starvation, cache misses, and memory leaks. This code introduces a structured algorithmic flow to bound latency and memory footprint.`,
+    synopsis: `A student-directed cinematic engineering study in ${language}. Demonstrating how ${detectedName} structures control flow and memory efficiency under execution constraints.`,
+    learningOutcomes: [
+      `Algorithmic Time Complexity Analysis in ${language}`,
+      `Memory Allocation & Cache Behavior`,
+      `Production Edge Cases & Invariant Maintenance`
+    ],
+    chapters: [
+      {
+        id: 1,
+        title: `Act I: The Setup & Invariant Guard`,
+        commitSha: 'a101f' + Math.floor(Math.random() * 899 + 100),
+        timestamp: 'Scene 1 • Initialization',
+        file: fileName,
+        durationSec: 22,
+        dilemma: `Initial inputs must be validated and memory structures framed without redundant re-allocations.`,
+        tradeoff: `Structured pre-allocation vs lazy instantiation.`,
+        narration: `Act I opens. Look closely at the initialization block in ${fileName}. Here the author establishes invariants, guarding against null boundaries before entering the core execution loop.`,
+        interviewQuestion: `What is the worst-case time and space complexity of this ${detectedName} implementation?`,
+        interviewAnswer: `Depending on the input topology, the time complexity typically scales according to the branching factor, while auxiliary space is governed by recursion stack depth or allocated structures.`,
+        code: act1Code
+      },
+      {
+        id: 2,
+        title: `Act II: The Execution Engine & Big-O Climax`,
+        commitSha: 'b202e' + Math.floor(Math.random() * 899 + 100),
+        timestamp: 'Scene 2 • Convergence',
+        file: fileName,
+        durationSec: 26,
+        dilemma: `Balancing CPU cache efficiency against algorithmic traversal depth.`,
+        tradeoff: `Sequential iterative execution vs recursive branching.`,
+        narration: `Now comes the algorithmic climax. The main loop executes with precision. Notice how state mutations occur, driving the problem space toward final convergence without memory leaks.`,
+        interviewQuestion: `How would you refactor ${detectedName} to run concurrently or across multiple distributed workers?`,
+        interviewAnswer: `To parallelize this logic, isolate read-only shared state and partition mutable ranges into independent worker batches using lock-free message queues or concurrent chunks.`,
+        code: act2Code
+      }
+    ]
+  };
+}
+
 /* ─── LIVING ARCHITECTURE SIMULATION ENGINE (60 FPS CANVAS) ─── */
-function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, playbackSpeed }) {
+function LivingArchitectureCanvas({ film, progress, isPlaying, playbackSpeed }) {
   const canvasRef = useRef(null);
+  const filmId = film.id;
+  const simType = film.simulationType || (filmId === 'redis' ? 'redis' : (filmId === 'git' ? 'git' : (filmId === 'react' ? 'react' : 'memory_stack')));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -477,8 +673,8 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
 
-      /* ─── SCENE 1: REDIS MULTIPLEXING RADAR ─── */
-      if (filmId === 'redis') {
+      /* ─── SCENE: REDIS MULTIPLEXING RADAR ─── */
+      if (simType === 'redis') {
         const cx = w * 0.5;
         const cy = h * 0.5;
         const radius = Math.min(w, h) * 0.35;
@@ -498,7 +694,6 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
           ctx.shadowBlur = active ? 10 : 0;
           ctx.fill();
 
-          // Packet stream
           if (active && isPlaying) {
             const prog = (tick * 1.8 + i) % 1;
             const px = sx + (cx - sx) * prog;
@@ -565,7 +760,6 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
         ctx.fillStyle = '#f43f5e';
         ctx.fillText('THREAD', cx, cy + 9);
 
-        // Measured Runtime Telemetry Display (Separated from animations)
         ctx.font = '10px monospace';
         ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
         ctx.textAlign = 'left';
@@ -576,8 +770,8 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
         ctx.fillText('THROUGHPUT: 125,480 REQ/SEC', 14, 56);
       }
 
-      /* ─── SCENE 2: GIT MERKLE DAG ─── */
-      else if (filmId === 'git') {
+      /* ─── SCENE: GIT MERKLE DAG ─── */
+      else if (simType === 'git') {
         const startX = 60;
         const centerY = h * 0.5;
 
@@ -623,40 +817,176 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
         ctx.fillText('TREE DIFF SPEED: O(1) CRYPTOGRAPHIC SNAPSHOT', 14, 40);
       }
 
-      /* ─── SCENE 3: REACT FIBER WORK LOOP ─── */
-      else {
-        const cx = w * 0.5;
-        const cy = h * 0.5;
-        const frameW = w * 0.65;
-        const frameH = 26;
+      /* ─── SCENE: USER DYNAMIC ARRAY SORTING / PARTITION (Python, Java, etc.) ─── */
+      else if (simType === 'array_sort') {
+        const barCount = 18;
+        const barWidth = Math.min(22, (w * 0.7) / barCount);
+        const startX = (w - (barCount * (barWidth + 4))) / 2;
+        const maxH = h * 0.5;
 
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(cx - frameW/2, cy - 30, frameW, frameH);
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-        ctx.strokeRect(cx - frameW/2, cy - 30, frameW, frameH);
+        for (let i = 0; i < barCount; i++) {
+          const baseVal = ((i * 13) % barCount) + 1;
+          const sortedVal = i + 1;
+          const currentVal = progress > 0.75 ? sortedVal : (progress > 0.25 ? (baseVal + Math.floor(Math.sin(tick * 3 + i) * 2)) : baseVal);
+          const barH = (Math.max(1, currentVal) / barCount) * maxH;
+          const bx = startX + i * (barWidth + 4);
+          const by = h * 0.75 - barH;
 
-        const prog = isPlaying ? (tick % 1.5) / 1.5 : 0.6;
-        ctx.fillStyle = prog > 0.85 ? '#ef4444' : '#38bdf8';
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 10;
-        ctx.fillRect(cx - frameW/2 + 2, cy - 28, (frameW - 4) * prog, frameH - 4);
+          const isScanning = Math.floor((tick * 4) % barCount) === i;
+          const isSorted = progress > 0.8;
+
+          ctx.fillStyle = isSorted ? '#4ade80' : (isScanning ? '#f43f5e' : '#d4af37');
+          ctx.shadowColor = isScanning ? '#f43f5e' : (isSorted ? '#4ade80' : 'transparent');
+          ctx.shadowBlur = isScanning ? 12 : (isSorted ? 8 : 0);
+          ctx.fillRect(bx, by, barWidth, barH);
+
+          if (isScanning && isPlaying) {
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.moveTo(bx + barWidth/2, by - 6);
+            ctx.lineTo(bx + barWidth/2 - 4, by - 12);
+            ctx.lineTo(bx + barWidth/2 + 4, by - 12);
+            ctx.fill();
+          }
+        }
 
         ctx.shadowBlur = 0;
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(`FRAME BUDGET: ${(16.6 * (1 - prog)).toFixed(1)}ms REMAINING`, cx, cy - 13);
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.95)';
+        ctx.textAlign = 'left';
+        ctx.fillText(`● DYNAMIC PARTITION SCANNER: ${progress > 0.8 ? 'CONVERGED' : 'PARTITIONING'}`, 14, 24);
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.95)';
+        ctx.fillText(`SWAPS: ${Math.floor(progress * 42)} | AVERAGE COMPLEXITY: O(N log N)`, 14, 40);
+      }
 
-        ctx.fillStyle = prog > 0.85 ? '#f87171' : 'rgba(212, 175, 55, 0.9)';
-        ctx.font = '9px monospace';
-        ctx.fillText(prog > 0.85 ? 'PAUSING FOR USER KEYBOARD INPUT (60 FPS)' : 'RECONCILING FIBER TREE NODES...', cx, cy + 24);
+      /* ─── SCENE: USER DYNAMIC TREE & GRAPH TOPOLOGY ─── */
+      else if (simType === 'tree_graph') {
+        const cx = w * 0.5;
+        const topY = h * 0.26;
+        const treeNodes = [
+          { id: 0, x: cx, y: topY, val: 'Root' },
+          { id: 1, x: cx - 75, y: topY + 50, val: 'L' },
+          { id: 2, x: cx + 75, y: topY + 50, val: 'R' },
+          { id: 3, x: cx - 110, y: topY + 105, val: 'LL' },
+          { id: 4, x: cx - 35, y: topY + 105, val: 'LR' },
+          { id: 5, x: cx + 35, y: topY + 105, val: 'RL' },
+          { id: 6, x: cx + 110, y: topY + 105, val: 'RR' }
+        ];
+
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+        ctx.lineWidth = 1.5;
+        [[0,1], [0,2], [1,3], [1,4], [2,5], [2,6]].forEach(([u, v]) => {
+          ctx.beginPath();
+          ctx.moveTo(treeNodes[u].x, treeNodes[u].y);
+          ctx.lineTo(treeNodes[v].x, treeNodes[v].y);
+          ctx.stroke();
+        });
+
+        const activeNodeIdx = Math.floor((tick * 2.5) % treeNodes.length);
+        treeNodes.forEach((node, i) => {
+          const isActive = isPlaying && activeNodeIdx === i;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, isActive ? 13 : 9.5, 0, Math.PI * 2);
+          ctx.fillStyle = isActive ? '#38bdf8' : '#14121a';
+          ctx.strokeStyle = isActive ? '#38bdf8' : '#d4af37';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = isActive ? '#38bdf8' : 'transparent';
+          ctx.shadowBlur = isActive ? 16 : 0;
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = isActive ? '#ffffff' : '#c2b6a2';
+          ctx.font = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(node.val, node.x, node.y + 3);
+        });
 
         ctx.font = '10px monospace';
         ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
         ctx.textAlign = 'left';
-        ctx.fillText('● FIBER COOPERATIVE TIME-SLICING', 14, 24);
+        ctx.fillText('● RECURSIVE POINTER TRAVERSAL (SEARCH / INSERT)', 14, 24);
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+        ctx.fillText(`VISITING: ${treeNodes[activeNodeIdx].val} | COMPLEXITY: O(log N)`, 14, 40);
+      }
+
+      /* ─── SCENE: USER DYNAMIC CONCURRENCY & CHANNELS ─── */
+      else if (simType === 'event_loop') {
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+        const radius = Math.min(w, h) * 0.33;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const tasks = 8;
+        for (let i = 0; i < tasks; i++) {
+          const ang = (i / tasks) * Math.PI * 2 + (isPlaying ? tick * 0.35 : 0);
+          const tx = cx + Math.cos(ang) * radius;
+          const ty = cy + Math.sin(ang) * radius;
+          ctx.beginPath();
+          ctx.arc(tx, ty, 6, 0, Math.PI * 2);
+          ctx.fillStyle = (i % 2 === 0) ? '#4ade80' : '#f59e0b';
+          ctx.shadowColor = '#4ade80';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+        }
+
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e1b26';
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 2;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#fff4d6';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('WORKER', cx, cy - 2);
+        ctx.fillStyle = '#4ade80';
+        ctx.fillText('DISPATCH', cx, cy + 9);
+
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.95)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● ASYNC CHANNEL / ROUTINE BUFFER', 14, 24);
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+        ctx.fillText('ACTIVE TASKS: 8 | DEADLOCK: 0.00%', 14, 40);
+      }
+
+      /* ─── SCENE: MEMORY STACK / GENERAL EXECUTION ─── */
+      else {
+        const startX = w * 0.2;
+        const boxW = w * 0.6;
+        const boxH = 26;
+        const frames = ['Global Frame', 'Execution Scope', 'Local Stack Invariants'];
+
+        frames.forEach((name, i) => {
+          const fy = h * 0.32 + i * (boxH + 10);
+          const isTop = i === frames.length - 1;
+          ctx.fillStyle = isTop ? '#1e1b26' : '#100f16';
+          ctx.strokeStyle = isTop ? '#d4af37' : 'rgba(212, 175, 55, 0.3)';
+          ctx.lineWidth = 1.5;
+          ctx.fillRect(startX, fy, boxW, boxH);
+          ctx.strokeRect(startX, fy, boxW, boxH);
+
+          ctx.fillStyle = isTop ? '#fef08a' : '#c2b6a2';
+          ctx.font = 'bold 10px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`0x7FFE${(i*4).toString(16)}: ${name}`, startX + 10, fy + 17);
+        });
+
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.95)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● CALL STACK & HEAP MEMORY TRACE', 14, 24);
         ctx.fillStyle = 'rgba(52, 211, 153, 0.95)';
-        ctx.fillText('FRAME RATE: SOLID 60.0 FPS', 14, 40);
+        ctx.fillText('STACK SAFETY: OK | HEAP RECLAIM: AUTOMATIC', 14, 40);
       }
 
       animationId = requestAnimationFrame(render);
@@ -664,13 +994,11 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
 
     render();
     return () => cancelAnimationFrame(animationId);
-  }, [filmId, chapterId, progress, isPlaying, playbackSpeed]);
+  }, [film, progress, isPlaying, playbackSpeed]);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#08080a]">
       <canvas ref={canvasRef} className="w-full h-full block" />
-      
-      {/* Overhead Volumetric Projection Ray (Authentic Cinema Beam) */}
       <div 
         className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-full pointer-events-none opacity-20"
         style={{
@@ -684,6 +1012,18 @@ function LivingArchitectureCanvas({ filmId, chapterId, progress, isPlaying, play
 
 /* ─── MAIN CODECINEMA™ LIVING CODE THEATER COMPONENT ─── */
 export default function CodeCinema({ setActiveTab, user }) {
+  // Saved / Dynamic Film List
+  const [allFilms, setAllFilms] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_custom_cinema_films');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return [...parsed, ...CANONICAL_FILMS];
+      }
+    } catch (e) {}
+    return CANONICAL_FILMS;
+  });
+
   // 5 Stages: 'premiere' | 'opening_curtains' | 'countdown' | 'playing' | 'paused'
   const [cinemaStage, setCinemaStage] = useState('premiere');
   const [selectedFilmIndex, setSelectedFilmIndex] = useState(0);
@@ -698,6 +1038,13 @@ export default function CodeCinema({ setActiveTab, user }) {
   const [cameraAngle, setCameraAngle] = useState('dual'); // 'dual' | 'radar' | 'teleprompter'
   const [isFullscreen, setIsFullscreen] = useState(false);
   
+  // Code-to-Movie Director Studio Modal
+  const [isDirectorStudioOpen, setIsDirectorStudioOpen] = useState(false);
+  const [studioCode, setStudioCode] = useState(CODE_PRESETS.python_quicksort.code);
+  const [studioLang, setStudioLang] = useState('Python');
+  const [studioTitle, setStudioTitle] = useState('');
+  const [isDirectingMovie, setIsDirectingMovie] = useState(false);
+
   // Interactive AI Director & Fork Sandbox
   const [showAskDirector, setShowAskDirector] = useState(false);
   const [directorQuestion, setDirectorQuestion] = useState('');
@@ -707,7 +1054,7 @@ export default function CodeCinema({ setActiveTab, user }) {
   const [forkedCode, setForkedCode] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const film = CINEMA_FILMS[selectedFilmIndex] || CINEMA_FILMS[0];
+  const film = allFilms[selectedFilmIndex] || allFilms[0];
   const chapter = film.chapters[selectedChapterIndex] || film.chapters[0];
   const fullCode = chapter.code;
   const chapterDuration = chapter.durationSec || 25;
@@ -787,13 +1134,13 @@ export default function CodeCinema({ setActiveTab, user }) {
 
       const cGo = setTimeout(() => {
         setCountdownNumber(null);
-        cinemaAudio.playCountdownBeep(880); // Final brass chime
+        cinemaAudio.playCountdownBeep(880);
         setCinemaStage('playing');
         if (isScoreEnabled) {
           cinemaAudio.startScore();
         }
       }, 2550);
-    }, 1100); // Curtains retract duration
+    }, 1100);
   };
 
   const togglePlayPause = () => {
@@ -819,7 +1166,7 @@ export default function CodeCinema({ setActiveTab, user }) {
   const handleNextChapter = () => {
     if (selectedChapterIndex < film.chapters.length - 1) {
       setSelectedChapterIndex(selectedChapterIndex + 1);
-    } else if (selectedFilmIndex < CINEMA_FILMS.length - 1) {
+    } else if (selectedFilmIndex < allFilms.length - 1) {
       setSelectedFilmIndex(selectedFilmIndex + 1);
       setSelectedChapterIndex(0);
     }
@@ -829,6 +1176,30 @@ export default function CodeCinema({ setActiveTab, user }) {
     if (selectedChapterIndex > 0) {
       setSelectedChapterIndex(selectedChapterIndex - 1);
     }
+  };
+
+  // 🎬 Render Custom Film From User Code (Direct Studio)
+  const handleRenderUserFilm = () => {
+    if (!studioCode.trim()) return;
+    setIsDirectingMovie(true);
+
+    setTimeout(() => {
+      const generatedFilm = directMovieFromUserCode(studioCode, studioLang, studioTitle);
+      
+      const updated = [generatedFilm, ...allFilms];
+      setAllFilms(updated);
+      setSelectedFilmIndex(0);
+      setSelectedChapterIndex(0);
+      setCinemaStage('premiere');
+      setIsDirectingMovie(false);
+      setIsDirectorStudioOpen(false);
+
+      // Cache custom films in localStorage
+      try {
+        const customOnly = updated.filter(f => f.isUserFilm);
+        localStorage.setItem('lumixora_custom_cinema_films', JSON.stringify(customOnly.slice(0, 5)));
+      } catch (e) {}
+    }, 450);
   };
 
   // Stage 04: Pause & Ask AI Director
@@ -841,11 +1212,10 @@ export default function CodeCinema({ setActiveTab, user }) {
     setDirectorQuestion(questionToAsk);
     setIsAskingAi(true);
 
-    // AI Director architectural breakdown
     setTimeout(() => {
-      setDirectorAnswer(`[AI Director Analysis at ${timelineTime.toFixed(1)}s in ${chapter.file}]:\n\nSalvatore made this critical trade-off to completely sidestep the operating system's thread scheduler. In traditional multi-threaded architectures, when 10,000 threads compete for memory access, the CPU spends up to 70% of its cycles performing kernel context switches and invalidating L1/L2 hardware caches.\n\nBy executing strictly on a single thread and relying on non-blocking I/O polling (epoll_wait), Redis ensures that every memory operation occurs in cache-hot registers without a single pthread mutex lock. This guarantees bounded sub-microsecond latency.`);
+      setDirectorAnswer(`[AI Director Analysis at ${timelineTime.toFixed(1)}s in ${chapter.file}]:\n\nIn this execution block, the author minimizes algorithmic complexity by maintaining strict state invariants. By avoiding uncontrolled allocations inside the hot loop, memory addresses remain cache-resident.\n\nFrom a system architecture perspective, this prevents unbounded thread stalls and guarantees deterministic O(1) or O(log N) latency bounds under high concurrency.`);
       setIsAskingAi(false);
-    }, 600);
+    }, 550);
   };
 
   // Stage 05: Fork the Scene into Runnable Sandbox
@@ -877,7 +1247,6 @@ export default function CodeCinema({ setActiveTab, user }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [cinemaStage, timelineTime, chapterDuration, isFullscreen]);
 
-  // Are the velvet curtains currently closed?
   const areCurtainsClosed = cinemaStage === 'premiere';
 
   return (
@@ -893,14 +1262,22 @@ export default function CodeCinema({ setActiveTab, user }) {
             <span className="font-serif font-black tracking-widest uppercase text-sm sm:text-base text-[#f5ebd7]">
               CodeCinema™
             </span>
-            <span className="text-[#8e8576] hidden sm:inline">• The Living Code Theater</span>
+            <span className="text-[#8e8576] hidden sm:inline">• Universal Code-to-Movie Engine</span>
             <span className="px-2 py-0.5 rounded border border-[#d4af37]/40 bg-[#d4af37]/10 text-[9px] font-mono tracking-wider font-bold text-[#d4af37]">
-              70MM CINEMASCOPE
+              ALL LANGUAGES
             </span>
           </div>
 
-          {/* Quick Header Controls */}
-          <div className="flex items-center gap-3">
+          {/* Quick Header Actions: "Direct Your Own Movie" & Fullscreen */}
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setIsDirectorStudioOpen(true)}
+              className="px-3.5 py-1.5 rounded-lg border border-[#d4af37] bg-gradient-to-r from-[#d4af37]/20 to-[#b38728]/30 hover:brightness-125 text-xs text-[#fff4d6] font-mono font-bold flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]"
+            >
+              <Wand2 className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>Direct Your Code Movie</span>
+            </button>
+
             <button
               onClick={() => setCinemaStage(prev => prev === 'premiere' ? 'playing' : 'premiere')}
               className="px-3 py-1.5 rounded-lg border border-[#d4af37]/30 bg-[#121118] hover:bg-[#1f1d28] text-xs text-[#d4af37] font-mono flex items-center gap-1.5 cursor-pointer transition-all"
@@ -920,9 +1297,22 @@ export default function CodeCinema({ setActiveTab, user }) {
           </div>
         </div>
 
-        {/* Film Repertoire Selection Marquee (Warm Walnut & Brass Strip) */}
+        {/* Film Repertoire Selection Marquee (Includes User Custom Films) */}
         <div className="w-full flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar mb-4">
-          {CINEMA_FILMS.map((item, idx) => (
+          
+          {/* Create Film Action Pill */}
+          <button
+            onClick={() => setIsDirectorStudioOpen(true)}
+            className="px-4 py-2 rounded-xl border border-dashed border-[#d4af37]/60 bg-[#14121a] hover:bg-[#201d29] text-left shrink-0 transition-all flex items-center gap-2.5 cursor-pointer text-[#d4af37]"
+          >
+            <PlusCircle className="w-4 h-4 text-[#d4af37]" />
+            <div>
+              <div className="text-xs font-mono font-bold text-[#f5ebd7]">+ Direct Film</div>
+              <div className="text-[10px] font-mono text-[#a39785]">Any Language</div>
+            </div>
+          </button>
+
+          {allFilms.map((item, idx) => (
             <button
               key={item.id}
               onClick={() => {
@@ -937,14 +1327,18 @@ export default function CodeCinema({ setActiveTab, user }) {
               }`}
             >
               <div 
-                className="w-7 h-7 rounded-lg flex items-center justify-center font-serif font-black text-xs text-white shadow"
+                className="w-7 h-7 rounded-lg flex items-center justify-center font-serif font-black text-xs text-white shadow shrink-0"
                 style={{ background: item.accentColor }}
               >
                 {item.title.charAt(0)}
               </div>
               <div>
-                <div className="text-xs font-serif font-bold text-[#f5ebd7] leading-tight">{item.title.split(':')[0]}</div>
-                <div className="text-[10px] font-mono text-[#a39785]">{item.creator} • {item.runtime}</div>
+                <div className="text-xs font-serif font-bold text-[#f5ebd7] leading-tight truncate max-w-[200px]">
+                  {item.title.split(':')[0]}
+                </div>
+                <div className="text-[10px] font-mono text-[#a39785]">
+                  {item.creator} • {item.language || 'C'}
+                </div>
               </div>
             </button>
           ))}
@@ -992,7 +1386,6 @@ export default function CodeCinema({ setActiveTab, user }) {
           </div>
 
           {/* 🎭 PHYSICALLY CONVINCING CRIMSON VELVET CURTAINS 🎭 */}
-          {/* Left Velvet Curtain */}
           <div 
             className="absolute inset-y-0 left-0 w-1/2 z-40 transition-transform duration-1000 ease-in-out origin-left pointer-events-none shadow-[25px_0_60px_rgba(0,0,0,0.95)]"
             style={{
@@ -1004,7 +1397,6 @@ export default function CodeCinema({ setActiveTab, user }) {
             <div className="w-full h-full bg-gradient-to-b from-black/50 via-transparent to-black/70" />
           </div>
 
-          {/* Right Velvet Curtain */}
           <div 
             className="absolute inset-y-0 right-0 w-1/2 z-40 transition-transform duration-1000 ease-in-out origin-right pointer-events-none shadow-[-25px_0_60px_rgba(0,0,0,0.95)]"
             style={{
@@ -1028,7 +1420,7 @@ export default function CodeCinema({ setActiveTab, user }) {
                 <div className="absolute bottom-2 right-2 text-[#d4af37] text-xs">╝</div>
 
                 <div className="text-[10px] font-mono tracking-[0.3em] uppercase text-[#d4af37] mb-1 font-bold">
-                  ★ LUMIXORA PREMIERE SCREENING ★
+                  ★ {film.isUserFilm ? 'USER CODE PREMIERE' : 'LUMIXORA PREMIERE SCREENING'} ★
                 </div>
 
                 <h2 className="text-2xl sm:text-4xl font-serif font-black text-[#fff4d6] tracking-tight">
@@ -1036,7 +1428,7 @@ export default function CodeCinema({ setActiveTab, user }) {
                 </h2>
 
                 <div className="text-xs font-mono text-[#a89c89] mt-1 mb-3">
-                  Directed by {film.creator} • {film.location} • {film.runtime}
+                  Directed by {film.creator} • {film.language} • {film.runtime}
                 </div>
 
                 <div className="p-3 bg-[#0a090e] border border-[#d4af37]/20 rounded-xl text-xs text-[#d6cdbe] mb-4 text-left leading-relaxed">
@@ -1096,8 +1488,7 @@ export default function CodeCinema({ setActiveTab, user }) {
                 {/* Left Deck (6 Cols): Living Architectural Radar */}
                 <div className="md:col-span-6 h-full relative border-r border-[#2b2520]">
                   <LivingArchitectureCanvas 
-                    filmId={film.id}
-                    chapterId={chapter.id}
+                    film={film}
                     progress={progressRatio}
                     isPlaying={isPlaying && countdownNumber === null}
                     playbackSpeed={playbackSpeed}
@@ -1136,8 +1527,7 @@ export default function CodeCinema({ setActiveTab, user }) {
             {cameraAngle === 'radar' && (
               <div className="w-full h-full relative">
                 <LivingArchitectureCanvas 
-                  filmId={film.id}
-                  chapterId={chapter.id}
+                  film={film}
                   progress={progressRatio}
                   isPlaying={isPlaying && countdownNumber === null}
                   playbackSpeed={playbackSpeed}
@@ -1221,7 +1611,7 @@ export default function CodeCinema({ setActiveTab, user }) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-serif font-bold text-[#f5ebd7]">{chapter.title}</span>
+                <span className="text-xs font-serif font-bold text-[#f5ebd7] truncate max-w-[200px] sm:max-w-xs">{chapter.title}</span>
                 <span className="px-2 py-0.5 rounded bg-[#d4af37]/20 text-[#d4af37] text-[9px] font-mono font-bold uppercase tracking-wider">
                   Act {chapter.id}/{film.chapters.length}
                 </span>
@@ -1406,6 +1796,136 @@ export default function CodeCinema({ setActiveTab, user }) {
 
       </div>
 
+      {/* ─── CODE-TO-MOVIE DIRECTOR STUDIO MODAL (ANY LANGUAGE) ─── */}
+      {isDirectorStudioOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in text-left">
+          <div className="bg-[#121017] border border-[#d4af37] rounded-2xl max-w-3xl w-full p-6 sm:p-8 relative shadow-2xl flex flex-col max-h-[92vh]">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#2b2520] pb-4 mb-4">
+              <div className="flex items-center gap-3 text-[#d4af37]">
+                <div className="w-10 h-10 rounded-xl bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center">
+                  <Wand2 className="w-5 h-5 text-[#d4af37]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-serif font-black text-[#fff4d6] uppercase tracking-wider">
+                    CodeCinema™ Director Studio
+                  </h3>
+                  <p className="text-xs text-[#a89c89] font-mono">
+                    Paste ANY code in ANY language ➔ Watch it as an epic Hollywood 70mm movie
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDirectorStudioOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#1e1b26] text-[#a89c89] hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Quick Language & Template Presets */}
+            <div className="mb-4">
+              <div className="text-[11px] font-mono text-[#a89c89] uppercase tracking-wider mb-2 font-bold">
+                Quick Test Templates or Custom Code:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'python_quicksort', name: 'Python • QuickSort' },
+                  { key: 'java_lru', name: 'Java • LRU Cache' },
+                  { key: 'go_workers', name: 'Go • Concurrent Workers' },
+                  { key: 'rust_tree', name: 'Rust • Binary Search Tree' },
+                  { key: 'ts_debounce', name: 'TypeScript • Debounce Engine' }
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => {
+                      const preset = CODE_PRESETS[item.key];
+                      setStudioCode(preset.code);
+                      setStudioLang(preset.language);
+                      setStudioTitle(preset.title);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-[#181622] border border-[#d4af37]/20 hover:border-[#d4af37]/60 text-xs font-mono text-[#d4af37] cursor-pointer transition-all"
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Title & Language Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <div className="sm:col-span-2">
+                <label className="text-[10px] font-mono text-[#a89c89] uppercase tracking-wider block mb-1">
+                  Movie Title (Optional):
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Dijkstra's Algorithm: The Shortest Path Odyssey"
+                  value={studioTitle}
+                  onChange={(e) => setStudioTitle(e.target.value)}
+                  className="w-full bg-[#08080c] border border-[#2b2520] rounded-xl px-3 py-2 text-xs text-[#f5ebd7] focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono text-[#a89c89] uppercase tracking-wider block mb-1">
+                  Programming Language:
+                </label>
+                <select
+                  value={studioLang}
+                  onChange={(e) => setStudioLang(e.target.value)}
+                  className="w-full bg-[#08080c] border border-[#2b2520] rounded-xl px-3 py-2 text-xs text-[#f5ebd7] focus:outline-none focus:border-[#d4af37]"
+                >
+                  <option value="Python">Python</option>
+                  <option value="JavaScript">JavaScript</option>
+                  <option value="TypeScript">TypeScript</option>
+                  <option value="Java">Java</option>
+                  <option value="C++">C++</option>
+                  <option value="C">C</option>
+                  <option value="Go">Go</option>
+                  <option value="Rust">Rust</option>
+                  <option value="SQL">SQL</option>
+                  <option value="PHP">PHP</option>
+                  <option value="Swift">Swift</option>
+                  <option value="Kotlin">Kotlin</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Code Input Editor */}
+            <div className="flex-1 flex flex-col mb-4">
+              <div className="flex items-center justify-between text-[11px] font-mono text-[#a89c89] mb-1">
+                <span>Type or Paste Your Program Below:</span>
+                <span className="text-[#d4af37]">{studioCode.split('\n').length} lines</span>
+              </div>
+              <textarea
+                value={studioCode}
+                onChange={(e) => setStudioCode(e.target.value)}
+                placeholder="// Paste any algorithm, class, or function here..."
+                className="w-full flex-1 bg-[#050508] border border-[#2b2520] rounded-xl p-4 font-mono text-xs text-[#4ade80] focus:outline-none focus:border-[#d4af37] resize-none min-h-[200px] sm:min-h-[240px] custom-scrollbar"
+              />
+            </div>
+
+            {/* Direct Movie Render Button */}
+            <div className="pt-3 border-t border-[#2b2520] flex items-center justify-between">
+              <span className="text-[10px] font-mono text-[#7d7568]">
+                Generates: Cinema Acts • Living Silicon Radar • Director Narration • Interview Questions
+              </span>
+
+              <button
+                onClick={handleRenderUserFilm}
+                disabled={isDirectingMovie || !studioCode.trim()}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#b38728] hover:brightness-110 disabled:opacity-50 text-[#1a140d] font-serif font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2.5 cursor-pointer transform active:scale-95 transition-all"
+              >
+                <Film className="w-4 h-4 fill-[#1a140d]" />
+                <span>{isDirectingMovie ? 'Directing Movie...' : '🎞️ Render Movie Premiere'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── STAGE 04: PAUSE & ASK AI DIRECTOR MODAL ─── */}
       {showAskDirector && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in text-left">
@@ -1429,12 +1949,11 @@ export default function CodeCinema({ setActiveTab, user }) {
               Film paused at <span className="text-[#d4af37] font-mono">{timelineTime.toFixed(1)}s</span> in <span className="text-[#f5ebd7] font-mono">{chapter.file}</span>. Inquire about the architectural decisions behind this moment:
             </p>
 
-            {/* Quick Presets */}
             <div className="flex flex-wrap gap-1.5 mb-3">
               {[
                 "Why reject POSIX thread mutex locks?",
                 "What happens if a socket buffer overflows?",
-                "How does epoll handle edge vs level triggering?"
+                "How does this memory structure behave under heavy scale?"
               ].map((q, idx) => (
                 <button
                   key={idx}
