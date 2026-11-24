@@ -139,41 +139,19 @@ export async function syncCustomRollsFromCloud() {
     console.warn('Supabase whitelist fetch notice:', err.message || err);
   }
 
-  // 2. Secondary Real Database: Supabase users with @gprec.ac.in roll numbers
-  try {
-    if (supabase) {
-      const { data: userRows } = await supabase
-        .from('users')
-        .select('roll_number, name, email, department, year')
-        .not('roll_number', 'is', null)
-        .ilike('email', '%@gprec.ac.in');
-
-      if (Array.isArray(userRows)) {
-        userRows.forEach(u => {
-          const r = normalizeRollNumber(u.roll_number);
-          if (r && !cloudRolls.some(c => c.rollNumber === r)) {
-            cloudRolls.push({
-              rollNumber: r,
-              name: (u.name || '').split('{')[0].trim() || `GPREC Scholar (${r.toUpperCase()})`,
-              department: u.department || deriveBranchFromRoll(r),
-              year: u.year || deriveYearFromRoll(r),
-              addedAt: Date.now(),
-              addedBy: 'Database User'
-            });
-          }
-        });
-      }
-    }
-  } catch (e) {}
-
+  // Note: We ONLY sync from 'gprec_whitelisted_scholar' so that general platform users from main lumixora.in are NEVER imported.
   if (cloudRolls.length > 0) {
     const local = getStoredCustomRolls();
     const map = new Map();
     local.forEach(item => {
       const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
-      if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+      if (r && GPREC_ALLOWED_ROLL_NUMBERS.includes(r)) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
     });
-    cloudRolls.forEach(c => map.set(c.rollNumber, c));
+    cloudRolls.forEach(c => {
+      if (GPREC_ALLOWED_ROLL_NUMBERS.includes(c.rollNumber)) {
+        map.set(c.rollNumber, c);
+      }
+    });
     const merged = Array.from(map.values());
     saveCustomRolls(merged);
   }
