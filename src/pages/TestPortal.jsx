@@ -6,7 +6,8 @@ import {
   Eye, HelpCircle, ChevronLeft, ChevronRight, Layers, Bookmark, Award,
   Zap, Maximize2, Minimize2, CheckSquare,
   Camera, CameraOff, Mic, MicOff, Volume2, ShieldAlert, Check, RefreshCw,
-  UserCheck, Activity, Video, Radio, Calculator, Crown, Brain, ArrowUpRight
+  UserCheck, Activity, Video, Radio, Calculator, Crown, Brain, ArrowUpRight,
+  Upload, Send
 } from 'lucide-react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -3594,7 +3595,10 @@ If there is a compilation or runtime error, set "error" to true and put the erro
     const assignCount = tests.filter(t => t.category === 'assignment').length;
 
     return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative">
+      {/* ── 🌌 LINEAR / VERCEL ATMOSPHERIC MICRO-DOT MESH & SPECULAR BEAM ── */}
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-6xl h-80 bg-[radial-gradient(ellipse_80%_40%_at_50%_-10%,rgba(56,189,248,0.12),transparent)] pointer-events-none -z-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 opacity-70" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-wide mb-1 flex items-center gap-2">
@@ -3661,7 +3665,7 @@ If there is a compilation or runtime error, set "error" to true and put the erro
       </div>
 
       {/* ── 🏆 CAMPUS HALL OF FAME HIGHLIGHT RIBBON ── */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#003875]/40 via-[#008037]/20 to-[#0c1424] border border-brand-teal/30 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#090c14]/90 border border-white/[0.08] hover:border-white/[0.18] flex flex-wrap items-center justify-between gap-4 shadow-xl shadow-black/40 backdrop-blur-xl transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-400 border border-amber-400/30 flex items-center justify-center font-bold shadow-sm">
             <Crown className="w-5 h-5 text-amber-400" />
@@ -3689,50 +3693,50 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         </button>
       </div>
 
-      {/* Category Tabs Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+      {/* ── 🎛️ LINEAR-STYLE SEGMENTED CATEGORY CONTROLLER ── */}
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#090b12] border border-white/[0.08] w-fit overflow-x-auto max-w-full shadow-inner custom-scrollbar">
         <button
           onClick={() => setTestTabFilter('all')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' + (
             testTabFilter === 'all'
-              ? 'bg-brand-teal text-black shadow-md'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-          }`}
+              ? 'bg-white/10 text-white border border-white/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)] font-extrabold'
+              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+          )}
         >
           All Assessments ({tests.length})
         </button>
         <button
           onClick={() => setTestTabFilter('coding')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
             testTabFilter === 'coding'
-              ? 'bg-brand-blue text-black shadow-md'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-          }`}
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_0_0_rgba(56,189,248,0.2)] font-extrabold'
+              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+          )}
         >
-          <Code className="w-3.5 h-3.5" />
-          Coding ({codingCount})
+          <Code className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Coding Sprints ({codingCount})</span>
         </button>
         <button
           onClick={() => setTestTabFilter('quiz')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
             testTabFilter === 'quiz'
-              ? 'bg-brand-pink text-black shadow-md'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-          }`}
+              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.2)] font-extrabold'
+              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+          )}
         >
-          <List className="w-3.5 h-3.5" />
-          MCQ Quizzes ({quizCount})
+          <List className="w-3.5 h-3.5 text-emerald-400" />
+          <span>MCQ Quizzes ({quizCount})</span>
         </button>
         <button
           onClick={() => setTestTabFilter('assignment')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
             testTabFilter === 'assignment'
-              ? 'bg-purple-500 text-white shadow-md'
-              : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
-          }`}
+              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[inset_0_1px_0_0_rgba(168,85,247,0.25)] font-extrabold'
+              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+          )}
         >
-          <FileText className="w-3.5 h-3.5" />
-          Assignments ({assignCount})
+          <FileText className="w-3.5 h-3.5 text-purple-400" />
+          <span>Project Assignments ({assignCount})</span>
         </button>
       </div>
 
@@ -3762,9 +3766,13 @@ If there is a compilation or runtime error, set "error" to true and put the erro
             const currentUserName = user?.name?.split(' ')[0] || 'Anonymous';
             const hasAttempted = leaderboard.some(entry => entry.testId === test.id && entry.user === currentUserName);
             return (
-            <div key={test.id} className={`glass-panel p-6 rounded-3xl border flex flex-col group hover:border-white/20 transition-colors relative ${
-              isAssignment ? 'border-purple-500/20' : 'border-white/10'
-            }`}>
+            <div key={test.id} className={'p-6 rounded-2xl border flex flex-col group transition-all duration-300 relative overflow-hidden ' + (
+              isAssignment 
+                ? 'bg-[#0d0f1a]/85 hover:bg-[#111424]/90 border-purple-500/25 hover:border-purple-400/40 shadow-xl shadow-purple-950/20 shadow-[inset_0_1px_0_0_rgba(168,85,247,0.15)]' 
+                : 'bg-[#0a0d16]/85 hover:bg-[#0f1322]/90 border-white/[0.08] hover:border-cyan-500/30 shadow-xl shadow-black/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+            ) + ' hover:-translate-y-1'}>
+              {/* Subtle top specular corner glow */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/5 group-hover:bg-cyan-500/10 rounded-full blur-2xl transition-all pointer-events-none" />
               
               <div className="flex items-start justify-between mb-4 gap-2">
                 <div className="flex items-center gap-2">
