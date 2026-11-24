@@ -25,32 +25,33 @@ const STORAGE_LOGIN_LOGS_KEY = 'lumixora_login_activity_logs';
 const STORAGE_CURRENT_SESSION_KEY = 'lumixora_current_session_id';
 
 /**
- * Checks if a user or metadata belongs to GPREC
+ * Checks if a user or metadata belongs to GPREC and is in the authorized roster
  */
 export const isGprecUserEntity = (entity = {}) => {
   if (!entity) return false;
   const email = (entity.email || '').toLowerCase().trim();
-  const college = (entity.college || entity.collegeCode || entity.collegeName || '').toUpperCase();
   const rollNumber = normalizeRollNumber(entity.rollNumber || entity.roll_no || (/\d{10}/.exec(email)?.[0] || ''));
 
-  // 1. Explicit GPREC domains and officer accounts
+  // 1. Explicit GPREC official placement coordinators
   if (
-    email.endsWith('@gprec.ac.in') || 
     email === 'dean.placements@gprec.ac.in' || 
     email === 'srikanth.csm@gprec.ac.in'
   ) {
     return true;
   }
 
-  // 2. GPREC college name
-  if (college.includes('GPREC') || college.includes('PULLA REDDY')) {
-    return true;
-  }
-
-  // 3. Allowed or whitelisted GPREC roll numbers
+  // 2. Allowed or whitelisted GPREC roll numbers ONLY
   if (rollNumber) {
     const allowed = getAllowedGprecRollNumbers().map(normalizeRollNumber);
     if (allowed.includes(rollNumber) || allowed.some(r => rollNumber.includes(r))) {
+      return true;
+    }
+  }
+
+  // Check if email contains an allowed roll number
+  if (email.endsWith('@gprec.ac.in')) {
+    const allowed = getAllowedGprecRollNumbers().map(normalizeRollNumber);
+    if (allowed.some(r => email.includes(r))) {
       return true;
     }
   }

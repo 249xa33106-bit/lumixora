@@ -8,18 +8,17 @@ import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 
-// Built-in Approved GPREC Roll Numbers for the placement pilot (STRICT DEFAULT)
+// Built-in Approved GPREC Roll Numbers for the placement pilot (STRICT USER SPECIFIED)
 export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '249xa33106',
   '249xa33112',
   '249xa33096',
   '249xa33091',
-  '259xa05013',
-  '269x105013',
   '249xa05086',
   '249xa33092',
   '259xa33002',
-  '259xa33030'
+  '259xa33030',
+  '249xa04149'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
@@ -210,6 +209,7 @@ export function getGprecScholarRoster() {
       else if (r === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
       else if (r === '259xa33002') scholarName = 'A POOJA';
       else if (r === '259xa33030') scholarName = 'E USHA ESWARI';
+      else if (r === '249xa04149') scholarName = 'GPREC Scholar (249XA04149)';
       else scholarName = `GPREC Scholar (${r.toUpperCase()})`;
     }
     fullList.push({
