@@ -18,7 +18,9 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '249xa33092',
   '259xa33002',
   '259xa33030',
-  '249xa04149'
+  '249xa04149',
+  '259xa33081',
+  '259xa05217'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
