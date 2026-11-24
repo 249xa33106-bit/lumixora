@@ -160,8 +160,15 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
   const [touchEnd, setTouchEnd] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
+  const [isHovered, setIsHovered] = useState(false); // Requirement 5: Pause-on-hover
+  const [slideProgress, setSlideProgress] = useState(0); // Requirement 5: Smooth 5s Countdown Progress (0-100%)
 
   const minSwipeDistance = 40;
+
+  const handleSelectSlide = (idx) => {
+    setCurrentSlide(idx);
+    setSlideProgress(0);
+  };
 
   // Touch Swipe handlers for mobile & tablet
   const onTouchStart = (e) => {
@@ -178,10 +185,10 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
     const distance = touchStart - touchEnd;
     if (distance > minSwipeDistance) {
       // Swiped Left -> Next slide
-      setCurrentSlide((prev) => (prev + 1) % 3);
+      handleSelectSlide((currentSlide + 1) % 3);
     } else if (distance < -minSwipeDistance) {
       // Swiped Right -> Prev slide
-      setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+      handleSelectSlide((currentSlide - 1 + 3) % 3);
     }
   };
 
@@ -204,26 +211,36 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
     const distance = dragStartX - e.clientX;
     if (distance > minSwipeDistance) {
       // Dragged Left -> Next slide
-      setCurrentSlide((prev) => (prev + 1) % 3);
+      handleSelectSlide((currentSlide + 1) % 3);
     } else if (distance < -minSwipeDistance) {
       // Dragged Right -> Prev slide
-      setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+      handleSelectSlide((currentSlide - 1 + 3) % 3);
     }
   };
 
   const onMouseLeave = (e) => {
+    setIsHovered(false);
     if (isDragging) {
       onMouseUp(e);
     }
   };
 
-  // Auto-advance slides every 5 seconds (pauses on interaction or advances)
+  // Auto-advance slides every 5 seconds (50ms x 100 steps) with Pause-on-Hover (Requirement 5)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+    if (isHovered || isDragging) return;
+
+    const interval = setInterval(() => {
+      setSlideProgress((prev) => {
+        if (prev >= 100) {
+          setCurrentSlide((s) => (s + 1) % 3);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [isHovered, isDragging]);
 
   const handleWatchOverview = () => {
     // Dispatch event to open onboarding/platform tour modal
@@ -234,6 +251,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
     <div className="space-y-6 w-full animate-fade-in relative z-10">
       {/* ─── 1. HERO BANNER: WORKABLE SWIPABLE CAROUSEL (3 SLIDES) ─── */}
       <div 
+        onMouseEnter={() => setIsHovered(true)}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -502,12 +520,12 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
           </div>
         )}
 
-        {/* ── WORKABLE CAROUSEL CONTROL DOCK (Prev + Indicator Dots + Next) ── */}
-        <div className="absolute left-6 sm:left-8 md:left-10 lg:left-12 bottom-5 sm:bottom-6 z-20 flex items-center gap-2.5 bg-black/60 backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/15 shadow-xl">
+        {/* ── WORKABLE CAROUSEL CONTROL DOCK (Prev + Countdown Progress Dots + Next) (Requirement 5) ── */}
+        <div className="absolute left-6 sm:left-8 md:left-10 lg:left-12 bottom-5 sm:bottom-6 z-20 flex items-center gap-2.5 bg-black/70 backdrop-blur-xl px-3.5 py-1.5 rounded-full border border-white/20 shadow-2xl">
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+              handleSelectSlide((currentSlide - 1 + 3) % 3);
             }}
             className="w-6 h-6 rounded-full hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
             aria-label="Previous Slide"
@@ -515,32 +533,46 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
 
-          <div className="flex items-center gap-1.5">
-            {[0, 1, 2].map((idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentSlide(idx);
-                }}
-                aria-label={`Slide ${idx + 1}`}
-                className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
-                  currentSlide === idx
-                    ? idx === 0 
-                      ? 'w-7 bg-gradient-to-r from-amber-400 to-rose-500 shadow-md shadow-rose-500/50' 
-                      : idx === 1 
-                      ? 'w-7 bg-gradient-to-r from-blue-500 to-purple-500 shadow-md shadow-purple-500/50'
-                      : 'w-7 bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-md shadow-cyan-500/50'
-                    : 'w-2 bg-white/30 hover:bg-white/60'
-                }`}
-              />
-            ))}
+          {/* Animated Countdown Progress Indicators (Requirement 5) */}
+          <div className="flex items-center gap-2">
+            {[0, 1, 2].map((idx) => {
+              const isActive = currentSlide === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectSlide(idx);
+                  }}
+                  aria-label={`Slide ${idx + 1}`}
+                  className={`h-2.5 transition-all duration-300 rounded-full cursor-pointer relative overflow-hidden ${
+                    isActive
+                      ? 'w-10 bg-white/15 border border-white/25 shadow-sm'
+                      : 'w-2.5 bg-white/30 hover:bg-white/60'
+                  }`}
+                  title={isActive ? (isHovered ? "Paused (Hovered)" : `${Math.round((5000 - (slideProgress / 100) * 5000) / 1000)}s remaining`) : `Jump to Slide ${idx + 1}`}
+                >
+                  {isActive && (
+                    <div
+                      className={`h-full rounded-full transition-all duration-75 ${
+                        idx === 0
+                          ? 'bg-gradient-to-r from-amber-400 to-rose-500 shadow-sm shadow-rose-500/50'
+                          : idx === 1
+                          ? 'bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 shadow-sm shadow-purple-500/50'
+                          : 'bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-sm shadow-cyan-500/50'
+                      }`}
+                      style={{ width: `${slideProgress}%` }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              setCurrentSlide((prev) => (prev + 1) % 3);
+              handleSelectSlide((currentSlide + 1) % 3);
             }}
             className="w-6 h-6 rounded-full hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
             aria-label="Next Slide"
@@ -548,9 +580,17 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
 
-          <span className="text-[10px] text-slate-300 font-bold ml-1 hidden sm:inline-block">
-            {currentSlide === 0 ? 'Founder' : currentSlide === 1 ? 'Career' : 'Predictor'}
-          </span>
+          {/* Status Label with Pause indicator */}
+          <div className="flex items-center gap-1.5 ml-1">
+            <span className="text-[10px] text-slate-300 font-bold hidden sm:inline-block">
+              {currentSlide === 0 ? 'Founder' : currentSlide === 1 ? 'Career' : 'Predictor'}
+            </span>
+            {isHovered && (
+              <span className="text-[9px] font-mono text-amber-300 bg-amber-400/20 px-1.5 py-0.5 rounded border border-amber-400/30 animate-pulse">
+                ⏸ Paused
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
