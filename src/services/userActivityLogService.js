@@ -399,11 +399,29 @@ export const fetchAllLoginLogs = async (options = {}) => {
   }
 
   // Convert map to array sorted by loginTimestamp desc
-  const result = Array.from(mergedMap.values()).sort((a, b) => {
+  const allLogs = Array.from(mergedMap.values()).sort((a, b) => {
     const timeA = a.loginTimestamp || (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
     const timeB = b.loginTimestamp || (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
     return timeB - timeA;
   });
 
-  return result;
+  // Deduplicate rapid repeat login clicks from the same user within a 10-minute window
+  const dedupedResult = [];
+  const sessionClusterMap = new Map();
+
+  allLogs.forEach(log => {
+    const userIdentifier = (log.rollNumber || log.email || log.userId || '').toLowerCase().trim();
+    const timeVal = log.loginTimestamp || (log.createdAt?.seconds ? log.createdAt.seconds * 1000 : 0);
+    
+    // Group logins within 10 minutes (600,000 ms)
+    const clusterBucket = Math.floor(timeVal / 600000);
+    const clusterKey = `${userIdentifier}_${clusterBucket}`;
+
+    if (!sessionClusterMap.has(clusterKey)) {
+      sessionClusterMap.set(clusterKey, true);
+      dedupedResult.push(log);
+    }
+  });
+
+  return dedupedResult;
 };
