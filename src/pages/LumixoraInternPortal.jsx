@@ -13,7 +13,7 @@ import realInternsData from '../data/realInternsBatch01.json';
 import pendingApplicantsData from '../data/pendingApplicants.json';
 import CertificateRenderer, { CERTIFICATE_STYLES } from '../components/CertificateRenderer';
 import EvaluatorReviewDrawer from '../components/EvaluatorReviewDrawer';
-import { notifyFounder, sendInternPasscodeEmail } from '../services/founderNotificationService';
+import { notifyFounder, notifyFounderInternLogin, sendInternPasscodeEmail } from '../services/founderNotificationService';
 import { isFounderEmail } from '../utils/authSecurity';
 
 // ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
@@ -990,14 +990,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       sessionStorage.setItem('lumixora_intern_active_session', JSON.stringify(userSession));
     } catch (_) {}
 
-    // Instant Mobile Push Notification to Founder Shaik Sowban
-    notifyFounder({
-      type: 'INTERN_LOGIN',
-      userName: matched.name,
-      userEmail: matched.email,
-      role: matched.roleTitle,
-      college: matched.college
-    });
+    // Instant Founder Portal & Mobile Push Notification to Founder Shaik Sowban
+    notifyFounderInternLogin(matched);
 
     // Dispatch Access Passcode & Login Confirmation directly to the intern's registered email (Any Domain, No Restrictions)
     sendInternPasscodeEmail({

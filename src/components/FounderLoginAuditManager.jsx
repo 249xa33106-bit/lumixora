@@ -47,6 +47,11 @@ import {
   syncCustomRollsFromCloud
 } from '../services/gprecPlacementAuth';
 import { useToast } from '../context/ToastContext';
+import { 
+  testFounderMobileNotification, 
+  getFounderAlertTopic, 
+  requestMobileNotificationPermission 
+} from '../services/founderNotificationService';
 
 export default function FounderLoginAuditManager() {
   const { addToast } = useToast();
@@ -79,6 +84,36 @@ export default function FounderLoginAuditManager() {
   // Quick Whitelist Bar State
   const [quickRollInput, setQuickRollInput] = useState('');
   const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
+
+  // Mobile Push Notification Test State
+  const [isTestingMobile, setIsTestingMobile] = useState(false);
+  const handleTestMobile = async () => {
+    setIsTestingMobile(true);
+    try {
+      const res = await testFounderMobileNotification();
+      if (res && res.success) {
+        addToast({ 
+          message: `📱 Push notification dispatched! Check your phone notification shade (${getFounderAlertTopic()}).`, 
+          type: 'success' 
+        });
+      } else {
+        addToast({ message: 'Dispatched test push alert to mobile channel.', type: 'info' });
+      }
+    } catch (e) {
+      addToast({ message: 'Push dispatch notice: ' + e.message, type: 'info' });
+    } finally {
+      setIsTestingMobile(false);
+    }
+  };
+
+  const handleRequestPush = async () => {
+    const granted = await requestMobileNotificationPermission();
+    if (granted) {
+      addToast({ message: '🔔 Web Push notifications allowed on this device!', type: 'success' });
+    } else {
+      addToast({ message: 'Notice: You can install the free ntfy app on Android/iOS for instant push alerts.', type: 'info' });
+    }
+  };
 
   // Roster Tab Search & Branch Filters
   const [rosterBranchFilter, setRosterBranchFilter] = useState('all'); // 'all' | 'CSM' | 'CSE' | 'ECE' | 'ME' | 'EEE' | 'Civil'
@@ -633,6 +668,61 @@ export default function FounderLoginAuditManager() {
             <span>Bulk CSV / List</span>
           </button>
         </form>
+      </div>
+
+      {/* 📱 Real-Time Mobile Push Notification Sync Bar */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#0B132B] to-purple-950/30 border border-emerald-500/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
+            <Smartphone className="w-5 h-5 text-emerald-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-300 font-sora">
+                📱 Founder Mobile Notifications
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                Live on Phone
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 mt-0.5">
+              Instant sound alerts arrive on your phone whenever any <strong>User</strong> or <strong>Intern</strong> logs in via <code className="text-emerald-300 font-mono text-[10px]">ntfy.sh/{getFounderAlertTopic()}</code>.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`https://ntfy.sh/${getFounderAlertTopic()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all"
+            title="Open ntfy in mobile browser or install ntfy app"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Connect My Phone</span>
+          </a>
+
+          <button
+            onClick={handleTestMobile}
+            disabled={isTestingMobile}
+            className="px-3.5 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Dispatch a live test alert to your phone"
+          >
+            <Zap className={`w-3.5 h-3.5 ${isTestingMobile ? 'animate-spin' : ''}`} />
+            <span>{isTestingMobile ? 'Dispatching...' : 'Test Mobile Alert'}</span>
+          </button>
+
+          <button
+            onClick={handleRequestPush}
+            className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 border border-white/20 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Enable browser notifications on this laptop or device"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Enable Web Push</span>
+          </button>
+        </div>
       </div>
       {/* Top Header Card */}
       <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0B132B] via-[#111C44] to-[#0B132B] border border-[#C5A059]/40 shadow-xl shadow-black/30 flex flex-col md:flex-row md:items-center justify-between gap-4">

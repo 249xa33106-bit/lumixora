@@ -19,7 +19,7 @@ import {
   setDoc,
   deleteDoc
 } from 'firebase/firestore';
-import { cleanScholarName } from './founderNotificationService';
+import { cleanScholarName, notifyFounderLogin, notifyFounderInternLogin } from './founderNotificationService';
 import { getAllowedGprecRollNumbers, normalizeRollNumber } from './gprecPlacementAuth';
 
 const STORAGE_LOGIN_LOGS_KEY = 'lumixora_login_activity_logs';
@@ -228,6 +228,25 @@ export const recordUserLogin = async (user, portal = 'Placement Suite') => {
       } catch (err) {
         console.warn('Firestore login record notice:', err.message);
       }
+    }
+
+    // Automatically alert Founder Portal and Mobile Phone on every active login
+    try {
+      if (loginRecord.role === 'intern' || (user.roleTitle && user.roleTitle.toLowerCase().includes('intern'))) {
+        notifyFounderInternLogin(user);
+      } else if (loginRecord.role !== 'founder') {
+        notifyFounderLogin({
+          ...user,
+          name,
+          email,
+          rollNumber: loginRecord.rollNumber,
+          department: loginRecord.department,
+          college: loginRecord.college,
+          role: loginRecord.roleTitle || loginRecord.role
+        });
+      }
+    } catch (e) {
+      console.warn('Auto founder notification notice:', e);
     }
 
     return loginRecord;

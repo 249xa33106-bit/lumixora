@@ -35,7 +35,8 @@ import {
   Clock,
   Volume2,
   VolumeX,
-  Zap
+  Zap,
+  Smartphone
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -61,7 +62,10 @@ import {
   markSingleNotificationRead,
   dismissSingleNotification,
   formatNotificationTime,
-  getStoredTestSubmissions
+  getStoredTestSubmissions,
+  testFounderMobileNotification,
+  getFounderAlertTopic,
+  requestMobileNotificationPermission
 } from '../services/founderNotificationService';
 
 export const cleanScholarName = (str, email = '') => {
@@ -370,6 +374,35 @@ export default function FounderPortal({ user, setActiveTab }) {
       addToast({ message: "🔊 Founder Live Audio Chime enabled! You will hear a pleasant ping on new events.", type: "success" });
     } else {
       addToast({ message: "🔇 Founder Live Audio Chime muted.", type: "info" });
+    }
+  };
+
+  const [isTestingMobileNotif, setIsTestingMobileNotif] = useState(false);
+  const handleTestMobileNotification = async () => {
+    setIsTestingMobileNotif(true);
+    try {
+      const res = await testFounderMobileNotification();
+      if (res && res.success) {
+        addToast({ 
+          message: `📱 Test notification dispatched! Check your phone notification bar (${getFounderAlertTopic()}).`, 
+          type: 'success' 
+        });
+      } else {
+        addToast({ message: 'Dispatched test alert to mobile push channel.', type: 'info' });
+      }
+    } catch (err) {
+      addToast({ message: 'Notice: ' + err.message, type: 'info' });
+    } finally {
+      setIsTestingMobileNotif(false);
+    }
+  };
+
+  const handleRequestPushPermission = async () => {
+    const granted = await requestMobileNotificationPermission();
+    if (granted) {
+      addToast({ message: '🔔 Web Push Notifications permitted on this device!', type: 'success' });
+    } else {
+      addToast({ message: 'Push permissions not granted. You can still use the ntfy mobile app!', type: 'info' });
     }
   };
 
@@ -923,6 +956,12 @@ export default function FounderPortal({ user, setActiveTab }) {
         } else {
           remoteNotifsRef.current = [payload, ...remoteNotifsRef.current];
         }
+        playNotificationChime();
+        const roleLabel = payload.role === 'intern' ? '🎓 Intern' : '👤 User';
+        addToast({ 
+          message: `🔔 ${roleLabel} Login: ${payload.name || payload.email} · ${payload.details || payload.type}`, 
+          type: 'info' 
+        });
       }
       refreshLiveNotifications();
     };
@@ -942,8 +981,10 @@ export default function FounderPortal({ user, setActiveTab }) {
             if (payload) {
               remoteNotifsRef.current = [payload, ...remoteNotifsRef.current];
               refreshLiveNotifications();
+              playNotificationChime();
+              const roleLabel = payload.role === 'intern' ? '🎓 Intern' : '👤 User';
               addToast({ 
-                message: ` ${payload.name || 'Scholar'}: ${payload.details || payload.type}`, 
+                message: `🔔 ${roleLabel} Login: ${payload.name || payload.email} · ${payload.details || payload.type}`, 
                 type: 'info' 
               });
             } else {
@@ -2551,6 +2592,46 @@ export default function FounderPortal({ user, setActiveTab }) {
                   )}
                 </div>
 
+                {/* 📱 Real-Time Mobile Push Hub Header */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-cyan-950/40 to-indigo-950/40 border border-emerald-500/30 text-left space-y-2.5 shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="text-[12px] font-black text-emerald-300 font-mono tracking-wide uppercase">
+                        Mobile Push: LIVE
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                      ntfy.sh & WebPush
+                    </span>
+                  </div>
+                  
+                  <p className="text-[11px] text-gray-300 leading-relaxed">
+                    Instant alerts with sound arrive on your mobile phone whenever any <strong className="text-white">User</strong> or <strong className="text-purple-300">Intern</strong> logs in.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <a
+                      href="https://ntfy.sh/lumixora-founder-alerts-secure"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold text-center flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>Phone App Setup</span>
+                    </a>
+
+                    <button
+                      onClick={handleTestMobileNotification}
+                      disabled={isTestingMobileNotif}
+                      className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold text-center flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${isTestingMobileNotif ? 'animate-spin' : ''}`} />
+                      <span>{isTestingMobileNotif ? 'Dispatching...' : 'Test Mobile Alert'}</span>
+                    </button>
+                  </div>
+                </div>
+
                 {notifications.length === 0 ? (
                   <div className="py-10 text-center space-y-3">
                     <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-gray-500">
@@ -2574,7 +2655,9 @@ export default function FounderPortal({ user, setActiveTab }) {
                         {/* Line 1: Badge & Time */}
                         <div className="flex items-center justify-between gap-2">
                           <span className={`px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider text-[10.5px] flex items-center gap-1.5 ${
-                            n.type === 'register' 
+                            n.type === 'intern_login'
+                              ? 'bg-[#4c1d95]/90 text-[#e879f9] border border-[#a855f7]/60 shadow-[0_0_12px_rgba(168,85,247,0.3)]'
+                              : n.type === 'register' 
                               ? 'bg-[#064e3b]/80 text-[#34d399] border border-[#10b981]/40' 
                               : n.type === 'submission'
                               ? 'bg-[#3b0764]/80 text-[#c084fc] border border-[#8b5cf6]/40'
@@ -2592,7 +2675,7 @@ export default function FounderPortal({ user, setActiveTab }) {
                               ? 'bg-[#064e3b]/90 text-[#6ee7b7] border border-[#10b981]/60'
                               : 'bg-[#172554]/80 text-[#60a5fa] border border-[#3b82f6]/40'
                           }`}>
-                            {n.type === 'register' ? '🎓 SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '⚡ TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : n.type === 'ambassador_application' ? '🌟 AMBASSADOR APPLIED' : n.type === 'ambassador_referral' ? '🤝 AMBASSADOR REFERRAL' : n.type === 'payment' ? '💰 UPI ACCESS FEE' : '👤 ACTIVE LOGIN'}
+                            {n.type === 'intern_login' ? '🚀 INTERN LOGIN' : n.type === 'register' ? '🎓 SCHOLAR ENROLLED' : n.type === 'submission' ? '📝 TEST SUBMITTED' : n.type === 'doubt' ? '❓ DOUBT RAISED' : n.type === 'task' ? '⚡ TASK COMPLETED' : n.type === 'grievance' ? '⚠️ GRIEVANCE' : n.type === 'ambassador_application' ? '🌟 AMBASSADOR APPLIED' : n.type === 'ambassador_referral' ? '🤝 AMBASSADOR REFERRAL' : n.type === 'payment' ? '💰 UPI ACCESS FEE' : '👤 ACTIVE LOGIN'}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-400 font-normal">

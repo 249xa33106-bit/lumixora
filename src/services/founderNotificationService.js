@@ -316,16 +316,72 @@ export const notifyFounderLogin = (user) => {
   const cleanName = cleanScholarName(user.name, email);
   const dept = user.department || user.branch || meta.department || decoded.department || 'CSM';
   const college = user.college || meta.college || 'GPREC';
-  return recordFounderNotification({
+  const role = user.role || 'user';
+
+  // 1. Record persistently in Founder Portal database and realtime feed
+  const notifObj = recordFounderNotification({
     type: 'login',
     name: cleanName,
     email: user.email,
     rollNumber: roll,
-    role: user.role || 'user',
+    role,
     college,
     department: dept,
     details: `Active login session · ${dept} (${college}) ${roll ? `· Roll: ${roll}` : ''}`
   });
+
+  // 2. Dispatch instant Mobile Push Notification to Founder's phone (ntfy.sh & Web Push)
+  notifyFounder({
+    type: email.endsWith('@gprec.ac.in') ? 'GPREC_LOGIN' : 'USER_LOGIN',
+    userName: cleanName,
+    userEmail: user.email,
+    role,
+    college,
+    meta: roll ? `Roll: ${roll} · Dept: ${dept}` : `Dept: ${dept}`
+  }).catch(() => {});
+
+  return notifObj;
+};
+
+export const notifyFounderInternLogin = (intern) => {
+  if (!intern) return;
+  const email = (intern.email || '').toLowerCase().trim();
+  const name = cleanScholarName(intern.name, email);
+  const role = intern.roleTitle || intern.role || 'Batch 01 Intern';
+  const college = intern.college || 'GPREC';
+  const internId = intern.refId || intern.id || 'INTERN-B1';
+  const dept = intern.branch || intern.department || 'Technology';
+
+  // 1. Record in Founder Portal Database & Realtime Feeds
+  const notifObj = recordFounderNotification({
+    type: 'intern_login',
+    name,
+    email,
+    role: 'intern',
+    college,
+    department: dept,
+    details: `🎓 Intern Logged In · ${role} (${college}) · ID: ${internId}`,
+    appId: internId,
+    meta: {
+      internId,
+      roleTitle: role,
+      college,
+      department: dept,
+      loginTime: new Date().toISOString()
+    }
+  });
+
+  // 2. Dispatch instant Mobile Push Notification to Founder's phone
+  notifyFounder({
+    type: 'INTERN_LOGIN',
+    userName: name,
+    userEmail: email,
+    role,
+    college,
+    meta: `Intern ID: ${internId} · Track: ${role}`
+  }).catch(() => {});
+
+  return notifObj;
 };
 
 export const notifyFounderRegister = (user) => {
@@ -333,15 +389,30 @@ export const notifyFounderRegister = (user) => {
   const meta = parseUserMetadata(user.name);
   const dept = user.department || user.branch || meta.department || 'CSE';
   const college = user.college || meta.college || 'GPREC';
-  return recordFounderNotification({
+  const cleanName = cleanScholarName(user.name, user.email);
+
+  // 1. Record for Founder Portal
+  const notifObj = recordFounderNotification({
     type: 'register',
-    name: user.name,
+    name: cleanName,
     email: user.email,
     role: user.role || 'user',
     college,
     department: dept,
     details: `New scholar onboarded · ${dept} (${college})`
   });
+
+  // 2. Dispatch to Mobile Phone
+  notifyFounder({
+    type: 'USER_REGISTER',
+    userName: cleanName,
+    userEmail: user.email,
+    role: user.role || 'Scholar',
+    college,
+    meta: dept
+  }).catch(() => {});
+
+  return notifObj;
 };
 
 export const recordTestSubmission = async (submission) => {
@@ -1101,6 +1172,13 @@ export async function notifyFounder({ type, userName, userEmail, role, college, 
         clickUrl = 'https://lumixora.in/#founder-portal';
         break;
 
+      case 'TEST_ALERT':
+        title = `🔔 Lumixora Mobile Alert Test`;
+        message = `Founder Mobile Push is 100% Active!\nConnected Topic: ${NTFY_TOPIC}\nRecipient: Shaik Sowban\nTime: ${timestampStr} (${dateStr})`;
+        tags = 'white_check_mark,sparkles,iphone';
+        clickUrl = 'https://lumixora.in/#founder-portal';
+        break;
+
       default:
         title = `Lumixora Security Event`;
         message = `${userName || userEmail} performed action: ${type}\nTime: ${timestampStr}`;
@@ -1174,6 +1252,26 @@ export async function requestMobileNotificationPermission() {
   } catch (_) {
     return false;
   }
+}
+
+/**
+ * Returns current active ntfy push topic for founder phone alerts
+ */
+export function getFounderAlertTopic() {
+  return NTFY_TOPIC;
+}
+
+/**
+ * Triggers a real test notification to founder's phone via ntfy.sh & web push
+ */
+export async function testFounderMobileNotification() {
+  return notifyFounder({
+    type: 'TEST_ALERT',
+    userName: 'Founder Shaik Sowban',
+    userEmail: 'founder@lumixora.com',
+    role: 'Founder',
+    college: 'Enterprise HQ'
+  });
 }
 
 export async function sendInternPasscodeEmail({ email, name, internId, roleTitle, passcode, accessPin, type = 'LOGIN_CONFIRMATION' }) {
