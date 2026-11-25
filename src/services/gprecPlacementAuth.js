@@ -28,6 +28,33 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
 export const STORAGE_CUSTOM_ROLLS_KEY = 'lumixora_gprec_custom_allowed_rolls';
+export const STORAGE_REVOKED_ROLLS_KEY = 'lumixora_gprec_revoked_rolls';
+
+/**
+ * Reads revoked/deleted scholars stored locally
+ */
+export function getStoredRevokedRolls() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_REVOKED_ROLLS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeRollNumber).filter(Boolean) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Saves revoked/deleted scholars locally
+ */
+export function saveRevokedRolls(rolls = []) {
+  if (typeof window === 'undefined') return;
+  try {
+    const clean = Array.from(new Set(rolls.map(normalizeRollNumber).filter(Boolean)));
+    localStorage.setItem(STORAGE_REVOKED_ROLLS_KEY, JSON.stringify(clean));
+  } catch (e) {}
+}
 
 /**
  * Normalizes input roll number to lowercase trimmed string
@@ -89,13 +116,14 @@ export function saveCustomRolls(rolls = []) {
 }
 
 /**
- * Returns merged array of all allowed roll numbers (built-in + founder-added)
+ * Returns merged array of all allowed roll numbers (built-in + founder-added), excluding revoked
  */
 export function getAllowedGprecRollNumbers() {
+  const revoked = new Set(getStoredRevokedRolls());
   const customList = getStoredCustomRolls();
   const customRolls = customList.map(item => typeof item === 'string' ? item : item.rollNumber).map(normalizeRollNumber);
   const combined = Array.from(new Set([...GPREC_ALLOWED_ROLL_NUMBERS, ...customRolls]));
-  return combined.filter(Boolean);
+  return combined.map(normalizeRollNumber).filter(r => r && !revoked.has(r));
 }
 
 /**
@@ -114,6 +142,26 @@ function withTimeout(promise, ms = 1500) {
 export async function syncCustomRollsFromCloud() {
   const cloudRolls = [];
 
+  // Sync revoked scholars from cloud
+  try {
+    if (supabase) {
+      const { data: revokedRows } = await supabase
+        .from('founder_notifications')
+        .select('meta')
+        .eq('type', 'gprec_revoked_scholar');
+
+      if (Array.isArray(revokedRows)) {
+        const cloudRevoked = revokedRows
+          .map(r => normalizeRollNumber(r.meta?.rollLower || r.meta?.rollNumber))
+          .filter(Boolean);
+        const mergedRevoked = Array.from(new Set([...getStoredRevokedRolls(), ...cloudRevoked]));
+        saveRevokedRolls(mergedRevoked);
+      }
+    }
+  } catch (e) {}
+
+  const revokedSet = new Set(getStoredRevokedRolls());
+
   // 1. Primary Dedicated Database Table: gprec_whitelisted_scholars
   try {
     if (supabase) {
@@ -124,10 +172,11 @@ export async function syncCustomRollsFromCloud() {
       if (!dedErr && Array.isArray(dedicatedRows) && dedicatedRows.length > 0) {
         dedicatedRows.forEach(row => {
           const r = normalizeRollNumber(row.roll_lower || row.roll_number);
-          if (r) {
+          if (r && !revokedSet.has(r)) {
             cloudRolls.push({
               id: row.id,
               rollNumber: r,
+              email: row.email || `${r}@gprec.ac.in`,
               name: row.name || `GPREC Scholar (${r.toUpperCase()})`,
               department: row.department || deriveBranchFromRoll(r),
               year: row.year || deriveYearFromRoll(r),
@@ -147,10 +196,11 @@ export async function syncCustomRollsFromCloud() {
           supaRows.forEach(row => {
             const m = row.meta || {};
             const r = normalizeRollNumber(m.rollNumber || m.rollLower);
-            if (r) {
+            if (r && !revokedSet.has(r)) {
               cloudRolls.push({
                 id: row.id,
                 rollNumber: r,
+                email: m.email || `${r}@gprec.ac.in`,
                 name: m.name || `GPREC Scholar (${r.toUpperCase()})`,
                 department: m.department || deriveBranchFromRoll(r),
                 year: m.year || deriveYearFromRoll(r),
@@ -172,10 +222,10 @@ export async function syncCustomRollsFromCloud() {
     const map = new Map();
     local.forEach(item => {
       const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
-      if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+      if (r && !revokedSet.has(r)) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
     });
     cloudRolls.forEach(c => {
-      if (c.rollNumber) {
+      if (c.rollNumber && !revokedSet.has(c.rollNumber)) {
         map.set(c.rollNumber, c);
       }
     });
@@ -190,15 +240,20 @@ export async function syncCustomRollsFromCloud() {
  * Returns complete scholar roster metadata for Founder Console
  */
 export function getGprecScholarRoster() {
+  const revoked = new Set(getStoredRevokedRolls());
   const customList = getStoredCustomRolls();
   const customMap = new Map();
   customList.forEach(item => {
     if (typeof item === 'string') {
       const r = normalizeRollNumber(item);
-      customMap.set(r, { rollNumber: r, name: `GPREC Scholar (${r.toUpperCase()})`, isCustom: true });
+      if (!revoked.has(r)) {
+        customMap.set(r, { rollNumber: r, name: `GPREC Scholar (${r.toUpperCase()})`, isCustom: true });
+      }
     } else if (item?.rollNumber) {
       const r = normalizeRollNumber(item.rollNumber);
-      customMap.set(r, { ...item, rollNumber: r, isCustom: true });
+      if (!revoked.has(r)) {
+        customMap.set(r, { ...item, rollNumber: r, isCustom: true });
+      }
     }
   });
 
@@ -206,39 +261,43 @@ export function getGprecScholarRoster() {
   
   // 1. Built-in core cohorts
   GPREC_ALLOWED_ROLL_NUMBERS.forEach(r => {
-    const customMeta = customMap.get(r);
+    const norm = normalizeRollNumber(r);
+    if (revoked.has(norm)) return; // Excluded if deleted/revoked by founder
+
+    const customMeta = customMap.get(norm);
     let scholarName = customMeta?.name;
     if (!scholarName) {
-      if (r === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
-      else if (r === '249xa05086') scholarName = 'GG PREETHI';
-      else if (r === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
-      else if (r === '259xa33002') scholarName = 'A POOJA';
-      else if (r === '259xa33030') scholarName = 'E USHA ESWARI';
-      else if (r === '249xa04149') scholarName = 'GPREC Scholar (249XA04149)';
-      else if (r === '259xa33081') scholarName = 'SRI LAKSHMI';
-      else if (r === '259xa05217') scholarName = 'VARSHITHA OLETI';
-      else if (r === '239x1a33a0') scholarName = 'M BHARANI KUMAR REDDY';
-      else if (r === '259xa33013') scholarName = 'BICHALA HEMASREE';
-      else if (r === '269x103013') scholarName = 'RUTHIKA';
-      else scholarName = `GPREC Scholar (${r.toUpperCase()})`;
+      if (norm === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
+      else if (norm === '249xa05086') scholarName = 'GG PREETHI';
+      else if (norm === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
+      else if (norm === '259xa33002') scholarName = 'A POOJA';
+      else if (norm === '259xa33030') scholarName = 'E USHA ESWARI';
+      else if (norm === '249xa04149') scholarName = 'GPREC Scholar (249XA04149)';
+      else if (norm === '259xa33081') scholarName = 'SRI LAKSHMI';
+      else if (norm === '259xa05217') scholarName = 'VARSHITHA OLETI';
+      else if (norm === '239x1a33a0') scholarName = 'M BHARANI KUMAR REDDY';
+      else if (norm === '259xa33013') scholarName = 'BICHALA HEMASREE';
+      else if (norm === '269x103013') scholarName = 'RUTHIKA';
+      else scholarName = `GPREC Scholar (${norm.toUpperCase()})`;
     }
     fullList.push({
-      rollNumber: r.toUpperCase(),
-      rawRoll: r,
-      email: `${r}@gprec.ac.in`,
+      rollNumber: norm.toUpperCase(),
+      rawRoll: norm,
+      email: `${norm}@gprec.ac.in`,
       name: scholarName,
-      department: customMeta?.department || deriveBranchFromRoll(r),
-      year: customMeta?.year || deriveYearFromRoll(r),
+      department: customMeta?.department || deriveBranchFromRoll(norm),
+      year: customMeta?.year || deriveYearFromRoll(norm),
       status: 'Active',
       type: 'Core Cohort',
-      isCustom: false,
+      isCustom: true, // Empower founder to delete ANY scholar from the roster
       addedAt: customMeta?.addedAt || 1731500000000
     });
-    customMap.delete(r);
+    customMap.delete(norm);
   });
 
   // 2. Founder added custom scholars
   customMap.forEach((meta, r) => {
+    if (revoked.has(r)) return;
     fullList.push({
       rollNumber: r.toUpperCase(),
       rawRoll: r,
@@ -272,12 +331,19 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
   const department = meta.department || deriveBranchFromRoll(normalized);
   const year = meta.year || deriveYearFromRoll(normalized);
 
+  // If this roll was previously revoked/deleted, unrevoke it upon new addition
+  const revoked = getStoredRevokedRolls();
+  if (revoked.includes(normalized)) {
+    saveRevokedRolls(revoked.filter(r => r !== normalized));
+  }
+
   const existing = getStoredCustomRolls();
   const exists = existing.some(item => (typeof item === 'string' ? item : item.rollNumber).toLowerCase() === normalized)
     || GPREC_ALLOWED_ROLL_NUMBERS.includes(normalized);
 
   const newEntry = {
     rollNumber: normalized,
+    email,
     name: scholarName,
     department,
     year,
@@ -489,12 +555,23 @@ export async function updateGprecScholarData(rollInput, updates = {}) {
 }
 
 /**
- * Removes a custom whitelisted roll number from real database + local storage
+ * Permanently removes a scholar/user from real database + local storage and revokes their placement access
  */
 export async function removeGprecScholarRoll(rollInput) {
   const normalized = normalizeRollNumber(rollInput);
   if (!normalized) return false;
 
+  const rollUpper = normalized.toUpperCase();
+  const email = `${normalized}@gprec.ac.in`;
+
+  // 1. Add to revoked rolls so core cohorts / offline caches never re-introduce them
+  const revoked = getStoredRevokedRolls();
+  if (!revoked.includes(normalized)) {
+    revoked.push(normalized);
+    saveRevokedRolls(revoked);
+  }
+
+  // 2. Remove from local custom storage
   const existing = getStoredCustomRolls();
   const filtered = existing.filter(item => {
     const r = typeof item === 'string' ? item : item.rollNumber;
@@ -502,13 +579,18 @@ export async function removeGprecScholarRoll(rollInput) {
   });
   saveCustomRolls(filtered);
 
-  // Remove from Supabase real database
+  // 3. Remove from Supabase real database
   try {
     if (supabase) {
-      // 1. Delete from dedicated gprec_whitelisted_scholars table
+      // 3a. Delete from dedicated gprec_whitelisted_scholars table
       await supabase.from('gprec_whitelisted_scholars').delete().eq('roll_lower', normalized);
 
-      // 2. Also delete row in founder_notifications matching this roll
+      // 3b. Revoke approval in Supabase users table
+      await supabase.from('users').update({
+        is_approved: false
+      }).ilike('email', email);
+
+      // 3c. Clean up rows in founder_notifications matching this roll
       const { data: matches } = await supabase
         .from('founder_notifications')
         .select('id, meta')
@@ -522,6 +604,20 @@ export async function removeGprecScholarRoll(rollInput) {
           }
         }
       }
+
+      // 3d. Record a cloud revocation audit record so all devices sync this deletion
+      await supabase.from('founder_notifications').insert([{
+        type: 'gprec_revoked_scholar',
+        title: `Revoked Scholar Access: ${rollUpper}`,
+        message: `Founder permanently deleted scholar ${rollUpper} and revoked placement suite access.`,
+        meta: {
+          rollNumber: rollUpper,
+          rollLower: normalized,
+          email,
+          revokedAt: Date.now()
+        },
+        read: true
+      }]).catch(() => {});
     }
   } catch (e) {
     console.warn('Real database delete note:', e);
@@ -536,6 +632,13 @@ export async function removeGprecScholarRoll(rollInput) {
 export function isAllowedGprecRoll(rollNumber = '') {
   const normalized = normalizeRollNumber(rollNumber);
   if (!normalized) return false;
+
+  // Block access immediately if scholar was deleted/revoked by founder
+  const revoked = new Set(getStoredRevokedRolls());
+  if (revoked.has(normalized)) {
+    return false;
+  }
+
   // Allow official placement faculty/coordinators to pass verification directly via their email
   if (normalized === 'srikanth.csm@gprec.ac.in' || normalized === 'dean.placements@gprec.ac.in') {
     return true;

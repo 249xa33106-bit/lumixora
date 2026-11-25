@@ -16,7 +16,8 @@ import {
   orderBy, 
   limit, 
   serverTimestamp,
-  setDoc
+  setDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { cleanScholarName } from './founderNotificationService';
 import { getAllowedGprecRollNumbers, normalizeRollNumber } from './gprecPlacementAuth';
@@ -412,4 +413,40 @@ export const fetchAllLoginLogs = async (options = {}) => {
   });
 
   return dedupedResult;
+};
+
+/**
+ * Deletes a session log entry across Firestore, Supabase, and localStorage
+ */
+export const deleteLoginLog = async (logId) => {
+  if (!logId) return false;
+
+  // 1. Remove from local storage
+  try {
+    const local = JSON.parse(localStorage.getItem(STORAGE_LOGIN_LOGS_KEY) || '[]');
+    const updated = local.filter(l => l.id !== logId && l.sessionId !== logId);
+    localStorage.setItem(STORAGE_LOGIN_LOGS_KEY, JSON.stringify(updated));
+  } catch (e) {}
+
+  // 2. Remove from Firestore
+  if (db) {
+    try {
+      const cleanId = logId.replace('sess_', '').replace('supa_iso_', '');
+      await deleteDoc(doc(db, 'gprec_placement_login_logs', logId)).catch(() => {});
+      await deleteDoc(doc(db, 'user_login_logs', logId)).catch(() => {});
+      if (cleanId !== logId) {
+        await deleteDoc(doc(db, 'gprec_placement_login_logs', cleanId)).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  // 3. Remove from Supabase if it was a supa_iso_ log
+  if (supabase && typeof logId === 'string' && logId.startsWith('supa_iso_')) {
+    try {
+      const realId = logId.replace('supa_iso_', '');
+      await supabase.from('founder_notifications').delete().eq('id', realId).catch(() => {});
+    } catch (e) {}
+  }
+
+  return true;
 };

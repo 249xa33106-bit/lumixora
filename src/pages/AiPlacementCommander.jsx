@@ -44,9 +44,33 @@ import { issueNewCertificate } from '../services/certificateService';
 import { saveMockInterviewScorecardToSupabase, saveCodingSubmissionToSupabase, fetchFullStudentProgressFromSupabase } from '../services/supabaseDataSyncService';
 import { cleanScholarName, isFounderEmail } from '../utils/authSecurity';
 
-// High-Performance Code-Split Sub-Portals (Zero-Lag Dashboard Mount)
-const TechPulsePortal = lazy(() => import('./TechPulsePortal'));
-const FounderLoginAuditManager = lazy(() => import('../components/FounderLoginAuditManager'));
+// High-Performance Code-Split Sub-Portals (Zero-Lag Dashboard Mount & Chunk-Reload Safe)
+const lazyWithRetry = (importFn) =>
+  lazy(async () => {
+    try {
+      return await importFn();
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        const isChunkError =
+          error?.name === 'ChunkLoadError' ||
+          error?.message?.includes('Failed to fetch dynamically imported module') ||
+          error?.message?.includes('Loading chunk');
+
+        if (isChunkError) {
+          const reloadKey = 'lumixora_chunk_reload_done';
+          if (!sessionStorage.getItem(reloadKey)) {
+            sessionStorage.setItem(reloadKey, 'true');
+            window.location.reload();
+            return new Promise(() => {});
+          }
+        }
+      }
+      throw error;
+    }
+  });
+
+const TechPulsePortal = lazyWithRetry(() => import('./TechPulsePortal'));
+const FounderLoginAuditManager = lazyWithRetry(() => import('../components/FounderLoginAuditManager'));
 const GprecBridgeToBtechPortal = lazy(() => import('../components/gprec/GprecBridgeToBtechPortal'));
 const GprecHelpDeskPortal = lazy(() => import('../components/gprec/GprecHelpDeskPortal'));
 const GprecResumeBuilderPanel = lazy(() => import('../components/gprec/GprecResumeBuilderPanel'));

@@ -35,7 +35,8 @@ import {
   fetchAllLoginLogs, 
   formatTimeAgo, 
   formatDuration, 
-  deriveUserRoleMeta 
+  deriveUserRoleMeta,
+  deleteLoginLog
 } from '../services/userActivityLogService';
 import { 
   getGprecScholarRoster, 
@@ -100,7 +101,10 @@ export default function FounderLoginAuditManager() {
 
   // Helper to dispatch official GPREC Welcome Email via Cloudflare Worker
   const handleSendWelcomeEmail = async (scholar) => {
-    const roll = scholar.rollNumber || scholar.rawRoll;
+    const roll = scholar.rollNumber || scholar.rawRoll || '';
+    const destEmail = scholar.email || (roll ? `${roll.toLowerCase()}@gprec.ac.in` : '');
+    if (!destEmail) return;
+
     setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: true }));
     try {
       const res = await fetch('/api/send-gprec-welcome', {
@@ -108,14 +112,14 @@ export default function FounderLoginAuditManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rollNumber: roll,
-          email: scholar.email,
+          email: destEmail,
           name: scholar.name,
           department: scholar.department
         })
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
-        addToast({ message: `✉️ Welcome email dispatched to ${scholar.email}!`, type: 'success' });
+        addToast({ message: `✉️ Welcome email dispatched to ${destEmail}!`, type: 'success' });
       } else {
         addToast({ message: data.error || 'Failed to dispatch welcome email.', type: 'error' });
       }
@@ -352,14 +356,34 @@ export default function FounderLoginAuditManager() {
     }
   };
 
-  const handleRemoveScholar = async (roll) => {
-    if (!confirm(`Are you sure you want to remove ${roll} from the whitelisted placement roster?`)) return;
+  const handleRemoveScholar = async (scholarOrRoll) => {
+    const roll = typeof scholarOrRoll === 'string' 
+      ? scholarOrRoll 
+      : (scholarOrRoll?.rollNumber || scholarOrRoll?.rawRoll || '');
+    const scholarName = (typeof scholarOrRoll === 'object' && scholarOrRoll?.name) 
+      ? scholarOrRoll.name 
+      : roll;
+
+    if (!roll) return;
+    if (!confirm(`Are you sure you want to permanently delete user/scholar ${roll.toUpperCase()} (${scholarName})?\n\nThis will revoke their portal access, delete their record from the cloud database, and remove them from the whitelisted roster.`)) return;
+
     try {
       await removeGprecScholarRoll(roll);
       setRoster(getGprecScholarRoster());
-      addToast({ message: `Scholar ${roll} access revoked.`, type: 'info' });
+      addToast({ message: `🗑️ Scholar ${roll.toUpperCase()} permanently deleted & access revoked.`, type: 'info' });
     } catch (err) {
-      addToast({ message: 'Failed to remove scholar.', type: 'error' });
+      addToast({ message: 'Failed to delete scholar.', type: 'error' });
+    }
+  };
+
+  const handleDeleteLog = async (log) => {
+    if (!confirm(`Delete this session log record for ${log.name || log.email || 'this user'}?`)) return;
+    try {
+      await deleteLoginLog(log.id);
+      setLogs(prev => prev.filter(l => l.id !== log.id));
+      addToast({ message: 'Session log record deleted.', type: 'info' });
+    } catch (err) {
+      addToast({ message: 'Failed to delete log entry.', type: 'error' });
     }
   };
 
@@ -1092,15 +1116,13 @@ export default function FounderLoginAuditManager() {
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
-                          {scholar.isCustom ? (
-                            <button
-                              onClick={() => handleRemoveScholar(scholar.rollNumber)}
-                              className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all cursor-pointer"
-                              title="Remove scholar from whitelist"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          ) : null}
+                          <button
+                            onClick={() => handleRemoveScholar(scholar)}
+                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all cursor-pointer"
+                            title="Permanently delete user & revoke placement access"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1128,19 +1150,20 @@ export default function FounderLoginAuditManager() {
                   <th className="px-5 py-3.5">Session Time Log</th>
                   <th className="px-5 py-3.5">Device & Environment</th>
                   <th className="px-5 py-3.5">Live Status</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
+                    <td colSpan="8" className="px-6 py-12 text-center text-slate-400">
                       <RefreshCw className="w-6 h-6 animate-spin text-amber-400 mx-auto mb-2" />
                       <span>Loading real-time login audit telemetry...</span>
                     </td>
                   </tr>
                 ) : filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
+                    <td colSpan="8" className="px-6 py-12 text-center text-slate-500">
                       <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
                       <p className="text-sm font-semibold text-slate-400">No login records found matching criteria.</p>
                       <p className="text-xs text-slate-500 mt-1">Try clearing your search query or switching tabs.</p>
@@ -1265,6 +1288,29 @@ export default function FounderLoginAuditManager() {
                               Concluded
                             </span>
                           )}
+                        </td>
+
+                        {/* 8. Actions (Revoke User & Delete Log) */}
+                        <td className="px-5 py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {item.rollNumber ? (
+                              <button
+                                onClick={() => handleRemoveScholar({ rollNumber: item.rollNumber, name: item.name })}
+                                className="px-2 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/25 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                                title={`Permanently delete & revoke access for scholar ${item.rollNumber}`}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Delete User</span>
+                              </button>
+                            ) : null}
+                            <button
+                              onClick={() => handleDeleteLog(item)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-red-400 border border-white/5 transition-all cursor-pointer"
+                              title="Delete this session record"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
