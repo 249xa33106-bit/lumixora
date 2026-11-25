@@ -18,7 +18,7 @@ import {
   query, orderBy, limit, serverTimestamp 
 } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
-import { GPREC_ALLOWED_ROLL_NUMBERS } from '../services/gprecPlacementAuth';
+import { GPREC_ALLOWED_ROLL_NUMBERS, KNOWN_GPREC_SCHOLAR_NAMES } from '../services/gprecPlacementAuth';
 
 // Whitelist priority roll numbers (Core pilot scholars)
 const PILOT_WHITELIST_ROLLS = GPREC_ALLOWED_ROLL_NUMBERS;
@@ -313,11 +313,12 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
         const isPilot = PILOT_WHITELIST_ROLLS.includes(rollLower) || PILOT_WHITELIST_ROLLS.some(r => emailLower.includes(r));
 
         let cleanName = cleanScholarName(u.name);
-        if (cleanName === 'Scholar' || cleanName.startsWith('249XA')) {
-          if (rollLower === '249xa33106') cleanName = 'KUMARKALAVA MOHAMMED SOWBAN';
-          else if (rollLower === '249xa33112') cleanName = 'MAHENDRAKAR AKHIL';
-          else if (rollLower === '249xa33096') cleanName = 'MOCHI SAI HARSHITH';
-          else if (rollLower === '249xa33091') cleanName = 'Scholar 249XA33091';
+        if (cleanName === 'Scholar' || cleanName.startsWith('249XA') || cleanName.startsWith('259XA')) {
+          if (KNOWN_GPREC_SCHOLAR_NAMES[rollLower]) {
+            cleanName = KNOWN_GPREC_SCHOLAR_NAMES[rollLower];
+          } else if (rollLower === '249xa33091') {
+            cleanName = 'Scholar 249XA33091';
+          }
         }
 
         const department = resolveDepartment(u.email, meta, u.department);
@@ -510,7 +511,7 @@ export default function StudentPlacementDatabase({ user, setActiveTab }) {
           parsed.push({
             id: `gprec_${roll}`,
             uid: `gprec_${roll}`,
-            name: roll === '249xa33106' ? 'KUMARKALAVA MOHAMMED SOWBAN' : (roll === '249xa33112' ? 'MAHENDRAKAR AKHIL' : (roll === '249xa33096' ? 'MOCHI SAI HARSHITH' : `Scholar ${upper}`)),
+            name: KNOWN_GPREC_SCHOLAR_NAMES[roll] || `Scholar ${upper}`,
             rollNumber: upper,
             rollLower: roll,
             email: `${roll}@gprec.ac.in`,

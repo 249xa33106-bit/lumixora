@@ -44,7 +44,8 @@ import {
   bulkAddGprecScholarRolls, 
   removeGprecScholarRoll,
   updateGprecScholarData,
-  syncCustomRollsFromCloud
+  syncCustomRollsFromCloud,
+  KNOWN_GPREC_SCHOLAR_NAMES
 } from '../services/gprecPlacementAuth';
 import { useToast } from '../context/ToastContext';
 import { 
@@ -123,7 +124,7 @@ export default function FounderLoginAuditManager() {
   // Helper to open pre-filled WhatsApp invite
   const handleOpenWhatsAppInvite = (scholar) => {
     const roll = scholar.rollNumber || scholar.rawRoll;
-    const name = scholar.name || 'Scholar';
+    const name = KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name || 'Scholar';
     const message = encodeURIComponent(
       `Hi ${name}! 🎉\n\nYour GPREC Placement Suite access has been officially approved and whitelisted by the Placement Cell!\n\n` +
       `🔗 Portal: https://gprec.lumixora.in/\n` +
@@ -148,7 +149,7 @@ export default function FounderLoginAuditManager() {
         body: JSON.stringify({
           rollNumber: roll,
           email: destEmail,
-          name: scholar.name,
+          name: KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name,
           department: scholar.department
         })
       });
@@ -1146,7 +1147,7 @@ export default function FounderLoginAuditManager() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="font-bold text-slate-100">{scholar.name}</span>
+                        <span className="font-bold text-slate-100">{KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="font-mono text-slate-300 text-[11px]">{scholar.email}</span>

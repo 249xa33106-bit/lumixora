@@ -24,8 +24,30 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '239x1a33a0',
   '259xa33013',
   '269x103013',
-  '239x1a05l9'
+  '239x1a05l9',
+  '259xa33095',
+  '259xa05089'
 ];
+
+export const KNOWN_GPREC_SCHOLAR_NAMES = {
+  '249xa33106': 'KUMARKALAVA MOHAMMED SOWBAN',
+  '249xa33112': 'MAHENDRAKAR AKHIL',
+  '249xa33096': 'MOCHI SAI HARSHITH',
+  '249xa33091': 'K GAYATHRI',
+  '249xa05086': 'GG PREETHI',
+  '249xa33092': 'M LAKSHMI KUSHALA',
+  '259xa33002': 'A POOJA',
+  '259xa33030': 'E USHA ESWARI',
+  '249xa04149': 'GPREC Scholar (249XA04149)',
+  '259xa33081': 'SRI LAKSHMI',
+  '259xa05217': 'VARSHITHA OLETI',
+  '239x1a33a0': 'M BHARANI KUMAR REDDY',
+  '259xa33013': 'BICHALA HEMASREE',
+  '269x103013': 'RUTHIKA',
+  '239x1a05l9': 'AMMENA BANU',
+  '259xa33095': 'LAIQA KHAN',
+  '259xa05089': 'GAJJALA GNANAMANI'
+};
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
 export const STORAGE_CUSTOM_ROLLS_KEY = 'lumixora_gprec_custom_allowed_rolls';
@@ -267,19 +289,10 @@ export function getGprecScholarRoster() {
 
     const customMeta = customMap.get(norm);
     let scholarName = customMeta?.name;
-    if (!scholarName) {
+    if (KNOWN_GPREC_SCHOLAR_NAMES[norm]) {
+      scholarName = KNOWN_GPREC_SCHOLAR_NAMES[norm];
+    } else if (!scholarName || scholarName.startsWith('GPREC Scholar (')) {
       if (norm === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
-      else if (norm === '249xa05086') scholarName = 'GG PREETHI';
-      else if (norm === '249xa33092') scholarName = 'M LAKSHMI KUSHALA';
-      else if (norm === '259xa33002') scholarName = 'A POOJA';
-      else if (norm === '259xa33030') scholarName = 'E USHA ESWARI';
-      else if (norm === '249xa04149') scholarName = 'GPREC Scholar (249XA04149)';
-      else if (norm === '259xa33081') scholarName = 'SRI LAKSHMI';
-      else if (norm === '259xa05217') scholarName = 'VARSHITHA OLETI';
-      else if (norm === '239x1a33a0') scholarName = 'M BHARANI KUMAR REDDY';
-      else if (norm === '259xa33013') scholarName = 'BICHALA HEMASREE';
-      else if (norm === '269x103013') scholarName = 'RUTHIKA';
-      else if (norm === '239x1a05l9') scholarName = 'AMMENA BANU';
       else scholarName = `GPREC Scholar (${norm.toUpperCase()})`;
     }
     fullList.push({
@@ -300,11 +313,17 @@ export function getGprecScholarRoster() {
   // 2. Founder added custom scholars
   customMap.forEach((meta, r) => {
     if (revoked.has(r)) return;
+    let scholarName = meta.name;
+    if (KNOWN_GPREC_SCHOLAR_NAMES[r]) {
+      scholarName = KNOWN_GPREC_SCHOLAR_NAMES[r];
+    } else if (!scholarName || scholarName.startsWith('GPREC Scholar (')) {
+      scholarName = `GPREC Scholar (${r.toUpperCase()})`;
+    }
     fullList.push({
       rollNumber: r.toUpperCase(),
       rawRoll: r,
       email: `${r}@gprec.ac.in`,
-      name: meta.name || `GPREC Scholar (${r.toUpperCase()})`,
+      name: scholarName,
       department: meta.department || deriveBranchFromRoll(r),
       year: meta.year || deriveYearFromRoll(r),
       status: 'Active',
@@ -329,7 +348,7 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
 
   const rollUpper = normalized.toUpperCase();
   const email = `${normalized}@gprec.ac.in`;
-  const scholarName = meta.name?.trim() || `GPREC Scholar (${rollUpper})`;
+  const scholarName = meta.name?.trim() || KNOWN_GPREC_SCHOLAR_NAMES[normalized] || `GPREC Scholar (${rollUpper})`;
   const department = meta.department || deriveBranchFromRoll(normalized);
   const year = meta.year || deriveYearFromRoll(normalized);
 
@@ -826,7 +845,7 @@ export async function verifyGprecPlacementOtp(rollNumber, token) {
   const isFacultyUser = normalized === 'srikanth.csm@gprec.ac.in' || normalized === 'dean.placements@gprec.ac.in';
   const scholarName = isFacultyUser
     ? (normalized.includes('srikanth') ? 'Srikanth (CSM TPO Coordinator)' : 'Dean Placements (GPREC)')
-    : `GPREC Scholar (${rollUpper})`;
+    : (KNOWN_GPREC_SCHOLAR_NAMES[normalized] || `GPREC Scholar (${rollUpper})`);
   const department = isFacultyUser ? 'CSM & T&P Cell' : (normalized.includes('05') ? 'CSE' : (normalized.includes('33') ? 'CSM' : (normalized.includes('04') ? 'ECE' : 'CSE')));
 
   // Construct verified user object (zero fee check, fully unlocked)
