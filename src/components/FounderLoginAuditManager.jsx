@@ -123,13 +123,16 @@ export default function FounderLoginAuditManager() {
 
   // Helper to open pre-filled WhatsApp invite
   const handleOpenWhatsAppInvite = (scholar) => {
-    const roll = scholar.rollNumber || scholar.rawRoll;
-    const name = KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name || 'Scholar';
+    const raw = (scholar.rawRoll || scholar.rollNumber || '').toLowerCase().trim();
+    const roll = scholar.rollNumber || raw.toUpperCase();
+    const name = KNOWN_GPREC_SCHOLAR_NAMES[raw] || 
+      (!scholar.name?.startsWith('GPREC Scholar (') ? scholar.name : undefined) || 
+      'Scholar';
     const message = encodeURIComponent(
       `Hi ${name}! 🎉\n\nYour GPREC Placement Suite access has been officially approved and whitelisted by the Placement Cell!\n\n` +
       `🔗 Portal: https://gprec.lumixora.in/\n` +
       `📌 Roll Number: ${roll.toUpperCase()}\n` +
-      `🔑 Login Method: Enter your roll number to receive your 5-minute security verification code at your institutional email (${scholar.email}).\n\n` +
+      `🔑 Login Method: Enter your roll number to receive your 5-minute security verification code at your institutional email (${scholar.email || `${raw}@gprec.ac.in`}).\n\n` +
       `All the best with your placement preparations!`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -137,33 +140,58 @@ export default function FounderLoginAuditManager() {
 
   // Helper to dispatch official GPREC Welcome Email via Cloudflare Worker
   const handleSendWelcomeEmail = async (scholar) => {
-    const roll = scholar.rollNumber || scholar.rawRoll || '';
-    const destEmail = scholar.email || (roll ? `${roll.toLowerCase()}@gprec.ac.in` : '');
+    const raw = (scholar.rawRoll || scholar.rollNumber || '').toLowerCase().trim();
+    const roll = scholar.rollNumber || raw.toUpperCase();
+    const destEmail = scholar.email || (raw ? `${raw}@gprec.ac.in` : '');
     if (!destEmail) return;
 
+    const scholarName = KNOWN_GPREC_SCHOLAR_NAMES[raw] || 
+      (!scholar.name?.startsWith('GPREC Scholar (') ? scholar.name : undefined) || 
+      'GPREC Scholar';
+
     setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: true }));
-    try {
-      const res = await fetch('/api/send-gprec-welcome', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rollNumber: roll,
-          email: destEmail,
-          name: KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name,
-          department: scholar.department
-        })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        addToast({ message: `✉️ Welcome email dispatched to ${destEmail}!`, type: 'success' });
-      } else {
-        addToast({ message: data.error || 'Failed to dispatch welcome email.', type: 'error' });
+
+    // Resilient multi-endpoint cascade across domains
+    const endpoints = [
+      '/api/send-gprec-welcome',
+      'https://lumixora.in/api/send-gprec-welcome',
+      'https://lumixora.pages.dev/api/send-gprec-welcome'
+    ];
+
+    let dispatched = false;
+    let lastError = '';
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rollNumber: roll,
+            email: destEmail,
+            name: scholarName,
+            department: scholar.department
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          dispatched = true;
+          addToast({ message: `✉️ Welcome email dispatched to ${destEmail}! (${data.provider || 'Brevo API'})`, type: 'success' });
+          break;
+        } else if (data.error) {
+          lastError = data.error;
+          if (res.status === 400 || res.status === 429) break;
+        }
+      } catch (err) {
+        lastError = err.message || 'Connection failed';
       }
-    } catch (err) {
-      addToast({ message: 'Network error sending welcome email.', type: 'error' });
-    } finally {
-      setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: false }));
     }
+
+    if (!dispatched) {
+      addToast({ message: lastError || 'Failed to dispatch welcome email. Please try again.', type: 'error' });
+    }
+    setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: false }));
   };
 
   // 1-Click Institutional TPO Excel Format Export
@@ -1147,7 +1175,11 @@ export default function FounderLoginAuditManager() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="font-bold text-slate-100">{KNOWN_GPREC_SCHOLAR_NAMES[scholar.rawRoll] || scholar.name}</span>
+                        <span className="font-bold text-slate-100">
+                          {KNOWN_GPREC_SCHOLAR_NAMES[(scholar.rawRoll || scholar.rollNumber || '').toLowerCase().trim()] || 
+                           (!scholar.name?.startsWith('GPREC Scholar (') ? scholar.name : undefined) || 
+                           scholar.name}
+                        </span>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="font-mono text-slate-300 text-[11px]">{scholar.email}</span>

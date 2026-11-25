@@ -246,7 +246,7 @@ async function sendViaDirectSmtpFallback({ to, subject, html, text, sender }) {
     return {
       success: false,
       provider: 'Direct SMTP (Fallback)',
-      error: err.message || 'SMTP Connection Error'
+      error: `SMTP Gateway unreachable (${err.message || 'Socket closed'}). Ensure Brevo API Key is active.`
     };
   }
 }
@@ -322,16 +322,17 @@ export async function sendLumixoraEmail({
   // 4. Resolve Sender Identity
   const sender = SENDER_IDENTITIES[senderType] || SENDER_IDENTITIES.security;
 
-  // 5. Check Brevo API Key
+  // 5. Check Brevo API Key (Loaded securely from Cloudflare Pages Environment Variables)
   const brevoApiKey = contextEnv.BREVO_API_KEY || contextEnv.VITE_BREVO_API_KEY;
 
   if (brevoApiKey && brevoApiKey.trim() !== '') {
     // --- SEND VIA BREVO TRANSACTIONAL API ---
     try {
-      const payload = {
+      // First attempt with official custom domain sender (e.g. welcome@lumixora.in)
+      const buildPayload = (fromEmail, fromName) => ({
         sender: {
-          name: sender.name,
-          email: sender.email
+          name: fromName,
+          email: fromEmail
         },
         to: [
           {
@@ -352,9 +353,13 @@ export async function sendLumixoraEmail({
           'X-Entity-Ref-ID': 'lmx_' + Date.now(),
           ...(isPromotional ? { 'List-Unsubscribe': `<mailto:unsubscribe@lumixora.in>, <https://lumixora.in/unsubscribe?email=${encodeURIComponent(recipientEmail)}>` } : {})
         }
-      };
+      });
 
-      const res = await fetch(BREVO_API_URL, {
+      let activeSenderEmail = sender.email;
+      let activeSenderName = sender.name;
+      let payload = buildPayload(activeSenderEmail, activeSenderName);
+
+      let res = await fetch(BREVO_API_URL, {
         method: 'POST',
         headers: {
           'api-key': brevoApiKey.trim(),
@@ -364,7 +369,27 @@ export async function sendLumixoraEmail({
         body: JSON.stringify(payload)
       });
 
-      const resData = await res.json().catch(() => ({}));
+      let resData = await res.json().catch(() => ({}));
+
+      // If Brevo rejects custom domain sender because DNS/domain verification is still in progress,
+      // gracefully retry using account-verified sender (lumixora.team@gmail.com)
+      if (!res.ok && resData.message && /sender|unauthorized|not verified|domain/i.test(resData.message) && activeSenderEmail !== 'lumixora.team@gmail.com') {
+        console.warn(`Sender ${activeSenderEmail} pending Brevo domain verification. Retrying with account verified sender...`);
+        activeSenderEmail = 'lumixora.team@gmail.com';
+        activeSenderName = `${sender.name} (Lumixora)`;
+        payload = buildPayload(activeSenderEmail, activeSenderName);
+
+        res = await fetch(BREVO_API_URL, {
+          method: 'POST',
+          headers: {
+            'api-key': brevoApiKey.trim(),
+            'content-type': 'application/json',
+            'accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        resData = await res.json().catch(() => ({}));
+      }
 
       if (res.ok && resData.messageId) {
         instanceTelemetry.sentToday++;
@@ -373,7 +398,7 @@ export async function sendLumixoraEmail({
           to: recipientEmail,
           subject,
           senderType,
-          senderEmail: sender.email,
+          senderEmail: activeSenderEmail,
           priority,
           status: 'Accepted for Delivery',
           provider: 'Brevo API v3',
@@ -382,6 +407,7 @@ export async function sendLumixoraEmail({
         return {
           success: true,
           provider: 'Brevo API v3',
+          sender: activeSenderEmail,
           messageId: resData.messageId,
           sentToday: instanceTelemetry.sentToday,
           quotaRemaining: BREVO_FREE_DAILY_LIMIT - instanceTelemetry.sentToday

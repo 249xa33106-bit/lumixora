@@ -157,68 +157,80 @@ export async function sendEmail({
     isPromotional
   };
 
-  try {
-    const res = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+  const endpoints = [
+    '/api/send-email',
+    'https://lumixora.in/api/send-email',
+    'https://lumixora.pages.dev/api/send-email'
+  ];
 
-    const data = await res.json().catch(() => ({}));
+  let lastError = '';
+  let resData = null;
 
-    if (res.ok && data.success) {
-      // Record telemetry in Firestore if db is active
-      try {
-        if (db) {
-          const col = collection(db, 'lumixora_email_telemetry');
-          await addDoc(col, {
-            to: cleanTo,
-            templateKey: templateKey || 'custom',
-            senderType,
-            priority,
-            provider: data.provider || 'Brevo API v3',
-            messageId: data.messageId || 'unknown',
-            sentAt: new Date().toISOString()
-          });
-        }
-      } catch (err) {}
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-      return {
-        success: true,
-        provider: data.provider,
-        messageId: data.messageId,
-        message: 'Email delivered successfully.'
-      };
-    } else {
-      if (res.status === 429 || data.quotaExceeded) {
-        enqueueEmail(payload);
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        // Record telemetry in Firestore if db is active
+        try {
+          if (db) {
+            const col = collection(db, 'lumixora_email_telemetry');
+            await addDoc(col, {
+              to: cleanTo,
+              templateKey: templateKey || 'custom',
+              senderType,
+              priority,
+              provider: data.provider || 'Brevo API v3',
+              messageId: data.messageId || 'unknown',
+              sentAt: new Date().toISOString()
+            });
+          }
+        } catch (err) {}
+
         return {
-          success: false,
-          quotaExceeded: true,
-          queued: true,
-          error: data.error || 'Daily sending limit reached (300/day). Queued for next delivery window.'
+          success: true,
+          provider: data.provider,
+          messageId: data.messageId,
+          message: 'Email delivered successfully.'
         };
+      } else {
+        if (res.status === 429 || data.quotaExceeded) {
+          enqueueEmail(payload);
+          return {
+            success: false,
+            quotaExceeded: true,
+            queued: true,
+            error: data.error || 'Daily sending limit reached (300/day). Queued for next delivery window.'
+          };
+        }
+        lastError = data.error || `Endpoint returned status ${res.status}`;
+        if (res.status === 400) break; // Client error, don't cascade
       }
-      return {
-        success: false,
-        error: data.error || 'Failed to dispatch email.'
-      };
+    } catch (err) {
+      lastError = err.message || 'Connection failed';
     }
-  } catch (err) {
-    if (!navigator.onLine) {
-      enqueueEmail(payload);
-      return {
-        success: false,
-        offline: true,
-        queued: true,
-        error: 'Network offline. Email queued for automatic dispatch upon reconnection.'
-      };
-    }
+  }
+
+  if (!navigator.onLine) {
+    enqueueEmail(payload);
     return {
       success: false,
-      error: err.message || 'Network error dispatching email'
+      offline: true,
+      queued: true,
+      error: 'Network offline. Email queued for automatic dispatch upon reconnection.'
     };
   }
+
+  return {
+    success: false,
+    error: lastError || 'Failed to dispatch email across available gateways.'
+  };
 }
 
 /**

@@ -288,13 +288,9 @@ export function getGprecScholarRoster() {
     if (revoked.has(norm)) return; // Excluded if deleted/revoked by founder
 
     const customMeta = customMap.get(norm);
-    let scholarName = customMeta?.name;
-    if (KNOWN_GPREC_SCHOLAR_NAMES[norm]) {
-      scholarName = KNOWN_GPREC_SCHOLAR_NAMES[norm];
-    } else if (!scholarName || scholarName.startsWith('GPREC Scholar (')) {
-      if (norm === '249xa33106') scholarName = 'Founder Scholar (249XA33106)';
-      else scholarName = `GPREC Scholar (${norm.toUpperCase()})`;
-    }
+    let scholarName = KNOWN_GPREC_SCHOLAR_NAMES[norm] || 
+      (!customMeta?.name?.startsWith('GPREC Scholar (') ? customMeta?.name : undefined) || 
+      (norm === '249xa33106' ? 'Founder Scholar (249XA33106)' : `GPREC Scholar (${norm.toUpperCase()})`);
     fullList.push({
       rollNumber: norm.toUpperCase(),
       rawRoll: norm,
@@ -313,12 +309,9 @@ export function getGprecScholarRoster() {
   // 2. Founder added custom scholars
   customMap.forEach((meta, r) => {
     if (revoked.has(r)) return;
-    let scholarName = meta.name;
-    if (KNOWN_GPREC_SCHOLAR_NAMES[r]) {
-      scholarName = KNOWN_GPREC_SCHOLAR_NAMES[r];
-    } else if (!scholarName || scholarName.startsWith('GPREC Scholar (')) {
-      scholarName = `GPREC Scholar (${r.toUpperCase()})`;
-    }
+    let scholarName = KNOWN_GPREC_SCHOLAR_NAMES[r] || 
+      (!meta.name?.startsWith('GPREC Scholar (') ? meta.name : undefined) || 
+      `GPREC Scholar (${r.toUpperCase()})`;
     fullList.push({
       rollNumber: r.toUpperCase(),
       rawRoll: r,
@@ -783,25 +776,31 @@ export async function sendGprecPlacementOtp(rollNumber) {
   const email = getGprecEmailFromRoll(normalized);
   const otpCode = getRolling5MinOtp(normalized, 0); // Fresh code for this 5-minute window
 
-  // Dispatch via lumixora.team@gmail.com
-  try {
-    const res = await fetch('/api/send-gprec-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        rollNumber: normalized,
-        email,
-        code: otpCode
-      })
-    });
-    const result = await res.json().catch(() => ({}));
-    if (res.ok) {
-      return { success: true, email, code: otpCode };
-    } else {
-      console.warn('API send notice:', result.error);
+  // Dispatch via Brevo API / Worker cascade
+  const targetEndpoints = [
+    '/api/send-gprec-otp',
+    'https://lumixora.in/api/send-gprec-otp',
+    'https://lumixora.pages.dev/api/send-gprec-otp'
+  ];
+
+  for (const endpoint of targetEndpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rollNumber: normalized,
+          email,
+          code: otpCode
+        })
+      });
+      const result = await res.json().catch(() => ({}));
+      if (res.ok && result.success) {
+        return { success: true, email, code: otpCode, provider: result.provider };
+      }
+    } catch (err) {
+      console.warn(`Dispatch attempt on ${endpoint} notice:`, err);
     }
-  } catch (err) {
-    console.warn('Direct mail dispatch notice:', err);
   }
 
   return { 
