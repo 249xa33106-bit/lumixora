@@ -49,7 +49,7 @@ export const KNOWN_GPREC_SCHOLAR_NAMES = {
   '259xa05089': 'GAJJALA GNANAMANI'
 };
 
-export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
+export const PLACEMENT_SUPPORT_EMAIL = 'support@lumixora.in';
 export const STORAGE_CUSTOM_ROLLS_KEY = 'lumixora_gprec_custom_allowed_rolls';
 export const STORAGE_REVOKED_ROLLS_KEY = 'lumixora_gprec_revoked_rolls';
 

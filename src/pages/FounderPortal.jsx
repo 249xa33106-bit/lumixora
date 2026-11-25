@@ -53,6 +53,7 @@ import FounderFrequentUsers from '../components/FounderFrequentUsers';
 import FounderAttendanceManager from '../components/FounderAttendanceManager';
 import FounderAmbassadorManager from '../components/FounderAmbassadorManager';
 import FounderRevenueManager from '../components/FounderRevenueManager';
+import AdminEmailCommandCenter from '../components/AdminEmailCommandCenter';
 import InternshipPortal from './InternshipPortal';
 import { KNOWN_PAID_EMAILS } from '../data/collegesData';
 import { 
@@ -2733,6 +2734,12 @@ export default function FounderPortal({ user, setActiveTab }) {
             >
               <Clock className="w-4 h-4 text-amber-400" /> 🔐 Login & Time Logs (All Users, TPO, Faculty)
             </button>
+            <button
+              onClick={() => setActiveView('emails')}
+              className={`px-4 py-2.5 rounded-[10px] text-[13px] font-bold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap border ${activeView === 'emails' ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 shadow-md' : 'bg-purple-500/10 text-purple-400 border-purple-500/30 hover:bg-purple-500/20'}`}
+            >
+              <Mail className="w-4 h-4 text-purple-400" /> ✉️ Email Command Center
+            </button>
 <button
               onClick={() => setActiveView('scholars')}
               className={`px-4 py-2.5 rounded-[10px] text-[13px] font-semibold tracking-wide flex items-center gap-2 transition-all whitespace-nowrap ${activeView === 'scholars' ? 'bg-amber-400/10 text-amber-400 shadow-sm' : 'text-[var(--text-secondary)] hover:text-amber-400 hover:bg-white/5'}`}
@@ -2907,6 +2914,8 @@ export default function FounderPortal({ user, setActiveTab }) {
 
       {activeView === 'logins' ? (
         <FounderLoginAuditManager />
+      ) : activeView === 'emails' ? (
+        <AdminEmailCommandCenter />
       ) : activeView === 'revenue' ? (
         <FounderRevenueManager usersList={usersList} onRefresh={loadUsersData} />
       ) : activeView === 'submissions' ? (

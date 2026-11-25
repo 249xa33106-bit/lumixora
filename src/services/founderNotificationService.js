@@ -1304,7 +1304,7 @@ export async function sendInternPasscodeEmail({ email, name, internId, roleTitle
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
-        return { success: true, message: 'Passcode sent successfully from lumixora.team@gmail.com' };
+        return { success: true, message: 'Passcode sent successfully from careers@lumixora.in' };
       }
       if (data.error) {
         lastError = data.error;
