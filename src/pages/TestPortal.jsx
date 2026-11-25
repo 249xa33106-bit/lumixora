@@ -7,8 +7,9 @@ import {
   Zap, Maximize2, Minimize2, CheckSquare,
   Camera, CameraOff, Mic, MicOff, Volume2, ShieldAlert, Check, RefreshCw,
   UserCheck, Activity, Video, Radio, Calculator, Crown, Brain, ArrowUpRight,
-  Upload, Send
+  Upload, Send, FileSpreadsheet, Sliders
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { callAICompletion } from '../services/aiService';
@@ -155,12 +156,22 @@ export default function TestPortal({ user, setActiveTab }) {
   const [isAiGeneratingTest, setIsAiGeneratingTest] = useState(false);
 
   const [showBatchImportModal, setShowBatchImportModal] = useState(false);
+  const [batchImportTab, setBatchImportTab] = useState('excel'); // 'excel' | 'ai_parser' | 'csv' | 'json'
   const [batchImportText, setBatchImportText] = useState('');
-  const [batchImportFormat, setBatchImportFormat] = useState('csv'); // 'csv' | 'json'
+  const [batchImportFile, setBatchImportFile] = useState(null);
+  const [batchImportDragActive, setBatchImportDragActive] = useState(false);
+  const [parsedQuestionsPreview, setParsedQuestionsPreview] = useState([]);
+  const [isParsingBatch, setIsParsingBatch] = useState(false);
   const [batchImportMeta, setBatchImportMeta] = useState({
-    title: 'Departmental Imported Question Bank',
+    title: 'Departmental Examination Question Bank',
     category: 'test',
-    duration: 30
+    duration: 30,
+    targetBranch: 'All',
+    targetSem: 'All',
+    negativeMarking: 'none', // 'none' | '-0.25' | '-0.33' | '-0.5' | '-1.0'
+    shuffleQuestions: true,
+    marksPerQuestion: 1,
+    difficulty: 'Medium'
   });
 
   // Safe Calculator Evaluation
@@ -4572,110 +4583,555 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         </div>
       )}
 
-      {/* ── 📥 BATCH IMPORTER MODAL (CSV / JSON) ── */}
+      {/* ── 📥 ADVANCED ENTERPRISE BATCH IMPORTER MODAL ── */}
       {showBatchImportModal && (
-        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
-          <div className="max-w-2xl w-full bg-[#0c1222] border border-cyan-500/40 rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative font-sans my-8">
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in">
+          <div className="max-w-4xl w-full bg-[#0a0f1d] border border-cyan-500/40 rounded-3xl p-5 md:p-8 space-y-6 shadow-2xl relative font-sans my-6 max-h-[92vh] flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center">
-                  <Upload className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-brand-teal/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/10">
+                  <FileSpreadsheet className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white font-sora">
-                    Batch Import Department Question Bank
-                  </h3>
-                  <p className="text-xs text-gray-400 font-mono">
-                    Paste raw CSV, TSV, or JSON questions to deploy in 1 click
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-white font-sora">
+                      Departmental Question Bank Ingestion
+                    </h3>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                      Advanced Suite
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-mono mt-0.5">
+                    Excel (.xlsx), AI Unstructured Paper Parser, CSV tables, or JSON Schema
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setShowBatchImportModal(false)}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer"
+                onClick={() => {
+                  setShowBatchImportModal(false);
+                  setParsedQuestionsPreview([]);
+                }}
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            {/* Scrollable Modal Body */}
+            <div className="space-y-6 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+
+              {/* Format Switcher Tabs */}
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setBatchImportFormat('csv')}
-                    className={'px-3 py-1 rounded-lg font-mono font-bold ' + (batchImportFormat === 'csv' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-gray-400')}
+                    onClick={() => setBatchImportTab('excel')}
+                    className={'px-3.5 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ' + 
+                      (batchImportTab === 'excel' 
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5')}
                   >
-                    CSV Format
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                    <span>Excel (.xlsx / .xls)</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setBatchImportFormat('json')}
-                    className={'px-3 py-1 rounded-lg font-mono font-bold ' + (batchImportFormat === 'json' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-gray-400')}
+                    onClick={() => setBatchImportTab('ai_parser')}
+                    className={'px-3.5 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ' + 
+                      (batchImportTab === 'ai_parser' 
+                        ? 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-300 border border-purple-500/40 shadow-sm' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5')}
                   >
-                    JSON Format
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span>AI Smart Paper Parser</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBatchImportTab('csv')}
+                    className={'px-3.5 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ' + 
+                      (batchImportTab === 'csv' 
+                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5')}
+                  >
+                    <FileText className="w-4 h-4 text-cyan-400" />
+                    <span>CSV / TSV</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBatchImportTab('json')}
+                    className={'px-3.5 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 transition-all cursor-pointer ' + 
+                      (batchImportTab === 'json' 
+                        ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5')}
+                  >
+                    <Code className="w-4 h-4 text-amber-400" />
+                    <span>JSON Schema</span>
                   </button>
                 </div>
+
+                {/* Right Utility: Download Template */}
                 <button
                   type="button"
-                  onClick={() => {
-                    const sampleCsv = 'Question,Option A,Option B,Option C,Option D,Correct (0-3),Explanation\\n"What is the time complexity of Dijkstra with Min-Heap?",O(V^2),O((V+E) log V),O(V log E),O(E^2),1,"Using binary min-heap yields O((V+E) log V)."\\n"Which normal form eliminates transitive dependency?",1NF,2NF,3NF,BCNF,2,"3NF eliminates transitive dependencies of non-prime attributes."';
-                    setBatchImportText(sampleCsv);
-                    addToast({ message: 'Sample question bank template loaded!', type: 'info' });
-                  }}
-                  className="text-cyan-400 hover:underline font-mono"
+                  onClick={handleDownloadExcelTemplate}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  title="Download standard Excel question bank template"
                 >
-                  Load Sample Template
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .xlsx Template</span>
                 </button>
               </div>
 
-              <div>
-                <label className="block text-gray-400 font-mono mb-1">Assessment Title:</label>
-                <input
-                  type="text"
-                  value={batchImportMeta.title}
-                  onChange={(e) => setBatchImportMeta(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Departmental Semester Examination Bank"
-                  className="w-full p-2.5 rounded-xl bg-black/50 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400"
-                />
+              {/* Tab 1: Excel Drag & Drop Zone */}
+              {batchImportTab === 'excel' && (
+                <div className="space-y-3">
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setBatchImportDragActive(true); }}
+                    onDragLeave={() => setBatchImportDragActive(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setBatchImportDragActive(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleParseExcelFile(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    className={'border-2 border-dashed rounded-2xl p-6 md:p-8 text-center transition-all flex flex-col items-center justify-center gap-3 relative cursor-pointer ' + 
+                      (batchImportDragActive 
+                        ? 'border-emerald-400 bg-emerald-950/20' 
+                        : 'border-white/15 bg-black/40 hover:border-emerald-500/50 hover:bg-black/60')}
+                  >
+                    <input
+                      type="file"
+                      accept=".xlsx, .xls, .csv"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleParseExcelFile(e.target.files[0]);
+                        }
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                      <FileSpreadsheet className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white font-sora">
+                        {batchImportFile ? batchImportFile.name : 'Drag & drop Excel (.xlsx, .xls) question bank here'}
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono mt-1">
+                        or click to browse from your computer • Auto-maps Question, Options A-D, Answer & Explanation
+                      </p>
+                    </div>
+                    {isParsingBatch && (
+                      <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Parsing workbook sheets with SheetJS...</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: AI Smart Paper Parser */}
+              {batchImportTab === 'ai_parser' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-purple-300 font-mono flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Paste unstructured midterm exam, Word paper, or PDF transcripts:</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sampleUnstructured = `1. What is the time complexity of QuickSort in the worst case?
+a) O(N log N)
+b) O(N^2)
+c) O(N)
+d) O(1)
+Answer: B
+Explanation: When pivot splits are completely unbalanced, quicksort runs in quadratic time.
+
+2. Which SQL clause is used to filter records after aggregate grouping?
+(A) WHERE
+(B) ORDER BY
+(C) HAVING
+(D) GROUP BY
+Ans: C
+Explanation: HAVING filters groups formed by GROUP BY, while WHERE filters individual rows before grouping.
+
+3. In Operating Systems, what condition causes a Deadlock?
+1. Mutual Exclusion
+2. Hold and Wait
+3. No Preemption
+4. Circular Wait
+Answer: D
+Explanation: All four Coffman conditions must hold simultaneously for a deadlock to occur.`;
+                        setBatchImportText(sampleUnstructured);
+                      }}
+                      className="text-purple-400 hover:underline text-xs font-mono cursor-pointer"
+                    >
+                      Load Sample Exam Paper
+                    </button>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={batchImportText}
+                    onChange={(e) => setBatchImportText(e.target.value)}
+                    placeholder="1. Question prompt...&#10;A) Option 1&#10;B) Option 2&#10;C) Option 3&#10;D) Option 4&#10;Answer: B&#10;Explanation: Optional verified rationale"
+                    className="w-full p-3.5 rounded-2xl bg-black/60 border border-purple-500/30 font-mono text-xs text-purple-100 focus:outline-none focus:border-purple-400 resize-none leading-relaxed"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleParseUnstructuredText}
+                    className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-600/20"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Run AI Smart Question Extraction</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Tab 3: CSV / TSV */}
+              {batchImportTab === 'csv' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-cyan-300 font-mono">
+                      Paste comma-separated (CSV) or tab-separated (TSV) rows:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sampleCsv = `Question,Option A,Option B,Option C,Option D,Correct (A-D),Explanation
+"What is the time complexity of Dijkstra with Min-Heap?",O(V^2),O((V+E) log V),O(V log E),O(E^2),B,"Using binary min-heap yields O((V+E) log V)."
+"Which normal form eliminates transitive dependency?",1NF,2NF,3NF,BCNF,C,"3NF eliminates transitive dependencies of non-prime attributes."
+"Which register holds the address of the next instruction?",Instruction Register,Program Counter,Memory Buffer,Accumulator,B,"The Program Counter (PC) stores the memory address of the next sequential instruction."`;
+                        setBatchImportText(sampleCsv);
+                      }}
+                      className="text-cyan-400 hover:underline text-xs font-mono cursor-pointer"
+                    >
+                      Load Sample CSV
+                    </button>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={batchImportText}
+                    onChange={(e) => setBatchImportText(e.target.value)}
+                    placeholder="Question, Option A, Option B, Option C, Option D, Correct (A/B/C/D), Explanation"
+                    className="w-full p-3.5 rounded-2xl bg-black/60 border border-cyan-500/30 font-mono text-xs text-cyan-100 focus:outline-none focus:border-cyan-400 resize-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleParseCsvText}
+                    className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-600/20"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Parse CSV Rows</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Tab 4: JSON Schema */}
+              {batchImportTab === 'json' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-amber-300 font-mono">
+                      Paste Lumixora Question JSON Array:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sampleJson = JSON.stringify([
+                          {
+                            question: "Which data structure is primarily used in Breadth-First Search (BFS)?",
+                            options: ["Stack", "Queue", "Priority Queue", "Binary Search Tree"],
+                            correct: 1,
+                            explanation: "BFS explores vertices in FIFO order using a standard Queue.",
+                            topic: "Graph Algorithms"
+                          },
+                          {
+                            question: "What is the primary role of a subnet mask in IPv4 addressing?",
+                            options: ["Encrypt packet payloads", "Distinguish Network ID from Host ID", "Resolve domain names", "Assign MAC addresses"],
+                            correct: 1,
+                            explanation: "The subnet mask partitions the 32-bit IPv4 address into network and host bits.",
+                            topic: "Computer Networks"
+                          }
+                        ], null, 2);
+                        setBatchImportText(sampleJson);
+                      }}
+                      className="text-amber-400 hover:underline text-xs font-mono cursor-pointer"
+                    >
+                      Load Sample JSON
+                    </button>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={batchImportText}
+                    onChange={(e) => setBatchImportText(e.target.value)}
+                    placeholder="[ { question: '...', options: [...], correct: 0, explanation: '...' } ]"
+                    className="w-full p-3.5 rounded-2xl bg-black/60 border border-amber-500/30 font-mono text-xs text-amber-100 focus:outline-none focus:border-amber-400 resize-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleParseJsonSchema}
+                    className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-600/20"
+                  >
+                    <Code className="w-4 h-4" />
+                    <span>Validate & Load JSON</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Assessment Governance & Cohort Targeting Settings */}
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-300 font-sora">
+                  <Sliders className="w-4 h-4 text-cyan-400" />
+                  <span>Institutional Examination & Cohort Governance</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  {/* Title */}
+                  <div className="md:col-span-2">
+                    <label className="block text-gray-400 font-mono mb-1">Assessment / Bank Title:</label>
+                    <input
+                      type="text"
+                      value={batchImportMeta.title}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Mid-Term II Data Structures Examination"
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-gray-400 font-mono mb-1">Assessment Type:</label>
+                    <select
+                      value={batchImportMeta.category}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    >
+                      <option value="test">Timed CBT Exam</option>
+                      <option value="assignment">Assignment / Project</option>
+                      <option value="interview">Mock Interview Drill</option>
+                    </select>
+                  </div>
+
+                  {/* Target Branch */}
+                  <div>
+                    <label className="block text-gray-400 font-mono mb-1">Target Department:</label>
+                    <select
+                      value={batchImportMeta.targetBranch}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, targetBranch: e.target.value }))}
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    >
+                      <option value="All">All Departments</option>
+                      <option value="CSE">CSE (Computer Science)</option>
+                      <option value="ECE">ECE (Electronics & Comm)</option>
+                      <option value="EEE">EEE (Electrical & Electronics)</option>
+                      <option value="MECH">MECH (Mechanical)</option>
+                      <option value="CIVIL">CIVIL (Civil Engineering)</option>
+                      <option value="IT">IT (Information Tech)</option>
+                      <option value="AIDS">AIDS (AI & Data Science)</option>
+                    </select>
+                  </div>
+
+                  {/* Target Semester */}
+                  <div>
+                    <label className="block text-gray-400 font-mono mb-1">Target Semester:</label>
+                    <select
+                      value={batchImportMeta.targetSem}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, targetSem: e.target.value }))}
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    >
+                      <option value="All">All Semesters</option>
+                      <option value="Sem 1">Semester 1</option>
+                      <option value="Sem 2">Semester 2</option>
+                      <option value="Sem 3">Semester 3</option>
+                      <option value="Sem 4">Semester 4</option>
+                      <option value="Sem 5">Semester 5</option>
+                      <option value="Sem 6">Semester 6</option>
+                      <option value="Sem 7">Semester 7</option>
+                      <option value="Sem 8">Semester 8</option>
+                    </select>
+                  </div>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block text-gray-400 font-mono mb-1">Duration (Minutes):</label>
+                    <input
+                      type="number"
+                      min={5}
+                      max={180}
+                      value={batchImportMeta.duration}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, duration: parseInt(e.target.value, 10) || 30 }))}
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    />
+                  </div>
+
+                  {/* Negative Marking */}
+                  <div>
+                    <label className="block text-gray-400 font-mono mb-1">Negative Marking:</label>
+                    <select
+                      value={batchImportMeta.negativeMarking}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, negativeMarking: e.target.value }))}
+                      className="w-full p-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono focus:outline-none focus:border-cyan-400 text-xs"
+                    >
+                      <option value="none">None (0 Penalty)</option>
+                      <option value="-0.25">-0.25 (25% Penalty)</option>
+                      <option value="-0.33">-0.33 (33% Penalty)</option>
+                      <option value="-0.5">-0.50 (50% Penalty)</option>
+                      <option value="-1.0">-1.00 (100% Penalty)</option>
+                    </select>
+                  </div>
+
+                  {/* Shuffle Toggle */}
+                  <div className="flex items-center gap-2 pt-5">
+                    <input
+                      type="checkbox"
+                      id="shuffleToggle"
+                      checked={batchImportMeta.shuffleQuestions}
+                      onChange={(e) => setBatchImportMeta(prev => ({ ...prev, shuffleQuestions: e.target.checked }))}
+                      className="w-4 h-4 rounded text-cyan-500 focus:ring-0 cursor-pointer"
+                    />
+                    <label htmlFor="shuffleToggle" className="text-gray-300 font-mono cursor-pointer select-none">
+                      Shuffle Questions & Options
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-gray-400 font-mono mb-1">Paste Question Bank Data:</label>
-                <textarea
-                  rows={8}
-                  value={batchImportText}
-                  onChange={(e) => setBatchImportText(e.target.value)}
-                  placeholder="Question, Option A, Option B, Option C, Option D, CorrectIndex(0-3), Explanation"
-                  className="w-full p-3 rounded-xl bg-black/60 border border-white/15 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 resize-none"
-                />
+              {/* Live Question Preview Deck */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white font-sora">
+                      Live Question Preview Deck
+                    </span>
+                    <span className={'text-xs font-mono px-2 py-0.5 rounded-full ' + 
+                      (parsedQuestionsPreview.length > 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-gray-800 text-gray-400')}>
+                      {parsedQuestionsPreview.length} Questions Ready
+                    </span>
+                  </div>
+                  {parsedQuestionsPreview.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setParsedQuestionsPreview([])}
+                      className="text-xs text-rose-400 hover:underline font-mono cursor-pointer"
+                    >
+                      Clear Deck
+                    </button>
+                  )}
+                </div>
+
+                {parsedQuestionsPreview.length === 0 ? (
+                  <div className="p-8 rounded-2xl bg-black/20 border border-white/10 text-center text-xs text-gray-500 font-mono">
+                    No questions parsed yet. Upload an Excel workbook (.xlsx) or run the Smart Paper Parser above.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                    {parsedQuestionsPreview.map((q, idx) => (
+                      <div
+                        key={q.id || idx}
+                        className="p-3.5 rounded-xl bg-black/60 border border-white/10 hover:border-cyan-500/30 transition-all space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-2">
+                            <span className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <p className="text-xs text-white font-medium">
+                              {q.question}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePreviewQuestion(idx)}
+                            className="text-gray-500 hover:text-rose-400 cursor-pointer p-1 transition-colors shrink-0"
+                            title="Remove question"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Options Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                          {q.options.map((opt, optIdx) => {
+                            const isCorrect = q.correct === optIdx;
+                            return (
+                              <div
+                                key={optIdx}
+                                className={'px-2.5 py-1.5 rounded-lg text-[11px] font-mono flex items-center gap-2 ' + 
+                                  (isCorrect 
+                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold' 
+                                    : 'bg-white/5 text-gray-400')}
+                              >
+                                <span className={'w-4 h-4 rounded text-[9px] flex items-center justify-center ' + 
+                                  (isCorrect ? 'bg-emerald-500 text-black font-extrabold' : 'bg-white/10 text-gray-400')}>
+                                  {String.fromCharCode(65 + optIdx)}
+                                </span>
+                                <span className="truncate">{opt}</span>
+                                {isCorrect && <Check className="w-3 h-3 text-emerald-400 ml-auto shrink-0" />}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Explanation Note */}
+                        {q.explanation && (
+                          <div className="text-[10px] text-gray-400 font-mono bg-white/5 px-2 py-1 rounded">
+                            <span className="text-cyan-400 font-bold">Explanation: </span>
+                            {q.explanation}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10 shrink-0">
+              <div className="text-xs text-gray-400 font-mono hidden sm:block">
+                Target: <span className="text-cyan-400">{batchImportMeta.targetBranch}</span> • <span className="text-purple-400">{batchImportMeta.targetSem}</span> • <span className="text-amber-400">{batchImportMeta.duration} Mins</span>
+              </div>
+
+              <div className="flex items-center gap-2.5 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBatchImportModal(false);
+                    setParsedQuestionsPreview([]);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs font-bold cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBatchImport}
+                  disabled={parsedQuestionsPreview.length === 0}
+                  className={'px-6 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-lg ' + 
+                    (parsedQuestionsPreview.length > 0 
+                      ? 'bg-gradient-to-r from-cyan-500 to-brand-teal hover:from-cyan-400 hover:to-brand-teal/80 text-black shadow-cyan-500/20' 
+                      : 'bg-white/10 text-gray-500 cursor-not-allowed')}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Publish & Deploy ({parsedQuestionsPreview.length} Questions)</span>
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => setShowBatchImportModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-xs font-bold cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleBatchImport}
-                className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md shadow-cyan-500/20 flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Import & Publish Test</span>
-              </button>
-            </div>
           </div>
         </div>
       )}
-`
     </div>
   );
+
   };  const renderLeaderboard = () => {
     // 1. Filter raw leaderboard entries based on Branch, Year, Sem, Sec, and Search
     const filteredEntries = leaderboard.filter(entry => {
