@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Play, Briefcase, Zap, Brain, BookOpen, 
   Sparkles, Grid, Lightbulb, Star, Code2, Award, ChevronRight, ChevronLeft, X,
-  GraduationCap, Target, Users, Rocket, ExternalLink, Heart
+  GraduationCap, Target, Users, Rocket, ExternalLink, Heart,
+  CheckCircle2, Compass, Layers, ShieldCheck, Flame, Quote, Building2
 } from 'lucide-react';
 
 /* ─── ELEMENTAL NEXUS: FIRE GLOW & WATER FOUNTAIN VISUAL ─── */
@@ -596,80 +597,229 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
 
       {/* ─── FOUNDER'S JOURNEY MODAL ─── */}
       {showFounderJourneyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-[#0b0f19] border border-white/10 rounded-3xl max-w-xl w-full p-6 sm:p-8 relative shadow-2xl text-left max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-5 md:p-6 animate-fade-in">
+          <div className="bg-[#0b0f19] border border-purple-500/30 rounded-3xl max-w-2xl w-full p-5 sm:p-7 md:p-8 relative shadow-[0_0_60px_rgba(147,51,234,0.25)] text-left max-h-[92vh] overflow-y-auto space-y-6 custom-scrollbar">
             {/* Close Button */}
             <button 
               onClick={() => setShowFounderJourneyModal(false)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer z-10"
+              title="Close Story"
             >
               <X className="w-4 h-4" />
             </button>
 
-            {/* Header */}
-            <div className="flex items-center gap-4 border-b border-white/10 pb-5 mb-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 flex items-center justify-center shadow-xl">
+            {/* Header: Founder Identity */}
+            <div className="flex items-center gap-4 border-b border-white/10 pb-5 pr-10">
+              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 flex items-center justify-center shadow-xl shrink-0">
                 <div className="w-full h-full bg-[#070b14] rounded-[14px] flex items-center justify-center text-2xl font-black text-amber-300">
                   SS
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-black text-white">Shaik Sowban</h2>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black border border-amber-500/30">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-white">Shaik Sowban</h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black border border-amber-500/30 uppercase tracking-wider">
                     Founder & CEO
                   </span>
                 </div>
-                <p className="text-xs font-semibold text-purple-400">Creator of Lumixora & AI Placement Commander</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Kurnool, Andhra Pradesh • GPREC Alumnus</p>
+                <p className="text-xs sm:text-sm font-semibold text-purple-400 mt-0.5">
+                  Founder – Lumixora • A Product of Vyomra
+                </p>
+                <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-2">
+                  <span>B.Tech Scholar & Engineering Founder</span>
+                  <span>•</span>
+                  <span>Kurnool, Andhra Pradesh</span>
+                </p>
               </div>
             </div>
 
-            {/* Story / Mission */}
-            <div className="space-y-4 text-xs sm:text-sm text-gray-300 leading-relaxed">
-              <p>
-                <strong className="text-white">"Every student deserves an equal opportunity to land top-tier tech offers."</strong>
+            {/* Core Genesis Quote */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-purple-950/20 border border-purple-500/25">
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-wider mb-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>The Story Behind Lumixora</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white mb-2">
+                From a Vision to Building Something That Matters.
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 leading-relaxed italic">
+                “Every startup begins with a problem. Lumixora began with a question: <strong className="text-amber-300 font-semibold not-italic">What if students had everything they needed to prepare for their future in one place?</strong>”
               </p>
-              <p>
-                Lumixora was born from a simple realization: brilliant engineers in regional colleges often lack access to early placement radar, curated company-specific question sets, and real-time AI interview practice that metro students take for granted.
+              <p className="text-xs text-gray-400 leading-relaxed mt-2.5">
+                Students were juggling separate websites for coding, aptitude, communication, projects, internships, and placement preparation. Resources were scattered, guidance was inconsistent, and managing everything was exhausting. I wanted to build a unified ecosystem that changes that completely.
               </p>
-              <p>
-                Starting from college dorms and campus labs, Shaik designed and engineered the <strong className="text-purple-300">Lumixora Ecosystem</strong> — integrating 102 verified branch syllabi, 70M AI exam prediction models, direct recruiter drive roadmaps, and full-stack placement commander suites.
-              </p>
+            </div>
 
-              {/* Milestones */}
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2 mt-4">
-                <div className="text-[11px] font-black uppercase tracking-wider text-amber-400">Milestones & Impact</div>
-                <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-                  <div className="p-2.5 rounded-xl bg-black/30">
-                    <div className="font-black text-white text-base">450+</div>
-                    <div className="text-gray-400 text-[11px]">Active Scholars</div>
+            {/* 6-Stage Chronological Journey */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>The 6-Stage Journey</span>
+                </span>
+                <span className="text-[11px] text-gray-500 font-mono">2024 — Present</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* 01. An Idea */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-purple-500/20 text-purple-300 font-mono text-xs font-bold shrink-0">
+                    01
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">The Beginning – An Idea</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      Started by observing the day-to-day challenges faced by engineering students, including myself. Believing education must provide career certainty, not just marks.
+                    </p>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-black/30">
-                    <div className="font-black text-cyan-400 text-base">7+</div>
-                    <div className="text-gray-400 text-[11px]">Accredited Campuses</div>
+                </div>
+
+                {/* 02. Behind the Screens */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-indigo-500/20 text-indigo-300 font-mono text-xs font-bold shrink-0">
+                    02
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">Behind the Screens – Building Lumixora</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      Planning features, designing clean interfaces, late-night coding sessions, fixing bugs, and continuously rebuilding experiences until every module felt natural.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 03. Turning Ideas into Reality */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-cyan-500/20 text-cyan-300 font-mono text-xs font-bold shrink-0">
+                    03
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">Turning Ideas into Reality</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      Lumixora took shape as a student-focused super-platform: AI Placement Commander, SpeakVerse voice coach, 102 verified branch syllabi, and live TechPulse radar.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 04. Beyond One Person */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-amber-500/20 text-amber-300 font-mono text-xs font-bold shrink-0">
+                    04
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">Beyond One Person – Building a Team</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      A vision grows when passionate people unite. We brought together student interns, campus ambassadors, and contributors under Vyomra.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 05. From Screens to Students */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold shrink-0">
+                    05
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">From Screens to Students</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      The most fulfilling milestone: launching to real college students. Their daily practice, feedback, and success stories continue to shape what we engineer next.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 06. The Road Ahead */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-purple-500/30 transition-all flex items-start gap-3.5">
+                  <span className="px-2 py-1 rounded-md bg-rose-500/20 text-rose-300 font-mono text-xs font-bold shrink-0">
+                    06
+                  </span>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">The Road Ahead – A Bigger Vision</h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      Continuously evolving to make Tier-1 quality placement prep, communication coaching, and engineering mastery accessible to every student across India.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-              <button
-                onClick={() => {
-                  setShowFounderJourneyModal(false);
-                  if (onNavigateTab) onNavigateTab('ai-commander');
-                }}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <span>Explore AI Placement Commander</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+            {/* The Raw Challenges Behind The Journey */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+              <div className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                <span>The Challenges Behind The Journey</span>
+              </div>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                Building a startup while being a full-time engineering student is not easy. There were moments of uncertainty, technical roadblocks, ideas that needed radical pivots, features that had to be rebuilt from scratch, and academic responsibilities to balance. There was no perfect roadmap. I had to learn, experiment, make mistakes, and keep moving forward.
+              </p>
+              <p className="text-xs font-semibold text-white pt-1">
+                “Building something meaningful matters far more than waiting for the perfect moment to start.”
+              </p>
+            </div>
+
+            {/* Impact Milestones */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+              <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-center">
+                <div className="font-black text-white text-lg font-mono">450+</div>
+                <div className="text-gray-400 text-[10px] mt-0.5">Active Scholars</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-center">
+                <div className="font-black text-cyan-400 text-lg font-mono">102+</div>
+                <div className="text-gray-400 text-[10px] mt-0.5">Branch Syllabi</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-center">
+                <div className="font-black text-purple-400 text-lg font-mono">10+</div>
+                <div className="text-gray-400 text-[10px] mt-0.5">Career Portals</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-center">
+                <div className="font-black text-amber-400 text-lg font-mono">GPREC</div>
+                <div className="text-gray-400 text-[10px] mt-0.5">Autonomous Campus</div>
+              </div>
+            </div>
+
+            {/* Founder Direct Sign-off */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 flex items-start gap-3">
+              <Quote className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs sm:text-sm text-gray-200 italic leading-relaxed">
+                  “I started Lumixora not because I had everything figured out, but because I believed something better could be built. This is still the beginning. Every student who joins us, every problem we solve, and every improvement we make brings us one step closer to that vision.”
+                </p>
+                <div className="mt-2 text-xs font-black text-white">
+                  Shaik Sowban
+                  <span className="text-gray-400 font-normal ml-1.5">— Founder, Lumixora | A Product of Vyomra</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => {
+                    setShowFounderJourneyModal(false);
+                    if (onNavigateTab) onNavigateTab('ai-commander');
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Explore Placement Commander</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowFounderJourneyModal(false);
+                    if (onNavigateTab) onNavigateTab('speakverse');
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-purple-300 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Try SpeakVerse</span>
+                </button>
+              </div>
 
               <button
                 onClick={() => setShowFounderJourneyModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white font-bold text-xs transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white font-bold text-xs transition-all cursor-pointer"
               >
-                Close
+                Close Story
               </button>
             </div>
           </div>
@@ -773,35 +923,82 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
       )}
 
       {/* ─── THE JOURNEY OF INNOVATION (Founder's Vision Card) ─── */}
-      <div className="w-full glass-panel bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/40 dark:from-slate-900 dark:via-slate-900/95 dark:to-[#171b36] border border-white/80 dark:border-white/10 rounded-[28px] p-6 sm:p-7 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden flex flex-col justify-between mt-6">
-        <div>
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="w-1.5 h-6 rounded-full bg-purple-600 dark:bg-purple-500"></span>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-              The Journey of Innovation
-            </h2>
+      <div className="w-full glass-panel bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/50 dark:from-slate-900 dark:via-[#0e1424] dark:to-[#171b36] border border-slate-200/80 dark:border-white/10 rounded-[28px] p-6 sm:p-7 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden mt-6">
+        {/* Ambient atmospheric glows */}
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-purple-500/10 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          {/* Left Column: Authentic Founder Vision & Story */}
+          <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-between">
+            <div>
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 text-[11px] font-black uppercase tracking-wider mb-3.5">
+                <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                <span>Founder's Journey • Built by Students for Students</span>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-3">
+                The Journey of Innovation
+              </h2>
+
+              {/* Authentic Story Quote */}
+              <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm leading-relaxed mb-4 italic">
+                “Every startup begins with a problem. Lumixora began with a single question: <strong className="text-gray-900 dark:text-white font-semibold not-italic">What if students had everything they needed to prepare for their future in one place?</strong> As a B.Tech scholar, I saw brilliant engineering students juggling fragmented platforms for coding, aptitude, communication, and placement prep. Built through late-night coding sessions, testing, and continuous feedback, Lumixora was created to turn potential into career certainty.”
+              </p>
+
+              {/* Founder Signature Line */}
+              <div className="flex items-center gap-3 pt-1 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-0.5 flex items-center justify-center shrink-0 shadow-md">
+                  <div className="w-full h-full bg-[#0b0f19] rounded-[10px] flex items-center justify-center text-xs font-black text-amber-300">
+                    SS
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <span>Shaik Sowban</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20">Founder</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Lumixora • A Product of Vyomra
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button 
+                onClick={() => setShowFounderJourneyModal(true)}
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>Read Full Founder Story & Milestones</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
+              <button 
+                onClick={() => setShowJourneyVideoModal(true)}
+                className="px-4 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-200 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Play className="w-3 h-3 fill-current text-purple-600 dark:text-purple-400" />
+                <span>Watch Vision Demo</span>
+              </button>
+            </div>
           </div>
 
-          <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm leading-relaxed mb-6 italic pr-0 sm:pr-32 md:pr-48">
-            “Every great platform starts with a single problem. For Lumixora, it was the realization that learning shouldn't be a one-size-fits-all struggle. Built from late-night coding sessions and an unwavering belief in personalized education, our mission is to empower every student to reach their peak potential. Your journey to excellence starts here.”
-          </p>
+          {/* Right Column: 3D Innovation Book Artwork with soft ambient glow */}
+          <div className="md:col-span-5 lg:col-span-4 flex items-center justify-center relative">
+            <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-none flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 via-cyan-500/15 to-indigo-500/20 rounded-3xl blur-2xl -z-10 opacity-70" />
+              <img 
+                src="/dashboard_journey_book_fade.png" 
+                alt="Lumixora Open Book of Innovation" 
+                className="w-full max-h-52 md:max-h-56 object-contain pointer-events-none select-none transition-transform duration-500 hover:scale-105"
+              />
+            </div>
+          </div>
         </div>
-
-        <div className="flex items-center gap-4 pt-2 relative z-10">
-          <button 
-            onClick={() => setShowFounderJourneyModal(true)}
-            className="px-5 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Explore Founder Story</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <img 
-          src="/dashboard_journey_book_fade.png" 
-          alt="Lumixora Open Book of Innovation" 
-          className="hidden sm:block absolute right-0 bottom-0 max-h-36 sm:max-h-40 md:max-h-44 w-auto object-contain pointer-events-none select-none opacity-95 hover:opacity-100 transition-opacity"
-        />
       </div>
     </div>
   );

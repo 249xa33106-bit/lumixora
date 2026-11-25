@@ -323,8 +323,19 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
                 pronunciation: metrics.pronunciationScore,
                 grammar: metrics.grammarScore
               });
+              
+              let storedUser = null;
+              try {
+                storedUser = JSON.parse(localStorage.getItem('lumixora_current_user') || localStorage.getItem('user') || localStorage.getItem('gprec_student_profile') || '{}');
+              } catch (_) {}
+
+              const activeUser = {
+                ...(storedUser || {}),
+                ...(user || {})
+              };
+
               generateSpeakVerseCEFRCertificatePDF({
-                user,
+                user: activeUser,
                 metrics,
                 cdiScore: (metrics.sessionsCount > 0 || metrics.fluencyScore > 0) ? cdi : (metrics.overallScore || 0)
               });
