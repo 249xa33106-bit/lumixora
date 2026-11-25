@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Code2, Activity, Settings2, RefreshCw, Maximize, X, Map, BookOpen, Atom } from 'lucide-react';
+import { PlayCircle, Code2, Activity, Settings2, RefreshCw, Maximize, X, Map, BookOpen, Atom, Cpu, Zap, Compass, Brain, Sparkles, Layers } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import PathfindingVisualizer from '../components/PathfindingVisualizer';
 import QuantumGateSimulator from '../components/QuantumGateSimulator';
+import CpuPipeline3DLab from '../components/labs/CpuPipeline3DLab';
+import VirtualBreadboard3DLab from '../components/labs/VirtualBreadboard3DLab';
+import MechanicalTruss3DLab from '../components/labs/MechanicalTruss3DLab';
+import NeuralNetwork3DLab from '../components/labs/NeuralNetwork3DLab';
 import { ALGORITHM_LIBRARY } from '../data/algorithmLibraryData';
 
 const TEMPLATES = {
