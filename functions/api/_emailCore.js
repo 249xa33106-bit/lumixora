@@ -351,6 +351,7 @@ export async function sendLumixoraEmail({
         headers: {
           'X-Mailin-Tag': tags[0] || 'transactional',
           'X-Entity-Ref-ID': 'lmx_' + Date.now(),
+          'X-Mailin-Track-Click': '0',
           ...(isPromotional ? { 'List-Unsubscribe': `<mailto:unsubscribe@lumixora.in>, <https://lumixora.in/unsubscribe?email=${encodeURIComponent(recipientEmail)}>` } : {})
         }
       });
