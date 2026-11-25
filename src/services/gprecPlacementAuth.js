@@ -150,10 +150,10 @@ export async function syncCustomRollsFromCloud() {
     const map = new Map();
     local.forEach(item => {
       const r = typeof item === 'string' ? normalizeRollNumber(item) : normalizeRollNumber(item.rollNumber);
-      if (r && GPREC_ALLOWED_ROLL_NUMBERS.includes(r)) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
+      if (r) map.set(r, typeof item === 'string' ? { rollNumber: r } : item);
     });
     cloudRolls.forEach(c => {
-      if (GPREC_ALLOWED_ROLL_NUMBERS.includes(c.rollNumber)) {
+      if (c.rollNumber) {
         map.set(c.rollNumber, c);
       }
     });
@@ -271,7 +271,7 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
   // 1. Write directly to REAL Supabase database (founder_notifications table)
   try {
     if (supabase) {
-      await supabase.from('founder_notifications').insert([{
+      const { error: supaErr } = await supabase.from('founder_notifications').insert([{
         type: 'gprec_whitelisted_scholar',
         title: `GPREC Whitelisted Scholar: ${rollUpper}`,
         message: `Founder whitelisted scholar ${rollUpper} (${scholarName}) for placement suite access.`,
@@ -288,6 +288,10 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
         read: false
       }]);
 
+      if (supaErr) {
+        console.error('Supabase cloud insert failed:', supaErr);
+      }
+
       // 2. Also register or approve user in Supabase users table
       await supabase.from('users').update({
         roll_number: rollUpper,
@@ -298,7 +302,7 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
       }).ilike('email', email);
     }
   } catch (err) {
-    console.warn('Supabase real cloud write error:', err);
+    console.error('Supabase real cloud write error:', err);
   }
 
   return newEntry;
