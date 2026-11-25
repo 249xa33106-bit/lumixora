@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Code2, Activity, Settings2, RefreshCw, Maximize, X, Map, BookOpen, Atom, Cpu, Zap, Compass, Brain, Sparkles, Layers } from 'lucide-react';
+import { 
+  PlayCircle, Code2, Activity, Settings2, RefreshCw, Maximize, X, Map, BookOpen, 
+  Atom, Cpu, Zap, Compass, Brain, Sparkles, Layers, CircuitBoard, Wrench, Radio, Filter,
+  ChevronRight, CheckCircle2, Shield
+} from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import PathfindingVisualizer from '../components/PathfindingVisualizer';
 import QuantumGateSimulator from '../components/QuantumGateSimulator';
@@ -16,8 +20,117 @@ const TEMPLATES = {
   'js': 'function factorial(n) {\n    if (n === 0) return 1;\n    return n * factorial(n - 1);\n}\n\nlet result = factorial(5);\nconsole.log(result);'
 };
 
-const SimulationPortal = () => {
-  const [activeTab, setActiveTab] = useState('visualizer'); // 'visualizer' or 'simulator'
+const SimulationPortal = ({ user = null }) => {
+  const [activeTab, setActiveTab] = useState('visualizer');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('all');
+
+  // Smart Branch Auto-Selection based on Scholar's Department
+  useEffect(() => {
+    let resolvedUser = user;
+    if (!resolvedUser) {
+      try {
+        resolvedUser = JSON.parse(localStorage.getItem('lumixora_current_user') || localStorage.getItem('user') || localStorage.getItem('gprec_student_profile') || '{}');
+      } catch (_) {}
+    }
+    const dept = (resolvedUser?.department || resolvedUser?.branch || '').toUpperCase();
+    if (dept.includes('ECE') || dept.includes('EEE')) {
+      setSelectedBranchFilter('ece');
+      setActiveTab('breadboard');
+    } else if (dept.includes('MECH') || dept.includes('CIVIL')) {
+      setSelectedBranchFilter('mech');
+      setActiveTab('mechanical-truss');
+    } else if (dept.includes('AI') || dept.includes('DS') || dept.includes('CSM') || dept.includes('CSD') || dept.includes('AIDS')) {
+      setSelectedBranchFilter('ai');
+      setActiveTab('neural-net');
+    }
+  }, [user]);
+
+  const LAB_DEFINITIONS = [
+    {
+      id: 'visualizer',
+      title: 'Code Execution Visualizer',
+      branch: 'cse',
+      branchLabel: 'CSE / IT / Core',
+      badgeColor: 'text-amber-300 border-amber-500/30 bg-amber-500/10',
+      activeColor: 'bg-brand-blue text-black font-bold shadow-lg shadow-brand-blue/20',
+      icon: Code2,
+      subtitle: 'Python, Java, C++, JS Heap & Stack Step-Through'
+    },
+    {
+      id: 'simulator',
+      title: 'Array Algorithms & Search',
+      branch: 'cse',
+      branchLabel: 'CSE / DSA',
+      badgeColor: 'text-purple-300 border-purple-500/30 bg-purple-500/10',
+      activeColor: 'bg-purple-500 text-white shadow-lg shadow-purple-500/20',
+      icon: Settings2,
+      subtitle: 'Sorting, Searching & Big-O Asymptotic Analysis'
+    },
+    {
+      id: 'pathfinding',
+      title: 'Pathfinding Grid (Graph)',
+      branch: 'cse',
+      branchLabel: 'CSE / AI',
+      badgeColor: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10',
+      activeColor: 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20',
+      icon: Map,
+      subtitle: 'A*, Dijkstra, BFS, DFS Interactive Maze & Graph Solver'
+    },
+    {
+      id: 'breadboard',
+      title: 'Virtual 3D Breadboard Lab',
+      branch: 'ece',
+      branchLabel: 'ECE / EEE',
+      badgeColor: 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10',
+      activeColor: 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20',
+      icon: CircuitBoard,
+      subtitle: '3D Breadboard, LEDs, 555 Timers, Logic Gates & Oscilloscope'
+    },
+    {
+      id: 'cpu-pipeline',
+      title: 'CPU 5-Stage Pipeline 3D',
+      branch: 'ece',
+      branchLabel: 'ECE / CSE',
+      badgeColor: 'text-blue-300 border-blue-500/30 bg-blue-500/10',
+      activeColor: 'bg-blue-600 text-white shadow-lg shadow-blue-600/20',
+      icon: Cpu,
+      subtitle: 'RISC Instruction Pipeline, Data Hazards & Register Clocking'
+    },
+    {
+      id: 'mechanical-truss',
+      title: 'Mechanical Truss & FEA 3D',
+      branch: 'mech',
+      branchLabel: 'MECH / CIVIL',
+      badgeColor: 'text-orange-300 border-orange-500/30 bg-orange-500/10',
+      activeColor: 'bg-orange-500 text-white shadow-lg shadow-orange-500/20',
+      icon: Wrench,
+      subtitle: 'Bridge Trusses, Joint Forces, Tension/Compression & FEA Stress'
+    },
+    {
+      id: 'neural-net',
+      title: 'Neural Network 3D Lab',
+      branch: 'ai',
+      branchLabel: 'AI / DS',
+      badgeColor: 'text-pink-300 border-pink-500/30 bg-pink-500/10',
+      activeColor: 'bg-pink-600 text-white shadow-lg shadow-pink-600/20',
+      icon: Brain,
+      subtitle: 'Multi-Layer Perceptron, Forward/Backprop & Loss Surfaces'
+    },
+    {
+      id: 'quantum',
+      title: 'IQTA Quantum Gate Lab',
+      branch: 'quantum',
+      branchLabel: 'Quantum / Physics',
+      badgeColor: 'text-indigo-300 border-indigo-500/30 bg-indigo-500/10',
+      activeColor: 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20',
+      icon: Atom,
+      subtitle: 'Qubits, Superposition, Pauli-X, Hadamard & CNOT Gates'
+    }
+  ];
+
+  const filteredLabs = selectedBranchFilter === 'all'
+    ? LAB_DEFINITIONS
+    : LAB_DEFINITIONS.filter(l => l.branch === selectedBranchFilter);
   
   // Custom Visualizer State
   const [language, setLanguage] = useState('3'); // 3 for Python 3
@@ -634,6 +747,34 @@ const SimulationPortal = () => {
       {/* IQTA Quantum Simulator Tab */}
       {activeTab === 'quantum' && (
         <QuantumGateSimulator />
+      )}
+
+      {/* Virtual 3D Breadboard & Circuits Lab (ECE / EEE) */}
+      {activeTab === 'breadboard' && (
+        <div className="space-y-4 animate-fade-in">
+          <VirtualBreadboard3DLab />
+        </div>
+      )}
+
+      {/* CPU 5-Stage Pipeline 3D Lab (ECE / CSE / Microarchitecture) */}
+      {activeTab === 'cpu-pipeline' && (
+        <div className="space-y-4 animate-fade-in">
+          <CpuPipeline3DLab />
+        </div>
+      )}
+
+      {/* Mechanical Truss & FEA 3D Lab (MECH / CIVIL Structures) */}
+      {activeTab === 'mechanical-truss' && (
+        <div className="space-y-4 animate-fade-in">
+          <MechanicalTruss3DLab />
+        </div>
+      )}
+
+      {/* Neural Network 3D Architecture Lab (AI / ML / Data Science) */}
+      {activeTab === 'neural-net' && (
+        <div className="space-y-4 animate-fade-in">
+          <NeuralNetwork3DLab />
+        </div>
       )}
     </div>
   );

@@ -1525,7 +1525,7 @@ function App() {
         return <AptitudeArena user={user} isFounder={user?.role === 'founder'} />;
       case 'simulations':
       case 'simulation':
-        return <SimulationPortal />;
+        return <SimulationPortal user={user} />;
       case 'contribute':
       case 'notes-contribute':
       case 'contribute-notes':
