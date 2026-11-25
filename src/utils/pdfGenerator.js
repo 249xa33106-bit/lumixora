@@ -1167,6 +1167,216 @@ export const generateMockInterviewDiagnosticPDF = ({
   doc.save(`${safeComp}_Mock_Interview_Diagnostic_${safeName}.pdf`);
 };
 
+// ── 📄 OFFICIAL CLASS ATTENDANCE & CONDONATION EXEMPTION PDF ──
+export const generateClassAttendanceCondonationPDF = ({
+  studentName = 'Scholar',
+  rollNumber = 'N/A',
+  branch = 'Computer Science & Engineering',
+  semester = '3-1',
+  subjects = [],
+  targetPercentage = 75,
+  overallStats = {}
+}) => {
+  const doc = new jsPDF({ orientation: 'portrait' });
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+
+  // 1. Header Banner
+  doc.setFillColor(15, 23, 42); // Slate 900
+  doc.rect(0, 0, pageWidth, 32, 'F');
+
+  // Accent Line
+  doc.setFillColor(0, 245, 212); // Teal
+  doc.rect(0, 32, pageWidth, 2.5, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('LUMIXORA UNIVERSITY ACADEMIC COUNCIL', pageWidth / 2, 13, { align: 'center' });
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(148, 163, 184); // Slate 400
+  doc.text('OFFICIAL SEMESTER ATTENDANCE AUDIT & CONDONATION APPLICATION', pageWidth / 2, 20, { align: 'center' });
+  doc.text('Regulation Clause 4.2 · Minimum 75% Examination Attendance Threshold', pageWidth / 2, 26, { align: 'center' });
+
+  // 2. Student Metadata Box
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(14, 40, pageWidth - 28, 28, 3, 3, 'FD');
+
+  doc.setTextColor(51, 65, 85);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('STUDENT CREDENTIALS & AUDIT METADATA', 18, 47);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+
+  const col1X = 18;
+  const col2X = 80;
+  const col3X = 145;
+
+  doc.text(`Student Name: ${studentName}`, col1X, 54);
+  doc.text(`Roll Number: ${rollNumber}`, col1X, 61);
+
+  doc.text(`Branch: ${branch}`, col2X, 54);
+  doc.text(`Semester: ${semester}`, col2X, 61);
+
+  doc.text(`Audit Date: ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`, col3X, 54);
+  doc.text(`Target Threshold: ${targetPercentage}% Mandatory`, col3X, 61);
+
+  // 3. Subject-wise Ledger Table
+  const tableRows = subjects.map((sub, idx) => {
+    const conducted = sub.total || 0;
+    const attended = sub.attended || 0;
+    const od = (sub.odCount || 0) + (sub.mlCount || 0);
+    const rawPct = conducted > 0 ? Math.round((attended / conducted) * 100) : 100;
+    const effectiveAttended = attended + od;
+    const effectivePct = conducted > 0 ? Math.min(100, Math.round((effectiveAttended / conducted) * 100)) : 100;
+    
+    let statusText = 'Eligible (Safe)';
+    if (effectivePct < 65) statusText = 'Critical Shortage';
+    else if (effectivePct < 75) statusText = 'Condonation Rec.';
+
+    return [
+      idx + 1,
+      sub.code || `SUB${idx + 1}`,
+      sub.name,
+      conducted,
+      attended,
+      od,
+      `${rawPct}%`,
+      `${effectivePct}%`,
+      statusText
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 74,
+    head: [[
+      '#',
+      'Code',
+      'Subject Title',
+      'Held',
+      'Att.',
+      'OD/ML',
+      'Raw %',
+      'Eff. %',
+      'Exam Status'
+    ]],
+    body: tableRows,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [15, 23, 42],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: 8,
+      halign: 'center'
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [51, 65, 85]
+    },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+      2: { cellWidth: 55 },
+      3: { cellWidth: 14, halign: 'center' },
+      4: { cellWidth: 14, halign: 'center' },
+      5: { cellWidth: 16, halign: 'center' },
+      6: { cellWidth: 16, halign: 'center' },
+      7: { cellWidth: 16, halign: 'center', fontStyle: 'bold' },
+      8: { cellWidth: 'auto', halign: 'center', fontStyle: 'bold' }
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252]
+    }
+  });
+
+  let currentY = doc.lastAutoTable.finalY + 8;
+
+  // 4. Cumulative Summary Box
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(203, 213, 225);
+  doc.roundedRect(14, currentY, pageWidth - 28, 30, 2.5, 2.5, 'FD');
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text('CUMULATIVE SCRUTINY & CONDONATION ASSESSMENT', 18, currentY + 7);
+
+  const rawAggregate = overallStats.overallPct || 0;
+  const isCondonationZone = rawAggregate >= 65 && rawAggregate < 75;
+  const isDetentionZone = rawAggregate < 65;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Total Classes Conducted: ${overallStats.totalClasses || 0}`, 18, currentY + 14);
+  doc.text(`Classes Attended (Regular): ${overallStats.totalAttended || 0}`, 18, currentY + 20);
+  doc.text(`Aggregate Raw Attendance: ${rawAggregate}%`, 18, currentY + 26);
+
+  doc.text(`Target Minimum Requirement: ${targetPercentage}%`, 85, currentY + 14);
+  doc.text(`Shortfall Classes to Reach 75%: ${overallStats.classesRequiredTotal || 0} classes`, 85, currentY + 20);
+  doc.text(`Buffer Safe Bunks Available: ${overallStats.safeBunksTotal || 0} classes`, 85, currentY + 26);
+
+  doc.setFont('helvetica', 'bold');
+  if (isDetentionZone) {
+    doc.setTextColor(225, 29, 72);
+    doc.text('ASSESSMENT: Critical Shortage (<65%)', 145, currentY + 14);
+    doc.text('Detention Scrutiny Required', 145, currentY + 20);
+  } else if (isCondonationZone) {
+    doc.setTextColor(217, 119, 6);
+    doc.text('ASSESSMENT: Condonation Zone (65-74%)', 145, currentY + 14);
+    doc.text('Statutory Condonation Fee: Rs. 500', 145, currentY + 20);
+    doc.text('Medical/OD Docs Required', 145, currentY + 26);
+  } else {
+    doc.setTextColor(16, 185, 129);
+    doc.text('ASSESSMENT: Unconditionally Eligible', 145, currentY + 14);
+    doc.text('No Condonation Required (Safe Zone)', 145, currentY + 20);
+  }
+
+  currentY += 38;
+
+  // 5. Undertaking Text
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  const undertaking = 'Candidate Declaration: I hereby declare that the attendance records, Medical Certificates (MC), and On-Duty (OD) representations submitted in this application are authentic. I understand that falsification will lead to immediate cancellation of examination hall-ticket and disciplinary action under university ordinances.';
+  doc.text(undertaking, 14, currentY, { maxWidth: pageWidth - 28 });
+
+  currentY += 16;
+
+  // 6. Signatures
+  const sigY = Math.min(pageHeight - 20, currentY + 12);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 41, 59);
+
+  doc.line(16, sigY, 56, sigY);
+  doc.text('Student Signature', 22, sigY + 5);
+
+  doc.line(64, sigY, 104, sigY);
+  doc.text('Faculty Proctor', 70, sigY + 5);
+
+  doc.line(112, sigY, 152, sigY);
+  doc.text('Head of Department (HOD)', 114, sigY + 5);
+
+  doc.line(160, sigY, 196, sigY);
+  doc.text('Dean / Principal Seal', 164, sigY + 5);
+
+  // Footer
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Generated on ${new Date().toLocaleString()} · Lumixora Institutional Academic Command OS`, 14, pageHeight - 6);
+  doc.text(`Official Document ID: ATT-DOC-${Date.now().toString(36).toUpperCase()}`, pageWidth - 14, pageHeight - 6, { align: 'right' });
+
+  const safeRoll = (rollNumber || 'Record').replace(/[^a-zA-Z0-9_-]/g, '_');
+  doc.save(`Attendance_Condonation_Report_${safeRoll}.pdf`);
+};
+
 
 
 
