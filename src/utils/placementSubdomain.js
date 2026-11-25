@@ -22,6 +22,17 @@ export function isTpoSubdomain() {
   const search = (window.location.search || '').toLowerCase();
   const hash = (window.location.hash || '').toLowerCase();
 
+  // Strict domain isolation: campus subdomain is NEVER TPO Subdomain!
+  if (
+    hostname.startsWith('campus.') ||
+    hostname.includes('campus.lumixora') ||
+    search.includes('subdomain=campus') ||
+    pathname.startsWith('/campus') ||
+    hash.startsWith('#campus')
+  ) {
+    return false;
+  }
+
   // Strict domain isolation: gprec.lumixora.in is ALWAYS the GPREC Placement Suite, NEVER TPO Subdomain!
   if (
     hostname.startsWith('gprec.') ||
@@ -75,13 +86,24 @@ export function isTpoSubdomain() {
 export function isGprecPlacementSubdomain(user = null) {
   if (typeof window === 'undefined') return false;
 
-  // If on tpo.lumixora.in, it is inherently part of the institutional placement ecosystem
-  if (isTpoSubdomain()) return true;
-
   const hostname = (window.location.hostname || '').toLowerCase();
   const pathname = (window.location.pathname || '').toLowerCase();
   const search = (window.location.search || '').toLowerCase();
   const hash = (window.location.hash || '').toLowerCase();
+
+  // Strict domain isolation: campus subdomain is NEVER GPREC Placement Subdomain!
+  if (
+    hostname.startsWith('campus.') ||
+    hostname.includes('campus.lumixora') ||
+    search.includes('subdomain=campus') ||
+    pathname.startsWith('/campus') ||
+    hash.startsWith('#campus')
+  ) {
+    return false;
+  }
+
+  // If on tpo.lumixora.in, it is inherently part of the institutional placement ecosystem
+  if (isTpoSubdomain()) return true;
 
   // 1. Hostname detection (e.g. gprec.lumixora.in, gpreclumixora.in, gprec-lumixora, gprec.lumixora.pages.dev)
   if (

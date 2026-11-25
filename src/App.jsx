@@ -79,7 +79,12 @@ import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
 const GprecTpoPortal = lazyWithRetry(() => import('./pages/GprecTpoPortal'));
 const StudentPlacementDatabase = lazyWithRetry(() => import('./pages/StudentPlacementDatabase'));
 import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
+import { isCampusSubdomain } from './utils/campusSubdomain';
+import { getStoredCampusProfile, logoutCampusScholar } from './services/campusAuthService';
 const TpoPortalLanding = lazyWithRetry(() => import('./pages/TpoPortalLanding'));
+const CampusPlacementLanding = lazyWithRetry(() => import('./components/CampusPlacementLanding'));
+import CampusPlacementLoginModal from './components/CampusPlacementLoginModal';
+const CampusPlacementCommander = lazyWithRetry(() => import('./pages/CampusPlacementCommander'));
 
 
 // Instant silent Suspense Fallback (Zero loading screen, instant render)
@@ -102,6 +107,13 @@ function App() {
           if (['tpo-dashboard', 'student-database', 'student-placement-db', 'placement-database', 'faculty-portal', 'contact', 'report-bug'].includes(hash)) return hash;
         }
         return 'tpo-dashboard';
+      }
+      if (isCampusSubdomain()) {
+        if (window.location.hash) {
+          const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase().split('/')[0];
+          if (hash) return hash;
+        }
+        return 'campus-commander';
       }
       if (isGprecPlacementSubdomain()) {
         if (window.location.hash) {
@@ -165,6 +177,12 @@ function App() {
   });
 
   const [user, setUser] = useState(() => {
+    if (isCampusSubdomain()) {
+      const campusProfile = getStoredCampusProfile();
+      if (campusProfile && (campusProfile.email || campusProfile.name)) {
+        return campusProfile;
+      }
+    }
     const saved = localStorage.getItem('lumixora_user');
     if (saved) {
       try {
@@ -180,6 +198,7 @@ function App() {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(null); // null, 'student', or 'faculty'
   const [showGprecLogin, setShowGprecLogin] = useState(false);
+  const [showCampusLogin, setShowCampusLogin] = useState(false);
   const [showFounderLogin, setShowFounderLogin] = useState(false);
   const [gprecLoginRole, setGprecLoginRole] = useState(isTpoSubdomain() ? 'officer' : 'student');
 
@@ -311,8 +330,8 @@ function App() {
       const tourDone = localStorage.getItem(tourKey);
       const isFounder = user.role === 'founder' || user.email?.toLowerCase() === 'founder@lumixora.com';
       
-      // Never show generic tour on GPREC placement or TPO subdomain
-      if (isGprecPlacementSubdomain()) {
+      // Never show generic tour on GPREC placement, Campus, or TPO subdomain
+      if (isGprecPlacementSubdomain() || isCampusSubdomain()) {
         if (userId) {
           localStorage.setItem(`lumixora_tour_completed_${userId}`, 'true');
         }
@@ -1180,24 +1199,26 @@ function App() {
   const handleLogin = (userData) => {
     if (!userData) return;
 
-    const accessStatus = checkUserAccessStatus(userData);
-    if (!accessStatus.allowed) {
-      console.warn("[Security Gate] handleLogin rejected unauthorized user:", userData.email, accessStatus.reason);
-      setUser(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem('lumixora_user');
-      localStorage.removeItem('lumixora_isAuthenticated');
-      try { signOut(auth); } catch (e) {}
-      try { supabase.auth.signOut(); } catch (e) {}
-      setLockedAccountInfo({
-        email: userData.email,
-        name: cleanScholarName(userData.name || userData.displayName),
-        role: userData.role || 'faculty',
-        department: userData.department || userData.branch || 'CSE',
-        reason: accessStatus.reason,
-        message: accessStatus.message
-      });
-      return;
+    if (!isCampusSubdomain() && !userData?.isCampusScholar) {
+      const accessStatus = checkUserAccessStatus(userData);
+      if (!accessStatus.allowed) {
+        console.warn("[Security Gate] handleLogin rejected unauthorized user:", userData.email, accessStatus.reason);
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem('lumixora_user');
+        localStorage.removeItem('lumixora_isAuthenticated');
+        try { signOut(auth); } catch (e) {}
+        try { supabase.auth.signOut(); } catch (e) {}
+        setLockedAccountInfo({
+          email: userData.email,
+          name: cleanScholarName(userData.name || userData.displayName),
+          role: userData.role || 'faculty',
+          department: userData.department || userData.branch || 'CSE',
+          reason: accessStatus.reason,
+          message: accessStatus.message
+        });
+        return;
+      }
     }
 
     const email = (userData?.email || '').toLowerCase().trim();
@@ -1235,6 +1256,9 @@ function App() {
     } else if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in' || finalizedUser?.email === 'srikanth.csm@gprec.ac.in') {
       setActiveTab('tpo-dashboard');
       window.location.hash = 'tpo-dashboard';
+    } else if (isCampusSubdomain()) {
+      setActiveTab('campus-commander');
+      window.location.hash = 'campus-commander';
     } else if (isGprecPlacementSubdomain()) {
       setActiveTab('ai-commander');
       window.location.hash = 'ai-commander';
@@ -1249,6 +1273,7 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    logoutCampusScholar();
     signOut(auth).catch((err) => console.warn("Firebase signout error:", err));
   };
 
@@ -1256,6 +1281,10 @@ function App() {
     const isF = user?.role === 'founder' || user?.email?.toLowerCase() === 'founder@lumixora.com';
     if (isF && (activeTab === 'founder-portal' || activeTab === 'founder-audit' || activeTab === 'logins')) {
       return <FounderPortal user={user} setActiveTab={handleTabChange} />;
+    }
+
+    if (isCampusSubdomain()) {
+      return <CampusPlacementCommander user={user} setActiveTab={handleTabChange} onLogout={handleLogout} />;
     }
 
     if (isGprecPlacementSubdomain() && !isAllowedGprecPlacementTab(activeTab)) {
@@ -1384,6 +1413,9 @@ function App() {
             case 'dashboard':
         const isOff = user?.isOfficer || user?.isDean || user?.email === 'dean.placements@gprec.ac.in' || user?.email === 'srikanth.csm@gprec.ac.in';
         if (isOff) return <GprecTpoPortal user={user} setActiveTab={handleTabChange} />;
+        if (isCampusSubdomain()) {
+          return <CampusPlacementCommander user={user} setActiveTab={handleTabChange} onLogout={handleLogout} />;
+        }
         if (isGprecPlacementSubdomain()) {
           return <AiPlacementCommander user={user} setActiveTab={handleTabChange} />;
         }
@@ -1604,7 +1636,7 @@ function App() {
     }
   };
 
-  if (lockedAccountInfo) {
+  if (lockedAccountInfo && !isCampusSubdomain()) {
     return (
       <ThemeProvider>
         <ToastProvider>
@@ -1933,6 +1965,36 @@ function App() {
       );
     }
 
+    // Campus Universal Placement Suite Landing Page (when visiting campus.lumixora.in without being logged in)
+    if (isCampusSubdomain()) {
+      return (
+        <ThemeProvider>
+          <ToastProvider>
+            <CursorGlow />
+            <Suspense fallback={<PortalFallback />}>
+              <CampusPlacementLanding
+                onEnterPortal={(portalId) => {
+                  setShowCampusLogin(true);
+                }}
+                onLoginClick={() => {
+                  setShowCampusLogin(true);
+                }}
+              />
+            </Suspense>
+            <CampusPlacementLoginModal
+              isOpen={showCampusLogin}
+              onClose={() => setShowCampusLogin(false)}
+              onLoginSuccess={(verifiedUser) => {
+                setShowCampusLogin(false);
+                handleLogin(verifiedUser);
+              }}
+            />
+            {renderUpdateModal()}
+          </ToastProvider>
+        </ThemeProvider>
+      );
+    }
+
     // GPREC Placement Suite Landing Page (when visiting gprec.lumixora.in without being logged in)
     if (isGprecPlacementSubdomain()) {
       return (
@@ -1997,7 +2059,7 @@ function App() {
 
 
   // ZERO-TOLERANCE SECURITY GATE: Completely block mounting or rendering of any workspace/data if unpaid
-  if (user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern) {
+  if (user && !isExemptFromPayment(user) && !hasPaidCollegeFee(user) && user?.role !== 'intern' && !user?.isIntern && !isCampusSubdomain()) {
     return (
       <ThemeProvider>
         <ToastProvider>
@@ -2034,7 +2096,7 @@ function App() {
         {renderLockedAccountModal()}
         <GamificationProvider user={user} activeTab={activeTab}>
           <DataProvider>
-            {showIntro && !isGprecPlacementSubdomain(user) && (
+            {showIntro && !isGprecPlacementSubdomain(user) && !isCampusSubdomain() && (
               <CinematicIntro onComplete={() => setShowIntro(false)} />
             )}
             <CursorCompanionModal
@@ -2057,7 +2119,7 @@ function App() {
                 } catch (e) {}
               }}
             />
-            {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && (
+            {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && !isCampusSubdomain() && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
             {(user?.role === 'intern' || user?.isIntern) ? (
@@ -2090,6 +2152,14 @@ function App() {
                   embedded={false} 
                 />
               </Suspense>
+            ) : isCampusSubdomain() ? (
+              <Suspense fallback={<PortalFallback />}>
+                <CampusPlacementCommander 
+                  user={user} 
+                  setActiveTab={handleTabChange} 
+                  onLogout={handleLogout} 
+                />
+              </Suspense>
             ) : (
               <MainLayout activeTab={activeTab} setActiveTab={handleTabChange} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onExitApp={() => setShowExitModal(true)}>
                 <Suspense fallback={<PortalFallback />}>
@@ -2099,10 +2169,10 @@ function App() {
             )}
             {renderUpdateModal()}
             {renderExitModal()}
-            {!isGprecPlacementSubdomain(user) && (
+            {!isGprecPlacementSubdomain(user) && !isCampusSubdomain() && (
               <PlatformTourModal isOpen={showTour} onClose={handleCloseTour} onNavigateTab={handleTabChange} user={user} />
             )}
-            {!isGprecPlacementSubdomain(user) && (
+            {!isGprecPlacementSubdomain(user) && !isCampusSubdomain() && (
               <StudentOnboardingModal
                 isOpen={showOnboarding}
                 onClose={() => handleDismissOnboarding()}
