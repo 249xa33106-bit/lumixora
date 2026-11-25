@@ -317,7 +317,18 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
                 if (subMode) setCoachLabsSubMode(subMode);
               }
             }}
-            onDownloadCertificate={() => generateSpeakVerseCEFRCertificatePDF(user, metrics)}
+            onDownloadCertificate={() => {
+              const cdi = calculateCDI({
+                fluency: metrics.fluencyScore,
+                pronunciation: metrics.pronunciationScore,
+                grammar: metrics.grammarScore
+              });
+              generateSpeakVerseCEFRCertificatePDF({
+                user,
+                metrics,
+                cdiScore: (metrics.sessionsCount > 0 || metrics.fluencyScore > 0) ? cdi : (metrics.overallScore || 0)
+              });
+            }}
           />
         )}
 
