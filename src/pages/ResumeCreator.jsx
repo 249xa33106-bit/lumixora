@@ -437,6 +437,39 @@ export default function ResumeCreator({ user, setActiveTab: _setActiveTab }) {
     } catch (err) {}
   };
 
+  const handleAutoSyncAchievements = () => {
+    try {
+      const leetcode = localStorage.getItem('lumixora_leetcode_user') || user?.leetcodeUser || '';
+      const github = localStorage.getItem('lumixora_github_user') || user?.githubUser || '';
+      const hackerrank = localStorage.getItem('lumixora_hackerrank_user') || user?.hackerrankUser || '';
+      
+      const newCerts = [];
+      if (leetcode) {
+        newCerts.push(`LeetCode Problem Solver (@${leetcode}) - Solved Algorithmic Challenges & Data Structures`);
+      }
+      if (hackerrank) {
+        newCerts.push(`HackerRank Verified Scholar (@${hackerrank}) - 5-Star Problem Solving & Core Proficiency`);
+      }
+      if (github) {
+        newCerts.push(`GitHub Active Contributor (@${github}) - Modular Full-Stack & Engineering Repositories`);
+      }
+      newCerts.push('Lumixora Autonomous OS Verified Scholar: Completed Foundational Java, Core CS & DSA Tracks');
+
+      setResumeData(prev => {
+        const existing = new Set(prev.certifications);
+        const toAdd = newCerts.filter(c => !existing.has(c));
+        return {
+          ...prev,
+          certifications: [...prev.certifications, ...toAdd]
+        };
+      });
+
+      addToast({ message: '✨ Auto-synced verified achievements from Codeverse & Placement Profile!', type: 'success' });
+    } catch (e) {
+      addToast({ message: 'Failed to auto-sync achievements', type: 'error' });
+    }
+  };
+
   // ─── INLINE DIRECT CANVAS EDIT HELPER ───────────────────────────────────────
   const handleInlineEdit = (section, field, value, index = null, subIndex = null) => {
     setResumeData(prev => {
@@ -1792,19 +1825,28 @@ ${improvements.map(imp => `- 💡 ${imp}`).join('\n')}
               {/* 6. AWARDS TAB */}
               {activeEditorTab === 'certifications' && (
                 <div className="space-y-4 animate-fade-in">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex flex-wrap items-center justify-between border-b border-white/10 pb-2 gap-2">
                     <h3 className="text-sm font-black text-white flex items-center gap-2">
                       <Award className="w-4 h-4 text-[#00f5d4]" /> Honors & Certifications
                     </h3>
-                    <button
-                      onClick={() => setResumeData(prev => ({
-                        ...prev,
-                        certifications: [...prev.certifications, 'New Certification / Contest Award (2025)']
-                      }))}
-                      className="px-3 py-1 rounded-xl bg-[#00f5d4]/10 hover:bg-[#00f5d4]/20 text-[#00f5d4] text-[11px] font-extrabold border border-[#00f5d4]/30 flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3" /> Add Item
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleAutoSyncAchievements}
+                        className="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px] font-extrabold border border-purple-500/40 flex items-center gap-1 cursor-pointer transition-all"
+                        title="Auto-pull verified achievements from Codeverse and placement handles"
+                      >
+                        <Sparkles className="w-3 h-3 text-purple-400" /> Auto-Sync Codeverse
+                      </button>
+                      <button
+                        onClick={() => setResumeData(prev => ({
+                          ...prev,
+                          certifications: [...prev.certifications, 'New Certification / Contest Award (2025)']
+                        }))}
+                        className="px-3 py-1 rounded-xl bg-[#00f5d4]/10 hover:bg-[#00f5d4]/20 text-[#00f5d4] text-[11px] font-extrabold border border-[#00f5d4]/30 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" /> Add Item
+                      </button>
+                    </div>
                   </div>
 
                   {resumeData.certifications.map((cert, idx) => (

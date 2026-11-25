@@ -413,6 +413,59 @@ Do NOT use markdown backticks. Return raw JSON.`
         <LumixoraHeroSuite onNavigateTab={setActiveTab} user={user} />
       )}
 
+      {/* ⚡ 1.5. Today's Scholar Sprint (Daily High-Impact Focus Bar) ⚡ */}
+      {!isGprecPlacementSubdomain() && (
+        <div className="animate-fade-in my-3">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#0f172a]/70 to-indigo-950/40 border border-cyan-500/30 p-3.5 backdrop-blur-md shadow-lg shadow-cyan-950/20">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 flex-shrink-0">
+                  <Flame className="w-5 h-5 text-amber-300 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black tracking-wider uppercase text-cyan-400">Today's Scholar Sprint</span>
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Day Priority</span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-0.5 font-medium">Keep your momentum alive — complete 1 core focus block today.</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => setActiveTab('coding-practice')}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                >
+                  <Code2 className="w-3.5 h-3.5" />
+                  Codeverse DSA
+                </button>
+                <button
+                  onClick={() => setActiveTab('notes-platform')}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/40 text-blue-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Curated Notes
+                </button>
+                <button
+                  onClick={() => setActiveTab('ai-mock-interview')}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  AI Interview
+                </button>
+                <button
+                  onClick={() => setActiveTab('doubt-solving')}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Ask Doubt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ⚡ 2 & 3. Clean 4-Track Command Switcher & Unified Interactive Portal Grid (100% Intact - All 36 Portals) ⚡ */}
       <div className="animate-fade-in my-3">
         <UnifiedCommandHub 

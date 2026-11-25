@@ -3839,6 +3839,46 @@ Provide a quick, sharp technical response (2 sentences) from either Prof. Vyomra
     }
   };
 
+  const handleExportLessonNotes = () => {
+    try {
+      const activeSc = activeLesson?.scenes?.[currentSceneIdx] || activeLesson?.scenes?.[0];
+      const lessonTitle = activeLesson?.title || 'BoloClass Masterclass';
+      const slideTitle = activeSc?.title || `Slide ${currentSceneIdx + 1}`;
+      
+      let markdownDoc = `# ${lessonTitle}\n\n`;
+      markdownDoc += `**Subject:** ${activeLesson?.subject || 'Computer Science'}\n`;
+      markdownDoc += `**Slide:** ${slideTitle}\n`;
+      markdownDoc += `**Professor:** ${activeLesson?.professor?.name || 'Prof. Vyomra'}\n`;
+      markdownDoc += `**Generated on:** ${new Date().toLocaleDateString()}\n\n---\n\n`;
+      
+      markdownDoc += `## Key Takeaways\n`;
+      if (activeSc?.takeaways && Array.isArray(activeSc.takeaways)) {
+        activeSc.takeaways.forEach((t, i) => {
+          markdownDoc += `${i + 1}. ${t}\n`;
+        });
+      }
+      markdownDoc += `\n---\n\n## Whiteboard Notes & Formulas\n\n${activeSc?.whiteboardContent || ''}\n\n`;
+      
+      if (activeSc?.codeSnippet) {
+        markdownDoc += `## Code Implementation\n\n\`\`\`\n${activeSc.codeSnippet}\n\`\`\`\n\n`;
+      }
+
+      const blob = new Blob([markdownDoc], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${lessonTitle.replace(/[^a-zA-Z0-9]/g, '_')}_Slide_${currentSceneIdx + 1}_Notes.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      addToast?.({ type: 'success', message: '📥 Downloaded complete Chalkboard Study Notes (.md)!' });
+    } catch (e) {
+      addToast?.({ type: 'error', message: 'Failed to export notes' });
+    }
+  };
+
   const handlePlayPause = () => {
     if (!isAudioEnabled) {
       setIsAudioEnabled(true);
@@ -7390,6 +7430,15 @@ ${sc.codeSnippet || 'N/A'}
                 >
                   <Hand className="w-3.5 h-3.5 text-amber-400" />
                   {raisedHand ? '🙋‍♂️ Hand Raised!' : 'Raise Hand'}
+                </button>
+
+                <button
+                  onClick={handleExportLessonNotes}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                  title="Download current slide notes as markdown file"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export Notes
                 </button>
               </div>
             </div>

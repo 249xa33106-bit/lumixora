@@ -7,6 +7,9 @@ import {
   FileText, Upload, Check, AlertTriangle, ChevronDown, ChevronUp, 
   Printer, SkipForward, ArrowRight, Eye, Code2, X, Camera, CameraOff, Video, Activity, Crosshair
 } from 'lucide-react';
+import RecruiterTwinHUD from '../components/RecruiterTwinHUD';
+import ArchitectureWhiteboard from '../components/ArchitectureWhiteboard';
+import { Layers } from 'lucide-react';
 import { 
   COMPANY_PRESETS, ROLE_TRACKS, INTERVIEW_STAGES, TOTAL_INTERVIEW_MARKS,
   generateOpeningQuestion, evaluateAndAskFollowUp, generateInterviewScorecard, parseResumeText,
@@ -60,6 +63,7 @@ export default function AiMockInterviewRoom({ user, setActiveTab }) {
   const [selectedRole, setSelectedRole] = useState(ROLE_TRACKS[0]);
   const [experienceLevel, setExperienceLevel] = useState('Fresher (0-1 yrs)');
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [sessionViewMode, setSessionViewMode] = useState('chat'); // 'chat' | 'whiteboard'
   const [loadingInitial, setLoadingInitial] = useState(false);
 
   // Resume States
@@ -1183,37 +1187,16 @@ export default function AiMockInterviewRoom({ user, setActiveTab }) {
           {/* Left Column: Progress Ladder & Avatar */}
           <div className="space-y-5">
             
-            {/* Live Voice Avatar Box */}
-            <div className="p-5 rounded-3xl bg-black/50 border border-white/10 text-center space-y-4 relative overflow-hidden shadow-2xl">
-              <div className="relative mx-auto w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500/30 to-purple-500/30 border border-cyan-500/50 flex items-center justify-center">
-                {isSpeaking && (
-                  <div className="absolute inset-0 rounded-full border-2 border-cyan-400 animate-ping opacity-75"></div>
-                )}
-                <div className="text-4xl animate-pulse">
-                  {selectedCompany.logo}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-white">{selectedCompany.name} Senior AI Interviewer</h3>
-                <p className="text-[11px] text-cyan-300 font-medium mt-0.5">{selectedRole.name}</p>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isSpeaking ? 'bg-emerald-500/20 text-emerald-400 animate-pulse' : 'bg-white/10 text-gray-400'}`}>
-                    {isSpeaking ? 'Speaking...' : 'Listening to Candidate'}
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (voiceEnabled) stopSpeaking();
-                      setVoiceEnabled(!voiceEnabled);
-                    }}
-                    className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                    title={voiceEnabled ? 'Mute AI voice' : 'Enable AI voice'}
-                  >
-                    {voiceEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-gray-500" />}
-                  </button>
-                </div>
-              </div>
-            </div>
+            {/* AI Recruiter Neural Twin HUD */}
+            <RecruiterTwinHUD
+              isSpeaking={isSpeaking}
+              candidateAnswer={candidateAnswer}
+              selectedCompany={selectedCompany}
+              selectedRole={selectedRole}
+              voiceEnabled={voiceEnabled}
+              setVoiceEnabled={setVoiceEnabled}
+              stopSpeaking={stopSpeaking}
+            />
 
             {/* 👁️ Candidate Live Eye-Contact & Facial Confidence Radar */}
             <div className="p-4 rounded-3xl bg-black/60 border border-cyan-500/30 space-y-3 relative overflow-hidden shadow-2xl backdrop-blur-md">
@@ -1415,6 +1398,32 @@ export default function AiMockInterviewRoom({ user, setActiveTab }) {
               </div>
             </div>
 
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => setSessionViewMode('chat')}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+                  sessionViewMode === 'chat'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/10'
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/15 hover:text-white'
+                }`}
+              >
+                <Send className="w-3 h-3" /> Dialogue
+              </button>
+              <button
+                onClick={() => setSessionViewMode('whiteboard')}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+                  sessionViewMode === 'whiteboard'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-lg shadow-purple-500/10'
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/15 hover:text-white'
+                }`}
+              >
+                <Layers className="w-3 h-3" /> Architecture Whiteboard
+              </button>
+            </div>
+
+            {sessionViewMode === 'chat' ? (<>
             {/* Transcript Chat Body */}
             <div ref={chatScrollRef} className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               {transcript.map((item, idx) => (
@@ -1577,6 +1586,15 @@ export default function AiMockInterviewRoom({ user, setActiveTab }) {
                 <span>Press Enter to Submit • Use "Skip" if unfamiliar</span>
               </div>
             </div>
+            </>) : (
+              <ArchitectureWhiteboard
+                onPresentToInterviewer={(summary) => {
+                  setCandidateAnswer(prev => prev ? prev + '\n\n[Architecture] ' + summary : '[Architecture] ' + summary);
+                  setSessionViewMode('chat');
+                }}
+              />
+            )}
+
 
           </div>
         </div>

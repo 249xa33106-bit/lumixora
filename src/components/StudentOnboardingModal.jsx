@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Sparkles, Target, Compass, Award, 
   BookOpen, Code, ArrowRight, CheckCircle2, ChevronRight, X,
-  GraduationCap, Layers, Cpu, Flame, Check, ShieldCheck
+  GraduationCap, Layers, Cpu, Flame, Check, ShieldCheck, Zap
 } from 'lucide-react';
 import { analyzeAndRecommendPortals, ALL_PORTALS } from '../utils/portalMapping';
 
@@ -78,6 +78,36 @@ export default function StudentOnboardingModal({ isOpen, onClose, user, onSavePr
     });
     setSelectedPortals(recommended);
     setStep(4);
+  };
+
+  const handleExpressSetup = () => {
+    setIsSubmitting(true);
+    try {
+      const recommended = analyzeAndRecommendPortals({
+        careerGoal: selectedGoal,
+        interests: selectedInterests,
+        year: academicYear,
+        department: academicDept,
+        experienceLevel,
+        studyMode
+      });
+      const res = onSavePreferences({
+        careerGoal: selectedGoal,
+        interests: selectedInterests,
+        year: academicYear,
+        department: academicDept,
+        experienceLevel,
+        learningStyle: studyMode,
+        activePortals: recommended,
+        onboardingCompleted: true
+      });
+      if (res && typeof res.catch === 'function') {
+        res.catch(err => console.warn("Background onboarding sync warning:", err));
+      }
+    } catch (err) {
+      console.warn("Express setup error:", err);
+    }
+    onClose();
   };
 
   const togglePortal = (portalId) => {
@@ -387,6 +417,19 @@ export default function StudentOnboardingModal({ isOpen, onClose, user, onSavePr
               className="px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
               Skip
+            </button>
+          )}
+
+          {step < 4 && (
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleExpressSetup}
+              className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ml-auto mr-2"
+              title="Skip remaining steps and auto-configure based on current inputs"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Instant Setup</span>
             </button>
           )}
 

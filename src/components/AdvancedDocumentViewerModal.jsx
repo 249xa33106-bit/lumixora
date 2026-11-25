@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, Download, X, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw,
   Sun, Moon, Coffee, Sparkles, Volume2, VolumeX, Eye, BookOpen, 
-  ChevronRight, ExternalLink, BrainCircuit, Lightbulb, CheckSquare, Copy, Check
+  ChevronRight, ExternalLink, BrainCircuit, Lightbulb, CheckSquare, Copy, Check,
+  Send, Loader2, MessageSquare, Bot
 } from 'lucide-react';
 import { playSynthesizedNarration } from '../utils/teluguAudioEngine';
+import { callAICompletion } from '../services/aiService';
 
 export default function AdvancedDocumentViewerModal({
   isOpen,
@@ -21,8 +23,39 @@ export default function AdvancedDocumentViewerModal({
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copiedKey, setCopiedKey] = useState(null);
+  const [aiPanelTab, setAiPanelTab] = useState('insights'); // 'insights' | 'doubts'
+  const [doubtInput, setDoubtInput] = useState('');
+  const [doubtLoading, setDoubtLoading] = useState(false);
+  const [doubtHistory, setDoubtHistory] = useState([]);
   const containerRef = useRef(null);
   const audioRef = useRef(null);
+
+  const handleAskDoubt = async (queryText = null) => {
+    const q = (queryText || doubtInput).trim();
+    if (!q || doubtLoading) return;
+    
+    const userMsg = { role: 'user', content: q };
+    setDoubtHistory(prev => [...prev, userMsg]);
+    setDoubtInput('');
+    setDoubtLoading(true);
+
+    try {
+      const prompt = `You are Lumixora AI Academic Doubt Solver docked alongside a course document.
+Document: "${title}"
+Subject: "${subject?.name || 'Academic Core'}"
+
+Student Query: "${q}"
+
+Provide a direct, step-by-step, crystal clear response with formulas and exam tips where relevant. Keep it under 150 words.`;
+
+      const reply = await callAICompletion({ prompt, maxTokens: 400 });
+      setDoubtHistory(prev => [...prev, { role: 'assistant', content: reply || "I've reviewed this topic. Check the core theorem on this page for the exact derivation!" }]);
+    } catch (err) {
+      setDoubtHistory(prev => [...prev, { role: 'assistant', content: "Unable to reach AI tutor service right now. Please re-try in a moment." }]);
+    } finally {
+      setDoubtLoading(false);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -345,10 +378,22 @@ export default function AdvancedDocumentViewerModal({
           {/* Collapsible AI Study Guide Sidebar */}
           {isAiPanelOpen && (
             <div className={`w-80 sm:w-96 border-l flex flex-col z-30 transition-all duration-300 font-sans ${theme === 'dark' ? 'bg-[#0b0f1a] border-white/10 text-white' : theme === 'sepia' ? 'bg-[#f7ebce] border-[#dfc99a] text-[#291b0d]' : 'bg-gray-50 border-gray-200 text-gray-900'}`}>
-              <div className="p-4 border-b flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BrainCircuit className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
-                  <h4 className="text-xs font-black uppercase tracking-wider">AI Study Insights</h4>
+              <div className="p-3 border-b flex items-center justify-between">
+                <div className="flex items-center gap-1 bg-black/30 p-1 rounded-xl border border-white/5">
+                  <button
+                    onClick={() => setAiPanelTab('insights')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${aiPanelTab === 'insights' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    <BrainCircuit className="w-3.5 h-3.5" />
+                    Insights
+                  </button>
+                  <button
+                    onClick={() => setAiPanelTab('doubts')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${aiPanelTab === 'doubts' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    <Bot className="w-3.5 h-3.5" />
+                    Doubt Solver
+                  </button>
                 </div>
                 <button 
                   onClick={() => setIsAiPanelOpen(false)}
@@ -358,56 +403,138 @@ export default function AdvancedDocumentViewerModal({
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs font-sans">
-                
-                {/* Executive Quick Review */}
-                <div className={`p-3.5 rounded-xl border ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-extrabold flex items-center gap-1.5 text-cyan-400">
-                      <Lightbulb className="w-3.5 h-3.5" /> Quick Summary
-                    </span>
-                    <button 
-                      onClick={() => handleCopySummary(`Executive summary for ${title}:\n1. Core theorems & equations\n2. Key algorithmic complexities\n3. High-weightage exam topics`)}
-                      className="text-[10px] opacity-70 hover:opacity-100 flex items-center gap-1 cursor-pointer font-medium"
-                    >
-                      {copiedKey ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                      {copiedKey ? 'Copied' : 'Copy'}
-                    </button>
-                  </div>
-                  <p className="leading-relaxed opacity-90 font-medium">
-                    This document covers fundamental problem-solving blueprints, step-by-step derivations, and high-frequency university exam questions for <strong>{subject?.name || 'this module'}</strong>.
-                  </p>
-                </div>
-
-                {/* Key Takeaways & Exam Hotspots */}
-                <div className="space-y-2">
-                  <span className="font-black text-[11px] tracking-wider uppercase opacity-80 block">
-                    High-Priority Exam Hotspots:
-                  </span>
-                  {[
-                    "Definition & Mathematical Invariants",
-                    "Step-by-step Derivation & Worst-Case Complexity",
-                    "Real-World Engineering Case Studies",
-                    "Common Examination Traps & Edge Cases"
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 p-2.5 rounded-lg bg-black/20 border border-white/5 font-medium">
-                      <CheckSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span className="leading-snug">{item}</span>
+              {aiPanelTab === 'insights' ? (
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs font-sans">
+                  
+                  {/* Executive Quick Review */}
+                  <div className={`p-3.5 rounded-xl border ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-extrabold flex items-center gap-1.5 text-cyan-400">
+                        <Lightbulb className="w-3.5 h-3.5" /> Quick Summary
+                      </span>
+                      <button 
+                        onClick={() => handleCopySummary(`Executive summary for ${title}:\n1. Core theorems & equations\n2. Key algorithmic complexities\n3. High-weightage exam topics`)}
+                        className="text-[10px] opacity-70 hover:opacity-100 flex items-center gap-1 cursor-pointer font-medium"
+                      >
+                        {copiedKey ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedKey ? 'Copied' : 'Copy'}
+                      </button>
                     </div>
-                  ))}
-                </div>
+                    <p className="leading-relaxed opacity-90 font-medium">
+                      This document covers fundamental problem-solving blueprints, step-by-step derivations, and high-frequency university exam questions for <strong>{subject?.name || 'this module'}</strong>.
+                    </p>
+                  </div>
 
-                {/* Quick Academic Practice Prompt */}
-                <div className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-black border border-purple-500/30 space-y-2">
-                  <span className="font-black text-purple-300 text-[11px] flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Self-Check Challenge
-                  </span>
-                  <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
-                    Test your understanding by explaining the first theorem in this document without looking back!
-                  </p>
-                </div>
+                  {/* Key Takeaways & Exam Hotspots */}
+                  <div className="space-y-2">
+                    <span className="font-black text-[11px] tracking-wider uppercase opacity-80 block">
+                      High-Priority Exam Hotspots:
+                    </span>
+                    {[
+                      "Definition & Mathematical Invariants",
+                      "Step-by-step Derivation & Worst-Case Complexity",
+                      "Real-World Engineering Case Studies",
+                      "Common Examination Traps & Edge Cases"
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 p-2.5 rounded-lg bg-black/20 border border-white/5 font-medium">
+                        <CheckSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
 
-              </div>
+                  {/* Quick Academic Practice Prompt */}
+                  <div className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-black border border-purple-500/30 space-y-2">
+                    <span className="font-black text-purple-300 text-[11px] flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Self-Check Challenge
+                    </span>
+                    <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
+                      Test your understanding by explaining the first theorem in this document without looking back!
+                    </p>
+                  </div>
+
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col h-full overflow-hidden text-xs">
+                  {/* Doubt Conversation Stream */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-2.5 font-sans">
+                    {doubtHistory.length === 0 ? (
+                      <div className="text-center py-6 px-3 space-y-3">
+                        <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 mx-auto">
+                          <Bot className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-200">Docked AI Doubt Solver</p>
+                          <p className="text-[11px] text-gray-400 mt-1">Ask any doubt about this document or pick a quick starter prompt:</p>
+                        </div>
+                        <div className="flex flex-col gap-1.5 pt-2">
+                          {[
+                            "Explain the core theorem step-by-step",
+                            "What are the typical university exam questions?",
+                            "Give me a real-world coding/engineering example"
+                          ].map((chip, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleAskDoubt(chip)}
+                              className="text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-[11px] font-medium transition-all cursor-pointer"
+                            >
+                              💡 {chip}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      doubtHistory.map((msg, i) => (
+                        <div
+                          key={i}
+                          className={`p-2.5 rounded-xl text-xs font-medium leading-relaxed ${
+                            msg.role === 'user'
+                              ? 'bg-purple-600/20 border border-purple-500/30 text-purple-200 ml-4'
+                              : 'bg-white/5 border border-white/10 text-gray-200 mr-4'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 mb-1 text-[10px] font-bold uppercase tracking-wider opacity-70">
+                            {msg.role === 'user' ? 'You' : 'AI Academic Tutor'}
+                          </div>
+                          <div className="whitespace-pre-line">{msg.content}</div>
+                        </div>
+                      ))
+                    )}
+                    {doubtLoading && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-xs">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
+                        <span>Solving doubt against this document...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Doubt Input Footer */}
+                  <div className="p-3 border-t border-white/10 bg-black/40">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleAskDoubt();
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={doubtInput}
+                        onChange={(e) => setDoubtInput(e.target.value)}
+                        placeholder="Ask doubt about this page..."
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!doubtInput.trim() || doubtLoading}
+                        className="p-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-30 text-white transition-all cursor-pointer flex-shrink-0"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
