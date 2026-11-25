@@ -261,20 +261,20 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
   }, [collegeQuery]);
 
   return (
-    <div className="min-h-screen bg-[#040711] text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-black antialiased font-sans">
+    <div className="min-h-screen bg-[#020608] text-slate-100 flex flex-col selection:bg-amber-400 selection:text-slate-950 antialiased font-sans">
       
-      {/* ── 1. REAL-TIME NATIONAL HIRING RADAR TICKER ── */}
-      <div className="bg-emerald-950/90 border-b border-emerald-500/20 py-2 px-3 sm:px-4 text-xs font-semibold text-emerald-300 overflow-x-auto no-scrollbar shadow-inner">
+      {/* ── 1. REAL-TIME NATIONAL HIRING RADAR TICKER (JADE & GOLD ACCENTS) ── */}
+      <div className="bg-[#03140F]/95 border-b border-amber-500/25 py-2 px-3 sm:px-4 text-xs font-semibold text-emerald-300 overflow-x-auto no-scrollbar shadow-inner">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 min-w-max">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="uppercase tracking-widest font-black text-white text-[10px]">
+            <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="uppercase tracking-widest font-black text-amber-300 text-[10px]">
               Live Hiring Radar:
             </span>
           </div>
           <div className="flex items-center gap-6 text-[11px] text-slate-300">
             <span className="flex items-center gap-1.5">
-              🚀 <strong className="text-white">TCS NQT 2026:</strong> Registrations Active • Pattern Loaded
+              🚀 <strong className="text-white">TCS NQT 2026:</strong> Registrations Active • <span className="text-amber-300 font-semibold">Pattern Loaded</span>
             </span>
             <span className="flex items-center gap-1.5">
               ⚡ <strong className="text-white">Infosys DSE:</strong> 3-Round Assessment Pack Live
@@ -288,28 +288,28 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
           </div>
           <button
             onClick={() => triggerLogin('company-papers')}
-            className="text-[11px] text-emerald-300 hover:text-white underline font-bold transition flex items-center gap-1"
+            className="text-[11px] text-amber-300 hover:text-white underline font-bold transition flex items-center gap-1"
           >
             <span>Practice Live Papers</span>
-            <ArrowRight className="w-3 h-3" />
+            <ArrowRight className="w-3 h-3 text-amber-400" />
           </button>
         </div>
       </div>
 
-      {/* ── 2. EXECUTIVE ULTRA-CLEAN TOP BAR ── */}
-      <header className="border-b border-emerald-500/15 bg-[#060A18]/85 backdrop-blur-xl sticky top-0 z-50">
+      {/* ── 2. EXECUTIVE ULTRA-CLEAN TOP BAR (JADE & GOLD SHEEN) ── */}
+      <header className="border-b border-emerald-500/20 bg-[#040C10]/90 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          {/* Logo & Identity */}
+          {/* Logo & Identity - Kept Exact Official Icon & Typography */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 border border-emerald-400/40">
-              <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0">
+              <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.2} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-black tracking-tight text-white">
                   LUMIXORA <span className="text-emerald-400">CAMPUS</span>
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hidden sm:inline-block">
+                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 hidden sm:inline-block">
                   Universal Suite
                 </span>
               </div>
@@ -321,26 +321,26 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
 
           {/* Quick Header CTA */}
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-300 border border-slate-800 bg-slate-900/60 px-3 py-1.5 rounded-xl">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-300 border border-amber-500/20 bg-[#061414]/70 px-3 py-1.5 rounded-xl">
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
               <span>₹10 Lifetime Verification • Zero Subscriptions</span>
             </div>
             <button
               onClick={() => triggerLogin('campus-commander')}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 hover:from-emerald-400 hover:to-teal-300 text-slate-950 flex items-center gap-2 shadow-lg shadow-emerald-500/25 transition active:scale-[0.98]"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300 hover:from-emerald-400 hover:to-amber-200 text-slate-950 flex items-center gap-2 shadow-lg shadow-emerald-500/20 border border-amber-400/30 transition active:scale-[0.98]"
             >
-              <GraduationCap className="w-4 h-4" />
+              <GraduationCap className="w-4 h-4 text-slate-950" />
               <span>Student Sign In</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── 3. HERO STAGE (TWO-COLUMN ARCHITECTURE) ── */}
-      <section className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-slate-800/80">
+      {/* ── 3. HERO STAGE (JADE & GOLD DUAL ATMOSPHERIC GLOW) ── */}
+      <section className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-emerald-950/80">
         {/* Ambient atmospheric radiants */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.15),rgba(255,255,255,0))] pointer-events-none" />
-        <div className="absolute -top-32 right-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[520px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.14),rgba(245,158,11,0.06),rgba(0,0,0,0))] pointer-events-none" />
+        <div className="absolute -top-32 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
@@ -349,15 +349,15 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             <div className="lg:col-span-7 space-y-6 text-left">
               
               {/* Institutional clearance pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold tracking-wide">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Open to All Engineering, Technology & Autonomous Colleges</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
                 Crack Your Dream Campus Offer with{' '}
-                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">
                   Precision.
                 </span>
               </h1>
@@ -369,9 +369,9 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               </p>
 
               {/* Instant "Check My College" Clearance Bar */}
-              <div className="p-2 bg-slate-900/90 border border-slate-700/80 rounded-2xl shadow-xl shadow-black/40 max-w-xl">
+              <div className="p-2 bg-[#061114]/90 border border-emerald-500/30 rounded-2xl shadow-xl shadow-black/50 max-w-xl">
                 <div className="relative flex items-center">
-                  <Search className="w-4 h-4 text-emerald-400 absolute left-3.5" />
+                  <Search className="w-4 h-4 text-amber-400 absolute left-3.5" />
                   <input
                     type="text"
                     placeholder="Check your college (e.g. RGMCET, VIT, SRIT, CBIT, JNTUA)..."
@@ -382,7 +382,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   <button
                     type="button"
                     onClick={() => triggerLogin('campus-commander')}
-                    className="absolute right-1 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition active:scale-95"
+                    className="absolute right-1 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-amber-400 hover:from-emerald-400 hover:to-amber-300 text-slate-950 font-black text-xs transition active:scale-95"
                   >
                     Enter Portal
                   </button>
@@ -400,7 +400,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                     <button
                       type="button"
                       onClick={() => triggerLogin('campus-commander')}
-                      className="text-emerald-400 hover:underline font-bold text-[11px] shrink-0 ml-2"
+                      className="text-amber-400 hover:underline font-bold text-[11px] shrink-0 ml-2"
                     >
                       Verify Now →
                     </button>
@@ -408,16 +408,16 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 )}
               </div>
 
-              {/* ── 4. TACTILE CTC TARGET SIMULATOR WIDGET ── */}
-              <div className="p-4 rounded-2xl bg-[#090D1E]/95 border border-emerald-500/30 shadow-xl space-y-3.5 max-w-xl">
+              {/* ── 4. TACTILE CTC TARGET SIMULATOR WIDGET (CHAMPAGNE GOLD TIER OUTPUT) ── */}
+              <div className="p-4 rounded-2xl bg-[#061015]/95 border border-amber-500/25 shadow-xl space-y-3.5 max-w-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-emerald-400" />
+                    <Sliders className="w-4 h-4 text-amber-400" />
                     <span className="text-xs font-bold uppercase tracking-wider text-white">
                       Target Salary & Readiness Calculator
                     </span>
                   </div>
-                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35">
                     {activeCtcTier.label}
                   </span>
                 </div>
@@ -431,7 +431,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                     step="1"
                     value={ctcTierIndex}
                     onChange={(e) => setCtcTierIndex(Number(e.target.value))}
-                    className="w-full accent-emerald-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
+                    className="w-full accent-amber-400 cursor-pointer h-2 bg-slate-800 rounded-lg"
                   />
                   <div className="flex justify-between text-[10px] font-semibold text-slate-400">
                     <span>₹3.5 LPA</span>
@@ -447,13 +447,13 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                     <span className="text-[10px] text-slate-400 block font-medium">Target Tier</span>
                     <strong className="text-white text-[11px] truncate block">{activeCtcTier.tierName}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div className="p-2 rounded-xl bg-slate-900/60 border border-amber-500/20">
                     <span className="text-[10px] text-slate-400 block font-medium">Required CRI Score</span>
-                    <strong className="text-emerald-400 text-xs font-black block">{activeCtcTier.reqCri}</strong>
+                    <strong className="text-amber-400 text-xs font-black block">{activeCtcTier.reqCri}</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 col-span-2 sm:col-span-1">
+                  <div className="p-2 rounded-xl bg-slate-900/60 border border-emerald-500/20 col-span-2 sm:col-span-1">
                     <span className="text-[10px] text-slate-400 block font-medium">Daily Workout</span>
-                    <strong className="text-cyan-400 text-xs font-bold block">{activeCtcTier.prepTime}</strong>
+                    <strong className="text-emerald-300 text-xs font-bold block">{activeCtcTier.prepTime}</strong>
                   </div>
                 </div>
 
@@ -463,7 +463,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   {activeCtcTier.companies.map((comp) => (
                     <span
                       key={comp}
-                      className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-semibold"
+                      className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-[10px] font-semibold"
                     >
                       {comp}
                     </span>
@@ -473,15 +473,15 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
 
             </div>
 
-            {/* Right Column: Holographic Official Placement Dossier Card */}
+            {/* Right Column: Holographic Official Placement Dossier Card (PRESTIGE GOLD SEAL) */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-md p-6 rounded-3xl bg-gradient-to-b from-[#0B1026] via-[#080D20] to-[#050814] border border-emerald-500/40 shadow-2xl shadow-emerald-950/60 space-y-5">
+              <div className="relative w-full max-w-md p-6 rounded-3xl bg-gradient-to-b from-[#081318] via-[#050E13] to-[#020508] border border-amber-500/35 shadow-2xl shadow-emerald-950/70 space-y-5">
                 
                 {/* Dossier Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                      <Award className="w-4 h-4 text-emerald-400" />
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center">
+                      <Award className="w-4 h-4 text-amber-400" />
                     </div>
                     <div>
                       <div className="text-xs font-black uppercase tracking-wider text-white">
@@ -492,23 +492,24 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                       </div>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold">
-                    VERIFIED
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 font-mono text-[10px] font-black">
+                    ★ VERIFIED
                   </span>
                 </div>
 
-                {/* CRI Score Visual Ring */}
+                {/* CRI Score Visual Ring (WARM CHAMPAGNE GOLD GLOW) */}
                 <div className="text-center py-2 space-y-1">
-                  <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-slate-900/90 border-4 border-emerald-400/80 shadow-[0_0_25px_rgba(16,185,129,0.25)]">
+                  <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-gradient-to-b from-slate-900 to-slate-950 border-4 border-amber-400/85 shadow-[0_0_30px_rgba(245,158,11,0.25)]">
                     <div>
                       <div className="text-3xl font-black text-white tracking-tight">84</div>
-                      <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+                      <div className="text-[9px] font-black uppercase tracking-widest text-amber-400">
                         CRI INDEX
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs font-bold text-slate-200 mt-2">
-                    Tier-1 Placement Ready
+                  <div className="text-xs font-black text-amber-200 mt-2 flex items-center justify-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    <span>Tier-1 Placement Ready</span>
                   </div>
                   <p className="text-[11px] text-slate-400">
                     High Probability for TCS Prime, Infosys Specialist & Zoho
@@ -516,11 +517,11 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 </div>
 
                 {/* Metric Bars */}
-                <div className="space-y-2 pt-1 text-xs">
+                <div className="space-y-2.5 pt-1 text-xs">
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px] text-slate-300">
                       <span>Quantitative & Logical Aptitude</span>
-                      <strong className="text-emerald-400">88%</strong>
+                      <strong className="text-emerald-400 font-bold">88%</strong>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-[88%]" />
@@ -530,20 +531,20 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px] text-slate-300">
                       <span>Data Structures & Hands-on Code</span>
-                      <strong className="text-teal-400">82%</strong>
+                      <strong className="text-amber-400 font-bold">82%</strong>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 w-[82%]" />
+                      <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 w-[82%]" />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px] text-slate-300">
                       <span>Technical & HR Mock Interview</span>
-                      <strong className="text-cyan-400">80%</strong>
+                      <strong className="text-teal-400 font-bold">80%</strong>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-400 w-[80%]" />
+                      <div className="h-full bg-gradient-to-r from-teal-500 to-emerald-300 w-[80%]" />
                     </div>
                   </div>
                 </div>
@@ -551,14 +552,17 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 {/* Security Footer & Unlock Action */}
                 <div className="pt-4 border-t border-slate-800/80 space-y-3">
                   <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span>🔒 256-Bit Cryptographic Seal</span>
-                    <span>₹10 Nominal Clearance</span>
+                    <span className="flex items-center gap-1">
+                      <Lock className="w-3 h-3 text-amber-400" />
+                      <span>256-Bit Cryptographic Seal</span>
+                    </span>
+                    <span className="text-amber-300 font-bold">₹10 Nominal Clearance</span>
                   </div>
                   <button
                     onClick={() => triggerLogin('dossier')}
-                    className="w-full py-3 rounded-xl font-bold text-xs bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
+                    className="w-full py-3 rounded-xl font-black text-xs bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300 hover:from-emerald-400 hover:to-amber-200 text-slate-950 flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 active:scale-[0.98] border border-amber-400/30"
                   >
-                    <Award className="w-4 h-4" />
+                    <Award className="w-4 h-4 text-slate-950" />
                     <span>Unlock My Official Dossier (₹10)</span>
                   </button>
                 </div>
@@ -571,11 +575,11 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
       </section>
 
       {/* ── 5. INTERACTIVE BENTO GRID (4 CORE ENGINES) ── */}
-      <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
+      <section className="py-16 sm:py-20 bg-[#03090D] border-b border-emerald-950/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
           <div className="text-center space-y-2 max-w-3xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
               Interactive Placement Sandbox
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -589,7 +593,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             
             {/* ── CARD A: MULTI-QUESTION DIAGNOSTIC DRILL (7 COLS) ── */}
-            <div className="lg:col-span-7 p-6 rounded-3xl bg-slate-900/70 border border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between">
+            <div className="lg:col-span-7 p-6 rounded-3xl bg-[#061115]/80 border border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -611,7 +615,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                         }}
                         className={`w-6 h-6 rounded-lg text-xs font-bold transition ${
                           activeDrillIndex === idx
-                            ? 'bg-emerald-500 text-slate-950 font-black'
+                            ? 'bg-amber-400 text-slate-950 font-black'
                             : 'bg-slate-800 text-slate-400 hover:text-white'
                         }`}
                       >
@@ -621,7 +625,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   </div>
                 </div>
 
-                <div className="mt-2 text-[11px] text-emerald-400 font-semibold">
+                <div className="mt-2 text-[11px] text-amber-400 font-semibold">
                   Topic: {currentDrill.topic} • {currentDrill.badge}
                 </div>
 
@@ -649,7 +653,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                           : drillAnswerSubmitted && isSelected && !opt.correct
                           ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
                           : isSelected
-                          ? 'bg-slate-800 border-emerald-500/50 text-white'
+                          ? 'bg-slate-800 border-amber-500/50 text-white'
                           : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white'
                       }`}
                     >
@@ -666,7 +670,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               {drillAnswerSubmitted && (
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 animate-in fade-in space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                    <span className="flex items-center gap-1.5 text-amber-400 font-bold">
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>{currentDrill.options.find(o => o.id === selectedDrillOption)?.correct ? 'Correct! +25 Placement XP' : 'Analysis Breakdown:'}</span>
                     </span>
@@ -677,7 +681,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                         setSelectedDrillOption(null);
                         setDrillAnswerSubmitted(false);
                       }}
-                      className="text-emerald-400 hover:underline font-bold text-[11px]"
+                      className="text-amber-400 hover:underline font-bold text-[11px]"
                     >
                       Next Question →
                     </button>
@@ -692,7 +696,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 <span className="text-slate-400 text-[11px]">10,000+ Authenticated Exam Questions</span>
                 <button
                   onClick={() => triggerLogin('company-papers')}
-                  className="text-emerald-400 font-bold hover:underline flex items-center gap-1"
+                  className="text-amber-400 font-bold hover:underline flex items-center gap-1"
                 >
                   <span>Solve Full Exam Packs</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -701,14 +705,14 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             </div>
 
             {/* ── CARD B: AI MOCK INTERVIEW VOICE ROOM (5 COLS) ── */}
-            <div className="lg:col-span-5 p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+            <div className="lg:col-span-5 p-6 rounded-3xl bg-[#061115]/80 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Bot className="w-5 h-5 text-teal-400" />
+                    <Bot className="w-5 h-5 text-emerald-400" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">AI Mock Interview Room</span>
                   </div>
-                  <span className="text-[10px] font-bold text-teal-300 bg-teal-500/15 px-2 py-0.5 rounded border border-teal-500/30">
+                  <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">
                     Voice & Video AI
                   </span>
                 </div>
@@ -721,19 +725,19 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1.5">
-                    <Volume2 className="w-3.5 h-3.5 text-teal-400" />
+                    <Volume2 className="w-3.5 h-3.5 text-amber-400" />
                     <span>Speech Flow Telemetry</span>
                   </span>
-                  <span className="text-emerald-400 font-bold text-[11px]">Live 94% Fluency</span>
+                  <span className="text-amber-400 font-bold text-[11px]">Live 94% Fluency</span>
                 </div>
 
-                {/* Animated Audio Wave Bars */}
+                {/* Animated Audio Wave Bars (Jade & Gold Pulse) */}
                 <div className="flex items-end justify-center gap-1 h-10 px-2">
                   {[24, 40, 60, 85, 45, 90, 70, 35, 65, 80, 50, 95, 30, 75, 40].map((h, i) => (
                     <div
                       key={i}
                       style={{ height: `${h}%` }}
-                      className="w-1.5 rounded-full bg-gradient-to-t from-teal-600 to-emerald-400 animate-pulse"
+                      className="w-1.5 rounded-full bg-gradient-to-t from-emerald-600 via-teal-400 to-amber-300 animate-pulse"
                     />
                   ))}
                 </div>
@@ -747,7 +751,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
 
               <button
                 onClick={() => triggerLogin('interview')}
-                className="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 flex items-center justify-center gap-2 transition"
+                className="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center justify-center gap-2 transition"
               >
                 <span>Launch Mock Interview Simulator</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -755,7 +759,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             </div>
 
             {/* ── CARD C: 100+ COMPANY EXAM PAPERS BANK (7 COLS) ── */}
-            <div className="lg:col-span-7 p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4">
+            <div className="lg:col-span-7 p-6 rounded-3xl bg-[#061115]/80 border border-slate-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -779,7 +783,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                       activeCompanyId === c.id
-                        ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                        ? 'bg-gradient-to-r from-emerald-500 to-amber-400 text-slate-950 font-black shadow-md'
                         : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
@@ -792,7 +796,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-sm">{activeCompany.name}</span>
-                  <span className="font-bold text-emerald-400">{activeCompany.ctc}</span>
+                  <span className="font-black text-amber-300">{activeCompany.ctc}</span>
                 </div>
                 <div className="text-slate-300">
                   <span className="text-slate-400">Rounds:</span> {activeCompany.rounds}
@@ -806,20 +810,20 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   <button
                     type="button"
                     onClick={() => setShowSampleApproach(!showSampleApproach)}
-                    className="flex items-center gap-1.5 text-emerald-400 hover:underline font-bold text-xs"
+                    className="flex items-center gap-1.5 text-amber-400 hover:underline font-bold text-xs"
                   >
                     <span>{showSampleApproach ? '▲ Hide Sample Question' : '▼ Inspect Real Exam Question & Approach'}</span>
                   </button>
 
                   {showSampleApproach && (
-                    <div className="p-3 rounded-xl bg-slate-900 border border-emerald-500/30 space-y-2 animate-in fade-in">
+                    <div className="p-3 rounded-xl bg-[#081518] border border-amber-500/30 space-y-2 animate-in fade-in">
                       <div className="flex justify-between items-center text-[10px] text-slate-400">
                         <span className="font-bold text-white">{activeCompany.sampleQuestion.type}</span>
-                        <span className="text-emerald-400 font-mono">Recent 2026 Test</span>
+                        <span className="text-amber-400 font-mono">Recent 2026 Test</span>
                       </div>
                       <div className="text-white font-semibold text-xs">{activeCompany.sampleQuestion.title}</div>
                       <p className="text-[11px] text-slate-300 leading-relaxed">{activeCompany.sampleQuestion.statement}</p>
-                      <div className="text-[11px] text-emerald-300/90 pt-1 border-t border-slate-800 font-mono">
+                      <div className="text-[11px] text-amber-300/90 pt-1 border-t border-slate-800 font-mono">
                         💡 <strong>Optimal Approach:</strong> {activeCompany.sampleQuestion.approach}
                       </div>
                     </div>
@@ -830,7 +834,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   <span>Available: <strong className="text-emerald-400">{activeCompany.papersCount}</strong></span>
                   <button
                     onClick={() => triggerLogin('company-papers')}
-                    className="text-emerald-400 hover:underline font-bold"
+                    className="text-amber-400 hover:underline font-bold"
                   >
                     Start Full Drill →
                   </button>
@@ -839,14 +843,14 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             </div>
 
             {/* ── CARD D: TECHPULSE™ HIRING RADAR (5 COLS) ── */}
-            <div className="lg:col-span-5 p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+            <div className="lg:col-span-5 p-6 rounded-3xl bg-[#061115]/80 border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-cyan-400" />
+                    <TrendingUp className="w-5 h-5 text-amber-400" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">TechPulse™ Hiring Radar</span>
                   </div>
-                  <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/15 px-2 py-0.5 rounded border border-cyan-500/30">
+                  <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">
                     Live Updates
                   </span>
                 </div>
@@ -862,17 +866,17 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
                   <span className="font-medium text-slate-200">Infosys Specialist Programmer</span>
-                  <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">Announced</span>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Announced</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
                   <span className="font-medium text-slate-200">Zoho Off-Campus Developer Drive</span>
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Scheduled</span>
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded">Scheduled</span>
                 </div>
               </div>
 
               <button
                 onClick={() => triggerLogin('tech-pulse')}
-                className="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 flex items-center justify-center gap-2 transition"
+                className="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center justify-center gap-2 transition"
               >
                 <span>View Full Hiring Radar</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -883,12 +887,12 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-      {/* ── 6. 4-STAGE PLACEMENT ROADMAP (TIMELINE VISUALIZATION) ── */}
-      <section className="py-16 sm:py-20 bg-[#040612] border-b border-slate-800/80">
+      {/* ── 6. 4-STAGE PLACEMENT ROADMAP (ALTERNATING JADE & GOLD) ── */}
+      <section className="py-16 sm:py-20 bg-[#020608] border-b border-emerald-950/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
           <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
               Clear Path to Placement
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -900,8 +904,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
+            <div className="p-5 rounded-2xl bg-[#061114]/70 border border-emerald-500/30 hover:border-emerald-400 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm border border-emerald-500/30">
                 01
               </div>
               <h4 className="text-sm font-bold text-white">College Clearance & Audit</h4>
@@ -910,8 +914,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-sm">
+            <div className="p-5 rounded-2xl bg-[#061114]/70 border border-amber-500/30 hover:border-amber-400 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-sm border border-amber-500/30">
                 02
               </div>
               <h4 className="text-sm font-bold text-white">Target Company Mastery</h4>
@@ -920,8 +924,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-sm">
+            <div className="p-5 rounded-2xl bg-[#061114]/70 border border-emerald-500/30 hover:border-emerald-400 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm border border-emerald-500/30">
                 03
               </div>
               <h4 className="text-sm font-bold text-white">AI Voice & Video Mock</h4>
@@ -930,8 +934,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
+            <div className="p-5 rounded-2xl bg-[#061114]/70 border border-amber-500/30 hover:border-amber-400 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-black text-sm border border-amber-500/30">
                 04
               </div>
               <h4 className="text-sm font-bold text-white">Official Placement Dossier</h4>
@@ -945,11 +949,11 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
       </section>
 
       {/* ── 7. BEFORE VS AFTER COMPARISON ── */}
-      <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
+      <section className="py-16 sm:py-20 bg-[#03090D] border-b border-emerald-950/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
           
           <div className="text-center space-y-2">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
               The Placement Advantage
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -984,9 +988,9 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               </ul>
             </div>
 
-            {/* The Lumixora Campus Way */}
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-[#090F24] via-slate-900 to-[#060918] border border-emerald-500/40 shadow-xl space-y-4">
-              <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
+            {/* The Lumixora Campus Way (JADE & GOLD FINISH) */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-[#071518] via-[#050E12] to-[#020508] border border-amber-500/35 shadow-xl space-y-4">
+              <div className="flex items-center gap-2 text-amber-400 text-sm font-bold">
                 <CheckCircle2 className="w-5 h-5" />
                 <span>With Lumixora Campus</span>
               </div>
@@ -1004,8 +1008,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                   <span>AI voice simulator that trains you against actual Technical & HR pressure questions</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Nominal ₹10 one-time academic clearance with full 4-year lifetime validity</span>
+                  <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span className="text-amber-200 font-semibold">Nominal ₹10 one-time academic clearance with full 4-year lifetime validity</span>
                 </li>
               </ul>
             </div>
@@ -1014,14 +1018,12 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-
-
       {/* ── 8. FREQUENTLY ASKED QUESTIONS (ACCORDION) ── */}
-      <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
+      <section className="py-16 sm:py-20 bg-[#020608] border-b border-emerald-950/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
           
           <div className="text-center space-y-2">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
               Clear Answers
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -1035,16 +1037,16 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
               return (
                 <div
                   key={idx}
-                  className="rounded-2xl bg-slate-900/70 border border-slate-800 overflow-hidden transition"
+                  className="rounded-2xl bg-[#061114]/70 border border-slate-800 overflow-hidden transition"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-emerald-400 transition"
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-amber-300 transition"
                   >
                     <span>{faq.q}</span>
                     {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <ChevronUp className="w-4 h-4 text-amber-400 shrink-0" />
                     ) : (
                       <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                     )}
@@ -1062,12 +1064,12 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-      {/* ── 9. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE ── */}
-      <section className="py-16 sm:py-20 bg-gradient-to-b from-[#050816] to-[#040612] border-b border-slate-800">
+      {/* ── 9. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE (GOLD ACCENT) ── */}
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-[#03090D] to-[#010405] border-b border-emerald-950/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-8">
           
           <div className="space-y-2">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400">
               Zero Exploitation Policy
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -1078,10 +1080,10 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             </p>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#090E24] via-slate-900 to-[#060A1A] border border-emerald-500/40 shadow-2xl text-left space-y-6">
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#081519] via-[#050E12] to-[#020508] border border-amber-500/40 shadow-2xl text-left space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
                   Lifetime Academic Access Pass
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black text-white mt-0.5">
@@ -1089,7 +1091,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 </h3>
               </div>
               <div className="sm:text-right">
-                <div className="text-3xl font-black text-emerald-300">₹10.00</div>
+                <div className="text-3xl font-black text-amber-300">₹10.00</div>
                 <span className="text-xs text-slate-400 font-semibold">One-time payment • Lifetime validity</span>
               </div>
             </div>
@@ -1117,15 +1119,15 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
                 <span>Timed Aptitude & Reasoning Speed Arena</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Instant Google Pay / PhonePe / Paytm / Razorpay Unlock</span>
+                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="text-amber-200 font-semibold">Instant Google Pay / PhonePe / Paytm / Razorpay Unlock</span>
               </div>
             </div>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
               <button
                 onClick={() => triggerLogin('checkout')}
-                className="w-full sm:w-auto flex-1 py-4 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 hover:from-emerald-400 hover:to-teal-300 text-slate-950 flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition active:scale-[0.98]"
+                className="w-full sm:w-auto flex-1 py-4 px-6 rounded-2xl font-black text-sm bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300 hover:from-emerald-400 hover:to-amber-200 text-slate-950 flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/15 transition active:scale-[0.98] border border-amber-400/40"
               >
                 <ShieldCheck className="w-5 h-5 text-slate-950" />
                 <span>Activate Lifetime Campus Access (₹10)</span>
@@ -1134,7 +1136,10 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
             </div>
 
             <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800/80">
-              <span>🔒 256-Bit SSL End-to-End Encryption</span>
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-400" />
+                <span>256-Bit SSL End-to-End Encryption</span>
+              </span>
               <span>⚡ Direct Bank UPI Settlement</span>
               <span>🛡️ Anti-Spam Verified Scholar Identity</span>
             </div>
@@ -1144,7 +1149,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
       </section>
 
       {/* ── 10. FOOTER ── */}
-      <footer className="mt-auto border-t border-slate-800/80 bg-[#040612] py-8 text-center text-xs text-slate-500">
+      <footer className="mt-auto border-t border-emerald-950/80 bg-[#010406] py-8 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-300">LUMIXORA CAMPUS</span>

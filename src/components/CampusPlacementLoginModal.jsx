@@ -383,26 +383,26 @@ export default function CampusPlacementLoginModal({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-lg bg-[#070B19] border border-emerald-500/30 rounded-2xl shadow-2xl shadow-emerald-950/50 overflow-hidden text-slate-100"
+        className="relative w-full max-w-lg bg-[#020709] border border-amber-500/35 rounded-2xl shadow-2xl shadow-black/90 overflow-hidden text-slate-100"
         style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
       >
         {/* Ambient Glow */}
-        <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Top Header */}
-        <div className="relative p-5 pb-3 border-b border-emerald-500/15 bg-gradient-to-r from-emerald-950/30 via-slate-900/40 to-cyan-950/30">
+        <div className="relative p-5 pb-3 border-b border-amber-500/20 bg-gradient-to-r from-[#031510] via-[#060D12] to-[#120B03]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 border border-emerald-400/40">
-                <ShieldCheck className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0">
+                <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.2} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-black tracking-tight text-white">
                     LUMIXORA <span className="text-emerald-400">CAMPUS</span>
                   </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                     High-Security
                   </span>
                 </div>
@@ -427,25 +427,25 @@ export default function CampusPlacementLoginModal({
                 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
                 : 'bg-slate-900/60 border-slate-800 text-slate-500'
             }`}>
-              1. Check
+              1. Security Check
             </div>
             <div className={`py-1 rounded-md border transition ${
               step === 'otp' 
                 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
                 : 'bg-slate-900/60 border-slate-800 text-slate-500'
             }`}>
-              2. Code
+              2. Verify Code
             </div>
             <div className={`py-1 rounded-md border transition ${
               step === 'profile' 
                 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
                 : 'bg-slate-900/60 border-slate-800 text-slate-500'
             }`}>
-              3. College
+              3. College ID
             </div>
             <div className={`py-1 rounded-md border transition ${
               step === 'payment' 
-                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
+                ? 'bg-amber-500/20 border-amber-400/60 text-amber-300 font-black' 
                 : 'bg-slate-900/60 border-slate-800 text-slate-500'
             }`}>
               4. Fee (₹10)
@@ -826,10 +826,10 @@ export default function CampusPlacementLoginModal({
           {step === 'payment' && (
             <div className="space-y-4 animate-in fade-in">
               {/* Fee Header Card */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-slate-950 border border-emerald-500/30 space-y-3">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#061614] via-slate-900 to-[#120B03] border border-amber-500/35 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
                       Lifetime Scholar Access
                     </span>
                     <h4 className="text-base font-bold text-white mt-0.5">
@@ -837,7 +837,7 @@ export default function CampusPlacementLoginModal({
                     </h4>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-black text-emerald-300">₹10</div>
+                    <div className="text-2xl font-black text-amber-300">₹10</div>
                     <span className="text-[10px] text-slate-400">One-Time Fee</span>
                   </div>
                 </div>
@@ -861,7 +861,7 @@ export default function CampusPlacementLoginModal({
               {/* Scholar summary pill */}
               <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between">
                 <span className="truncate"><strong>{studentName}</strong> • {rollNumber}</span>
-                <span className="text-emerald-400 font-semibold truncate max-w-[150px]">{collegeName}</span>
+                <span className="text-amber-400 font-semibold truncate max-w-[150px]">{collegeName}</span>
               </div>
 
               {/* Razorpay Online Instant Payment Button */}
@@ -869,7 +869,7 @@ export default function CampusPlacementLoginModal({
                 type="button"
                 onClick={handleRazorpayPay}
                 disabled={paymentProcessing}
-                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 hover:from-emerald-400 hover:to-teal-300 text-slate-950 flex items-center justify-center gap-2 transition shadow-xl shadow-emerald-500/25 active:scale-[0.98]"
+                className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-300 hover:from-emerald-400 hover:to-amber-200 text-slate-950 flex items-center justify-center gap-2 transition shadow-xl shadow-amber-500/15 active:scale-[0.98] border border-amber-400/40"
               >
                 {paymentProcessing ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -886,7 +886,7 @@ export default function CampusPlacementLoginModal({
                 <button
                   type="button"
                   onClick={() => setShowUtrBox(!showUtrBox)}
-                  className="text-xs text-slate-400 hover:text-emerald-300 underline font-medium transition"
+                  className="text-xs text-amber-300/90 hover:text-amber-200 underline font-medium transition"
                 >
                   {showUtrBox ? '▲ Hide Direct UPI Options' : '▼ Already Paid or Pay via Direct UPI (PhonePe / GPay)?'}
                 </button>
@@ -894,26 +894,26 @@ export default function CampusPlacementLoginModal({
 
               {/* Collapsible Direct UPI Section */}
               {showUtrBox && (
-                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 animate-in fade-in">
+                <div className="p-3.5 rounded-xl bg-slate-900/90 border border-amber-500/25 space-y-3 animate-in fade-in">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Direct UPI ID:</span>
                     <button
                       type="button"
                       onClick={handleCopyUpi}
-                      className="flex items-center gap-1 text-emerald-400 hover:underline font-mono font-bold"
+                      className="flex items-center gap-1 text-amber-300 hover:underline font-mono font-bold"
                     >
                       <span>lumixora.team@gmail.com</span>
                       <Copy className="w-3 h-3" />
                     </button>
                   </div>
                   {copiedUpi && (
-                    <p className="text-[10px] text-emerald-400 text-right">UPI ID copied to clipboard!</p>
+                    <p className="text-[10px] text-amber-400 text-right">UPI ID copied to clipboard!</p>
                   )}
 
                   <div className="flex gap-2">
                     <a
                       href="upi://pay?pa=lumixora.team@gmail.com&pn=Lumixora%20Campus&am=10.00&cu=INR&tn=Campus%20Verification"
-                      className="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-emerald-300 border border-slate-700 flex items-center justify-center gap-1.5 transition"
+                      className="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-amber-300 border border-amber-500/30 flex items-center justify-center gap-1.5 transition"
                     >
                       <Zap className="w-3.5 h-3.5 text-amber-400" />
                       <span>Open UPI App (₹10)</span>
@@ -930,12 +930,12 @@ export default function CampusPlacementLoginModal({
                       placeholder="e.g. 402819284719 or T240118..."
                       value={utrInput}
                       onChange={(e) => setUtrInput(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 focus:border-emerald-500 text-xs font-mono text-white placeholder-slate-600 outline-none transition"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 focus:border-amber-400 text-xs font-mono text-white placeholder-slate-600 outline-none transition"
                     />
                     <button
                       type="submit"
                       disabled={paymentProcessing}
-                      className="w-full py-2.5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 transition"
+                      className="w-full py-2.5 rounded-lg font-bold text-xs bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center gap-1.5 transition"
                     >
                       {paymentProcessing ? (
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
