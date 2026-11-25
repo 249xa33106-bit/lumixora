@@ -13,15 +13,13 @@
     <meta http-equiv="Expires" content="0" />
     <script>
       (function() {
-        const CURRENT_VERSION = '1.1.20';
-        localStorage.setItem('lumixora_active_ver', CURRENT_VERSION);
-        if ('caches' in window) {
-          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-        }
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            regs.forEach(r => r.unregister());
-          });
+        const CURRENT_VERSION = '1.1.26';
+        const lastVer = localStorage.getItem('lumixora_active_ver');
+        if (lastVer !== CURRENT_VERSION) {
+          localStorage.setItem('lumixora_active_ver', CURRENT_VERSION);
+          if ('caches' in window) {
+            caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+          }
         }
       })();
     </script>

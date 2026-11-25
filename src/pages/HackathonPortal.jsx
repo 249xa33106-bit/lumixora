@@ -1430,6 +1430,37 @@ Generate an unfair-advantage winning hackathon submission blueprint in clean Mar
                 </select>
               </div>
             </div>
+
+            {/* 🌟 Quick Role Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar pt-2 border-t border-white/5">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-bold shrink-0 mr-1">
+                Filter by Role:
+              </span>
+              {[
+                { id: 'All Roles', label: 'All Roles', icon: '🌟' },
+                { id: 'Full-Stack', label: 'Full-Stack Dev', icon: '💻' },
+                { id: 'AI', label: 'AI & ML', icon: '🧠' },
+                { id: 'UI/UX', label: 'UI/UX Designer', icon: '🎨' },
+                { id: 'Mobile', label: 'Mobile / Flutter', icon: '📱' },
+                { id: 'Web3', label: 'Web3 / Blockchain', icon: '🛡️' },
+                { id: 'DevOps', label: 'DevOps & Cloud', icon: '☁️' },
+                { id: 'Data Science', label: 'Data Science', icon: '📊' }
+              ].map(rf => (
+                <button
+                  key={rf.id}
+                  type="button"
+                  onClick={() => setSquadRoleFilter(rf.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                    squadRoleFilter === rf.id
+                      ? 'bg-purple-500 text-white border border-purple-400 shadow-md shadow-purple-500/20'
+                      : 'bg-[#141424] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/5'
+                  }`}
+                >
+                  <span>{rf.icon}</span>
+                  <span>{rf.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Teams / Free Agents View */}

@@ -14,9 +14,6 @@ import {
   FileSpreadsheet, Activity, ChevronRight, Terminal, Star, Target, Code2, GitFork, Briefcase, Sliders,
   MessageSquare, MessageCircle, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import { auth, db, storage } from '../config/firebase';
 import { supabase } from '../config/supabase';
@@ -662,8 +659,13 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     }
   };
 
-  const handleExportMyPDF = () => {
+  const handleExportMyPDF = async () => {
     try {
+      const [{ default: jsPDF }, autoTableModule] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ]);
+      const autoTable = autoTableModule.default || autoTableModule;
       const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
       const prof = parseUserProfile(user?.name);
       
@@ -731,8 +733,9 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
     }
   };
 
-  const handleExportMyExcel = () => {
+  const handleExportMyExcel = async () => {
     try {
+      const XLSX = await import('xlsx');
       const wb = XLSX.utils.book_new();
       const prof = parseUserProfile(user?.name);
 
@@ -917,7 +920,7 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
           const userEmail = (user?.email || '').toLowerCase().trim();
           if (userEmail) {
             await supabase.from('users').update({
-              name: `${cleanName} ${JSON.stringify(packedMetadata)}`,
+              name: cleanName,
               full_name: cleanName,
               college: cleanCollege,
               year: editYear,

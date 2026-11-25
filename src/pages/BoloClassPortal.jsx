@@ -2909,6 +2909,42 @@ export default function BoloClassPortal({ setActiveTab }) {
   const [isGeneratingMotion, setIsGeneratingMotion] = useState(false);
   const [showConsensusMatrix, setShowConsensusMatrix] = useState(false);
 
+  // ── ✋ SOCRATIC RAISE-HAND INTERRUPT & STEP SCRUBBER STATES ──
+  const [isRaiseHandModalOpen, setIsRaiseHandModalOpen] = useState(false);
+  const [socraticQuestionInput, setSocraticQuestionInput] = useState('');
+  const [socraticAnswer, setSocraticAnswer] = useState(null);
+  const [isResolvingSocratic, setIsResolvingSocratic] = useState(false);
+  const [whiteboardScrubberStep, setWhiteboardScrubberStep] = useState(0); // 0 = all steps
+
+  const handleAskSocraticDoubt = async (overridePrompt = null) => {
+    const qText = overridePrompt || socraticQuestionInput;
+    if (!qText.trim()) return;
+    setIsResolvingSocratic(true);
+    try {
+      const prompt = `You are Professor Vyomra, a world-class academic mentor at Lumixora.
+A student just raised their hand to interrupt the live lecture to ask a doubt about the current slide.
+Current Lesson: "${activeLesson?.title || 'Engineering Concepts'}"
+Current Slide (${currentSceneIdx + 1}): "${activeScene?.title || ''}"
+Whiteboard Context:
+${activeScene?.whiteboardContent || ''}
+
+Student's Socratic Doubt:
+"${qText}"
+
+Provide a clear, engaging, intuitive explanation (max 3 short paragraphs). Use bolding for key terms and simple analogies. End with a 1-sentence thought-provoking takeaway.`;
+      
+      const response = await callAICompletion({ prompt, temperature: 0.3, maxTokens: 400 });
+      setSocraticAnswer(response || 'Great question! Focus on how the core invariant holds true at each step of the derivation.');
+      awardXP(scholarDisplayName, 'socratic_doubt', 15);
+      addToast?.({ type: 'success', message: '💡 Socratic doubt resolved! +15 XP' });
+    } catch (err) {
+      console.warn('Socratic completion error:', err);
+      setSocraticAnswer("Excellent inquiry! Remember: whenever you encounter this constraint, trace the input-to-output invariant step by step.");
+    } finally {
+      setIsResolvingSocratic(false);
+    }
+  };
+
   // Active debate topic resolver
   const baseLessonDebates = BOLOCLASS_CURATED_DEBATES[activeLesson.id] || BOLOCLASS_CURATED_DEBATES['java-data-types'];
   const userLessonDebates = userCreatedDebates[activeLesson.id] || [];
@@ -5805,6 +5841,20 @@ ${sc.codeSnippet || 'N/A'}
             <Sliders className="w-3.5 h-3.5 text-purple-300 animate-spin" />
             <span>Voice Studio 🎙️</span>
           </button>
+
+          {/* Socratic Interrupt Hand Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isPlaying) togglePlay();
+              setIsRaiseHandModalOpen(true);
+            }}
+            className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-amber-500/10 animate-pulse"
+            title="Interrupt lecture to ask AI Professor a Socratic doubt on this slide"
+          >
+            <Hand className="w-3.5 h-3.5 text-amber-400" />
+            <span>Interrupt & Ask ✋</span>
+          </button>
           
           <button
             onClick={() => setActiveTab?.('courses')}
@@ -6305,25 +6355,105 @@ ${sc.codeSnippet || 'N/A'}
                   </div>
                 )}
 
-                {/* 2. Blackboard Markdown Mode (Crisp White Background with Rich Colorful Typography) */}
-                {activeViewMode === 'blackboard' && (
-                  <div className="rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl p-6 overflow-hidden space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                      <h3 className="text-sm font-black text-indigo-900 font-sora flex items-center gap-1.5">
-                        <Layers className="w-4 h-4 text-indigo-600" /> Blackboard Notes & Formal Proofs
-                      </h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px]">
-                        Slide {currentSceneIdx + 1}
-                      </span>
+                {/* 2. Blackboard Markdown Mode with Interactive Line-by-Line Step Scrubber */}
+                {activeViewMode === 'blackboard' && (() => {
+                  const rawContent = activeScene.whiteboardContent || '';
+                  const rawSections = rawContent.split(/\n(?=###?\s|\n---|\n\*\*\d+\.)/);
+                  const steps = rawSections.map(s => s.trim()).filter(Boolean);
+                  const totalSteps = steps.length;
+                  const displayContent = (whiteboardScrubberStep === 0 || totalSteps <= 1)
+                    ? rawContent
+                    : steps.slice(0, whiteboardScrubberStep).join('\n\n---\n\n');
+
+                  return (
+                    <div className="rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl p-6 overflow-hidden space-y-4">
+                      {/* Step Scrubber Header Bar */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-black text-indigo-900 font-sora flex items-center gap-1.5">
+                            <Layers className="w-4 h-4 text-indigo-600" /> Blackboard Notes & Proofs
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px]">
+                            Slide {currentSceneIdx + 1}
+                          </span>
+                        </div>
+
+                        {/* Interactive Scrubber Controls */}
+                        {totalSteps > 1 && (
+                          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                            <button
+                              type="button"
+                              onClick={() => setWhiteboardScrubberStep(0)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                whiteboardScrubberStep === 0 
+                                  ? 'bg-indigo-600 text-white shadow-sm' 
+                                  : 'text-slate-600 hover:text-slate-900'
+                              }`}
+                            >
+                              Show All ({totalSteps})
+                            </button>
+                            <button
+                              type="button"
+                              disabled={whiteboardScrubberStep <= 1}
+                              onClick={() => setWhiteboardScrubberStep(prev => Math.max(1, (prev === 0 ? totalSteps : prev) - 1))}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
+                              title="Previous Step"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="text-[10px] font-mono font-bold text-indigo-900 px-1">
+                              {whiteboardScrubberStep === 0 ? 'Full Proof' : `Step ${whiteboardScrubberStep} of ${totalSteps}`}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={whiteboardScrubberStep >= totalSteps && whiteboardScrubberStep !== 0}
+                              onClick={() => setWhiteboardScrubberStep(prev => (prev === 0 ? 1 : Math.min(totalSteps, prev + 1)))}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
+                              title="Next Step"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Step Scrubber Pills */}
+                      {totalSteps > 1 && (
+                        <div className="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
+                          {steps.map((st, sIdx) => {
+                            const stepNum = sIdx + 1;
+                            const isActive = whiteboardScrubberStep === stepNum;
+                            const isRevealed = whiteboardScrubberStep === 0 || whiteboardScrubberStep >= stepNum;
+                            return (
+                              <button
+                                key={sIdx}
+                                type="button"
+                                onClick={() => setWhiteboardScrubberStep(stepNum)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
+                                  isActive
+                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    : (isRevealed 
+                                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
+                                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200')
+                                }`}
+                              >
+                                <span>Step {stepNum}</span>
+                                {isRevealed && <Check className="w-2.5 h-2.5" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <div 
+                        className={'prose max-w-none text-xs leading-relaxed text-slate-800 space-y-3 font-sans [&>h1]:text-base [&>h1]:font-black [&>h1]:text-indigo-900 [&>h3]:text-xs [&>h3]:font-black [&>h3]:text-violet-700 [&>pre]:bg-[#0f172a] [&>pre]:text-emerald-300 [&>pre]:p-3.5 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-slate-700 [&>pre]:font-mono [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:space-y-1.5 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:bg-indigo-600 [&>table_th]:text-white [&>table_th]:p-2.5 [&>table_th]:text-left [&>table_th]:font-bold [&>table_td]:p-2.5 [&>table_td]:border [&>table_td]:border-slate-200 [&>table_tr:nth-child(even)]:bg-slate-50'}
+                        dangerouslySetInnerHTML={{
+                          __html: DOMPurify.sanitize(marked.parse(displayContent))
+                        }}
+                      />
                     </div>
-                    <div 
-                      className={'prose max-w-none text-xs leading-relaxed text-slate-800 space-y-3 font-sans [&>h1]:text-base [&>h1]:font-black [&>h1]:text-indigo-900 [&>h3]:text-xs [&>h3]:font-black [&>h3]:text-violet-700 [&>pre]:bg-[#0f172a] [&>pre]:text-emerald-300 [&>pre]:p-3.5 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-slate-700 [&>pre]:font-mono [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:space-y-1.5 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:bg-indigo-600 [&>table_th]:text-white [&>table_th]:p-2.5 [&>table_th]:text-left [&>table_th]:font-bold [&>table_td]:p-2.5 [&>table_td]:border [&>table_td]:border-slate-200 [&>table_tr:nth-child(even)]:bg-slate-50'}
-                      dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(marked.parse(activeScene.whiteboardContent || ''))
-                      }}
-                    />
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* 3. Diagram Mode */}
                 {activeViewMode === 'diagram' && activeScene.diagram && (
@@ -7588,6 +7718,131 @@ ${sc.codeSnippet || 'N/A'}
         </div>
 
       </div>
+
+      {/* ─── ✋ SOCRATIC RAISE-HAND INTERRUPT MODAL ───────────────────────── */}
+      {isRaiseHandModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#0a0f1d] border border-amber-500/40 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-xl shadow-lg shadow-amber-500/20 text-black font-bold">
+                  ✋
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    Lecture Interrupted • Socratic Inquiry
+                  </h3>
+                  <p className="text-xs text-amber-300 font-mono">
+                    Slide {currentSceneIdx + 1}: {activeScene?.title || activeLesson?.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRaiseHandModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white flex items-center justify-center font-bold text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Quick Socratic Question Nudges */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-gray-400 font-bold block">
+                Ask a quick conceptual doubt:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[
+                  "Explain this with a real-world intuitive analogy",
+                  "Why does this invariant/equation hold true?",
+                  "What are common edge cases or anti-patterns?"
+                ].map((nudge, nIdx) => (
+                  <button
+                    key={nIdx}
+                    type="button"
+                    onClick={() => {
+                      setSocraticQuestionInput(nudge);
+                      handleAskSocraticDoubt(nudge);
+                    }}
+                    className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-[11px] text-gray-300 hover:text-amber-200 text-left transition-all cursor-pointer leading-tight"
+                  >
+                    💡 {nudge}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Question Input */}
+            <div className="space-y-2">
+              <div className="relative">
+                <textarea
+                  value={socraticQuestionInput}
+                  onChange={(e) => setSocraticQuestionInput(e.target.value)}
+                  placeholder="Type your question or doubt about this slide to Professor Vyomra..."
+                  rows={3}
+                  className="w-full p-3 rounded-2xl bg-black/60 border border-white/15 text-xs text-white placeholder-gray-500 outline-none focus:border-amber-400 custom-scrollbar resize-none"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-gray-400 font-mono">
+                  Lecture is paused • Resumes when you click Resume Lecture
+                </span>
+                <button
+                  type="button"
+                  disabled={!socraticQuestionInput.trim() || isResolvingSocratic}
+                  onClick={() => handleAskSocraticDoubt()}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-amber-500/20"
+                >
+                  {isResolvingSocratic ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Prof. is thinking...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Ask Professor</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Socratic AI Answer Box */}
+            {socraticAnswer && (
+              <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/40 text-xs text-amber-100 space-y-2 animate-fade-in shadow-inner">
+                <div className="flex items-center justify-between text-[11px] font-bold text-amber-300">
+                  <span className="flex items-center gap-1.5">
+                    🎓 Professor Vyomra's Socratic Clarification:
+                  </span>
+                  <span className="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-200">
+                    +15 XP Earned
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap leading-relaxed text-[11px] text-amber-100/90">
+                  {socraticAnswer}
+                </p>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRaiseHandModalOpen(false);
+                  if (!isPlaying) togglePlay();
+                  addToast?.({ type: 'info', message: '▶️ Lecture resumed!' });
+                }}
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition-all shadow-md shadow-indigo-600/30"
+              >
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>Resume Lecture</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── VOICE & LANGUAGE STUDIO MODAL ────────────────────────────────────── */}
       {isVoiceModalOpen && (

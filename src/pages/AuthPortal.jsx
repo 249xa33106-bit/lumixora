@@ -509,7 +509,8 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
         }
 
         const sbPayload = {
-          name: `${cleanName} ${JSON.stringify(defaultProfile)}`,
+          name: cleanName,
+          full_name: cleanName,
           email: oauthEmail,
           password: 'google_oauth_managed',
           role,
@@ -739,7 +740,8 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
 
       // 1. Supabase Profile Upsert (Fast DB Save)
       const sbPayload = {
-        name: packedName,
+        name: cleanName,
+        full_name: cleanName,
         email: cleanEmail,
         password: regData.password,
         role: determinedRole,

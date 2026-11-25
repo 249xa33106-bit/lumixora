@@ -46,7 +46,13 @@ export default function Dashboard({ setActiveTab, user }) {
     let name = cleanScholarName(rawStr);
     const matchedCollege = getCollegeByEmail(user?.email);
     const fallbackCollege = user?.college || user?.collegeName || matchedCollege?.shortName || matchedCollege?.name || 'GPREC';
-    let metadata = { qualification: '', college: fallbackCollege, place: 'Kurnool, AP', year: '1st Year', avatarUrl: '' };
+    let metadata = { 
+      qualification: user?.qualification || 'B.Tech', 
+      college: fallbackCollege, 
+      place: user?.place || 'Kurnool, AP', 
+      year: user?.year || user?.yearOfStudy || '1st Year', 
+      avatarUrl: user?.avatarUrl || user?.photoURL || '' 
+    };
     if (rawStr.includes('{')) {
       const idx = rawStr.indexOf('{');
       const jsonStr = rawStr.substring(idx).trim();

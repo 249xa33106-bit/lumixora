@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor, { DiffEditor } from '@monaco-editor/react';
 import { 
-  ArrowLeft, Play, Send, RefreshCw, Sparkles, BookOpen, Clock, 
+  ArrowLeft, Play, Activity, BarChart2, Send, RefreshCw, Sparkles, BookOpen, Clock, 
   HelpCircle, XCircle, Terminal, Minimize2, Maximize2, 
   Download, Copy, BookOpenCheck, Settings2, Code, Video, ExternalLink 
 } from 'lucide-react';
+import VisualMemoryDebugger from '../components/VisualMemoryDebugger';
 import { executeCode, runPiston } from '../services/compilerService';
 import { getAICodingAssistantHelp, sendAICodingChatMessage, getPostSubmissionFeedback, getQuickComplexity } from '../services/aiCodingService';
 import { saveCodingSubmissionToSupabase } from '../services/supabaseDataSyncService';
 import { useGamification } from '../context/GamificationContext';
 import { useToast } from '../context/ToastContext';
+import CodeMemoryVisualizer from '../components/CodeMemoryVisualizer';
+import BigOComplexityRadar from '../components/BigOComplexityRadar';
+import { Cpu, Gauge } from 'lucide-react';
 
 const DEFAULT_SANDBOX_PROBLEM = {
   id: 'sandbox',
@@ -747,6 +751,65 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                   ))}
                 </div>
 
+                {/* ── 3-TIER SMART HINT ESCALATOR ── */}
+                <div className="bg-[#090d1a] border border-cyan-500/20 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white font-sora flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                      <span>3-Tier Smart Hint Escalator</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                      Progressive Guidance
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 font-sans">
+                    {/* Tier 1: Conceptual Nudge */}
+                    <details className="bg-white/5 border border-white/10 rounded-xl p-3 text-xs cursor-pointer group">
+                      <summary className="font-bold text-cyan-300 flex items-center justify-between list-none">
+                        <span>💡 Tier 1: Conceptual Observation (Zero Code)</span>
+                        <span className="text-[10px] text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                      </summary>
+                      <p className="mt-2 text-gray-300 text-xs leading-relaxed">
+                        Notice problem constraints and data ordering. Can we eliminate brute-force quadratic passes by utilizing a hash map for instantaneous O(1) complements, or by moving two pointers from opposite bounds?
+                      </p>
+                    </details>
+
+                    {/* Tier 2: Algorithmic Approach & Complexity */}
+                    <details className="bg-white/5 border border-white/10 rounded-xl p-3 text-xs cursor-pointer group">
+                      <summary className="font-bold text-purple-300 flex items-center justify-between list-none">
+                        <span>⚙️ Tier 2: Recommended Approach & Target Big-O</span>
+                        <span className="text-[10px] text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                      </summary>
+                      <div className="mt-2 text-gray-300 text-xs leading-relaxed space-y-1">
+                        <p>Target Complexity: <strong className="text-white">O(N) Time • O(1) Auxiliary Memory</strong>.</p>
+                        <p>If sorted, position pointers at index 0 and index N-1. Calculate target delta. Shrink boundaries deterministically without revisiting previous states.</p>
+                      </div>
+                    </details>
+
+                    {/* Tier 3: Pseudocode Scaffold */}
+                    <details className="bg-white/5 border border-white/10 rounded-xl p-3 text-xs cursor-pointer group">
+                      <summary className="font-bold text-emerald-300 flex items-center justify-between list-none">
+                        <span>📝 Tier 3: Algorithmic Pseudocode Scaffold</span>
+                        <span className="text-[10px] text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                      </summary>
+                      <pre className="mt-2 p-3 rounded-lg bg-black/60 border border-white/10 text-[11px] font-mono text-emerald-300 overflow-x-auto leading-relaxed">
+{`function solve(nums, target):
+    left = 0, right = nums.length - 1
+    while left < right:
+        currentSum = nums[left] + nums[right]
+        if currentSum == target:
+            return [left, right]
+        else if currentSum > target:
+            right--
+        else:
+            left++
+    return []`}
+                      </pre>
+                    </details>
+                  </div>
+                </div>
+
                 {/* Hints dropdown */}
                 {activeProblem.hints && (Array.isArray(activeProblem.hints) ? activeProblem.hints.length > 0 : Object.keys(activeProblem.hints).length > 0) && (
                   <div className="space-y-2">
@@ -953,7 +1016,8 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
           </div>
 
           {/* Console Outputs / AI Feedback Lower Pane */}
-          <div className="glass-panel rounded-3xl overflow-hidden h-64 flex flex-col shrink-0">
+          <div className={`glass-panel rounded-3xl overflow-hidden flex flex-col shrink-0 transition-all duration-300 ${rightTab === 'memory-hud' || rightTab === 'complexity-radar' ? 'h-[400px]' : 'h-64'}`}>
+
             {/* Tabs Header */}
             <div className="flex border-b border-white/5 bg-black/25 shrink-0">
               <button
@@ -990,6 +1054,30 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
               >
                 <BookOpenCheck className="w-3.5 h-3.5" />
                 <span>AI Submit Feedback</span>
+              </button>
+
+              <button
+                onClick={() => setRightTab('memory-hud')}
+                className={`flex items-center gap-1.5 px-4 py-3 text-[10px] font-semibold tracking-wide border-b-2 transition-all cursor-pointer ${
+                  rightTab === 'memory-hud' 
+                    ? 'border-emerald-400 text-emerald-400 bg-white/[0.01]' 
+                    : 'border-transparent text-gray-500 hover:text-white'
+                }`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>Memory & Pointer HUD</span>
+              </button>
+
+              <button
+                onClick={() => setRightTab('complexity-radar')}
+                className={`flex items-center gap-1.5 px-4 py-3 text-[10px] font-semibold tracking-wide border-b-2 transition-all cursor-pointer ${
+                  rightTab === 'complexity-radar' 
+                    ? 'border-cyan-400 text-cyan-400 bg-white/[0.01]' 
+                    : 'border-transparent text-gray-500 hover:text-white'
+                }`}
+              >
+                <Gauge className="w-3.5 h-3.5" />
+                <span>Big-O Radar</span>
               </button>
             </div>
 
@@ -1224,7 +1312,21 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
                 </div>
               )}
 
-            </div>
+            
+              {/* MEMORY & POINTER HUD TAB */}
+              {rightTab === 'memory-hud' && (
+                <div className="p-1">
+                  <CodeMemoryVisualizer code={code} language={language} problem={activeProblem} />
+                </div>
+              )}
+
+              {/* BIG-O COMPLEXITY RADAR TAB */}
+              {rightTab === 'complexity-radar' && (
+                <div className="p-1">
+                  <BigOComplexityRadar code={code} language={language} problem={activeProblem} />
+                </div>
+              )}
+</div>
           </div>
 
           {/* Action Footer Buttons */}
