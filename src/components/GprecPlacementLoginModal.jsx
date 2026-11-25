@@ -5,8 +5,10 @@ import {
   Check, Shield,
   ExternalLink
 } from 'lucide-react';
-import { 
-  isAllowedGprecRoll, 
+import {
+  isAllowedGprecRoll,
+  isAllowedGprecRollCloud,
+  syncCustomRollsFromCloud, 
   normalizeRollNumber, 
   getGprecEmailFromRoll, 
   sendGprecPlacementOtp, 
@@ -63,6 +65,7 @@ export default function GprecPlacementLoginModal({
     } else if (defaultRole) {
       setAuthRole(defaultRole);
     }
+    syncCustomRollsFromCloud().catch(() => {});
     if (isOpen) {
       setErrorMsg('');
       setSuccessMsg('');
@@ -85,8 +88,14 @@ export default function GprecPlacementLoginModal({
       return;
     }
 
-    if (!isAllowedGprecRoll(cleanRoll)) {
-      setErrorMsg(`Roll number "${cleanRoll}" is not verified for the GPREC Placement Suite. Only verified GPREC scholars are permitted.`);
+    setLoading(true);
+    let isAllowed = isAllowedGprecRoll(cleanRoll);
+    if (!isAllowed) {
+      isAllowed = await isAllowedGprecRollCloud(cleanRoll);
+    }
+    if (!isAllowed) {
+      setLoading(false);
+      setErrorMsg(`Roll number "${cleanRoll.toUpperCase()}" is not registered on the whitelist. Please contact the Placement Cell or Founder to get access.`);
       return;
     }
 

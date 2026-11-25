@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { syncCustomRollsFromCloud } from '../services/gprecPlacementAuth';
 import { 
   Cpu, Mic, Code, Award, Target, FileText, Briefcase, 
   CheckCircle2, ArrowRight, ShieldCheck, ChevronRight,
@@ -9,6 +10,11 @@ import {
 
 export default function GprecPlacementLanding({ onEnterPlacement, onLoginClick }) {
   const [activeFilter, setActiveFilter] = useState('all');
+
+  // Pre-sync authorized scholars from cloud database on landing load
+  useEffect(() => {
+    syncCustomRollsFromCloud().catch(() => {});
+  }, []);
 
   // Triple-click detector on GPREC crest for Founder Login
   const logoClicksRef = useRef(0);

@@ -23,7 +23,8 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '259xa05217',
   '239x1a33a0',
   '259xa33013',
-  '269x103013'
+  '269x103013',
+  '239x1a05l9'
 ];
 
 export const PLACEMENT_SUPPORT_EMAIL = 'lumixora.team@gmail.com';
@@ -278,6 +279,7 @@ export function getGprecScholarRoster() {
       else if (norm === '239x1a33a0') scholarName = 'M BHARANI KUMAR REDDY';
       else if (norm === '259xa33013') scholarName = 'BICHALA HEMASREE';
       else if (norm === '269x103013') scholarName = 'RUTHIKA';
+      else if (norm === '239x1a05l9') scholarName = 'AMMENA BANU';
       else scholarName = `GPREC Scholar (${norm.toUpperCase()})`;
     }
     fullList.push({
@@ -648,6 +650,73 @@ export function isAllowedGprecRoll(rollNumber = '') {
 }
 
 /**
+ * Asynchronously verifies if a roll number is allowed by querying real-time Supabase cloud database
+ */
+export async function isAllowedGprecRollCloud(rollNumber = '') {
+  const normalized = normalizeRollNumber(rollNumber);
+  if (!normalized) return false;
+
+  // 1. Check if explicitly revoked by founder
+  const revoked = new Set(getStoredRevokedRolls());
+  if (revoked.has(normalized)) {
+    return false;
+  }
+
+  // 2. Allow official placement coordinators
+  if (normalized === 'srikanth.csm@gprec.ac.in' || normalized === 'dean.placements@gprec.ac.in') {
+    return true;
+  }
+
+  // 3. Check synchronous allowed list (built-in + local cache)
+  if (isAllowedGprecRoll(normalized)) {
+    return true;
+  }
+
+  // 4. Query real-time Supabase dedicated table gprec_whitelisted_scholars
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('gprec_whitelisted_scholars')
+        .select('*')
+        .or(`roll_lower.eq.${normalized},roll_number.ilike.${normalized}`)
+        .limit(1);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const row = data[0];
+        const r = normalizeRollNumber(row.roll_lower || row.roll_number);
+        // Persist to local cache so subsequent synchronous calls succeed
+        const local = getStoredCustomRolls();
+        const exists = local.some(item => (typeof item === 'string' ? item : item.rollNumber).toLowerCase() === r);
+        if (!exists) {
+          local.push({
+            id: row.id,
+            rollNumber: r,
+            name: row.name || `GPREC Scholar (${r.toUpperCase()})`,
+            department: row.department || deriveBranchFromRoll(r),
+            year: row.year || deriveYearFromRoll(r),
+            email: row.email || `${r}@gprec.ac.in`,
+            addedAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+            addedBy: row.added_by || 'Founder'
+          });
+          saveCustomRolls(local);
+        }
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('Real-time Supabase roll check notice:', err);
+  }
+
+  // 5. Fallback full cloud sync
+  try {
+    await syncCustomRollsFromCloud();
+    return isAllowedGprecRoll(normalized);
+  } catch (e) {
+    return isAllowedGprecRoll(normalized);
+  }
+}
+
+/**
  * Resolves the institutional email address from roll number or email input
  */
 export function getGprecEmailFromRoll(rollNumber = '') {
@@ -684,7 +753,11 @@ export function getRolling5MinOtp(rollNumber = '', timeOffsetStep = 0) {
  */
 export async function sendGprecPlacementOtp(rollNumber) {
   const normalized = normalizeRollNumber(rollNumber);
-  if (!isAllowedGprecRoll(normalized)) {
+  let isAllowed = isAllowedGprecRoll(normalized);
+  if (!isAllowed) {
+    isAllowed = await isAllowedGprecRollCloud(normalized);
+  }
+  if (!isAllowed) {
     throw new Error(`Roll number not in active cohort. Contact ${PLACEMENT_SUPPORT_EMAIL} for placement access.`);
   }
 
@@ -724,7 +797,11 @@ export async function sendGprecPlacementOtp(rollNumber) {
  */
 export async function verifyGprecPlacementOtp(rollNumber, token) {
   const normalized = normalizeRollNumber(rollNumber);
-  if (!isAllowedGprecRoll(normalized)) {
+  let isAllowed = isAllowedGprecRoll(normalized);
+  if (!isAllowed) {
+    isAllowed = await isAllowedGprecRollCloud(normalized);
+  }
+  if (!isAllowed) {
     throw new Error(`Unauthorized roll number. Contact ${PLACEMENT_SUPPORT_EMAIL}`);
   }
 
