@@ -463,21 +463,7 @@ export default function CampusPlacementLanding({
         </div>
       </section>
 
-      {/* ── SUPPORTED INSTITUTIONS ── */}
-      <section className="py-12 bg-slate-950/60 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto px-4 text-center space-y-4">
-          <p className="text-xs uppercase font-bold tracking-wider text-slate-400">
-            Open to Students Across All Universities & Autonomous Colleges
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-semibold text-slate-300">
-            {POPULAR_CAMPUS_COLLEGES.slice(0, 16).map((name) => (
-              <span key={name} className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ── FOOTER ── */}
       <footer className="mt-auto border-t border-slate-800/80 bg-[#070B19] py-8 text-center text-xs text-slate-500">

@@ -7,6 +7,14 @@
 import { supabase } from '../config/supabase';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { 
+  upsertCampusScholar, 
+  recordCampusPayment, 
+  checkCampusPaymentStatus, 
+  fetchCampusScholar,
+  saveCampusReadiness,
+  fetchCampusReadiness
+} from './campusDbService';
 
 const STORAGE_CAMPUS_PROFILE_KEY = 'lumixora_campus_student_profile';
 const STORAGE_CAMPUS_SESSION_KEY = 'lumixora_campus_session_token';
@@ -356,11 +364,9 @@ export async function saveCampusScholarProfile(profile) {
     sessionStorage.setItem(STORAGE_CAMPUS_SESSION_KEY, scholarRecord.id);
   } catch (e) {}
 
-  // 2. Cloud Persistence (Supabase table: campus_scholars)
+  // 2. Cloud Persistence into dedicated `campus_scholars` Supabase table
   try {
-    if (supabase) {
-      await supabase.from('campus_scholars').upsert([scholarRecord], { onConflict: 'email' });
-    }
+    await upsertCampusScholar(scholarRecord);
   } catch (err) {
     console.warn('Campus cloud profile sync notice:', err.message || err);
   }
