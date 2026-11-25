@@ -14,7 +14,6 @@ import OurTeamPortal from './OurTeamPortal';
 import Realistic3DLogo from '../components/Realistic3DLogo';
 import HolographicGlassCockpit from '../components/HolographicGlassCockpit';
 import StudentEvolutionSlider from '../components/StudentEvolutionSlider';
-import LandingCodeCinema from '../components/landing/LandingCodeCinema';
 import PlacementGapDiagnosticModal from '../components/PlacementGapDiagnosticModal';
 
 export default function LandingPage({ onLoginClick }) {
@@ -436,13 +435,18 @@ export default function LandingPage({ onLoginClick }) {
             <div className="pt-2 flex justify-center">
               <div
                 onClick={() => handleAuth('intern')}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-emerald-500/10 border border-cyan-500/30 hover:border-cyan-400 text-xs text-[#101A35] font-medium shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-cyan-500/30 hover:border-cyan-500 shadow-md hover:shadow-cyan-500/15 text-xs text-[#101A35] font-medium transition-all cursor-pointer group transform hover:-translate-y-0.5"
               >
-                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="font-extrabold text-[#101A35]">Cohort 01 Intern?</span>
-                <span className="text-[#101A35]/70 hidden sm:inline">Software Testing (17) • Research (13) • Marketing (13) • Content Creation (5)</span>
-                <span className="font-black text-[#7553E8] group-hover:underline flex items-center gap-0.5">
-                  Sign In to Track &rarr;
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping inline-block" />
+                  <span className="font-black text-[#101A35] tracking-tight">Cohort 01 Interns</span>
+                </div>
+                <span className="text-gray-500 hidden sm:inline text-[11px] font-mono">
+                  Software Testing (17) • Research (13) • Marketing (13) • Content Creation (5)
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-600/10 border border-purple-500/30 font-black text-[#7553E8] text-[11px] group-hover:bg-[#7553E8] group-hover:text-white transition-all flex items-center gap-1">
+                  <span>Sign In to Track</span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
             </div>
@@ -524,11 +528,6 @@ export default function LandingPage({ onLoginClick }) {
 
         </div>
       </section>
-
-      {/* ─────────────────────────────────────────────────────────────────
-          SECTION 01.5: CODECINEMA™ — THE LIVING CODE THEATER
-      ───────────────────────────────────────────────────────────────── */}
-      <LandingCodeCinema onGetStarted={() => handleAuth('student')} />
 
       {/* ─────────────────────────────────────────────────────────────────
           SECTION 02: THE PROBLEM — THE GAP BETWEEN LEARNING AND GETTING HIRED

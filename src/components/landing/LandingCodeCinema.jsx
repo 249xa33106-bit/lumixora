@@ -19,53 +19,119 @@ class CinemaDynamicAudio {
   }
 
   init() {
-    if (!this.ctx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioCtx();
-    }
+    try {
+      if (!this.ctx && typeof window !== 'undefined') {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+    } catch (e) {}
   }
 
   playDeepNote() {
     try {
       this.init();
       if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
 
-      const chord = [35.0, 52.3, 70.0, 104.6, 139.9, 209.3];
+      const chord = [43.65, 65.41, 87.31, 130.81, 196.00];
       const now = this.ctx.currentTime;
       const master = this.ctx.createGain();
-      master.gain.setValueAtTime(0.01, now);
-      master.gain.exponentialRampToValueAtTime(0.12, now + 1.8);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+      master.gain.setValueAtTime(0.02, now);
+      master.gain.exponentialRampToValueAtTime(0.24, now + 1.2);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 3.0);
       master.connect(this.ctx.destination);
 
       chord.forEach((freq) => {
         const osc = this.ctx.createOscillator();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq * 0.75, now);
-        osc.frequency.exponentialRampToValueAtTime(freq, now + 1.8);
+        osc.frequency.setValueAtTime(freq * 0.9, now);
+        osc.frequency.exponentialRampToValueAtTime(freq, now + 1.2);
         osc.connect(master);
         osc.start(now);
-        osc.stop(now + 3.2);
+        osc.stop(now + 3.0);
       });
     } catch (e) {}
   }
 
-  playCountdownBeep(freq = 440) {
+  playCountdownBeep(stage = 3) {
     try {
       this.init();
       if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const osc = this.ctx.createOscillator();
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+      
+      const now = this.ctx.currentTime;
+      
+      if (stage === 'go') {
+        // Triumphant opening fanfare chord for movie start
+        const freqs = [523.25, 659.25, 783.99, 1046.50]; // C Major
+        const chordGain = this.ctx.createGain();
+        chordGain.gain.setValueAtTime(0.35, now);
+        chordGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+        chordGain.connect(this.ctx.destination);
+
+        freqs.forEach((f) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now);
+          osc.connect(chordGain);
+          osc.start(now);
+          osc.stop(now + 0.92);
+        });
+
+        // Sub impact thud
+        const sub = this.ctx.createOscillator();
+        const subG = this.ctx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(110, now);
+        sub.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+        subG.gain.setValueAtTime(0.4, now);
+        subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        sub.connect(subG);
+        subG.connect(this.ctx.destination);
+        sub.start(now);
+        sub.stop(now + 0.42);
+        return;
+      }
+
+      // Crisp, resonant countdown beeps (3, 2, 1)
+      const freqMap = { 3: 440, 2: 554.37, 1: 659.25 };
+      const baseFreq = freqMap[stage] || (typeof stage === 'number' ? stage : 520);
+
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const click = this.ctx.createOscillator();
       const g = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      g.gain.setValueAtTime(0.08, this.ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.12);
-      osc.connect(g);
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(baseFreq, now);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(baseFreq * 2, now);
+
+      click.type = 'square';
+      click.frequency.setValueAtTime(baseFreq * 4, now);
+
+      const peak = 0.32;
+      g.gain.setValueAtTime(peak, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+      osc1.connect(g);
+      osc2.connect(g);
+      click.connect(g);
       g.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.14);
+
+      osc1.start(now);
+      osc2.start(now);
+      click.start(now);
+
+      osc1.stop(now + 0.24);
+      osc2.stop(now + 0.24);
+      click.stop(now + 0.08);
     } catch (e) {}
   }
 
@@ -73,7 +139,7 @@ class CinemaDynamicAudio {
     try {
       this.init();
       if (!this.ctx || this.projectorInterval) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
 
       this.projectorInterval = setInterval(() => {
         if (!this.ctx) return;
@@ -81,13 +147,13 @@ class CinemaDynamicAudio {
         const clickOsc = this.ctx.createOscillator();
         const clickGain = this.ctx.createGain();
         clickOsc.type = 'square';
-        clickOsc.frequency.setValueAtTime(140 + Math.random() * 80, now);
-        clickGain.gain.setValueAtTime(0.008, now);
-        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+        clickOsc.frequency.setValueAtTime(160 + Math.random() * 90, now);
+        clickGain.gain.setValueAtTime(0.018, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
         clickOsc.connect(clickGain);
         clickGain.connect(this.ctx.destination);
         clickOsc.start(now);
-        clickOsc.stop(now + 0.03);
+        clickOsc.stop(now + 0.032);
       }, 42);
     } catch (e) {}
   }
@@ -103,12 +169,12 @@ class CinemaDynamicAudio {
     try {
       this.init();
       if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
       if (this.isPlaying) return;
 
       this.gain = this.ctx.createGain();
-      this.gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
-      this.gain.gain.exponentialRampToValueAtTime(0.035, this.ctx.currentTime + 1.5);
+      this.gain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+      this.gain.gain.exponentialRampToValueAtTime(0.065, this.ctx.currentTime + 1.5);
       this.gain.connect(this.ctx.destination);
 
       this.oscDrone = this.ctx.createOscillator();
@@ -117,7 +183,7 @@ class CinemaDynamicAudio {
 
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(110, this.ctx.currentTime);
+      filter.frequency.setValueAtTime(120, this.ctx.currentTime);
       this.oscDrone.connect(filter);
       filter.connect(this.gain);
       this.oscDrone.start();
@@ -483,26 +549,29 @@ export default function LandingCodeCinema({ onGetStarted }) {
     setActiveActIndex(startFromAct);
     setTimelineTime(0);
     setCinemaStage('opening_curtains');
+    
+    // Play dramatic opening brass/sub swell and spin up projector audio
     landingAudio.playDeepNote();
+    landingAudio.startProjectorSound();
 
     setTimeout(() => {
       setCinemaStage('countdown');
       setCountdownNumber(3);
-      landingAudio.playCountdownBeep(440);
+      landingAudio.playCountdownBeep(3);
 
       const c2 = setTimeout(() => {
         setCountdownNumber(2);
-        landingAudio.playCountdownBeep(554);
+        landingAudio.playCountdownBeep(2);
       }, 850);
 
       const c1 = setTimeout(() => {
         setCountdownNumber(1);
-        landingAudio.playCountdownBeep(659);
+        landingAudio.playCountdownBeep(1);
       }, 1700);
 
       const cGo = setTimeout(() => {
         setCountdownNumber(null);
-        landingAudio.playCountdownBeep(880);
+        landingAudio.playCountdownBeep('go');
         setCinemaStage('playing');
         if (isAudioEnabled) {
           landingAudio.startScore();
@@ -598,24 +667,45 @@ export default function LandingCodeCinema({ onGetStarted }) {
     }
   };
 
+  const activeActIndexRef = useRef(activeActIndex);
+  useEffect(() => {
+    activeActIndexRef.current = activeActIndex;
+  }, [activeActIndex]);
+
   // ─── ULTRA-HIGH PRODUCTION 60 FPS HTML5 LIVING ARCHITECTURE CANVAS ───
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     let running = true;
+    let cachedW = 0;
+    let cachedH = 0;
+
+    const handleResize = () => {
+      if (!canvas) return;
+      const w = canvas.offsetWidth || 800;
+      const h = canvas.offsetHeight || 500;
+      if (w !== cachedW || h !== cachedH) {
+        cachedW = w;
+        cachedH = h;
+        canvas.width = w;
+        canvas.height = h;
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
 
     // Rich floating nebula stardust particles
-    const starParticles = Array.from({ length: 60 }, () => ({
-      x: Math.random() * 800,
-      y: Math.random() * 500,
-      radius: Math.random() * 2.2 + 0.6,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: (Math.random() - 0.5) * 0.45,
+    const starParticles = Array.from({ length: 45 }, () => ({
+      x: Math.random() * (cachedW || 800),
+      y: Math.random() * (cachedH || 500),
+      radius: Math.random() * 2.0 + 0.6,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
       hue: Math.random() > 0.5 ? 45 : (Math.random() > 0.5 ? 180 : 280),
-      alpha: Math.random() * 0.7 + 0.3
+      alpha: Math.random() * 0.6 + 0.3
     }));
 
     const render = () => {
@@ -623,8 +713,9 @@ export default function LandingCodeCinema({ onGetStarted }) {
       tickRef.current += 1;
       const tick = tickRef.current;
 
-      const width = canvas.width = canvas.offsetWidth;
-      const height = canvas.height = canvas.offsetHeight;
+      const width = cachedW || canvas.width || 800;
+      const height = cachedH || canvas.height || 500;
+      const currentActIdx = activeActIndexRef.current;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -691,7 +782,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
       // ───────────────────────────────────────────────────────────
       // ACT 1: NEURAL PLACEMENT MATRIX & TIER-1 CONSTELLATION
       // ───────────────────────────────────────────────────────────
-      if (activeActIndex === 0) {
+      if (currentActIdx === 0) {
         const radius = Math.min(width, height) * 0.40;
 
         // 1. Concentric Holographic Orbital Rings with Cyber Degree Ticks
@@ -911,7 +1002,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
       // ───────────────────────────────────────────────────────────
       // ACT 2: CODECINEMA™ QUANTUM AST RECTOR & CONSTANT FOLDING
       // ───────────────────────────────────────────────────────────
-      else if (activeActIndex === 1) {
+      else if (currentActIdx === 1) {
         const pulse = Math.sin(tick * 0.08) * 10;
 
         // Blazing Central Plasma Fusion Reactor
@@ -1003,7 +1094,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
       // ───────────────────────────────────────────────────────────
       // ACT 3: AI 70M BLUEPRINT EXAM PAPER PREDICTOR
       // ───────────────────────────────────────────────────────────
-      else if (activeActIndex === 2) {
+      else if (currentActIdx === 2) {
         // Multi-frequency harmonic spectrum oscilloscope waves
         const waveColors = ['#22d3ee', '#a855f7', '#10b981'];
         waveColors.forEach((col, idx) => {
@@ -1091,7 +1182,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
       // ───────────────────────────────────────────────────────────
       // ACT 4: BOLOCLASS & LUMINA 3D AI CLASSROOM
       // ───────────────────────────────────────────────────────────
-      else if (activeActIndex === 3) {
+      else if (currentActIdx === 3) {
         // Glowing Central Audio Sphere (Lumina's Voice Avatar)
         const orbRadius = 42 + Math.sin(tick * 0.12) * 6;
         ctx.shadowBlur = 30;
@@ -1215,9 +1306,10 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
     return () => {
       running = false;
+      window.removeEventListener('resize', handleResize);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [activeActIndex]);
+  }, []);
 
   return (
     <section id="code-cinema" className="py-20 md:py-28 bg-[#040308] text-white relative overflow-hidden select-none">
@@ -1380,12 +1472,15 @@ export default function LandingCodeCinema({ onGetStarted }) {
                       />
                     </div>
                     {/* Label under segment */}
-                    <div className="flex items-center justify-between mt-1 text-[9px] sm:text-[10px] font-mono">
+                    <div className="flex items-center justify-between mt-1.5 text-[9px] sm:text-[10px] font-mono">
                       <span className={`truncate font-bold transition-colors ${isCurrent ? 'text-[#d4af37]' : isPast ? 'text-gray-300' : 'text-gray-500'}`}>
-                        <span className="hidden xs:inline">ACT {act.actNumber}: </span>
-                        {act.title.split(' ')[0]} {act.title.split(' ')[1] || ''}
+                        <span className="hidden xs:inline">ACT 0{act.actNumber}: </span>
+                        {idx === 0 ? 'Placement Radar' :
+                         idx === 1 ? 'CodeCinema DSA' :
+                         idx === 2 ? '70M Predictor' :
+                         idx === 3 ? 'BoloClass AI' : 'Proof-of-Skill'}
                       </span>
-                      <span className="text-gray-500 text-[8px] sm:text-[9px] hidden md:inline">
+                      <span className="text-gray-500 text-[8px] sm:text-[9px] font-bold hidden sm:inline ml-1">
                         {isCurrent ? `${timelineTime}s` : `${act.duration}s`}
                       </span>
                     </div>
@@ -1829,19 +1924,34 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
           {/* ─── STAGE 02: VINTAGE SMPTE 3... 2... 1... COUNTDOWN ─── */}
           {countdownNumber !== null && (
-            <div className="absolute inset-0 z-50 bg-[#060608] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
-              <div className="relative w-44 h-44 rounded-full border-4 border-[#d4af37]/60 flex items-center justify-center animate-spin" style={{ animationDuration: '1s' }}>
-                <div className="absolute top-0 bottom-0 w-0.5 bg-[#d4af37]/60" />
-                <div className="absolute left-0 right-0 h-0.5 bg-[#d4af37]/60" />
-                <div className="w-32 h-32 rounded-full border border-[#d4af37]/30" />
+            <div className="absolute inset-0 z-50 bg-[#060608]/95 backdrop-blur-md flex flex-col items-center justify-center pointer-events-none animate-fade-in">
+              <div className="relative w-52 h-52 rounded-full border-2 border-[#d4af37]/40 flex items-center justify-center">
+                {/* Rotating Film Reticle */}
+                <div 
+                  className="absolute inset-0 rounded-full border border-dashed border-[#d4af37]/70 animate-spin" 
+                  style={{ animationDuration: '2s' }} 
+                />
+                <div className="absolute top-0 bottom-0 w-[1.5px] bg-[#d4af37]/50" />
+                <div className="absolute left-0 right-0 h-[1.5px] bg-[#d4af37]/50" />
+                <div className="w-36 h-36 rounded-full border border-[#d4af37]/30 bg-black/40" />
+
+                {/* Pulsing countdown numeral */}
+                <div key={countdownNumber} className="absolute text-8xl sm:text-9xl font-mono font-black text-[#fff4d6] drop-shadow-[0_0_40px_rgba(212,175,55,0.9)] animate-ping" style={{ animationIterationCount: 1, animationDuration: '0.4s' }}>
+                  {countdownNumber}
+                </div>
+                <div className="absolute text-8xl sm:text-9xl font-mono font-black text-[#fff4d6] drop-shadow-[0_0_40px_rgba(212,175,55,0.9)]">
+                  {countdownNumber}
+                </div>
               </div>
 
-              <div className="absolute text-8xl sm:text-9xl font-mono font-black text-[#fff4d6] drop-shadow-[0_0_35px_rgba(212,175,55,0.8)]">
-                {countdownNumber}
-              </div>
-
-              <div className="mt-8 text-xs font-mono font-bold tracking-[0.35em] uppercase text-[#d4af37]">
-                70MM FILM LEADER • LUMIXORA PREMIERE
+              <div className="mt-8 flex flex-col items-center gap-1.5">
+                <div className="text-xs font-mono font-black tracking-[0.4em] uppercase text-[#d4af37] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping inline-block" />
+                  OPTICAL SOUNDTRACK ROLLING • 70MM SMPTE LEADER
+                </div>
+                <div className="text-[10px] font-mono text-gray-400">
+                  DOLBY ATMOS AUDIO SYNTHESIZER ARMED • ACT 01 READY
+                </div>
               </div>
             </div>
           )}

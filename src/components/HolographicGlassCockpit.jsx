@@ -31,6 +31,7 @@ export default function HolographicGlassCockpit({ onActionClick }) {
   const [isHovered, setIsHovered] = useState(false);
   const [testRunSuccess, setTestRunSuccess] = useState(false);
   const [isSimulatingAudio, setIsSimulatingAudio] = useState(false);
+  const [hoveredRole, setHoveredRole] = useState(null);
 
   // 3D Parallax Mouse Physics
   const handleMouseMove = (e) => {
@@ -114,8 +115,8 @@ export default function HolographicGlassCockpit({ onActionClick }) {
             </div>
           </div>
 
-          {/* Interactive Feature Switcher Pills */}
-          <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-xl border border-white/10">
+          {/* Interactive Feature Switcher Pills with sleek overflow handling */}
+          <div className="flex items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 overflow-x-auto no-scrollbar max-w-full">
             {[
               { id: 'placement', label: 'Placement Radar', icon: Target },
               { id: 'boloclass', label: 'BoloClass Audio', icon: Volume2 },
@@ -132,14 +133,14 @@ export default function HolographicGlassCockpit({ onActionClick }) {
                     playHologramClick(780);
                     setActiveTab(tab.id);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
                     isActive 
-                      ? 'bg-gradient-to-r from-[#7553E8] to-[#08BFD0] text-white shadow-md shadow-[#7553E8]/30 scale-105' 
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-purple-500/25 scale-[1.02] border border-cyan-400/40' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
-                  <Icon className="w-3 h-3" />
-                  <span className="hidden md:inline">{tab.label}</span>
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-300' : 'text-gray-400'}`} />
+                  <span>{tab.label}</span>
                 </button>
               );
             })}
@@ -158,60 +159,137 @@ export default function HolographicGlassCockpit({ onActionClick }) {
           
           {/* TAB 1: AI PLACEMENT COMMANDER RADAR */}
           {activeTab === 'placement' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center animate-fadeIn">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center animate-fadeIn">
               <div className="lg:col-span-7 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#08BFD0]/10 border border-[#08BFD0]/30 text-[11px] font-bold text-[#08BFD0] uppercase tracking-wider">
-                  <Activity className="w-3 h-3 animate-pulse" />
-                  Continuous Placement Telemetry
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-[11px] font-black text-cyan-300 uppercase tracking-wider shadow-sm shadow-cyan-500/20">
+                  <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                  Continuous Placement Telemetry • 24/7 Radar
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
                   AI Placement Commander
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-bold">LIVE SYNC</span>
                 </h3>
                 <p className="text-sm text-gray-300 leading-relaxed font-normal">
                   Your 24/7 autonomous career radar. It continuously calculates your role readiness, runs ATS resume simulations, and maps your path to Tier-1 product offers.
                 </p>
 
-                {/* Company target badges */}
+                {/* Company target badges with live radar cross-highlight */}
                 <div className="pt-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 font-mono">
-                    Target Role Alignment:
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 font-mono">
+                    <span>Target Role Alignment:</span>
+                    <span className="text-[10px] text-cyan-400 normal-case font-sans">Hover to inspect radar ping</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {['Google SDE-1 (88%)', 'Cisco Cloud (94%)', 'Swiggy Backend (91%)', 'AI Startups (96%)'].map((role, i) => (
-                      <span 
-                        key={i} 
-                        className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-gray-200 hover:border-[#08BFD0]/50 hover:bg-[#08BFD0]/10 transition-colors cursor-default"
-                      >
-                        {role}
-                      </span>
-                    ))}
+                    {[
+                      { id: 'google', name: 'Google SDE-1', score: '88%', angle: 45, dist: 70, color: 'text-blue-300 border-blue-500/40' },
+                      { id: 'cisco', name: 'Cisco Cloud', score: '94%', angle: 135, dist: 78, color: 'text-cyan-300 border-cyan-500/40' },
+                      { id: 'swiggy', name: 'Swiggy Backend', score: '91%', angle: 220, dist: 65, color: 'text-amber-300 border-amber-500/40' },
+                      { id: 'startups', name: 'AI Startups', score: '96%', angle: 310, dist: 82, color: 'text-purple-300 border-purple-500/40' }
+                    ].map((role) => {
+                      const isTargetHovered = hoveredRole === role.id;
+                      return (
+                        <button
+                          key={role.id}
+                          onMouseEnter={() => setHoveredRole(role.id)}
+                          onMouseLeave={() => setHoveredRole(null)}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isTargetHovered
+                              ? 'bg-cyan-500/25 border-cyan-300 text-white shadow-lg shadow-cyan-500/30 scale-105'
+                              : 'bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10'
+                          }`}
+                        >
+                          <Target className={`w-3 h-3 ${isTargetHovered ? 'text-cyan-300 animate-spin' : 'text-gray-400'}`} />
+                          <span>{role.name}</span>
+                          <span className="text-cyan-400">({role.score})</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
 
-              {/* Right Radar Gauge */}
-              <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 rounded-2xl bg-white/[0.03] border border-white/10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-radial from-[#7553E8]/10 via-transparent to-transparent pointer-events-none" />
+              {/* Right Radar Gauge: Upgraded with Rotating Sweep, Radar Blips & Score Ring */}
+              <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 rounded-3xl bg-gradient-to-b from-[#0e1628]/90 via-[#070b14]/90 to-[#03060c]/90 border border-cyan-500/30 relative overflow-hidden shadow-2xl shadow-cyan-950/40">
+                <div className="absolute inset-0 bg-radial from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
                 
-                {/* Simulated Radar Circles */}
-                <div className="relative w-44 h-44 rounded-full border border-[#08BFD0]/30 flex items-center justify-center">
-                  <div className="absolute w-32 h-32 rounded-full border border-dashed border-[#7553E8]/40 animate-spin" style={{ animationDuration: '14s' }} />
-                  <div className="absolute w-20 h-20 rounded-full border border-[#00B987]/30" />
+                {/* Genuine Active Radar Display */}
+                <div className="relative w-48 h-48 rounded-full border border-cyan-500/30 flex items-center justify-center bg-black/60 shadow-[inset_0_0_30px_rgba(8,191,208,0.15)]">
+                  {/* Concentric rings */}
+                  <div className="absolute w-36 h-36 rounded-full border border-cyan-500/20" />
+                  <div className="absolute w-24 h-24 rounded-full border border-dashed border-purple-500/30 animate-spin" style={{ animationDuration: '24s' }} />
+                  <div className="absolute w-12 h-12 rounded-full border border-emerald-500/30" />
                   
-                  {/* Center Score */}
-                  <div className="text-center z-10">
-                    <span className="text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-[#08BFD0] to-[#00B987]">
+                  {/* Crosshair lines */}
+                  <div className="absolute inset-x-0 h-[1px] bg-cyan-500/20" />
+                  <div className="absolute inset-y-0 w-[1px] bg-cyan-500/20" />
+
+                  {/* 360-degree rotating radar sweep beam */}
+                  <div 
+                    className="absolute inset-0 rounded-full pointer-events-none animate-spin"
+                    style={{ 
+                      animationDuration: '4s',
+                      background: 'conic-gradient(from 0deg, rgba(8, 191, 208, 0.4) 0deg, rgba(8, 191, 208, 0.0) 65deg, transparent 65deg)'
+                    }} 
+                  />
+
+                  {/* Radar Target Blips */}
+                  <div 
+                    className={`absolute top-7 right-8 w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      hoveredRole === 'google' ? 'bg-cyan-300 scale-150 shadow-[0_0_12px_#08BFD0]' : 'bg-cyan-400/80'
+                    }`}
+                    title="Google SDE-1 Blip (88%)"
+                  >
+                    <span className="absolute -inset-1 rounded-full bg-cyan-400/50 animate-ping" />
+                  </div>
+
+                  <div 
+                    className={`absolute bottom-9 right-9 w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      hoveredRole === 'cisco' ? 'bg-purple-300 scale-150 shadow-[0_0_12px_#a855f7]' : 'bg-purple-400/80'
+                    }`}
+                    title="Cisco Cloud Blip (94%)"
+                  >
+                    <span className="absolute -inset-1 rounded-full bg-purple-400/50 animate-ping" />
+                  </div>
+
+                  <div 
+                    className={`absolute bottom-8 left-10 w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      hoveredRole === 'swiggy' ? 'bg-amber-300 scale-150 shadow-[0_0_12px_#f59e0b]' : 'bg-amber-400/80'
+                    }`}
+                    title="Swiggy Backend Blip (91%)"
+                  >
+                    <span className="absolute -inset-1 rounded-full bg-amber-400/50 animate-ping" />
+                  </div>
+
+                  <div 
+                    className={`absolute top-10 left-9 w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      hoveredRole === 'startups' ? 'bg-emerald-300 scale-150 shadow-[0_0_12px_#10b981]' : 'bg-emerald-400/80'
+                    }`}
+                    title="AI Startups Blip (96%)"
+                  >
+                    <span className="absolute -inset-1 rounded-full bg-emerald-400/50 animate-ping" />
+                  </div>
+
+                  {/* Center Score & Telemetry */}
+                  <div className="text-center z-10 bg-black/75 px-3 py-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+                    <span className="text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_15px_rgba(8,191,208,0.6)]">
                       89%
                     </span>
-                    <span className="block text-[10px] font-mono text-gray-400 font-bold uppercase">
+                    <span className="block text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider mt-0.5">
                       Campus Rank: Top 2%
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between w-full text-xs font-mono text-gray-400 pt-2 border-t border-white/10">
-                  <span>ATS Score: <strong className="text-white">96/100</strong></span>
-                  <span>Mock Rounds: <strong className="text-[#00B987]">18 Cleared</strong></span>
+                {/* Bottom Telemetry Metrics Strip */}
+                <div className="mt-4 grid grid-cols-2 gap-2 w-full text-xs font-mono pt-3 border-t border-white/10">
+                  <div className="p-2 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
+                    <span className="text-gray-400 text-[11px]">ATS Score:</span>
+                    <strong className="text-emerald-400 font-bold">96/100</strong>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-between">
+                    <span className="text-gray-400 text-[11px]">Mock Rounds:</span>
+                    <strong className="text-cyan-300 font-bold">18 Cleared</strong>
+                  </div>
                 </div>
               </div>
             </div>
