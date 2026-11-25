@@ -79,6 +79,134 @@ export default function FounderLoginAuditManager() {
   const [quickRollInput, setQuickRollInput] = useState('');
   const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
 
+  // Roster Tab Search & Branch Filters
+  const [rosterBranchFilter, setRosterBranchFilter] = useState('all'); // 'all' | 'CSM' | 'CSE' | 'ECE' | 'ME' | 'EEE' | 'Civil'
+  const [rosterYearFilter, setRosterYearFilter] = useState('all'); // 'all' | '1st' | '2nd' | '3rd' | '4th'
+  const [isSendingWelcomeEmail, setIsSendingWelcomeEmail] = useState({});
+
+  // Helper to open pre-filled WhatsApp invite
+  const handleOpenWhatsAppInvite = (scholar) => {
+    const roll = scholar.rollNumber || scholar.rawRoll;
+    const name = scholar.name || 'Scholar';
+    const message = encodeURIComponent(
+      `Hi ${name}! 🎉\n\nYour GPREC Placement Suite access has been officially approved and whitelisted by the Placement Cell!\n\n` +
+      `🔗 Portal: https://gprec.lumixora.in/\n` +
+      `📌 Roll Number: ${roll.toUpperCase()}\n` +
+      `🔑 Login Method: Enter your roll number to receive your 5-minute security verification code at your institutional email (${scholar.email}).\n\n` +
+      `All the best with your placement preparations!`
+    );
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
+  // Helper to dispatch official GPREC Welcome Email via Cloudflare Worker
+  const handleSendWelcomeEmail = async (scholar) => {
+    const roll = scholar.rollNumber || scholar.rawRoll;
+    setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: true }));
+    try {
+      const res = await fetch('/api/send-gprec-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rollNumber: roll,
+          email: scholar.email,
+          name: scholar.name,
+          department: scholar.department
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        addToast({ message: `✉️ Welcome email dispatched to ${scholar.email}!`, type: 'success' });
+      } else {
+        addToast({ message: data.error || 'Failed to dispatch welcome email.', type: 'error' });
+      }
+    } catch (err) {
+      addToast({ message: 'Network error sending welcome email.', type: 'error' });
+    } finally {
+      setIsSendingWelcomeEmail(prev => ({ ...prev, [roll]: false }));
+    }
+  };
+
+  // 1-Click Institutional TPO Excel Format Export
+  const handleExportTpoExcel = () => {
+    try {
+      const exportData = roster.map((s, idx) => {
+        // Compute total login sessions & active status from logs
+        const studentLogs = logs.filter(l => (l.rollNumber || '').toLowerCase() === s.rawRoll.toLowerCase());
+        const totalDurationSec = studentLogs.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
+        const lastLogin = studentLogs[0]?.loginTimeFormatted || 'Not Yet Logged In';
+        const hoursSpent = (totalDurationSec / 3600).toFixed(1);
+
+        // Derive mock readiness badge status
+        let readiness = 'Enrolled / Ready';
+        if (studentLogs.length >= 3 || totalDurationSec > 1800) {
+          readiness = 'Active Prep (Cleared OA)';
+        } else if (studentLogs.length > 0) {
+          readiness = 'Onboarded (Resume Uploaded)';
+        }
+
+        return {
+          'S.No': idx + 1,
+          'Roll Number': s.rollNumber,
+          'Scholar Name': s.name,
+          'Department': s.department,
+          'Academic Year': s.year,
+          'GPREC Email': s.email,
+          'Total Sessions': studentLogs.length,
+          'Prep Time (Hours)': `${hoursSpent} hrs`,
+          'Last Login Activity': lastLogin,
+          'Placement Readiness Status': readiness,
+          'Cohort Source': s.type
+        };
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      ws['!cols'] = [
+        { wch: 6 },  // S.No
+        { wch: 15 }, // Roll Number
+        { wch: 28 }, // Scholar Name
+        { wch: 16 }, // Department
+        { wch: 12 }, // Academic Year
+        { wch: 28 }, // Email
+        { wch: 14 }, // Total Sessions
+        { wch: 16 }, // Prep Time
+        { wch: 22 }, // Last Login
+        { wch: 26 }, // Readiness
+        { wch: 18 }  // Cohort Source
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'GPREC_TPO_Roster');
+      XLSX.writeFile(wb, `GPREC_TPO_Official_Placement_Roster_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      addToast({ message: 'Institutional TPO Placement Sheet (.xlsx) downloaded successfully.', type: 'success' });
+    } catch (err) {
+      console.error(err);
+      addToast({ message: 'Failed to export TPO Excel sheet.', type: 'error' });
+    }
+  };
+
+  // 1-Click Cloud Snapshot Backup
+  const handleBackupRosterJson = () => {
+    try {
+      const backupPayload = {
+        exportedAt: new Date().toISOString(),
+        institution: 'G. Pulla Reddy Engineering College (GPREC)',
+        totalScholars: roster.length,
+        scholars: roster
+      };
+      const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gprec_whitelisted_scholars_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast({ message: '☁️ Database snapshot downloaded as JSON backup.', type: 'success' });
+    } catch (e) {
+      addToast({ message: 'Failed to create JSON backup.', type: 'error' });
+    }
+  };
+
   // Load audit logs on mount
   const loadLogs = async (showToast = false) => {
     setIsRefreshing(true);
@@ -181,10 +309,12 @@ export default function FounderLoginAuditManager() {
         setRoster(getGprecScholarRoster());
         addToast({ message: `⚡ Successfully whitelisted ${added.length} scholars in real cloud database!`, type: 'success' });
       } else {
-        await addGprecScholarRoll(cleanInput, { addedBy: 'Founder Quick Bar' });
+        const addedScholar = await addGprecScholarRoll(cleanInput, { addedBy: 'Founder Quick Bar' });
         await syncCustomRollsFromCloud();
         setRoster(getGprecScholarRoster());
         addToast({ message: `⚡ Successfully whitelisted ${cleanInput.toUpperCase()}!`, type: 'success' });
+        // Auto-dispatch welcome email in the background
+        handleSendWelcomeEmail(addedScholar).catch(() => {});
       }
       setQuickRollInput('');
     } catch (err) {
@@ -752,6 +882,24 @@ export default function FounderLoginAuditManager() {
 
             <div className="flex items-center gap-2">
               <button
+                onClick={handleExportTpoExcel}
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-bold text-emerald-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                title="Export official GPREC Placement TPO roster spreadsheet"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                <span>TPO Sheet (.xlsx)</span>
+              </button>
+
+              <button
+                onClick={handleBackupRosterJson}
+                className="px-3 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-xs font-bold text-purple-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Download full database snapshot as JSON backup"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>JSON Snapshot</span>
+              </button>
+
+              <button
                 onClick={() => {
                   setAddMode('single');
                   setIsAddModalOpen(true);
@@ -759,7 +907,7 @@ export default function FounderLoginAuditManager() {
                 className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-400/20 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <UserPlus className="w-4 h-4" />
-                <span>+ Add Scholar (e.g. 249XA33106)</span>
+                <span>+ Add Scholar</span>
               </button>
               <button
                 onClick={() => {
@@ -774,6 +922,43 @@ export default function FounderLoginAuditManager() {
             </div>
           </div>
 
+          {/* Roster Branch & Year Filter Toolbar */}
+          <div className="px-5 py-3 bg-[#0E1738] border-b border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <Filter className="w-3 h-3 text-amber-400" /> Branch:
+              </span>
+              {['all', 'CSM', 'CSE', 'ECE', 'ME', 'EEE', 'Civil'].map(branch => (
+                <button
+                  key={branch}
+                  onClick={() => setRosterBranchFilter(branch)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    rosterBranchFilter === branch
+                      ? 'bg-amber-400 text-slate-950 shadow-sm'
+                      : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                  }`}
+                >
+                  {branch === 'all' ? 'All Branches' : branch}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Year:</span>
+              <select
+                value={rosterYearFilter}
+                onChange={(e) => setRosterYearFilter(e.target.value)}
+                className="px-2.5 py-1 rounded-lg bg-[#070D1E] border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400"
+              >
+                <option value="all">All Years</option>
+                <option value="1st">1st Year</option>
+                <option value="2nd">2nd Year</option>
+                <option value="3rd">3rd Year</option>
+                <option value="4th">4th Year</option>
+              </select>
+            </div>
+          </div>
+
           {/* Roster Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -784,21 +969,55 @@ export default function FounderLoginAuditManager() {
                   <th className="px-5 py-3.5">GPREC Institutional Email</th>
                   <th className="px-5 py-3.5">Department / Branch</th>
                   <th className="px-5 py-3.5">Batch / Year</th>
+                  <th className="px-5 py-3.5">Prep Readiness Status</th>
                   <th className="px-5 py-3.5">Cohort Category</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
+                  <th className="px-5 py-3.5 text-right">Instant Invite & Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {roster
                   .filter(item => {
-                    if (!searchQuery.trim()) return true;
-                    const q = searchQuery.toLowerCase().trim();
-                    return item.rollNumber.toLowerCase().includes(q) ||
-                           item.name.toLowerCase().includes(q) ||
-                           item.email.toLowerCase().includes(q) ||
-                           item.department.toLowerCase().includes(q);
+                    // 1. Search Query Filter
+                    if (searchQuery.trim()) {
+                      const q = searchQuery.toLowerCase().trim();
+                      const matches = item.rollNumber.toLowerCase().includes(q) ||
+                                      item.name.toLowerCase().includes(q) ||
+                                      item.email.toLowerCase().includes(q) ||
+                                      item.department.toLowerCase().includes(q);
+                      if (!matches) return false;
+                    }
+                    // 2. Branch Filter
+                    if (rosterBranchFilter !== 'all') {
+                      const b = (item.department || '').toLowerCase();
+                      if (rosterBranchFilter === 'CSM' && !b.includes('csm')) return false;
+                      if (rosterBranchFilter === 'CSE' && (!b.includes('cse') || b.includes('csm'))) return false;
+                      if (rosterBranchFilter === 'ECE' && !b.includes('ece')) return false;
+                      if (rosterBranchFilter === 'ME' && !b.includes('mech')) return false;
+                      if (rosterBranchFilter === 'EEE' && !b.includes('eee')) return false;
+                      if (rosterBranchFilter === 'Civil' && !b.includes('civil')) return false;
+                    }
+                    // 3. Year Filter
+                    if (rosterYearFilter !== 'all') {
+                      if (!item.year.toLowerCase().includes(rosterYearFilter.toLowerCase())) return false;
+                    }
+                    return true;
                   })
-                  .map((scholar) => (
+                  .map((scholar) => {
+                    // Compute live student activity for readiness badge
+                    const studentLogs = logs.filter(l => (l.rollNumber || '').toLowerCase() === scholar.rawRoll.toLowerCase());
+                    const totalDurationSec = studentLogs.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
+                    const isLiveNow = studentLogs.some(l => l.status === 'active');
+
+                    let readinessBadge = { label: 'Enrolled / Ready', color: 'bg-slate-500/15 text-slate-300 border-slate-500/30' };
+                    if (isLiveNow) {
+                      readinessBadge = { label: '🟢 Live in Placement Suite', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse' };
+                    } else if (studentLogs.length >= 3 || totalDurationSec > 1800) {
+                      readinessBadge = { label: '⭐ Active Prep (Cleared OA)', color: 'bg-purple-500/20 text-purple-300 border-purple-500/40' };
+                    } else if (studentLogs.length > 0) {
+                      readinessBadge = { label: '⚡ Onboarded (Logged In)', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
+                    }
+
+                    return (
                     <tr key={scholar.rawRoll} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
@@ -827,6 +1046,11 @@ export default function FounderLoginAuditManager() {
                         <span className="text-slate-300 text-[11px]">{scholar.year}</span>
                       </td>
                       <td className="px-5 py-3.5">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${readinessBadge.color}`}>
+                          {readinessBadge.label}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           scholar.isCustom 
                             ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' 
@@ -838,6 +1062,29 @@ export default function FounderLoginAuditManager() {
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* 📲 Instant WhatsApp Share */}
+                          <button
+                            onClick={() => handleOpenWhatsAppInvite(scholar)}
+                            className="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+                            title="Share instant WhatsApp invite message with student"
+                          >
+                            <span>WhatsApp</span>
+                          </button>
+
+                          {/* ✉️ Send Official Welcome Email */}
+                          <button
+                            onClick={() => handleSendWelcomeEmail(scholar)}
+                            disabled={isSendingWelcomeEmail[scholar.rollNumber]}
+                            className="px-2 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                            title="Dispatch official welcome clearance email to student inbox"
+                          >
+                            {isSendingWelcomeEmail[scholar.rollNumber] ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <span>Email</span>
+                            )}
+                          </button>
+
                           <button
                             onClick={() => handleOpenEditModal(scholar)}
                             className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all cursor-pointer"
@@ -857,7 +1104,7 @@ export default function FounderLoginAuditManager() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )})}
               </tbody>
             </table>
           </div>
