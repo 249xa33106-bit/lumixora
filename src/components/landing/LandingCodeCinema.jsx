@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Film, Play, Pause, SkipForward, SkipBack, RotateCcw, Volume2, VolumeX,
   Sparkles, Code2, Terminal, Cpu, Award, Zap, Shield, Flame, BookOpen,
-  ChevronRight, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Maximize2,
+  ChevronRight, ArrowRight, Layers, Sliders, CheckCircle2, Clock, Maximize2, Minimize2,
   Tv, Compass, Check, Clapperboard, Star, Brain, GraduationCap, Mic, MicOff,
-  Eye, Monitor, Radio, Activity
+  Eye, Monitor, Radio, Activity, Target
 } from 'lucide-react';
 
 /* ─── HOLLYWOOD-GRADE DYNAMIC AUDIO SYNTHESIZER (WEB AUDIO API) ─── */
