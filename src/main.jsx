@@ -22,9 +22,37 @@ if ('serviceWorker' in navigator) {
 
 // Auto-recover from Vite dynamic import chunk mismatch when a new deployment occurs
 if (typeof window !== 'undefined') {
+  const handleChunkMismatch = () => {
+    const reloadKey = 'lumixora_chunk_reload_lock';
+    const lastReload = sessionStorage.getItem(reloadKey);
+    const now = Date.now();
+    if (!lastReload || (now - parseInt(lastReload, 10)) > 15000) {
+      sessionStorage.setItem(reloadKey, now.toString());
+      console.warn('[Deployment Sync] Chunk mismatch detected. Auto-reloading with latest deployment...');
+      window.location.reload();
+    }
+  };
+
   window.addEventListener('vite:preloadError', (event) => {
-    console.warn('Vite preloadError detected. Auto-reloading latest deployment assets...');
-    window.location.reload();
+    event?.preventDefault?.();
+    handleChunkMismatch();
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event?.reason;
+    const msg = (reason?.message || (typeof reason === 'string' ? reason : '') || '').toLowerCase();
+    if (msg.includes('failed to fetch dynamically imported module') || msg.includes('loading chunk')) {
+      event?.preventDefault?.();
+      handleChunkMismatch();
+    }
+  });
+
+  window.addEventListener('error', (event) => {
+    const msg = (event?.message || '').toLowerCase();
+    if (msg.includes('failed to fetch dynamically imported module') || msg.includes('loading chunk')) {
+      event?.preventDefault?.();
+      handleChunkMismatch();
+    }
   });
 }
 

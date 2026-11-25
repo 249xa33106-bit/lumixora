@@ -14,16 +14,24 @@ class ErrorBoundary extends React.Component {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
 
-    const errorStr = (error?.message || error?.toString() || '').toLowerCase();
+    const errorStr = (
+      (error?.message || '') + ' ' +
+      (error?.stack || '') + ' ' +
+      (error?.toString?.() || '')
+    ).toLowerCase();
     const isChunkMismatch = 
       errorStr.includes('failed to fetch dynamically imported module') ||
       errorStr.includes('loading chunk') ||
+      errorStr.includes('dynamically imported module') ||
+      errorStr.includes('importing a module script failed') ||
       error?.name === 'ChunkLoadError';
 
     if (isChunkMismatch && typeof window !== 'undefined') {
-      const reloadKey = 'lumixora_chunk_reload_done';
-      if (!sessionStorage.getItem(reloadKey)) {
-        sessionStorage.setItem(reloadKey, 'true');
+      const reloadKey = 'lumixora_chunk_reload_lock';
+      const lastReload = sessionStorage.getItem(reloadKey);
+      const now = Date.now();
+      if (!lastReload || (now - parseInt(lastReload, 10)) > 15000) {
+        sessionStorage.setItem(reloadKey, now.toString());
         console.warn('Deployment chunk hash change detected. Auto-reloading page with new assets...');
         window.location.reload();
       }
@@ -32,10 +40,16 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      const errorStr = (this.state.error?.message || this.state.error?.toString() || '').toLowerCase();
+      const errorStr = (
+        (this.state.error?.message || '') + ' ' +
+        (this.state.error?.stack || '') + ' ' +
+        (this.state.error?.toString?.() || '')
+      ).toLowerCase();
       const isChunkMismatch = 
         errorStr.includes('failed to fetch dynamically imported module') ||
         errorStr.includes('loading chunk') ||
+        errorStr.includes('dynamically imported module') ||
+        errorStr.includes('importing a module script failed') ||
         this.state.error?.name === 'ChunkLoadError';
 
       if (isChunkMismatch) {

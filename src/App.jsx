@@ -37,12 +37,13 @@ const AttendancePortal = lazy(() => import('./pages/AttendancePortal'));
 const StudentOffersPortal = lazy(() => import('./pages/StudentOffersPortal'));
 const Marketplace = lazy(() => import('./pages/Marketplace'));
 const CareerRoadmap = lazy(() => import('./pages/CareerRoadmap'));
+import { lazyWithRetry } from './utils/lazyWithRetry';
 const SimulationPortal = lazy(() => import('./pages/SimulationPortal'));
-const AiPlacementCommander = lazy(() => import('./pages/AiPlacementCommander'));
+const AiPlacementCommander = lazyWithRetry(() => import('./pages/AiPlacementCommander'));
 const LumixoraPlacementCommander = lazy(() => import('./pages/LumixoraPlacementCommander'));
 const LumixoraTechPulse = lazy(() => import('./pages/LumixoraTechPulse'));
 const ClubsPortal = lazy(() => import('./pages/ClubsPortal'));
-const FacultyPortal = lazy(() => import('./pages/FacultyPortal'));
+const FacultyPortal = lazyWithRetry(() => import('./pages/FacultyPortal'));
 const HackathonPortal = lazy(() => import('./pages/HackathonPortal'));
 const GrievancePortal = lazy(() => import('./pages/GrievancePortal'));
 const ProjectShowcase = lazy(() => import('./pages/ProjectShowcase'));
@@ -72,13 +73,13 @@ const LumixoraInternPortal = lazy(() => import('./pages/LumixoraInternPortal'));
 import StudentOnboardingModal from './components/StudentOnboardingModal';
 import CursorCompanionModal from './components/CursorCompanionModal';
 const SpeakVersePortal = lazy(() => import('./pages/SpeakVersePortal'));
-const TechPulsePortal = lazy(() => import('./pages/TechPulsePortal'));
-const GprecPlacementLanding = lazy(() => import('./components/GprecPlacementLanding'));
+const TechPulsePortal = lazyWithRetry(() => import('./pages/TechPulsePortal'));
+const GprecPlacementLanding = lazyWithRetry(() => import('./components/GprecPlacementLanding'));
 import GprecPlacementLoginModal from './components/GprecPlacementLoginModal';
-const GprecTpoPortal = lazy(() => import('./pages/GprecTpoPortal'));
-const StudentPlacementDatabase = lazy(() => import('./pages/StudentPlacementDatabase'));
+const GprecTpoPortal = lazyWithRetry(() => import('./pages/GprecTpoPortal'));
+const StudentPlacementDatabase = lazyWithRetry(() => import('./pages/StudentPlacementDatabase'));
 import { isGprecPlacementSubdomain, isTpoSubdomain, isGprecOnlySubdomain, GPREC_PLACEMENT_PORTALS, isAllowedGprecPlacementTab } from './utils/placementSubdomain';
-const TpoPortalLanding = lazy(() => import('./pages/TpoPortalLanding'));
+const TpoPortalLanding = lazyWithRetry(() => import('./pages/TpoPortalLanding'));
 
 
 // Instant silent Suspense Fallback (Zero loading screen, instant render)
