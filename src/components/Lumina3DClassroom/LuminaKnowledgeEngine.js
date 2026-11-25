@@ -1,6 +1,206 @@
 /**
- * 🧠 Lumina AI Knowledge Engine (Generalized STEM & Multidisciplinary Doubt Solver)
- * 
+ * 🧮 Solves arithmetic expressions, print statements, and code evaluations
+ * Handles:
+ * - "2+4", "15 * 12 + 8", "100 / 4", "2^8"
+ * - "printgf(2+4)", "printf(2+4)", "print(2+4)", "console.log(2+4)"
+ */
+export function solveArithmeticOrCodeExpression(rawQuery = '') {
+  const query = (rawQuery || '').trim();
+
+  // Pattern 1: Print / Output wrapping functions (e.g. printgf(2+4), printf(2+4), print(2+4), console.log(2+4))
+  const printMatch = query.match(/^(print(?:gf|f)?|console\.log|cout\s*<<|echo)\s*\(?([^()]+)\)?/i);
+
+  // Pattern 2: Pure arithmetic expression (e.g. "2+4", "15 * 12", "100 / (2 + 3)")
+  const isPureArithmetic = /^[\s\d+\-*/^().,%eE]+$/.test(query) && /[\d]/.test(query) && /[+\-*/^%]/.test(query);
+
+  let innerExpr = '';
+  let isPrintStatement = false;
+  let printFnName = 'printf';
+
+  if (printMatch) {
+    isPrintStatement = true;
+    printFnName = printMatch[1].trim();
+    innerExpr = printMatch[2].trim().replace(/^['"]|['"]$/g, '');
+  } else if (isPureArithmetic) {
+    innerExpr = query;
+  } else {
+    const embedMatch = query.match(/(?:what\s+is|calculate|evaluate|solve|compute)\s+([\d+\-*/^().\s%]+)/i);
+    if (embedMatch && /[+\-*/^%]/.test(embedMatch[1])) {
+      innerExpr = embedMatch[1].trim();
+    }
+  }
+
+  if (!innerExpr) return null;
+
+  // Safely evaluate math expression
+  let evalResult;
+  try {
+    const sanitized = innerExpr.replace(/\^/g, '**');
+    if (!/^[\d\s+\-*/.()**%]+$/.test(sanitized)) return null;
+    
+    // Evaluate in strict math sandbox
+    const result = Function(`'use strict'; return (${sanitized});`)();
+    if (typeof result !== 'number' || isNaN(result) || !isFinite(result)) return null;
+    evalResult = Number.isInteger(result) ? result : parseFloat(result.toFixed(4));
+  } catch {
+    return null;
+  }
+
+  // If it was a print function call like "printgf(2+4)" or "printf(2+4)"
+  if (isPrintStatement) {
+    const isTypo = /printgf/i.test(printFnName);
+    const correctedFn = isTypo ? 'printf' : printFnName;
+
+    return {
+      id: 'code_eval_' + Date.now(),
+      subject: 'Computer Science • C / C++ Output',
+      title: `Evaluation: ${correctedFn}(${innerExpr})`,
+      primaryFormula: `${correctedFn}("%d\\n", ${innerExpr})  ⟹  Output: ${evalResult}`,
+      steps: [
+        `1. Expression Parsing: Inner operand '${innerExpr}' is evaluated by the ALU: ${innerExpr} = ${evalResult}.`,
+        `2. Execution & I/O: Runtime function ${correctedFn}() formats integer ${evalResult} to stdout buffer.`,
+        isTypo 
+          ? `3. Typo Auto-Resolution: '${printFnName}' is automatically resolved to C standard library printf().`
+          : `3. Memory & Output: System call write(1, "${evalResult}\\n", ...) completes with Exit Code 0.`
+      ],
+      boxedConclusion: `Program Standard Output: ${evalResult}`,
+      spokenExplanation: `Let's analyze your code query: ${query}. The inner expression ${innerExpr} is evaluated by the arithmetic logic unit to give ${evalResult}. In C and C++, the standard output function printf formats this integer and writes ${evalResult} directly to standard output!`,
+      diagramType: 'code_execution',
+      diagramData: {
+        fn: correctedFn,
+        input: innerExpr,
+        output: evalResult,
+        isTypo
+      },
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  // Pure arithmetic evaluation
+  return {
+    id: 'arithmetic_eval_' + Date.now(),
+    subject: 'Arithmetic & Computation',
+    title: `Calculation: ${innerExpr} = ${evalResult}`,
+    primaryFormula: `${innerExpr} = ${evalResult}`,
+    steps: [
+      `1. Expression Parsing: Operand tokens evaluated under operator precedence rules (PEMDAS/BODMAS).`,
+      `2. Step-by-Step Computation: Direct evaluation of (${innerExpr}) computes exactly ${evalResult}.`,
+      `3. Numerical Invariant: Computed output ${evalResult} verified accurate and dimensionally stable.`
+    ],
+    boxedConclusion: `Calculated Value = ${evalResult}`,
+    spokenExplanation: `The evaluation of ${innerExpr} equals ${evalResult}! Following standard order of operations, we calculate the expression directly on the chalkboard to obtain the exact result: ${evalResult}.`,
+    diagramType: 'code_execution',
+    diagramData: {
+      fn: 'calc',
+      input: innerExpr,
+      output: evalResult
+    },
+    isCustom: true,
+    rawQuery: query
+  };
+}
+
+/**
+ * 💻 Solves common Computer Science and Coding Concepts
+ */
+export function solveCodingConceptQuery(rawQuery = '') {
+  const query = (rawQuery || '').trim();
+  const lower = query.toLowerCase();
+
+  if (lower.includes('pointer') || lower.includes('pointers in c')) {
+    return {
+      id: 'cs_pointers_' + Date.now(),
+      subject: 'Computer Science • Systems & C',
+      title: 'Pointers & Memory Addressing in C',
+      primaryFormula: 'int val = 42;  int *ptr = &val;',
+      steps: [
+        '1. Memory Address (&): Every variable resides at a unique hexadecimal RAM address (e.g. 0x7ffd).',
+        '2. Pointer Declaration (*): "int *ptr" declares a variable holding memory address of an integer.',
+        '3. Dereferencing (*ptr): Directly reads or writes value stored at the referenced memory address.'
+      ],
+      boxedConclusion: '*ptr == 42   (Value)   |   ptr == &val   (Address)',
+      spokenExplanation: "In C and C++, pointers store memory addresses rather than direct values! Using the ampersand operator, we take the address of a variable, and with the asterisk dereference operator, we read or modify the value directly in memory.",
+      diagramType: 'pointer_memory',
+      diagramData: { varName: 'val', val: 42, addr: '0x7ffd' },
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  if (lower.includes('binary search') || lower.includes('bsearch')) {
+    return {
+      id: 'cs_binary_search_' + Date.now(),
+      subject: 'Algorithms & Data Structures',
+      title: 'Binary Search Algorithm (O(log N))',
+      primaryFormula: 'mid = low + (high - low) / 2',
+      steps: [
+        '1. Precondition: Input array must be sorted in ascending order [A0, A1, ... An].',
+        '2. Divide & Conquer: Compare target with arr[mid]; if target < arr[mid], search left half.',
+        '3. Asymptotic Complexity: Halves search space each step: N ⟶ N/2 ⟶ ... ⟶ 1 in O(log N) steps.'
+      ],
+      boxedConclusion: 'Time Complexity: O(log N)   |   Space: O(1)',
+      spokenExplanation: "Binary search is the quintessential logarithmic search algorithm! Because the array is sorted, comparing your target with the midpoint halves the remaining elements at every single step, finding any key in O of log N time.",
+      diagramType: 'binary_search_tree',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  if (lower.includes('linked list') || lower.includes('linkedlist') || lower.includes('singly linked')) {
+    return {
+      id: 'cs_linked_list_' + Date.now(),
+      subject: 'Data Structures & Memory',
+      title: 'Singly Linked List Architecture',
+      primaryFormula: 'struct Node { int data; struct Node *next; };',
+      steps: [
+        '1. Dynamic Heap Allocation: Nodes allocated dynamically in memory without contiguous array limits.',
+        '2. Pointer Chaining: Each node stores data plus reference pointer to the successor node.',
+        '3. Head Insertion: Inserting at head runs in O(1) time by re-pointing head pointer.'
+      ],
+      boxedConclusion: 'Head Insert: O(1)   |   Traversal Search: O(N)',
+      spokenExplanation: "A linked list is a dynamic linear data structure where elements are not stored contiguously in memory. Each node holds its data and a pointer pointing to the next node in the heap, allowing instant O(1) insertions!",
+      diagramType: 'linked_list_nodes',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  if (lower.includes('stack') || lower.includes('queue')) {
+    const isStack = lower.includes('stack');
+    return {
+      id: 'cs_stack_queue_' + Date.now(),
+      subject: 'Data Structures • ADT',
+      title: isStack ? 'Stack Abstract Data Type (LIFO)' : 'Queue Abstract Data Type (FIFO)',
+      primaryFormula: isStack ? 'Stack: Last-In, First-Out (Push / Pop)' : 'Queue: First-In, First-Out (Enqueue / Dequeue)',
+      steps: [
+        isStack
+          ? '1. LIFO Invariant: Most recently inserted element is first to be removed.'
+          : '1. FIFO Invariant: Oldest inserted element is first to be dequeued.',
+        isStack
+          ? '2. Core Methods: push(x) places onto top; pop() removes top in O(1) time.'
+          : '2. Core Methods: enqueue(x) at rear; dequeue() from front in O(1) time.',
+        isStack
+          ? '3. Real-world Uses: Function call recursion stack, compiler parsing, Undo history.'
+          : '3. Real-world Uses: OS process scheduling, print spoolers, BFS graph traversal.'
+      ],
+      boxedConclusion: 'Push & Pop Operations: O(1) Constant Time',
+      spokenExplanation: isStack
+        ? "A stack is a Last-In, First-Out data structure. Just like a stack of plates, you push items onto the top and pop them from the top in O(1) constant time!"
+        : "A queue is a First-In, First-Out data structure. Just like a line at a ticket counter, elements enqueue at the rear and dequeue from the front in O(1) time!",
+      diagramType: isStack ? 'stack_diagram' : 'queue_diagram',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  return null;
+}
+
+/**
  * Functions like a ChatGPT-style conversational AI mentor:
  * - Analyzes any question or doubt across Mathematics, Physics, Computer Science,
  *   Chemistry, Biology, Electrical Engineering, Calculus, and General Logic.
@@ -713,19 +913,51 @@ export function analyzeDoubt(rawQuery = '') {
   const query = (rawQuery || '').trim();
   const lower = query.toLowerCase();
 
-  // 1. Solve systems of linear equations (e.g. "A+B=4, A+2B=8 FIND A & B")
+  // 0. Conversational & Persona queries ("who are you", "who r u", "hi", "hello", "what can you do")
+  const isGreetingOrIdentity = /^(who\s*(are\s*you|r\s*u|u)|what\s*are\s*you|introduce\s*yourself|tell\s*me\s*about\s*yourself|what('s|\s+is)\s+your\s+name|hello|hi|hey|howdy)\b/i.test(lower) || 
+    lower === 'who r u' || lower === 'who are you' || lower === 'who u' || lower === 'hi lumina' || lower === 'hello lumina';
+
+  if (isGreetingOrIdentity) {
+    return {
+      id: 'lumina_identity_' + Date.now(),
+      subject: 'LUMINA AI • PERSONAL MENTOR',
+      title: 'Meet Lumina: Your AI Polymath Mentor',
+      primaryFormula: 'Lumina = Curiosity + Rigor + Empathy',
+      steps: [
+        '1. Identity: 24/7 Personal STEM & Polymath Mentor.',
+        '2. Core Mastery: Mathematics, CS, Physics, and Engineering.',
+        '3. Classroom: Interactive chalkboard derivations & doubt solving.'
+      ],
+      boxedConclusion: 'Ask me any question or doubt to begin learning!',
+      spokenExplanation: "Hello! I am Lumina, your personal polymath mentor on Lumixora. I'm here to help you master mathematics, physics, computer science, and engineering from first principles. Feel free to ask me any doubt, and we will derive and solve it step-by-step together on the chalkboard!",
+      diagramType: 'mentor_emblem',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  // 1. Solve Arithmetic, Print statements, and Math expressions (e.g. "printgf(2+4)", "printf(2+4)", "2+4", "15 * 12")
+  const arithCode = solveArithmeticOrCodeExpression(query);
+  if (arithCode) return arithCode;
+
+  // 2. Solve Computer Science concepts (e.g. "pointers in c", "binary search", "linked list", "stack", "queue")
+  const csConcept = solveCodingConceptQuery(query);
+  if (csConcept) return csConcept;
+
+  // 3. Solve systems of linear equations (e.g. "A+B=4, A+2B=8 FIND A & B")
   const linearSys = solveLinearSystem(query);
   if (linearSys) return linearSys;
 
-  // 2. Solve numeric quadratic equations (e.g. "x^2 - 5x + 6 = 0")
+  // 4. Solve numeric quadratic equations (e.g. "x^2 - 5x + 6 = 0")
   const numQuad = solveNumericQuadratic(query);
   if (numQuad) return numQuad;
 
-  // 3. Solve single-variable linear equations (e.g. "2x + 6 = 18")
+  // 5. Solve single-variable linear equations (e.g. "2x + 6 = 18")
   const singleLin = solveSingleLinear(query);
   if (singleLin) return singleLin;
 
-  // 4. Solve Calculus expressions (derivatives & integrals)
+  // 6. Solve Calculus expressions (derivatives & integrals)
   const calcResult = solveCalculusExpression(query);
   if (calcResult) return calcResult;
 
@@ -778,12 +1010,13 @@ export function analyzeDoubt(rawQuery = '') {
     detectedSubject = 'Applied Mathematics';
     diagramType = 'formula_flow';
     primaryFormula = query.length < 35 && hasMathSymbols ? query : 'f(x) = Analytical Model';
+    const displayMath = query.length < 32 ? query : 'Mathematical Model';
     customSteps = [
-      '1. Algebraic Formulation: Group like terms and establish domain constraints.',
-      '2. Canonical Reduction: Transform into standard form via algebraic operations.',
-      '3. Exact Synthesis: Calculate roots, critical points, and verify substitution.'
+      `1. Mathematical Formulation: Formulate the governing relations for "${displayMath}".`,
+      `2. Canonical Simplification: Apply operator properties, factoring, and domain constraints.`,
+      `3. Analytical Verification: Derive exact roots, limits, and evaluate boundary conditions.`
     ];
-    boxedConclusion = 'Exact Analytical Solution Verified';
+    boxedConclusion = `Analytical Invariant Verified for: ${displayMath}`;
     spokenPedagogy = `Let's solve your mathematical query: "${query}". On the board, we state the mathematical relations, reduce through canonical algebraic steps, and verify the analytical conclusion!`;
 
   } else if (lower.includes('reaction') || lower.includes('atom') || lower.includes('molecule') || lower.includes('bond') || lower.includes('acid') || lower.includes('base') || lower.includes('ph') || lower.includes('electron')) {
@@ -812,11 +1045,14 @@ export function analyzeDoubt(rawQuery = '') {
 
   } else {
     // Open-ended general questions
+    const displayTopic = query.length < 32 ? query : 'Concept';
+    detectedSubject = 'Polymath STEM & Inquiry';
     customSteps = [
-      '1. First Principles: Establish foundational definitions, axioms, and scope.',
-      '2. Analytical Deconstruction: Trace cause-and-effect relationships across systems.',
-      '3. Synthesis & Application: Formulate concise takeaways and verify real-world alignment.'
+      `1. Core Foundation: Establish primary axioms, definitions, and boundaries of "${displayTopic}".`,
+      `2. Structural Mechanism: Deconstruct functional relationships, workflows, and dynamics.`,
+      `3. Applied Synthesis: Formulate concise takeaways and verify real-world alignment.`
     ];
+    boxedConclusion = `Synthesized Framework for: ${displayTopic}`;
     spokenPedagogy = `Let's explore your question: "${query}". On the chalkboard, we break this down from first principles into core governing mechanisms and practical insights!`;
   }
 

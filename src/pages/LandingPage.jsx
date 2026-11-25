@@ -15,6 +15,7 @@ import Realistic3DLogo from '../components/Realistic3DLogo';
 import HolographicGlassCockpit from '../components/HolographicGlassCockpit';
 import StudentEvolutionSlider from '../components/StudentEvolutionSlider';
 import PlacementGapDiagnosticModal from '../components/PlacementGapDiagnosticModal';
+import LandingCodeCinema from '../components/landing/LandingCodeCinema';
 
 export default function LandingPage({ onLoginClick }) {
   // Navigation & modals
@@ -528,6 +529,11 @@ export default function LandingPage({ onLoginClick }) {
 
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          🎬 CODECINEMA™: THE LIVING CODE THEATER & IMMERSIVE FILM PREMIERE 🍿
+      ───────────────────────────────────────────────────────────────── */}
+      <LandingCodeCinema onGetStarted={handleAuth} />
 
       {/* ─────────────────────────────────────────────────────────────────
           SECTION 02: THE PROBLEM — THE GAP BETWEEN LEARNING AND GETTING HIRED
