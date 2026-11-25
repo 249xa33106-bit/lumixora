@@ -698,7 +698,9 @@ function directMovieFromUserCode(code, language = 'Python', customTitle = '') {
         durationSec: 22,
         dilemma: `Source code arrives as a raw character stream. The interpreter must parse and validate literals without memory overhead.`,
         tradeoff: `Lexical Abstract Syntax Tree (AST) building vs interpreter string scanning.`,
-        narration: `Act I begins. The compiler lexer tokenizes '${cleanTrimmed}'. Look at the Abstract Syntax Tree constructing: operands ${expressionData.leftVal} and ${expressionData.rightVal} bind to binary operator '${expressionData.op}'. In modern runtimes, constant folding resolves deterministic expressions before bytecode dispatch.`,
+        narration: expressionData.isPrint
+          ? `Act I begins. The ${language} runtime tokenizes '${cleanTrimmed}'. The interpreter frames string literal '${expressionData.result}' into a PyUnicodeObject on the value stack, preparing unbuffered stdout dispatch.`
+          : `Act I begins. The compiler lexer tokenizes '${cleanTrimmed}'. Look at the Abstract Syntax Tree constructing: operands ${expressionData.leftVal} and ${expressionData.rightVal} bind to binary operator '${expressionData.op}'. In modern runtimes, constant folding resolves deterministic expressions before bytecode dispatch.`,
         interviewQuestion: `How does the ${language} compiler optimize constant expressions like '${expressionData.rawExpr}'?`,
         interviewAnswer: `Through 'Constant Folding' in the peephole optimizer: pure literal binary operations (${expressionData.rawExpr}) are evaluated into ${expressionData.result} at compile-time, saving runtime CPU instructions.`,
         code: act1Code
@@ -712,7 +714,9 @@ function directMovieFromUserCode(code, language = 'Python', customTitle = '') {
         durationSec: 26,
         dilemma: `Pushing operands onto the value stack and flushing stdout without blocking the event loop.`,
         tradeoff: `Direct CPU register evaluation vs heap object allocation.`,
-        narration: `Act II climax: The Virtual Machine pushes ${expressionData.leftVal} and ${expressionData.rightVal} into CPU registers. Opcode BINARY_OP executes in a single clock cycle, resolving to ${expressionData.result}. The runtime flushes '${expressionData.result}' to stdout in 0.02 milliseconds.`,
+        narration: expressionData.isPrint
+          ? `Act II climax: The Virtual Machine dispatches builtin function '${language === 'Python' ? 'print' : 'console.log'}()'. The stream flushes '${expressionData.result}' directly to standard output in 0.01ms without heap thrashing.`
+          : `Act II climax: The Virtual Machine pushes ${expressionData.leftVal} and ${expressionData.rightVal} into CPU registers. Opcode BINARY_OP executes in a single clock cycle, resolving to ${expressionData.result}. The runtime flushes '${expressionData.result}' to stdout in 0.02 milliseconds.`,
         interviewQuestion: `What is the difference between line-buffered and block-buffered output when flushing ${expressionData.result}?`,
         interviewAnswer: `Interactive consoles are line-buffered and flush on newline; redirected pipes are block-buffered (4KB-8KB) to maximize disk/network throughput.`,
         code: act2Code
@@ -759,6 +763,14 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
   const progressRef = useRef(progress);
   const playbackSpeedRef = useRef(playbackSpeed);
 
+  // User Interactive View Mode: 'radar' (Image 1 AI Placement Twin Radar) | 'engine' (Code/AST Execution Engine)
+  const [canvasViewMode, setCanvasViewMode] = useState('radar');
+  const canvasViewModeRef = useRef('radar');
+
+  useEffect(() => {
+    canvasViewModeRef.current = canvasViewMode;
+  }, [canvasViewMode]);
+
   const filmId = film?.id || 'user-film';
 
   // Real-time Dynamic Archetype & Data Extraction (Auto-upgrades any film or code)
@@ -767,7 +779,7 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
   const cleanCode = rawCode.trim();
   const lowerCode = cleanCode.toLowerCase();
 
-  const arithmeticMatch = cleanCode.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/\%\^])\s*(\d+(?:\.\d+)?)/);
+  const arithmeticMatch = cleanCode.match(/(\d+(?:\.\d+)?)\s*([\+\-\*/\%\^])\s*(\d+(?:\.\d+)?)/);
   const isPrint = lowerCode.includes('print') || lowerCode.includes('console.log') || lowerCode.includes('echo') || lowerCode.includes('stdout');
   const strMatch = cleanCode.match(/["'](.*?)["']/);
   const extractedString = strMatch ? strMatch[1] : (cleanCode.replace(/^(print|console\.log)\s*[\(\[]?|[\)\];]?$/gi, '').trim() || 'sowban');
@@ -822,20 +834,262 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    // Ambient Starfield Particles for Deep Space Backdrop
+    const stars = Array.from({ length: 42 }).map((_, i) => ({
+      x: (i * 73) % 640,
+      y: (i * 47) % 520,
+      r: (i % 3 === 0) ? 1.8 : ((i % 2 === 0) ? 1.2 : 0.8),
+      color: i % 4 === 0 ? '#38bdf8' : (i % 3 === 0 ? '#d4af37' : (i % 2 === 0 ? '#c084fc' : '#ffffff')),
+      speed: 0.15 + (i % 5) * 0.08,
+      baseAlpha: 0.35 + (i % 5) * 0.12
+    }));
+
     const render = () => {
       // Continuous smooth tick that NEVER resets to 0!
       tickRef.current += 0.035 * (playbackSpeedRef.current || 1);
       const tick = tickRef.current;
       const curProgress = progressRef.current ?? 0;
       const curIsPlaying = isPlayingRef.current ?? false;
+      const activeMode = canvasViewModeRef.current;
 
       const w = canvas.width = Math.max(300, canvas.offsetWidth || 500);
       const h = canvas.height = Math.max(240, canvas.offsetHeight || 380);
 
-      // Dark auditorium canvas backing
-      ctx.fillStyle = '#08080a';
+      // Deep dark cosmic canvas backing
+      ctx.fillStyle = '#07080d';
       ctx.fillRect(0, 0, w, h);
 
+      // ─── AMBIENT STARFIELD PARTICLES ───
+      stars.forEach((star, idx) => {
+        const sx = (star.x + tick * star.speed * 8) % w;
+        const sy = (star.y + Math.sin(tick + idx) * 3) % h;
+        const alpha = star.baseAlpha + Math.sin(tick * 2 + idx) * 0.25;
+        ctx.beginPath();
+        ctx.arc(sx, sy, star.r, 0, Math.PI * 2);
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha));
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1.0;
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 🎯 MODE 1: LIVING ARCHITECTURE AI PLACEMENT TWIN RADAR (MATCHES IMAGE 1)
+      // ═══════════════════════════════════════════════════════════════════════
+      if (activeMode === 'radar') {
+        const cx = w * 0.5;
+        const cy = h * 0.48;
+        const R = Math.min(w * 0.38, h * 0.36, 155);
+
+        // 1. 3D Perspective Grid Plane converging to vanishing horizon
+        const vpX = cx;
+        const vpY = cy - 25;
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.07)';
+        ctx.lineWidth = 1;
+
+        // Radiating perspective lines
+        const rays = 12;
+        for (let i = 0; i < rays; i++) {
+          const fx = cx + ((i - (rays - 1) / 2) / (rays / 2)) * (w * 0.55);
+          const fy = h;
+          ctx.beginPath();
+          ctx.moveTo(vpX, vpY);
+          ctx.lineTo(fx, fy);
+          ctx.stroke();
+        }
+
+        // Horizontal perspective rungs
+        const rungs = 7;
+        for (let j = 1; j <= rungs; j++) {
+          const t = Math.pow(j / rungs, 1.8);
+          const ry = vpY + (h - vpY) * t;
+          const rw = (w * 0.55) * t;
+          ctx.beginPath();
+          ctx.moveTo(cx - rw, ry);
+          ctx.lineTo(cx + rw, ry);
+          ctx.stroke();
+        }
+
+        // 2. Outer Circular Radar Perimeter with Crosshairs
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.75)';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Concentric distance range rings
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.18)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
+        ctx.arc(cx, cy, R * 0.68, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Crosshairs along main axes
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.22)';
+        ctx.beginPath();
+        ctx.moveTo(cx - R - 6, cy); ctx.lineTo(cx + R + 6, cy);
+        ctx.moveTo(cx, cy - R - 6); ctx.lineTo(cx, cy + R + 6);
+        ctx.stroke();
+
+        // 3. 60 FPS Rotating Radar Sweep Cone
+        const sweepAngle = (tick * 1.6) % (Math.PI * 2);
+        const coneWidth = 0.42; // ~24 degrees
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, sweepAngle, sweepAngle + coneWidth);
+        ctx.closePath();
+
+        const sweepGrad = ctx.createRadialGradient(cx, cy, 5, cx, cy, R);
+        sweepGrad.addColorStop(0, 'rgba(0, 245, 212, 0.45)');
+        sweepGrad.addColorStop(0.7, 'rgba(0, 245, 212, 0.18)');
+        sweepGrad.addColorStop(1, 'rgba(0, 245, 212, 0.0)');
+        ctx.fillStyle = sweepGrad;
+        ctx.fill();
+        ctx.restore();
+
+        // 4. 3 Elliptical 3D Planetary Orbits (tilted multi-axis ellipses)
+        // Orbit 1: Cyan/Teal tilted ellipse
+        const ang1 = -0.48; // -28 deg
+        const rx1 = R * 0.98, ry1 = R * 0.42;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(ang1);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx1, ry1, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+        ctx.lineWidth = 1.6;
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.restore();
+
+        // Orbit 2: Violet/Purple tilted ellipse
+        const ang2 = 0.72; // ~41 deg
+        const rx2 = R * 0.90, ry2 = R * 0.40;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(ang2);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx2, ry2, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.65)';
+        ctx.lineWidth = 1.6;
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.restore();
+
+        // Orbit 3: Amber/Blue horizontal ellipse
+        const ang3 = 0.05;
+        const rx3 = R * 1.05, ry3 = R * 0.35;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(ang3);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx3, ry3, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.55)';
+        ctx.lineWidth = 1.6;
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.restore();
+
+        // 5. 4 Orbiting Company Satellites (Parametric calculation matching tilted orbits)
+        const getEllipsePoint = (a, rx, ry, tilt) => {
+          const x0 = rx * Math.cos(a);
+          const y0 = ry * Math.sin(a);
+          return {
+            x: cx + x0 * Math.cos(tilt) - y0 * Math.sin(tilt),
+            y: cy + x0 * Math.sin(tilt) + y0 * Math.cos(tilt)
+          };
+        };
+
+        const companyNodes = [
+          {
+            name: 'MICROSOFT',
+            color: '#38bdf8',
+            halo: '#0284c7',
+            pos: getEllipsePoint(tick * 0.65, rx1, ry1, ang1),
+            r: 7
+          },
+          {
+            name: 'TCS PRIME',
+            color: '#c084fc',
+            halo: '#7e22ce',
+            pos: getEllipsePoint(tick * 0.55 + 1.6, rx2, ry2, ang2),
+            r: 6.5
+          },
+          {
+            name: 'AMAZON TIER 1',
+            color: '#fb923c',
+            halo: '#c2410c',
+            pos: getEllipsePoint(tick * 0.45 + 3.1, rx3, ry3, ang3),
+            r: 7.5
+          },
+          {
+            name: 'GOOGLE CLOUD',
+            color: '#38bdf8',
+            halo: '#0369a1',
+            pos: getEllipsePoint(tick * 0.65 + Math.PI, rx1, ry1, ang1),
+            r: 7
+          }
+        ];
+
+        companyNodes.forEach((node) => {
+          // Outer glowing halo
+          ctx.beginPath();
+          ctx.arc(node.pos.x, node.pos.y, node.r + 5, 0, Math.PI * 2);
+          ctx.fillStyle = node.halo;
+          ctx.globalAlpha = 0.35 + Math.sin(tick * 2) * 0.15;
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+
+          // Inner solid orb
+          ctx.beginPath();
+          ctx.arc(node.pos.x, node.pos.y, node.r, 0, Math.PI * 2);
+          ctx.fillStyle = node.color;
+          ctx.shadowColor = node.color;
+          ctx.shadowBlur = 12;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Company label pill
+          ctx.font = 'bold 8.5px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'left';
+          ctx.fillText(node.name, node.pos.x + node.r + 4, node.pos.y + 3);
+        });
+
+        // 6. Central Star Beacon with Radial Pulse
+        const corePulse = 5 + Math.sin(tick * 4) * 1.5;
+        const coreGlow = ctx.createRadialGradient(cx, cy, 2, cx, cy, 22);
+        coreGlow.addColorStop(0, '#ffffff');
+        coreGlow.addColorStop(0.3, '#00f5d4');
+        coreGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = coreGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, corePulse, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = 14;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Finish radar frame and request next frame
+        animFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // ⚡ MODE 2: CODE EXECUTION ENGINE & AST REACTOR (CLEAN & CENTERED)
+      // ═══════════════════════════════════════════════════════════════════════
       // Fine architectural grid lines
       ctx.strokeStyle = 'rgba(212, 175, 55, 0.05)';
       ctx.lineWidth = 1;
@@ -998,102 +1252,92 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
 
       /* ─── SCENE: USER DYNAMIC ARRAY SORTING / PARTITION (Python, Java, etc.) ─── */
       else if (simType === 'array_sort') {
-        const barCount = 18;
-        const barWidth = Math.min(22, (w * 0.7) / barCount);
-        const startX = (w - (barCount * (barWidth + 4))) / 2;
-        const maxH = h * 0.5;
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+        const barCount = 12;
+        const barW = Math.min(22, (w * 0.75) / barCount);
+        const startX = cx - (barCount * barW) / 2;
 
         for (let i = 0; i < barCount; i++) {
-          const baseVal = ((i * 13) % barCount) + 1;
-          const sortedVal = i + 1;
-          const currentVal = progress > 0.75 ? sortedVal : (progress > 0.25 ? (baseVal + Math.floor(Math.sin(tick * 3 + i) * 2)) : baseVal);
-          const barH = (Math.max(1, currentVal) / barCount) * maxH;
-          const bx = startX + i * (barWidth + 4);
-          const by = h * 0.75 - barH;
+          const val = Math.sin(i * 0.8 + (isPlaying ? tick * 1.5 : 0)) * 40 + 60;
+          const bx = startX + i * barW;
+          const by = cy + 40 - val;
 
-          const isScanning = Math.floor((tick * 4) % barCount) === i;
-          const isSorted = progress > 0.8;
+          const isComparing = Math.floor((tick * 2.5) % barCount) === i;
 
-          ctx.fillStyle = isSorted ? '#4ade80' : (isScanning ? '#f43f5e' : '#d4af37');
-          ctx.shadowColor = isScanning ? '#f43f5e' : (isSorted ? '#4ade80' : 'transparent');
-          ctx.shadowBlur = isScanning ? 12 : (isSorted ? 8 : 0);
-          ctx.fillRect(bx, by, barWidth, barH);
-
-          if (isScanning && isPlaying) {
-            ctx.fillStyle = '#f43f5e';
-            ctx.beginPath();
-            ctx.moveTo(bx + barWidth/2, by - 6);
-            ctx.lineTo(bx + barWidth/2 - 4, by - 12);
-            ctx.lineTo(bx + barWidth/2 + 4, by - 12);
-            ctx.fill();
-          }
-        }
-
-        ctx.shadowBlur = 0;
-        ctx.font = '10px monospace';
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.95)';
-        ctx.textAlign = 'left';
-        ctx.fillText(`● DYNAMIC PARTITION SCANNER: ${progress > 0.8 ? 'CONVERGED' : 'PARTITIONING'}`, 14, 24);
-        ctx.fillStyle = 'rgba(52, 211, 153, 0.95)';
-        ctx.fillText(`SWAPS: ${Math.floor(progress * 42)} | AVERAGE COMPLEXITY: O(N log N)`, 14, 40);
-      }
-
-      /* ─── SCENE: USER DYNAMIC TREE & GRAPH TOPOLOGY ─── */
-      else if (simType === 'tree_graph') {
-        const cx = w * 0.5;
-        const topY = h * 0.26;
-        const treeNodes = [
-          { id: 0, x: cx, y: topY, val: 'Root' },
-          { id: 1, x: cx - 75, y: topY + 50, val: 'L' },
-          { id: 2, x: cx + 75, y: topY + 50, val: 'R' },
-          { id: 3, x: cx - 110, y: topY + 105, val: 'LL' },
-          { id: 4, x: cx - 35, y: topY + 105, val: 'LR' },
-          { id: 5, x: cx + 35, y: topY + 105, val: 'RL' },
-          { id: 6, x: cx + 110, y: topY + 105, val: 'RR' }
-        ];
-
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
-        ctx.lineWidth = 1.5;
-        [[0,1], [0,2], [1,3], [1,4], [2,5], [2,6]].forEach(([u, v]) => {
-          ctx.beginPath();
-          ctx.moveTo(treeNodes[u].x, treeNodes[u].y);
-          ctx.lineTo(treeNodes[v].x, treeNodes[v].y);
-          ctx.stroke();
-        });
-
-        const activeNodeIdx = Math.floor((tick * 2.5) % treeNodes.length);
-        treeNodes.forEach((node, i) => {
-          const isActive = isPlaying && activeNodeIdx === i;
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, isActive ? 13 : 9.5, 0, Math.PI * 2);
-          ctx.fillStyle = isActive ? '#38bdf8' : '#14121a';
-          ctx.strokeStyle = isActive ? '#38bdf8' : '#d4af37';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = isActive ? '#38bdf8' : 'transparent';
-          ctx.shadowBlur = isActive ? 16 : 0;
-          ctx.fill();
-          ctx.stroke();
+          ctx.fillStyle = isComparing ? '#fbbf24' : '#38bdf8';
+          ctx.shadowColor = isComparing ? '#fbbf24' : '#38bdf8';
+          ctx.shadowBlur = isComparing ? 12 : 4;
+          ctx.fillRect(bx + 2, by, barW - 4, val);
 
           ctx.shadowBlur = 0;
-          ctx.fillStyle = isActive ? '#ffffff' : '#c2b6a2';
-          ctx.font = 'bold 9px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(node.val, node.x, node.y + 3);
+          ctx.fillText(Math.floor(val), bx + barW / 2, by - 6);
+        }
+
+        ctx.font = '10px monospace';
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.95)';
+        ctx.textAlign = 'left';
+        ctx.fillText('● ARRAY DYNAMIC PARTITION & SWAP', 14, 24);
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+        ctx.fillText(`ACTIVE POINTER: [i=${Math.floor((tick * 2.5) % barCount)}] | SWAPS: 4`, 14, 40);
+      }
+
+      /* ─── SCENE: TREE / GRAPH TOPOLOGY ─── */
+      else if (simType === 'tree_graph') {
+        const cx = w * 0.5;
+        const cy = h * 0.45;
+
+        const treeNodes = [
+          { name: 'Root', x: cx, y: cy - 40 },
+          { name: 'L1', x: cx - 60, y: cy + 10 },
+          { name: 'R1', x: cx + 60, y: cy + 10 },
+          { name: 'L2', x: cx - 90, y: cy + 60 },
+          { name: 'R2', x: cx - 30, y: cy + 60 }
+        ];
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(treeNodes[0].x, treeNodes[0].y); ctx.lineTo(treeNodes[1].x, treeNodes[1].y);
+        ctx.moveTo(treeNodes[0].x, treeNodes[0].y); ctx.lineTo(treeNodes[2].x, treeNodes[2].y);
+        ctx.moveTo(treeNodes[1].x, treeNodes[1].y); ctx.lineTo(treeNodes[3].x, treeNodes[3].y);
+        ctx.moveTo(treeNodes[1].x, treeNodes[1].y); ctx.lineTo(treeNodes[4].x, treeNodes[4].y);
+        ctx.stroke();
+
+        treeNodes.forEach((n, i) => {
+          const visited = (Math.floor(tick * 1.8) % treeNodes.length) >= i;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, 11, 0, Math.PI * 2);
+          ctx.fillStyle = visited ? '#3b82f6' : '#1e1b26';
+          ctx.strokeStyle = '#60a5fa';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = '#60a5fa';
+          ctx.shadowBlur = visited ? 14 : 0;
+          ctx.fill(); ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(n.name, n.x, n.y + 3);
         });
 
         ctx.font = '10px monospace';
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
+        ctx.fillStyle = 'rgba(96, 165, 250, 0.95)';
         ctx.textAlign = 'left';
-        ctx.fillText('● RECURSIVE POINTER TRAVERSAL (SEARCH / INSERT)', 14, 24);
+        ctx.fillText('● BINARY SEARCH TREE / DAG TOPOLOGY', 14, 24);
         ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
-        ctx.fillText(`VISITING: ${treeNodes[activeNodeIdx].val} | COMPLEXITY: O(log N)`, 14, 40);
+        ctx.fillText('TRAVERSAL: PRE-ORDER DEPTH-FIRST', 14, 40);
       }
 
-      /* ─── SCENE: USER DYNAMIC CONCURRENCY & CHANNELS ─── */
+      /* ─── SCENE: EVENT LOOP / CONCURRENCY ─── */
       else if (simType === 'event_loop') {
         const cx = w * 0.5;
         const cy = h * 0.5;
-        const radius = Math.min(w, h) * 0.33;
+        const radius = Math.min(w, h) * 0.3;
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -1528,16 +1772,88 @@ function LivingArchitectureCanvas({ film, chapter, progress, isPlaying, playback
     };
   }, [film, chapter]);
 
+  const actNumber = String(chapter?.id || 1).padStart(2, '0');
+
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#08080a]">
-      <canvas ref={canvasRef} className="w-full h-full block" />
-      <div 
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-full pointer-events-none opacity-20"
-        style={{
-          background: 'linear-gradient(180deg, rgba(212,175,55,0.3) 0%, transparent 85%)',
-          clipPath: 'polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%)'
-        }}
-      />
+    <div className="w-full h-full relative overflow-hidden bg-[#07080d] flex flex-col justify-between">
+      {/* ─── TOP HEADER (MATCHES IMAGE 1) ─── */}
+      <div className="relative z-20 px-3.5 pt-2.5 pb-1 flex items-center justify-between text-xs font-mono pointer-events-auto">
+        <div className="flex items-center gap-1.5 text-[#d4af37]">
+          <Cpu className="w-3.5 h-3.5 text-[#d4af37] shrink-0" />
+          <span className="font-bold tracking-wider text-[10px] sm:text-[11px] uppercase">
+            LIVING ARCHITECTURE SIMULATION
+          </span>
+        </div>
+
+        {/* View Switcher: Radar vs Engine Toggle */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center p-0.5 rounded-lg bg-[#0e0e16] border border-[#2b2520]">
+            <button
+              onClick={() => setCanvasViewMode('radar')}
+              className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all ${
+                canvasViewMode === 'radar'
+                  ? 'bg-[#00f5d4]/20 text-[#00f5d4] border border-[#00f5d4]/40 font-bold shadow-[0_0_8px_rgba(0,245,212,0.3)]'
+                  : 'text-[#8e8576] hover:text-[#d4af37]'
+              }`}
+              title="Show Image 1 AI Placement Twin Radar"
+            >
+              🎯 RADAR
+            </button>
+            <button
+              onClick={() => setCanvasViewMode('engine')}
+              className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all ${
+                canvasViewMode === 'engine'
+                  ? 'bg-[#d4af37]/20 text-[#fef08a] border border-[#d4af37]/40 font-bold shadow-[0_0_8px_rgba(212,175,55,0.3)]'
+                  : 'text-[#8e8576] hover:text-[#d4af37]'
+              }`}
+              title="Show Bytecode Execution Engine"
+            >
+              ⚡ ENGINE
+            </button>
+          </div>
+
+          <div className="px-2 py-0.5 rounded border border-[#00f5d4]/40 bg-[#00f5d4]/10 text-[#00f5d4] text-[9px] font-mono font-bold tracking-wider shrink-0 shadow-[0_0_10px_rgba(0,245,212,0.15)]">
+            60 FPS HARDWARE ACCELERATED
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 60 FPS HARDWARE ACCELERATED CANVAS ─── */}
+      <div className="w-full flex-1 relative min-h-0">
+        <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {/* Dynamic Center Badge (When in Radar Mode) */}
+        {canvasViewMode === 'radar' && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+            <div className="px-3.5 py-1 rounded-full bg-[#05111d]/90 border border-[#00f5d4]/60 shadow-[0_0_15px_rgba(0,245,212,0.3)] text-[#00f5d4] text-[10px] font-mono font-bold tracking-widest uppercase flex items-center gap-1.5">
+              <span>★</span>
+              <span>94.8% AI READINESS</span>
+              <span>★</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ─── BOTTOM CONCEPT MODEL FOOTER CARD (MATCHES IMAGE 1) ─── */}
+      <div className="relative z-20 px-3 pb-2.5 pt-1 pointer-events-none">
+        <div className="p-2.5 sm:p-3 rounded-xl bg-[#0a0a12]/95 border border-[#2b2520] shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-[9px] font-mono text-[#d4af37] uppercase tracking-widest mb-0.5">
+              CONCEPT MODEL :
+            </div>
+            <div className="text-xs sm:text-[13px] font-sans font-bold text-white tracking-wide">
+              {canvasViewMode === 'radar' 
+                ? 'AI Placement Twin & Dynamic Readiness Index' 
+                : `${film.title || 'Runtime Execution Engine'}`}
+            </div>
+          </div>
+
+          <div className="text-right font-mono shrink-0 pl-3">
+            <div className="text-[9px] text-[#d4af37] tracking-wider uppercase">ACT</div>
+            <div className="text-sm sm:text-base font-bold text-[#d4af37] leading-tight">{actNumber}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

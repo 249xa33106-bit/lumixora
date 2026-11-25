@@ -4,7 +4,8 @@ import {
   Search, Filter, ChevronRight, ArrowLeft, Plus, Edit2, Trash2, 
   ExternalLink, Layers, Check, Trophy, Flame, MonitorPlay, X, 
   Share2, Bookmark, BookmarkCheck, ListVideo, Film, RefreshCw,
-  GraduationCap, Info, Shield, Settings, Save, AlertTriangle
+  GraduationCap, Info, Shield, Settings, Save, AlertTriangle,
+  ChevronLeft, HelpCircle, Send, Copy, Download, Edit3, Minimize2, Maximize2
 } from 'lucide-react';
 import { BRANCHES, SEMESTERS, INITIAL_SYLLABUS_VIDEOS } from '../data/syllabusVideosData';
 import { useGamification } from '../context/GamificationContext';
@@ -126,6 +127,35 @@ export default function VideoPortal({ user, setActiveTab }) {
 
   // Active playing video modal
   const [activeVideo, setActiveVideo] = useState(null); // { video, subject, unit }
+
+  // Lumina Cinema Workstation States
+  const [cinemaTab, setCinemaTab] = useState('ai-tutor'); // 'ai-tutor' | 'notes' | 'quiz' | 'playlist'
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [videoDoubtInput, setVideoDoubtInput] = useState('');
+  const [videoDoubtHistory, setVideoDoubtHistory] = useState([]);
+  const [isDoubtThinking, setIsDoubtThinking] = useState(false);
+  const [noteTimestamp, setNoteTimestamp] = useState('02:15');
+  const [noteText, setNoteText] = useState('');
+  const [videoNotes, setVideoNotes] = useState({});
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizScore, setQuizScore] = useState(0);
+
+  const currentVideoId = activeVideo?.video?.id || (activeVideo?.subject ? `oneshot-${activeVideo.subject.id}` : 'vid');
+
+  // Load notes for current active video
+  useEffect(() => {
+    if (activeVideo) {
+      try {
+        const saved = localStorage.getItem(`lumixora_video_notes_${currentVideoId}`);
+        if (saved) {
+          setVideoNotes(prev => ({ ...prev, [currentVideoId]: JSON.parse(saved) }));
+        }
+      } catch (e) {}
+      setQuizAnswers({});
+      setQuizScore(0);
+      setVideoDoubtHistory([]);
+    }
+  }, [activeVideo, currentVideoId]);
 
   // Founder Mode Toggle (for editing & managing)
   const [founderEditMode, setFounderEditMode] = useState(false);
@@ -590,6 +620,191 @@ export default function VideoPortal({ user, setActiveTab }) {
     });
   };
 
+  // Select and open video in workstation
+  const handleOpenVideo = (video, subject, unit = null, isOneShot = false) => {
+    if (!video) return;
+    const videoObj = { video, subject, unit, isOneShot };
+    setActiveVideo(videoObj);
+    try {
+      localStorage.setItem('lumixora_last_watched_video', JSON.stringify(videoObj));
+      setLastWatched(videoObj);
+    } catch {}
+  };
+
+  // Unit playlist navigation
+  const currentUnitVideos = useMemo(() => {
+    if (!activeVideo?.unit?.videos) return [];
+    return activeVideo.unit.videos;
+  }, [activeVideo]);
+
+  const currentVideoIndex = useMemo(() => {
+    if (!activeVideo?.video || currentUnitVideos.length === 0) return -1;
+    return currentUnitVideos.findIndex(v => (v.id && v.id === activeVideo.video.id) || v.title === activeVideo.video.title);
+  }, [activeVideo, currentUnitVideos]);
+
+  const hasPrevLesson = currentVideoIndex > 0;
+  const hasNextLesson = currentVideoIndex >= 0 && currentVideoIndex < currentUnitVideos.length - 1;
+
+  const handlePrevLesson = () => {
+    if (hasPrevLesson) {
+      handleOpenVideo(currentUnitVideos[currentVideoIndex - 1], activeVideo.subject, activeVideo.unit);
+    }
+  };
+
+  const handleNextLesson = () => {
+    if (hasNextLesson) {
+      handleOpenVideo(currentUnitVideos[currentVideoIndex + 1], activeVideo.subject, activeVideo.unit);
+    }
+  };
+
+  // AI Doubt Handler
+  const handleAskVideoDoubt = (presetQuery = null) => {
+    const q = (presetQuery || videoDoubtInput).trim();
+    if (!q) return;
+
+    setIsDoubtThinking(true);
+    if (!presetQuery) setVideoDoubtInput('');
+
+    setTimeout(() => {
+      const title = activeVideo?.video?.title || 'this topic';
+      const sub = activeVideo?.subject?.subjectName || 'Engineering';
+      
+      let answer = '';
+      const lower = q.toLowerCase();
+
+      if (lower.includes('exam question') || lower.includes('top exam')) {
+        answer = `🎯 High-Yield Semester Exam Questions on "${title}":\n\n1. Explain the fundamental architecture and working mechanism of ${title} with a neat schematic diagram (7 Marks).\n2. Derive the mathematical formulation or algorithmic complexity step-by-step under best, average, and worst cases (5 Marks).\n3. Compare and contrast ${title} with alternative paradigms in ${sub}, highlighting trade-offs in time, space, and hardware overhead (4 Marks).\n4. Common Trap: Ensure you always state boundary conditions (e.g. empty inputs, null pointers, overflow bounds) to secure full marks!`;
+      } else if (lower.includes('analogy') || lower.includes('intuition') || lower.includes('real-world')) {
+        answer = `💡 Real-World Engineering Analogy for "${title}":\n\nThink of ${title} like a modern high-speed airport baggage logistics terminal. Rather than handling every bag individually through manual checkpoints, the system defines standardized routing tags and routing queues. Each conveyor segment evaluates invariant constraints (weight, destination terminal) in sub-second cycles. In ${sub}, this exact principle allows systems to process millions of concurrent transactions with predictable latency and zero memory leaks!`;
+      } else if (lower.includes('formula') || lower.includes('rule') || lower.includes('axioms')) {
+        answer = `📐 Core Formulas & Governing Axioms for "${title}":\n\n• Primary Invariant: Δ ≥ 0 for stable state convergence.\n• Asymptotic Bounds: Time Complexity O(N log N), Space Complexity O(1) or auxiliary O(N).\n• Conservation Law: Total input entropy equals net processed work plus dissipation loss.\n• Golden Rule: Always verify termination conditions before triggering recursive sub-problems!`;
+      } else if (lower.includes('trap') || lower.includes('mistake') || lower.includes('error') || lower.includes('viva')) {
+        answer = `⚠️ Typical Traps & Viva Pointers on "${title}":\n\n1. Off-by-one errors in iteration indices or array bounds.\n2. Overlooking null/empty edge cases during viva demonstrations.\n3. Confusing average-case performance with worst-case guarantees.\n4. Recruiter Favorite: Be ready to explain *why* ${title} is chosen over simpler alternatives in production environments!`;
+      } else {
+        answer = `🧠 Lumina Deep Analysis on "${q}":\n\nIn the context of ${activeVideo?.video?.title} (${sub}):\n\n1. Problem Analysis: Your query addresses key behavioral and structural properties. In ${sub}, we model this by isolating initial state variables and tracking how they transform across each execution stage.\n2. Key Insight: The primary mechanism hinges on maintaining system balance while minimizing computational complexity.\n3. Practical Takeaway: When implementing or answering this in exams, clearly outline your initial assumptions, write out the governing equations, and verify dimensional consistency!`;
+      }
+
+      setVideoDoubtHistory(prev => [
+        ...prev,
+        {
+          q,
+          a: answer,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      setIsDoubtThinking(false);
+    }, 450);
+  };
+
+  // Notes Handler
+  const handleSaveNote = (e) => {
+    e?.preventDefault();
+    if (!noteText.trim()) return;
+
+    const newNote = {
+      id: 'note_' + Date.now(),
+      timestamp: noteTimestamp.trim() || '00:00',
+      text: noteText.trim(),
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const updated = [newNote, ...(videoNotes[currentVideoId] || [])];
+    setVideoNotes(prev => ({ ...prev, [currentVideoId]: updated }));
+    try {
+      localStorage.setItem(`lumixora_video_notes_${currentVideoId}`, JSON.stringify(updated));
+    } catch (e) {}
+
+    setNoteText('');
+    if (awardXP) awardXP(5, 'Study Note Saved 📝');
+    if (addToast) addToast('Note saved! +5 XP 📝', 'success');
+  };
+
+  const handleDeleteNote = (noteId) => {
+    const updated = (videoNotes[currentVideoId] || []).filter(n => n.id !== noteId);
+    setVideoNotes(prev => ({ ...prev, [currentVideoId]: updated }));
+    try {
+      localStorage.setItem(`lumixora_video_notes_${currentVideoId}`, JSON.stringify(updated));
+    } catch (e) {}
+    if (addToast) addToast('Note deleted', 'info');
+  };
+
+  const handleExportNotes = () => {
+    const notes = videoNotes[currentVideoId] || [];
+    if (notes.length === 0) {
+      if (addToast) addToast('No notes to export yet!', 'warning');
+      return;
+    }
+    const content = `# Study Notes: ${activeVideo.video.title}\nSubject: ${activeVideo.subject?.subjectName} (${activeVideo.subject?.subjectCode})\nDate: ${new Date().toLocaleDateString()}\n\n` +
+      notes.map(n => `### [${n.timestamp}] Note:\n${n.text}\n`).join('\n---\n\n');
+    
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(activeVideo.video.title || 'study_notes').replace(/[^a-zA-Z0-9]/g, '_')}_notes.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (addToast) addToast('Exported notes as Markdown! 📥', 'success');
+  };
+
+  // Self-Check Quiz Questions & Handler
+  const currentQuizQuestions = useMemo(() => {
+    if (!activeVideo?.video) return [];
+    const title = activeVideo.video.title || 'Engineering Concept';
+    const sub = activeVideo.subject?.subjectName || 'Curriculum';
+    
+    return [
+      {
+        question: `What is the core theoretical principle established in "${title}"?`,
+        options: [
+          `Decomposition into governing state variables and invariant constraints`,
+          `Unbounded linear recursion without terminal conditions`,
+          `Pure heuristic approximation with unverified error bounds`,
+          `Static monolithic allocation ignoring dynamic scaling`
+        ],
+        correct: 0,
+        explanation: `In ${sub}, "${title}" relies on formal decomposition into invariant constraints to ensure provable convergence and deterministic execution.`
+      },
+      {
+        question: `When answering typical semester exam questions on "${title}", which step carries the maximum rubric weightage?`,
+        options: [
+          `Writing arbitrary code without time or space complexity bounds`,
+          `Stating the mathematical derivation, boundary conditions, and architectural diagram`,
+          `Omitting assumptions and providing only surface-level definitions`,
+          `Memorizing sample output values without analyzing general edge cases`
+        ],
+        correct: 1,
+        explanation: `Autonomous university marking rubrics award the majority of 10-mark question points to rigorous mathematical derivations, boundary checks, and system flow diagrams.`
+      },
+      {
+        question: `How is the concept of "${title}" optimized for production engineering and real-world deployment?`,
+        options: [
+          `By minimizing memory footprint and reducing worst-case asymptotic complexity`,
+          `By executing synchronous blocking loops across user threads`,
+          `By disabling runtime validation and bounds checks`,
+          `By increasing heap allocations on every inner iteration`
+        ],
+        correct: 0,
+        explanation: `Production systems require optimal asymptotic throughput and minimal cache-miss overhead to scale reliably under peak workloads.`
+      }
+    ];
+  }, [activeVideo]);
+
+  const handleAnswerQuiz = (qIdx, optIdx) => {
+    if (quizAnswers[qIdx] !== undefined) return;
+    const isCorrect = optIdx === currentQuizQuestions[qIdx]?.correct;
+    setQuizAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
+    if (isCorrect) {
+      setQuizScore(prev => prev + 1);
+      if (awardXP) awardXP(10, 'Quiz Self-Check Correct! 🎯');
+      if (addToast) addToast('Correct answer! +10 XP 🎯', 'success');
+    } else {
+      if (addToast) addToast('Incorrect, review explanation below', 'error');
+    }
+  };
+
   // Filtered subjects list
   const filteredSubjects = useMemo(() => {
     return subjectsList.filter(sub => {
@@ -819,7 +1034,7 @@ export default function VideoPortal({ user, setActiveTab }) {
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-white/10">
                 {selectedSubject.oneShotVideo && (
                   <div 
-                    onClick={() => setActiveVideo({ video: selectedSubject.oneShotVideo, subject: selectedSubject, isOneShot: true })}
+                    onClick={() => handleOpenVideo(selectedSubject.oneShotVideo, selectedSubject, null, true)}
                     className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-r from-rose-500/10 to-brand-purple/10 border border-rose-500/30 hover:border-rose-500/60 transition-all flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
@@ -1016,7 +1231,7 @@ export default function VideoPortal({ user, setActiveTab }) {
                                 </div>
 
                                 <button
-                                  onClick={() => setActiveVideo({ video: vid, subject: selectedSubject, unit })}
+                                  onClick={() => handleOpenVideo(vid, selectedSubject, unit)}
                                   className="px-3 py-1.5 rounded-lg bg-brand-teal/10 hover:bg-brand-teal/20 text-brand-teal font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                                 >
                                   <Play className="w-3 h-3 fill-current" /> Watch
@@ -1241,96 +1456,516 @@ export default function VideoPortal({ user, setActiveTab }) {
         )}
       </div>
 
-      {/* ── CINEMA VIDEO PLAYER MODAL ── */}
+      {/* ── LUMINA CINEMA WORKSTATION MODAL (SIDE-BY-SIDE ON DESKTOP) ── */}
       {activeVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-          <div className="relative w-full max-w-5xl bg-[#0e0e18] border border-white/20 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-2xl animate-fade-in">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full ${isTheaterMode ? 'max-w-7xl' : 'max-w-6xl xl:max-w-7xl'} bg-[#0e0a1a] border border-purple-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-purple-950/90 flex flex-col h-[90vh] max-h-[960px] transition-all duration-300`}
+          >
             
-            {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-black/40 gap-3">
+            {/* ── 1. CINEMA WORKSTATION HEADER ── */}
+            <div className="p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between bg-black/60 shrink-0 gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-purple-600/25 border border-purple-500/40 text-purple-300 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/20">
                   <MonitorPlay className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[10px] font-black uppercase text-brand-teal tracking-wider block">
-                    {activeVideo.subject?.subjectName} ({activeVideo.subject?.subjectCode})
-                  </span>
-                  <h3 className="text-sm sm:text-base font-extrabold text-white truncate">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/30 uppercase font-bold">
+                      {activeVideo.subject?.subjectCode || 'CURRICULUM'}
+                    </span>
+                    <span className="text-xs text-gray-400 font-medium truncate hidden sm:inline">
+                      {activeVideo.subject?.subjectName}
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-white truncate mt-0.5">
                     {activeVideo.video.title}
                   </h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              {/* Header Action Controls */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {hasPrevLesson && (
+                  <button
+                    onClick={handlePrevLesson}
+                    className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white text-xs font-bold flex items-center gap-1 border border-white/10 transition-all cursor-pointer"
+                    title="Previous Lesson in Unit"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Prev</span>
+                  </button>
+                )}
+
+                {hasNextLesson && (
+                  <button
+                    onClick={handleNextLesson}
+                    className="px-2.5 py-1.5 rounded-xl bg-brand-teal/20 hover:bg-brand-teal/30 text-brand-teal text-xs font-bold flex items-center gap-1 border border-brand-teal/40 transition-all cursor-pointer shadow-sm shadow-brand-teal/20"
+                    title="Next Lesson in Unit"
+                  >
+                    <span className="hidden md:inline">Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setIsTheaterMode(!isTheaterMode)}
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all cursor-pointer border border-white/10 hidden sm:flex"
+                  title={isTheaterMode ? "Exit Theater Mode" : "Expand Theater Mode"}
+                >
+                  {isTheaterMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+
                 <a
                   href={activeVideo.video.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all cursor-pointer"
+                  title="Open full video directly in YouTube"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Open in YouTube ↗</span>
+                  <Play className="w-3 h-3 fill-current" />
+                  <span className="hidden sm:inline">YouTube ↗</span>
                 </a>
+
                 <button
                   onClick={() => setActiveVideo(null)}
-                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition-colors cursor-pointer border border-white/10"
+                  title="Close Workstation"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Video iFrame */}
-            <div className="relative w-full aspect-video bg-black flex items-center justify-center">
-              <iframe
-                src={getYouTubeEmbedUrl(activeVideo.video.url, activeVideo.subject?.subjectCode || activeVideo.subject?.subjectName)}
-                title={activeVideo.video.title}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              ></iframe>
-            </div>
-
-            {/* Video Footer Actions */}
-            <div className="p-4 sm:p-5 border-t border-white/10 bg-black/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3 text-xs text-gray-400">
-                  <span className="font-bold text-white">{activeVideo.video.channel}</span>
-                  {activeVideo.video.duration && <span>• {activeVideo.video.duration}</span>}
+            {/* ── 2. TWO-COLUMN WORKSPACE (VIDEO ON LEFT, ACADEMIC COMPANION ON RIGHT) ── */}
+            <div className={`flex-1 min-h-0 flex flex-col ${isTheaterMode ? 'overflow-y-auto' : 'lg:flex-row overflow-hidden'}`}>
+              
+              {/* Left Column: Video Embed + Key Takeaways Strip */}
+              <div className={`${isTheaterMode ? 'w-full' : 'w-full lg:w-[60%] xl:w-[62%]'} flex flex-col bg-black min-h-0`}>
+                {/* Video Iframe Embed */}
+                <div className="relative w-full aspect-video bg-black flex items-center justify-center shrink-0">
+                  <iframe
+                    src={getYouTubeEmbedUrl(activeVideo.video.url, activeVideo.subject?.subjectCode || activeVideo.subject?.subjectName)}
+                    title={activeVideo.video.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
                 </div>
-                {activeVideo.video.summary && (
-                  <p className="text-xs text-gray-400 max-w-xl">
-                    {activeVideo.video.summary}
-                  </p>
-                )}
+
+                {/* Video Bottom Info strip */}
+                <div className="p-3.5 bg-[#0a0714] border-t border-white/10 flex-1 overflow-y-auto space-y-2.5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/30 font-bold uppercase">
+                        {activeVideo.subject?.subjectCode || 'CURRICULUM'}
+                      </span>
+                      <span className="text-xs text-gray-300 font-bold truncate">
+                        {activeVideo.unit?.unitTitle || 'Autonomous Core Unit'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => toggleWatched(currentVideoId, activeVideo.subject.id)}
+                      className={`px-3 py-1 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer border ${
+                        watchedVideos[currentVideoId]
+                          ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-600/30'
+                          : 'bg-white/10 hover:bg-white/20 text-gray-200 border-white/15 hover:text-white'
+                      }`}
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>{watchedVideos[currentVideoId] ? 'Completed ✓' : 'Mark Done (+25 XP)'}</span>
+                    </button>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/25">
+                    <div className="flex items-center gap-1.5 text-purple-300 text-[11px] font-bold uppercase tracking-wider mb-1">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Curriculum Takeaways & Exam Hotspot</span>
+                    </div>
+                    <p className="text-xs text-gray-300 leading-relaxed">
+                      {activeVideo.video.summary || `Core study module on ${activeVideo.video.title}. Focus on underlying mathematical and procedural steps, boundary conditions, and typical semester exam questions.`}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <button
-                  onClick={() => toggleWatched(activeVideo.video.id || `oneshot-${activeVideo.subject.id}`, activeVideo.subject.id)}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-                    watchedVideos[activeVideo.video.id || `oneshot-${activeVideo.subject.id}`]
-                      ? 'bg-brand-teal text-black shadow-lg shadow-brand-teal/20'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
-                  }`}
-                >
-                  <Check className="w-4 h-4" />
-                  {watchedVideos[activeVideo.video.id || `oneshot-${activeVideo.subject.id}`] ? 'Watched' : 'Mark Watched (+25 XP)'}
-                </button>
+              {/* Right Column: Academic Companion Tabs (AI Doubts, Notes, Quiz, Playlist) */}
+              <div className={`${isTheaterMode ? 'w-full border-t' : 'w-full lg:w-[40%] xl:w-[38%] border-t lg:border-t-0 lg:border-l'} border-white/10 flex flex-col bg-[#0c0817] min-h-0`}>
+                
+                {/* Tab Navigation Bar */}
+                <div className="flex items-center justify-between px-3 border-b border-white/10 bg-[#0c0817] shrink-0 overflow-x-auto">
+                  <div className="flex items-center gap-1.5 py-2">
+                    
+                    <button
+                      onClick={() => setCinemaTab('ai-tutor')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cinemaTab === 'ai-tutor'
+                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400/40'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-200" />
+                      <span>🧠 AI Tutor</span>
+                    </button>
 
-                <a 
-                  href={activeVideo.video.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-rose-400 hover:text-rose-300 font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/10"
-                  title="Open on YouTube"
-                >
-                  <span>Launch on YouTube</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                    <button
+                      onClick={() => setCinemaTab('notes')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cinemaTab === 'notes'
+                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400/40'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-purple-200" />
+                      <span>📝 Notes ({(videoNotes[currentVideoId] || []).length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setCinemaTab('quiz')}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cinemaTab === 'quiz'
+                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400/40'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <HelpCircle className="w-3.5 h-3.5 text-cyan-300" />
+                      <span>🎯 Quiz</span>
+                    </button>
+
+                    {currentUnitVideos.length > 0 && (
+                      <button
+                        onClick={() => setCinemaTab('playlist')}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          cinemaTab === 'playlist'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400/40'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <ListVideo className="w-3.5 h-3.5 text-brand-teal" />
+                        <span>📑 Playlist</span>
+                      </button>
+                    )}
+
+                  </div>
+                </div>
+
+                {/* Scrollable Tab Body */}
+                <div className="p-4 flex-1 overflow-y-auto">
+                  
+                  {/* ── TAB 1: LUMINA AI TUTOR DOUBT ASSISTANT ── */}
+                  {cinemaTab === 'ai-tutor' && (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* AI Tutor Welcome Banner */}
+                      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/50 to-indigo-950/50 border border-purple-500/30 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-purple-600/30 border border-purple-400/40 text-purple-200 flex items-center justify-center shrink-0">
+                          <Sparkles className="w-4 h-4 text-purple-300" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                            <span>Lumina AI Academic Tutor</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">ONLINE</span>
+                          </h4>
+                          <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                            Ask any derivation step, analogy, or exam trick about this video!
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Quick Prompt Chips */}
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+                          Quick AI Explanations:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => handleAskVideoDoubt("What are typical semester exam questions on this topic?")}
+                            className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition-all cursor-pointer"
+                          >
+                            🎯 Top Exam Questions
+                          </button>
+                          <button
+                            onClick={() => handleAskVideoDoubt("Explain the core intuition with a real-life analogy")}
+                            className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition-all cursor-pointer"
+                          >
+                            💡 Real-World Analogy
+                          </button>
+                          <button
+                            onClick={() => handleAskVideoDoubt("Summarize key formulas and rules to remember")}
+                            className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition-all cursor-pointer"
+                          >
+                            📐 Core Formulas
+                          </button>
+                          <button
+                            onClick={() => handleAskVideoDoubt("What are tricky traps and common errors?")}
+                            className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-gray-300 hover:text-white transition-all cursor-pointer"
+                          >
+                            ⚠️ Exam Traps
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Interactive Question Input */}
+                      <form 
+                        onSubmit={(e) => { e.preventDefault(); handleAskVideoDoubt(); }}
+                        className="flex gap-2"
+                      >
+                        <input
+                          type="text"
+                          value={videoDoubtInput}
+                          onChange={(e) => setVideoDoubtInput(e.target.value)}
+                          placeholder={`Ask Lumina about ${activeVideo.video.title.slice(0, 25)}...`}
+                          className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 focus:border-purple-400 text-xs text-white placeholder-gray-500 outline-none transition-all"
+                        />
+                        <button
+                          type="submit"
+                          disabled={isDoubtThinking}
+                          className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{isDoubtThinking ? '...' : 'Ask AI'}</span>
+                        </button>
+                      </form>
+
+                      {/* Q&A Stream */}
+                      {videoDoubtHistory.length > 0 && (
+                        <div className="space-y-3 pt-2">
+                          {videoDoubtHistory.map((item, idx) => (
+                            <div key={idx} className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2 text-xs">
+                              <div className="flex items-center justify-between text-purple-300 font-bold">
+                                <span>Q: "{item.q}"</span>
+                                <span className="text-[10px] text-gray-500 font-mono">{item.time}</span>
+                              </div>
+                              <p className="text-gray-200 whitespace-pre-line leading-relaxed pl-2 border-l-2 border-purple-500/40">
+                                {item.a}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── TAB 2: TIMESTAMPED STUDY NOTES ── */}
+                  {cinemaTab === 'notes' && (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* Note Creation Form */}
+                      <form onSubmit={handleSaveNote} className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <Edit3 className="w-3.5 h-3.5 text-brand-teal" /> Add Timestamped Note
+                          </h4>
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-[11px] text-gray-400">Timestamp:</label>
+                            <input
+                              type="text"
+                              value={noteTimestamp}
+                              onChange={(e) => setNoteTimestamp(e.target.value)}
+                              placeholder="02:15"
+                              className="w-14 px-2 py-1 rounded-lg bg-black/50 border border-white/20 text-[11px] text-cyan-300 font-mono text-center outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <textarea
+                          rows={2}
+                          value={noteText}
+                          onChange={(e) => setNoteText(e.target.value)}
+                          placeholder="Jot down key formula, proof step, or exam insight at this point..."
+                          className="w-full p-2.5 rounded-xl bg-black/40 border border-white/15 focus:border-brand-teal text-xs text-white placeholder-gray-500 outline-none transition-all"
+                        />
+
+                        <div className="flex justify-between items-center">
+                          {(videoNotes[currentVideoId] || []).length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={handleExportNotes}
+                              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all border border-white/10"
+                            >
+                              <Download className="w-3 h-3" /> Export (.md)
+                            </button>
+                          ) : <div />}
+                          <button
+                            type="submit"
+                            className="px-3.5 py-1.5 rounded-xl bg-brand-teal text-black font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md shadow-brand-teal/20 transition-all hover:scale-105 active:scale-95"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Save Note (+5 XP)
+                          </button>
+                        </div>
+                      </form>
+
+                      {/* Saved Notes Feed */}
+                      {(videoNotes[currentVideoId] || []).length > 0 ? (
+                        <div className="space-y-2.5">
+                          {(videoNotes[currentVideoId] || []).map((note) => (
+                            <div key={note.id} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start justify-between gap-3 group">
+                              <div className="space-y-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
+                                    ⏱️ {note.timestamp}
+                                  </span>
+                                  <span className="text-[10px] text-gray-500">{note.createdAt}</span>
+                                </div>
+                                <p className="text-xs text-gray-200 whitespace-pre-wrap leading-relaxed">
+                                  {note.text}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`[${note.timestamp}] ${note.text}`);
+                                    if (addToast) addToast('Copied to clipboard!', 'info');
+                                  }}
+                                  className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white"
+                                  title="Copy Note"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteNote(note.id)}
+                                  className="p-1 rounded-lg hover:bg-rose-500/20 text-gray-400 hover:text-rose-400"
+                                  title="Delete Note"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-6 text-center text-gray-500 space-y-1 border border-dashed border-white/10 rounded-2xl">
+                          <p className="text-xs">No study notes yet for this lecture.</p>
+                          <p className="text-[10px] text-gray-600">Type above to keep timestamped formulas & exam tips!</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── TAB 3: SELF-CHECK QUIZ ── */}
+                  {cinemaTab === 'quiz' && (
+                    <div className="space-y-4 animate-fade-in">
+                      <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-white uppercase tracking-wider">Concept Self-Check</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal font-mono">
+                            Score: {quizScore}/{currentQuizQuestions.length}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => { setQuizAnswers({}); setQuizScore(0); }}
+                          className="text-[11px] text-gray-400 hover:text-brand-teal flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3 h-3" /> Reset
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {currentQuizQuestions.map((q, qIdx) => {
+                          const selected = quizAnswers[qIdx];
+                          const hasAnswered = selected !== undefined;
+                          return (
+                            <div key={qIdx} className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2.5 text-xs">
+                              <p className="font-bold text-white">
+                                {qIdx + 1}. {q.question}
+                              </p>
+                              <div className="space-y-1.5">
+                                {q.options.map((opt, optIdx) => {
+                                  let optClass = 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white';
+                                  if (hasAnswered) {
+                                    if (optIdx === q.correct) {
+                                      optClass = 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold';
+                                    } else if (selected === optIdx) {
+                                      optClass = 'bg-rose-500/20 border-rose-400 text-rose-300';
+                                    } else {
+                                      optClass = 'bg-white/5 border-white/5 text-gray-500 opacity-60';
+                                    }
+                                  }
+                                  return (
+                                    <button
+                                      key={optIdx}
+                                      onClick={() => handleAnswerQuiz(qIdx, optIdx)}
+                                      disabled={hasAnswered}
+                                      className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between text-xs cursor-pointer disabled:cursor-default ${optClass}`}
+                                    >
+                                      <span>{opt}</span>
+                                      {hasAnswered && optIdx === q.correct && (
+                                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              {hasAnswered && (
+                                <div className="p-2.5 rounded-xl bg-purple-950/30 border border-purple-500/20 text-[11px] text-purple-200 mt-2">
+                                  <span className="font-bold">Explanation: </span>{q.explanation}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── TAB 4: UNIT PLAYLIST ── */}
+                  {cinemaTab === 'playlist' && (
+                    <div className="space-y-2 animate-fade-in">
+                      <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">
+                          {activeVideo.unit?.unitTitle || 'Unit Videos'}
+                        </span>
+                        <span className="text-[11px] text-gray-400 font-mono">
+                          {currentVideoIndex + 1} of {currentUnitVideos.length}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        {currentUnitVideos.map((v, idx) => {
+                          const isCurrent = (v.id && v.id === activeVideo.video.id) || v.title === activeVideo.video.title;
+                          const isDone = !!watchedVideos[v.id];
+                          return (
+                            <div
+                              key={v.id || idx}
+                              onClick={() => handleOpenVideo(v, activeVideo.subject, activeVideo.unit)}
+                              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                isCurrent
+                                  ? 'bg-purple-600/30 border-purple-400 text-white shadow-md shadow-purple-600/20'
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10 text-gray-300 hover:text-white'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className={`text-[10px] font-mono w-5 h-5 rounded-lg flex items-center justify-center font-bold shrink-0 ${
+                                  isCurrent ? 'bg-purple-500 text-white' : 'bg-white/10 text-gray-400'
+                                }`}>
+                                  {idx + 1}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold truncate">{v.title}</p>
+                                  <p className="text-[10px] text-gray-500">{v.channel} • {v.duration}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isDone && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                                {isCurrent && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/30 text-purple-300 border border-purple-400/40 font-bold uppercase">
+                                    Playing
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
+
             </div>
+
           </div>
         </div>
       )}
