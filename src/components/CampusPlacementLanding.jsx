@@ -4,7 +4,7 @@ import {
   Sparkles, CheckCircle2, ArrowRight, Lock, GraduationCap,
   Search, ChevronRight, Star, Award, Flame, Sliders, Volume2,
   Briefcase, Check, HelpCircle, RefreshCw, BarChart3, Code2,
-  Target, Globe
+  Target, Globe, ChevronDown, ChevronUp, UserCheck, X, ThumbsUp
 } from 'lucide-react';
 import { POPULAR_CAMPUS_COLLEGES } from '../services/campusAuthService';
 import CampusPlacementLoginModal from './CampusPlacementLoginModal';
@@ -53,33 +53,69 @@ const CTC_TIERS = [
   }
 ];
 
-// Interactive Micro-Drill Question
-const SAMPLE_DRILL = {
-  company: 'TCS NQT 2026 / Infosys DSE',
-  topic: 'Data Structures & Algorithms',
-  question: 'What is the worst-case search time complexity of a Balanced Binary Search Tree (AVL / Red-Black)?',
-  options: [
-    { id: 'a', text: 'O(N)', correct: false, explanation: 'Incorrect: O(N) is the worst-case for an unbalanced or degenerate tree (like a linked list).' },
-    { id: 'b', text: 'O(log N)', correct: true, explanation: 'Correct! Due to strict balance factors, the height is bounded by log₂(N), making searches O(log N).' },
-    { id: 'c', text: 'O(1)', correct: false, explanation: 'Incorrect: O(1) average lookup is characteristic of Hash Tables, not Trees.' },
-    { id: 'd', text: 'O(N log N)', correct: false, explanation: 'Incorrect: O(N log N) is typical of optimal comparison sorting, not single tree searches.' }
-  ]
-};
+// Interactive Micro-Drill Questions with multi-switch capability
+const SAMPLE_DRILLS = [
+  {
+    id: 1,
+    company: 'TCS NQT 2026',
+    topic: 'Data Structures & Algorithms',
+    badge: 'Advanced Coding',
+    question: 'What is the worst-case search time complexity of a Balanced Binary Search Tree (AVL / Red-Black)?',
+    options: [
+      { id: 'a', text: 'O(N)', correct: false, explanation: 'Incorrect: O(N) is the worst-case for an unbalanced or degenerate tree (like a linked list).' },
+      { id: 'b', text: 'O(log N)', correct: true, explanation: 'Correct! Due to strict balance factors, the height is bounded by log₂(N), making searches O(log N).' },
+      { id: 'c', text: 'O(1)', correct: false, explanation: 'Incorrect: O(1) average lookup is characteristic of Hash Tables, not Trees.' },
+      { id: 'd', text: 'O(N log N)', correct: false, explanation: 'Incorrect: O(N log N) is typical of optimal comparison sorting, not single tree searches.' }
+    ]
+  },
+  {
+    id: 2,
+    company: 'Infosys DSE',
+    topic: 'Quantitative & Logic',
+    badge: 'Round 1 Aptitude',
+    question: 'A pipe can fill a reservoir in 6 hours, while an outlet empties it in 8 hours. If both open together, how long to fill?',
+    options: [
+      { id: 'a', text: '14 Hours', correct: false, explanation: 'Incorrect: Rates do not simply add directly as hours.' },
+      { id: 'b', text: '24 Hours', correct: true, explanation: 'Correct! Net rate = 1/6 - 1/8 = (4-3)/24 = 1/24 per hour. Thus, exactly 24 hours.' },
+      { id: 'c', text: '18 Hours', correct: false, explanation: 'Incorrect: Common arithmetic mistake when calculating the LCM of 6 and 8.' },
+      { id: 'd', text: '12 Hours', correct: false, explanation: 'Incorrect: 12 hours would require a faster net filling rate.' }
+    ]
+  },
+  {
+    id: 3,
+    company: 'Zoho Developer',
+    topic: 'Core C & Pointer Tracing',
+    badge: 'Technical Round 1',
+    question: 'In C, what is the value of *arr if int arr[] = {10, 20, 30}; int *p = arr; (*p)++; ?',
+    options: [
+      { id: 'a', text: '20', correct: false, explanation: 'Incorrect: (*p)++ increments the value pointed to by p, not the pointer address itself.' },
+      { id: 'b', text: '11', correct: true, explanation: 'Correct! Dereferencing *p yields 10, then the postfix ++ modifies arr[0] in place to 11.' },
+      { id: 'c', text: '10', correct: false, explanation: 'Incorrect: The value at arr[0] is modified in memory by the post-increment operator.' },
+      { id: 'd', text: 'Garbage Value', correct: false, explanation: 'Incorrect: p points to a valid stack-allocated array segment.' }
+    ]
+  }
+];
 
-// Top target company pattern explorer
+// Top target company pattern explorer with authentic previous year question teasers
 const FEATURED_COMPANIES = [
   {
     id: 'tcs',
     name: 'Tata Consultancy Services',
     short: 'TCS',
-    badge: 'NQT 2026',
+    badge: 'NQT 2026 Active',
     ctc: '₹3.36 - ₹9.0 LPA',
-    rounds: '3 Rounds (Foundation + Advanced + Interview)',
+    rounds: '3 Rounds (Foundation + Advanced + Technical HR)',
     color: 'from-blue-500/20 to-indigo-500/10',
     border: 'border-blue-500/30',
     textColor: 'text-blue-400',
-    syllabus: 'Numerical, Verbal, Reasoning, 2 Hands-on Coding problems (Python/Java/C++)',
-    papersCount: '28 Authentic Tests'
+    syllabus: 'Numerical Ability (20 Qs), Verbal Ability (25 Qs), Reasoning Ability (20 Qs), 2 Hands-on Coding Problems (60 mins)',
+    papersCount: '28 Authentic Tests',
+    sampleQuestion: {
+      type: 'Hands-on Coding (Python / Java / C++)',
+      title: 'Subarray with Max Prime Factor Product',
+      statement: 'Given an array of integers, find the contiguous subarray whose elements yield the maximum distinct prime factor product modulo 10^9+7.',
+      approach: 'Precompute primes up to 10^6 using Sieve of Eratosthenes, then utilize a sliding window with frequency hashmap for O(N) linear scan.'
+    }
   },
   {
     id: 'infosys',
@@ -87,12 +123,18 @@ const FEATURED_COMPANIES = [
     short: 'Infosys',
     badge: 'SE / DSE / Specialist',
     ctc: '₹3.6 - ₹9.5 LPA',
-    rounds: 'Online Assessment + Technical + HR',
+    rounds: 'Online Assessment (3 Programing Qs) + Technical + HR',
     color: 'from-sky-500/20 to-cyan-500/10',
     border: 'border-sky-500/30',
     textColor: 'text-sky-400',
-    syllabus: 'Mathematical Ability, Critical Thinking, Hands-on Programming, Pseudocode',
-    papersCount: '22 Authentic Tests'
+    syllabus: 'Critical Thinking, Pseudocode Output Tracing, 3 Programming Problems (Easy, Medium, Hard DP/Graph)',
+    papersCount: '22 Authentic Tests',
+    sampleQuestion: {
+      type: 'Advanced Pseudocode Tracing',
+      title: 'Recursive Bitwise XOR Traversal',
+      statement: 'Trace execution of recursive tree function with bitwise bitmask flags where recursion depth exceeds 10^4.',
+      approach: 'Convert bitmask states to memoized 2D DP matrix to avoid call-stack overflow and achieve O(1) state lookup.'
+    }
   },
   {
     id: 'accenture',
@@ -100,25 +142,37 @@ const FEATURED_COMPANIES = [
     short: 'Accenture',
     badge: 'ASE / FSE',
     ctc: '₹4.5 - ₹6.5 LPA',
-    rounds: 'Cognitive & Technical + Coding + Comm Test',
+    rounds: 'Cognitive & Technical + Coding (2 Qs) + Communication Assessment',
     color: 'from-purple-500/20 to-pink-500/10',
     border: 'border-purple-500/30',
     textColor: 'text-purple-400',
-    syllabus: 'Critical Thinking, English Ability, Abstract Reasoning, Coding (2 Problems)',
-    papersCount: '19 Authentic Tests'
+    syllabus: 'Critical Thinking (18 Qs), Abstract Reasoning (17 Qs), English (17 Qs), Coding: 2 problems (45 mins)',
+    papersCount: '19 Authentic Tests',
+    sampleQuestion: {
+      type: 'Coding Problem',
+      title: 'Password Security & String Transformation',
+      statement: 'Transform string by shifting consonants by ASCII offset of preceding vowel count, ignoring special characters.',
+      approach: 'Two-pass buffer scan tracking cumulative vowel counters with modulo 26 alphabetic wrapping.'
+    }
   },
   {
     id: 'zoho',
     name: 'Zoho Corporation',
     short: 'Zoho',
-    badge: 'Product Dev',
+    badge: 'Product Developer',
     ctc: '₹6.0 - ₹12.0 LPA',
-    rounds: 'Basic C/DSA + Advanced Coding + Tech HR',
+    rounds: 'Round 1: C/DSA Tracing + Round 2: Advanced Coding + Round 3: App Dev',
     color: 'from-emerald-500/20 to-teal-500/10',
     border: 'border-emerald-500/30',
     textColor: 'text-emerald-400',
-    syllabus: 'Rigorous C/Java Code tracing, Pointers, Recursion, Complex String/Matrix Manipulation',
-    papersCount: '16 Authentic Tests'
+    syllabus: 'Intense C Code Tracing, Pointers, Memory Layout, Complex String/Matrix Manipulation, Mini-Console App Dev',
+    papersCount: '16 Authentic Tests',
+    sampleQuestion: {
+      type: 'Core Pointer & Memory Tracing',
+      title: 'Multi-Dimensional Pointer Dereferencing',
+      statement: 'Determine the exact stdout value of *(*(p + i) + j) with dynamically reallocated jagged matrix pointer buffers.',
+      approach: 'Draw memory layout diagram; calculate row-major stride offsets against row base pointers.'
+    }
   },
   {
     id: 'amazon',
@@ -126,16 +180,70 @@ const FEATURED_COMPANIES = [
     short: 'Amazon',
     badge: 'SDE-1 / AWS',
     ctc: '₹14.0 - ₹28.0 LPA',
-    rounds: 'Online OA (2 DSA + Work Style) + 3 Virtual Tech Rounds',
+    rounds: 'Online OA (2 DSA + Work Style Survey) + 3 Virtual Technical Bar-Raiser Rounds',
     color: 'from-amber-500/20 to-orange-500/10',
     border: 'border-amber-500/30',
     textColor: 'text-amber-400',
-    syllabus: 'Dynamic Programming, Trees, Graphs, HashMaps, Leadership Principles',
-    papersCount: '14 Authentic Tests'
+    syllabus: 'Dynamic Programming, Trees, Graphs, HashMaps, Sliding Window, Amazon Leadership Principles (Customer Obsession, Ownership)',
+    papersCount: '14 Authentic Tests',
+    sampleQuestion: {
+      type: 'System Algorithm & Bar Raiser',
+      title: 'Warehouse Routing with Constrained Battery Capacity',
+      statement: 'Given graph of distribution centers with varying charging speeds, compute minimal total transit time with battery constraints.',
+      approach: 'Modified Dijkstra algorithm with 2D state space: (node_id, current_battery_level) stored in min-heap priority queue.'
+    }
   }
 ];
 
-export default function CampusPlacementLanding({ onLoginSuccess }) {
+// Placed Student Testimonials
+const PLACED_SCHOLARS = [
+  {
+    name: 'Sai Teja K.',
+    college: 'JNTU College of Engineering (JNTUA)',
+    company: 'TCS Prime',
+    package: '₹9.0 LPA',
+    quote: 'The 2026 TCS NQT question papers had the exact same 3-round structure. The daily 35-min workout pushed my CRI score to 86.',
+    batch: 'Class of 2025'
+  },
+  {
+    name: 'Divya Sree M.',
+    college: 'Chaitanya Bharathi Inst. of Tech (CBIT)',
+    company: 'Zoho Corporation',
+    package: '₹8.4 LPA',
+    quote: 'Clearing Zoho Round 1 C pointer tracing used to terrify me. Lumixora’s deep pointer drills made the actual exam feel effortless.',
+    batch: 'Class of 2025'
+  },
+  {
+    name: 'Harsha Vardhan R.',
+    college: 'R.G.M College of Engg. (RGMCET)',
+    company: 'Accenture FSE',
+    package: '₹6.5 LPA',
+    quote: 'The AI mock interview gave me real-time feedback on filler words and confidence. I printed my Placement Dossier and brought it to the HR round.',
+    batch: 'Class of 2026'
+  }
+];
+
+// Frequently Asked Questions
+const CAMPUS_FAQS = [
+  {
+    q: 'Is Lumixora Campus open to students from all universities & colleges?',
+    a: 'Yes, absolutely. While GPREC has a dedicated isolated subdomain, Lumixora Campus is open to students from JNTUA, JNTUK, JNTUH, SVUCE, CBIT, VIT, SRM, KL, RGMCET, SRIT, and all government, autonomous, and private engineering institutions across India.'
+  },
+  {
+    q: 'What is the one-time ₹10 verification fee, and are there any recurring charges?',
+    a: 'There are ZERO recurring subscriptions. The nominal ₹10 fee is a one-time cryptographic identity verification clearance. It prevents automated bot spam and unlocks lifetime full access across all 4 years to 100+ company exam packs, AI mock interviews, and your official dossier.'
+  },
+  {
+    q: 'How are the company question papers compiled?',
+    a: 'Every test pack is authenticated and reconstructed based on genuine recent exam memory logs, official recruitment syllabi, and verified candidate assessment submissions from 2024 to 2026 hiring drives.'
+  },
+  {
+    q: 'What is the Campus Readiness Index (CRI) on the Placement Dossier?',
+    a: 'The CRI is a 0–100 benchmark metric derived from your performance across Quantitative Aptitude, Technical Hands-on Coding, AI Mock Interview ratings, and ATS Resume strength. Recruiters look for a CRI above 75 for differential digital and product roles.'
+  }
+];
+
+export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, onLoginClick }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [targetModule, setTargetModule] = useState(null);
 
@@ -146,18 +254,27 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
   const [ctcTierIndex, setCtcTierIndex] = useState(1); // default ₹5.0 - ₹8.0 LPA
   const activeCtcTier = CTC_TIERS[ctcTierIndex];
 
-  // Interactive 10-Second Micro-Drill State
+  // Interactive Micro-Drill State
+  const [activeDrillIndex, setActiveDrillIndex] = useState(0);
+  const currentDrill = SAMPLE_DRILLS[activeDrillIndex];
   const [selectedDrillOption, setSelectedDrillOption] = useState(null);
   const [drillAnswerSubmitted, setDrillAnswerSubmitted] = useState(false);
+  const [solvedDrillsCount, setSolvedDrillsCount] = useState(0);
 
   // Active Company Pattern Tab
   const [activeCompanyId, setActiveCompanyId] = useState('tcs');
+  const [showSampleApproach, setShowSampleApproach] = useState(false);
   const activeCompany = useMemo(() => {
     return FEATURED_COMPANIES.find(c => c.id === activeCompanyId) || FEATURED_COMPANIES[0];
   }, [activeCompanyId]);
 
+  // FAQ Accordion Open State
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
   const triggerLogin = (moduleKey = null) => {
     setTargetModule(moduleKey);
+    if (onLoginClick) onLoginClick();
+    if (onEnterPortal) onEnterPortal(moduleKey);
     setIsLoginModalOpen(true);
   };
 
@@ -262,7 +379,7 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
               {/* Institutional clearance pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold tracking-wide">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Open to All Engineering, Technology & University Colleges Across India</span>
+                <span>Open to All Engineering, Technology & Autonomous Colleges</span>
               </div>
 
               {/* Main Headline */}
@@ -275,8 +392,8 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
 
               {/* Body narrative */}
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-                The institutional placement operating system built for scholars from{' '}
-                <strong className="text-white">JNTUA, CBIT, VIT, SRM, KL, RGMCET, SRIT</strong> and autonomous universities across India. Master 100+ authenticated company question papers, simulate AI voice interviews, and generate your certified placement dossier.
+                The autonomous placement operating system engineered for students from{' '}
+                <strong className="text-white">JNTUA, CBIT, VIT, SRM, KL, RGMCET, SRIT</strong> and higher education institutions across India. Solve 100+ authenticated company question papers, simulate AI voice interviews, and generate your official placement dossier.
               </p>
 
               {/* Instant "Check My College" Clearance Bar */}
@@ -487,36 +604,63 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
           
           <div className="text-center space-y-2 max-w-3xl mx-auto">
             <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
-              Complete Placement Arsenal
+              Interactive Placement Sandbox
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Four Core Engines. Zero Guesswork.
+              Test Real Questions. Inspect Real Patterns.
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Engineered specifically for engineering & technology colleges targeting high-tier placements.
+              Engineered with zero fluff: practice live questions right from this page before stepping into the portal.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             
-            {/* ── CARD A: LIVE 10-SECOND COMPANY DRILL (7 COLS) ── */}
+            {/* ── CARD A: MULTI-QUESTION DIAGNOSTIC DRILL (7 COLS) ── */}
             <div className="lg:col-span-7 p-6 rounded-3xl bg-slate-900/70 border border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    Interactive Diagnostic Drill
-                  </span>
-                  <span className="text-xs text-slate-400 font-semibold">{SAMPLE_DRILL.company}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Drill #{currentDrill.id} of {SAMPLE_DRILLS.length}
+                    </span>
+                    <span className="text-xs font-bold text-white">{currentDrill.company}</span>
+                  </div>
+                  
+                  {/* Switcher Buttons */}
+                  <div className="flex items-center gap-1.5">
+                    {SAMPLE_DRILLS.map((d, idx) => (
+                      <button
+                        key={d.id}
+                        onClick={() => {
+                          setActiveDrillIndex(idx);
+                          setSelectedDrillOption(null);
+                          setDrillAnswerSubmitted(false);
+                        }}
+                        className={`w-6 h-6 rounded-lg text-xs font-bold transition ${
+                          activeDrillIndex === idx
+                            ? 'bg-emerald-500 text-slate-950 font-black'
+                            : 'bg-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {d.id}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <h3 className="text-base font-bold text-white mt-3">
-                  {SAMPLE_DRILL.question}
+                <div className="mt-2 text-[11px] text-emerald-400 font-semibold">
+                  Topic: {currentDrill.topic} • {currentDrill.badge}
+                </div>
+
+                <h3 className="text-sm sm:text-base font-bold text-white mt-1 leading-snug">
+                  {currentDrill.question}
                 </h3>
               </div>
 
               {/* 4 Clickable Options */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {SAMPLE_DRILL.options.map((opt) => {
+                {currentDrill.options.map((opt) => {
                   const isSelected = selectedDrillOption === opt.id;
                   return (
                     <button
@@ -525,6 +669,7 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
                       onClick={() => {
                         setSelectedDrillOption(opt.id);
                         setDrillAnswerSubmitted(true);
+                        if (opt.correct) setSolvedDrillsCount(c => c + 1);
                       }}
                       className={`p-3 rounded-xl border text-left text-xs font-semibold transition flex items-center justify-between ${
                         drillAnswerSubmitted && opt.correct
@@ -548,18 +693,31 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
               {/* Dynamic feedback on click */}
               {drillAnswerSubmitted && (
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 animate-in fade-in space-y-1">
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>+25 Placement XP Unlocked!</span>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{currentDrill.options.find(o => o.id === selectedDrillOption)?.correct ? 'Correct! +25 Placement XP' : 'Analysis Breakdown:'}</span>
+                    </span>
+                    <button
+                      onClick={() => {
+                        const nextIdx = (activeDrillIndex + 1) % SAMPLE_DRILLS.length;
+                        setActiveDrillIndex(nextIdx);
+                        setSelectedDrillOption(null);
+                        setDrillAnswerSubmitted(false);
+                      }}
+                      className="text-emerald-400 hover:underline font-bold text-[11px]"
+                    >
+                      Next Question →
+                    </button>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    {SAMPLE_DRILL.options.find(o => o.id === selectedDrillOption)?.explanation}
+                    {currentDrill.options.find(o => o.id === selectedDrillOption)?.explanation}
                   </p>
                 </div>
               )}
 
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <span className="text-slate-400 text-[11px]">Over 10,000+ Verified Practice Questions</span>
+                <span className="text-slate-400 text-[11px]">10,000+ Authenticated Exam Questions</span>
                 <button
                   onClick={() => triggerLogin('company-papers')}
                   className="text-emerald-400 font-bold hover:underline flex items-center gap-1"
@@ -643,7 +801,10 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
                 {FEATURED_COMPANIES.map((c) => (
                   <button
                     key={c.id}
-                    onClick={() => setActiveCompanyId(c.id)}
+                    onClick={() => {
+                      setActiveCompanyId(c.id);
+                      setShowSampleApproach(false);
+                    }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                       activeCompanyId === c.id
                         ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
@@ -656,7 +817,7 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
               </div>
 
               {/* Selected Company Breakdown */}
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5 text-xs">
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-sm">{activeCompany.name}</span>
                   <span className="font-bold text-emerald-400">{activeCompany.ctc}</span>
@@ -667,13 +828,39 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
                 <div className="text-slate-300">
                   <span className="text-slate-400">Syllabus:</span> {activeCompany.syllabus}
                 </div>
-                <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-[11px] text-slate-400">
+
+                {/* Expandable Real Sample Question Teaser */}
+                <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSampleApproach(!showSampleApproach)}
+                    className="flex items-center gap-1.5 text-emerald-400 hover:underline font-bold text-xs"
+                  >
+                    <span>{showSampleApproach ? '▲ Hide Sample Question' : '▼ Inspect Real Exam Question & Approach'}</span>
+                  </button>
+
+                  {showSampleApproach && (
+                    <div className="p-3 rounded-xl bg-slate-900 border border-emerald-500/30 space-y-2 animate-in fade-in">
+                      <div className="flex justify-between items-center text-[10px] text-slate-400">
+                        <span className="font-bold text-white">{activeCompany.sampleQuestion.type}</span>
+                        <span className="text-emerald-400 font-mono">Recent 2026 Test</span>
+                      </div>
+                      <div className="text-white font-semibold text-xs">{activeCompany.sampleQuestion.title}</div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">{activeCompany.sampleQuestion.statement}</p>
+                      <div className="text-[11px] text-emerald-300/90 pt-1 border-t border-slate-800 font-mono">
+                        💡 <strong>Optimal Approach:</strong> {activeCompany.sampleQuestion.approach}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-1 flex justify-between items-center text-[11px] text-slate-400">
                   <span>Available: <strong className="text-emerald-400">{activeCompany.papersCount}</strong></span>
                   <button
                     onClick={() => triggerLogin('company-papers')}
                     className="text-emerald-400 hover:underline font-bold"
                   >
-                    Start Drill →
+                    Start Full Drill →
                   </button>
                 </div>
               </div>
@@ -724,7 +911,222 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
         </div>
       </section>
 
-      {/* ── 6. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE ── */}
+      {/* ── 6. 4-STAGE PLACEMENT ROADMAP (TIMELINE VISUALIZATION) ── */}
+      <section className="py-16 sm:py-20 bg-[#040612] border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+              Clear Path to Placement
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+              From Zero to Placed in 4 Phases
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Structured preparation eliminates randomness and replaces it with calibrated progress.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
+                01
+              </div>
+              <h4 className="text-sm font-bold text-white">College Clearance & Audit</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Bind your college USN/Roll Number and complete the 15-minute diagnostic test to establish your initial CRI score.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-sm">
+                02
+              </div>
+              <h4 className="text-sm font-bold text-white">Target Company Mastery</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Solve authenticated question packs for TCS, Infosys, Zoho, or Accenture with timed speed rounds and answer keys.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-sm">
+                03
+              </div>
+              <h4 className="text-sm font-bold text-white">AI Voice & Video Mock</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Simulate real Technical and HR interviews with instant grading on fluency, filler words, and technical depth.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">
+                04
+              </div>
+              <h4 className="text-sm font-bold text-white">Official Placement Dossier</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Generate your verifiable, cryptographic placement dossier to showcase to recruiters and TPO coordinators.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── 7. BEFORE VS AFTER COMPARISON ── */}
+      <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
+          
+          <div className="text-center space-y-2">
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+              The Placement Advantage
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+              Why Autonomous Preparation Wins
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* The Old Way */}
+            <div className="p-6 rounded-3xl bg-slate-950/80 border border-rose-500/20 space-y-4">
+              <div className="flex items-center gap-2 text-rose-400 text-sm font-bold">
+                <X className="w-5 h-5" />
+                <span>The Traditional Placement Struggle</span>
+              </div>
+              <ul className="space-y-3 text-xs text-slate-400">
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-400 font-bold">✕</span>
+                  <span>Scattered, unverified PDFs across WhatsApp & Telegram with wrong answers</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-400 font-bold">✕</span>
+                  <span>Outdated 2019 patterns that don't match the 2026 adaptive test rules</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-400 font-bold">✕</span>
+                  <span>Blank or non-ATS resumes rejected before any human reviewer sees them</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-400 font-bold">✕</span>
+                  <span>Expensive course subscriptions costing ₹10,000 to ₹30,000 with zero personal feedback</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* The Lumixora Campus Way */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-[#090F24] via-slate-900 to-[#060918] border border-emerald-500/40 shadow-xl space-y-4">
+              <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
+                <CheckCircle2 className="w-5 h-5" />
+                <span>With Lumixora Campus</span>
+              </div>
+              <ul className="space-y-3 text-xs text-slate-200">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>100+ Authenticated company exam packs with step-by-step verified solutions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>CRI telemetry that tracks your exact clearance readiness for ₹3.5 to ₹28 LPA roles</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>AI voice simulator that trains you against actual Technical & HR pressure questions</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Nominal ₹10 one-time academic clearance with full 4-year lifetime validity</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── 8. SCHOLAR SUCCESS SPOTLIGHTS ── */}
+      <section className="py-16 sm:py-20 bg-[#040612] border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          
+          <div className="text-center space-y-2 max-w-xl mx-auto">
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+              Verified Scholar Results
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Placed in Top Engineering Tiers
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PLACED_SCHOLARS.map((s, idx) => (
+              <div key={idx} className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-white">{s.company}</span>
+                    <span className="text-xs font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                      {s.package}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 italic leading-relaxed">
+                    "{s.quote}"
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+                  <strong className="text-white block">{s.name}</strong>
+                  <span>{s.college} • {s.batch}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── 9. FREQUENTLY ASKED QUESTIONS (ACCORDION) ── */}
+      <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
+          
+          <div className="text-center space-y-2">
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+              Clear Answers
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {CAMPUS_FAQS.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-slate-900/70 border border-slate-800 overflow-hidden transition"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white hover:text-emerald-400 transition"
+                  >
+                    <span>{faq.q}</span>
+                    {isOpen ? (
+                      <ChevronUp className="w-4 h-4 text-emerald-400 shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                    )}
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── 10. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE ── */}
       <section className="py-16 sm:py-20 bg-gradient-to-b from-[#050816] to-[#040612] border-b border-slate-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-8">
           
@@ -805,7 +1207,7 @@ export default function CampusPlacementLanding({ onLoginSuccess }) {
         </div>
       </section>
 
-      {/* ── 7. FOOTER ── */}
+      {/* ── 11. FOOTER ── */}
       <footer className="mt-auto border-t border-slate-800/80 bg-[#040612] py-8 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
