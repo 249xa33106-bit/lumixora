@@ -195,34 +195,6 @@ const FEATURED_COMPANIES = [
   }
 ];
 
-// Placed Student Testimonials
-const PLACED_SCHOLARS = [
-  {
-    name: 'Sai Teja K.',
-    college: 'JNTU College of Engineering (JNTUA)',
-    company: 'TCS Prime',
-    package: '₹9.0 LPA',
-    quote: 'The 2026 TCS NQT question papers had the exact same 3-round structure. The daily 35-min workout pushed my CRI score to 86.',
-    batch: 'Class of 2025'
-  },
-  {
-    name: 'Divya Sree M.',
-    college: 'Chaitanya Bharathi Inst. of Tech (CBIT)',
-    company: 'Zoho Corporation',
-    package: '₹8.4 LPA',
-    quote: 'Clearing Zoho Round 1 C pointer tracing used to terrify me. Lumixora’s deep pointer drills made the actual exam feel effortless.',
-    batch: 'Class of 2025'
-  },
-  {
-    name: 'Harsha Vardhan R.',
-    college: 'R.G.M College of Engg. (RGMCET)',
-    company: 'Accenture FSE',
-    package: '₹6.5 LPA',
-    quote: 'The AI mock interview gave me real-time feedback on filler words and confidence. I printed my Placement Dossier and brought it to the HR round.',
-    batch: 'Class of 2026'
-  }
-];
-
 // Frequently Asked Questions
 const CAMPUS_FAQS = [
   {
@@ -1042,45 +1014,9 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-      {/* ── 8. SCHOLAR SUCCESS SPOTLIGHTS ── */}
-      <section className="py-16 sm:py-20 bg-[#040612] border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
-              Verified Scholar Results
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Placed in Top Engineering Tiers
-            </h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PLACED_SCHOLARS.map((s, idx) => (
-              <div key={idx} className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-white">{s.company}</span>
-                    <span className="text-xs font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                      {s.package}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 italic leading-relaxed">
-                    "{s.quote}"
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400">
-                  <strong className="text-white block">{s.name}</strong>
-                  <span>{s.college} • {s.batch}</span>
-                </div>
-              </div>
-            ))}
-          </div>
 
-        </div>
-      </section>
-
-      {/* ── 9. FREQUENTLY ASKED QUESTIONS (ACCORDION) ── */}
+      {/* ── 8. FREQUENTLY ASKED QUESTIONS (ACCORDION) ── */}
       <section className="py-16 sm:py-20 bg-[#050816] border-b border-slate-800/80">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
           
@@ -1126,7 +1062,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-      {/* ── 10. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE ── */}
+      {/* ── 9. THE TRUST VAULT: NOMINAL ₹10 LIFETIME CLEARANCE ── */}
       <section className="py-16 sm:py-20 bg-gradient-to-b from-[#050816] to-[#040612] border-b border-slate-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-8">
           
@@ -1207,7 +1143,7 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
         </div>
       </section>
 
-      {/* ── 11. FOOTER ── */}
+      {/* ── 10. FOOTER ── */}
       <footer className="mt-auto border-t border-slate-800/80 bg-[#040612] py-8 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
