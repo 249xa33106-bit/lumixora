@@ -114,37 +114,59 @@ function withTimeout(promise, ms = 1500) {
 export async function syncCustomRollsFromCloud() {
   const cloudRolls = [];
 
-  // 1. Primary Real Database: Supabase founder_notifications with type 'gprec_whitelisted_scholar'
+  // 1. Primary Dedicated Database Table: gprec_whitelisted_scholars
   try {
     if (supabase) {
-      const { data: supaRows, error } = await supabase
-        .from('founder_notifications')
-        .select('*')
-        .eq('type', 'gprec_whitelisted_scholar');
+      const { data: dedicatedRows, error: dedErr } = await supabase
+        .from('gprec_whitelisted_scholars')
+        .select('*');
 
-      if (!error && Array.isArray(supaRows)) {
-        supaRows.forEach(row => {
-          const m = row.meta || {};
-          const r = normalizeRollNumber(m.rollNumber || m.rollLower);
+      if (!dedErr && Array.isArray(dedicatedRows) && dedicatedRows.length > 0) {
+        dedicatedRows.forEach(row => {
+          const r = normalizeRollNumber(row.roll_lower || row.roll_number);
           if (r) {
             cloudRolls.push({
               id: row.id,
               rollNumber: r,
-              name: m.name || `GPREC Scholar (${r.toUpperCase()})`,
-              department: m.department || deriveBranchFromRoll(r),
-              year: m.year || deriveYearFromRoll(r),
-              addedAt: m.timestamp || new Date(row.created_at).getTime() || Date.now(),
-              addedBy: m.addedBy || 'Founder'
+              name: row.name || `GPREC Scholar (${r.toUpperCase()})`,
+              department: row.department || deriveBranchFromRoll(r),
+              year: row.year || deriveYearFromRoll(r),
+              addedAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+              addedBy: row.added_by || 'Founder'
             });
           }
         });
+      } else {
+        // Fallback to legacy founder_notifications if table not ready
+        const { data: supaRows, error } = await supabase
+          .from('founder_notifications')
+          .select('*')
+          .eq('type', 'gprec_whitelisted_scholar');
+
+        if (!error && Array.isArray(supaRows)) {
+          supaRows.forEach(row => {
+            const m = row.meta || {};
+            const r = normalizeRollNumber(m.rollNumber || m.rollLower);
+            if (r) {
+              cloudRolls.push({
+                id: row.id,
+                rollNumber: r,
+                name: m.name || `GPREC Scholar (${r.toUpperCase()})`,
+                department: m.department || deriveBranchFromRoll(r),
+                year: m.year || deriveYearFromRoll(r),
+                addedAt: m.timestamp || new Date(row.created_at).getTime() || Date.now(),
+                addedBy: m.addedBy || 'Founder'
+              });
+            }
+          });
+        }
       }
     }
   } catch (err) {
     console.warn('Supabase whitelist fetch notice:', err.message || err);
   }
 
-  // Note: We ONLY sync from 'gprec_whitelisted_scholar' so that general platform users from main lumixora.in are NEVER imported.
+  // Persist synced cloud list into local storage for offline resilience
   if (cloudRolls.length > 0) {
     const local = getStoredCustomRolls();
     const map = new Map();
@@ -268,10 +290,27 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
     saveCustomRolls(existing);
   }
 
-  // 1. Write directly to REAL Supabase database (founder_notifications table)
+  // 1. Write directly to DEDICATED Supabase database table: gprec_whitelisted_scholars
   try {
     if (supabase) {
-      const { error: supaErr } = await supabase.from('founder_notifications').insert([{
+      const { error: supaErr } = await supabase.from('gprec_whitelisted_scholars').upsert([{
+        roll_number: rollUpper,
+        roll_lower: normalized,
+        name: scholarName,
+        department,
+        year,
+        email,
+        status: 'Active',
+        added_by: meta.addedBy || 'Founder',
+        updated_at: new Date().toISOString()
+      }], { onConflict: 'roll_lower' });
+
+      if (supaErr) {
+        console.error('Supabase gprec_whitelisted_scholars insert failed:', supaErr);
+      }
+
+      // Also keep audit entry in founder_notifications
+      await supabase.from('founder_notifications').insert([{
         type: 'gprec_whitelisted_scholar',
         title: `GPREC Whitelisted Scholar: ${rollUpper}`,
         message: `Founder whitelisted scholar ${rollUpper} (${scholarName}) for placement suite access.`,
@@ -286,11 +325,7 @@ export async function addGprecScholarRoll(rollInput, meta = {}) {
           timestamp: Date.now()
         },
         read: false
-      }]);
-
-      if (supaErr) {
-        console.error('Supabase cloud insert failed:', supaErr);
-      }
+      }]).catch(() => {});
 
       // 2. Also register or approve user in Supabase users table
       await supabase.from('users').update({
@@ -376,6 +411,17 @@ export async function updateGprecScholarData(rollInput, updates = {}) {
   // 2. Real Cloud Database: Supabase updates
   try {
     if (supabase) {
+      // Update dedicated gprec_whitelisted_scholars table
+      await supabase.from('gprec_whitelisted_scholars').upsert([{
+        roll_number: rollUpper,
+        roll_lower: normalized,
+        name,
+        department,
+        year,
+        email,
+        updated_at: new Date().toISOString()
+      }], { onConflict: 'roll_lower' });
+
       // Check if existing founder_notifications row exists for this roll
       const { data: matches } = await supabase
         .from('founder_notifications')
@@ -459,7 +505,10 @@ export async function removeGprecScholarRoll(rollInput) {
   // Remove from Supabase real database
   try {
     if (supabase) {
-      // Find row in founder_notifications matching this roll
+      // 1. Delete from dedicated gprec_whitelisted_scholars table
+      await supabase.from('gprec_whitelisted_scholars').delete().eq('roll_lower', normalized);
+
+      // 2. Also delete row in founder_notifications matching this roll
       const { data: matches } = await supabase
         .from('founder_notifications')
         .select('id, meta')
