@@ -157,6 +157,21 @@ export default function VideoPortal({ user, setActiveTab }) {
     }
   }, [activeVideo, currentVideoId]);
 
+  // Keyboard accessibility for Lumina Cinema Player (Escape to close, T for theater mode)
+  useEffect(() => {
+    if (!activeVideo) return;
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+      if (e.key === 'Escape') {
+        setActiveVideo(null);
+      } else if (e.key.toLowerCase() === 't') {
+        setIsTheaterMode(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeVideo]);
+
   // Founder Mode Toggle (for editing & managing)
   const [founderEditMode, setFounderEditMode] = useState(false);
 

@@ -150,6 +150,11 @@ export default function LuminaReal3DScene({
       setLecturePlan(plan);
       setIsAnalyzing(false);
 
+      if (plan.diagramType === 'parabola' && plan.diagramData && plan.diagramData.a !== undefined) {
+        setSliderParams(plan.diagramData);
+        sliderParamsRef.current = plan.diagramData;
+      }
+
       // Step 2: Turn to board and begin writing with chalk
       setIsWriting(true);
       setActiveActionName('write');
@@ -282,6 +287,11 @@ export default function LuminaReal3DScene({
     const mentorWarmRim = new THREE.PointLight(0xfdf2f8, 1.2, 6, 1.5);
     mentorWarmRim.position.set(-0.8, 1.8, 1.5);
     scene.add(mentorWarmRim);
+
+    // Living Eye Specular Catchlight (Reflects vivid glint in Lumina's pupils)
+    const eyeCatchlight = new THREE.PointLight(0xfffdf7, 1.35, 4.5, 1.8);
+    eyeCatchlight.position.set(-0.18, 1.72, 1.4);
+    scene.add(eyeCatchlight);
 
     // ── D. BUILD REALISTIC CLASSROOM ENVIRONMENT ──
     // 1. Warm Polished Oak Parquet Floor
@@ -638,73 +648,117 @@ export default function LuminaReal3DScene({
 
     const safetyTimer = setTimeout(() => setIsLoading(false), 2000);
 
-    // ── G. RENDER ANIMATION & PROCEDURAL POSTURE LOOP ──
+    // ── G. RENDER ANIMATION & LIVING HUMAN PROCEDURAL POSTURE LOOP ──
     const clock = new THREE.Clock();
     let reqId;
+
+    // Biological timers (Respiration, Blinking, Postural Sway, Saccades)
     let blinkTimer = 0;
     let isBlinking = false;
-    let blinkDuration = 0.16;
+    const blinkDuration = 0.15;
     let timeSinceBlink = 0;
+    let nextBlinkInterval = 2.8 + Math.random() * 2.5;
 
-    // Micro-animation timers (Eye saccades & spectrum refresh)
     let saccadeTimer = 0;
-    let saccadeInterval = 0.5;
-    let saccadeOffsetY = 0;
+    let saccadeInterval = 1.2;
+    let saccadeTargetX = 0;
+    let saccadeTargetY = 0;
+    let saccadeCurrentX = 0;
+    let saccadeCurrentY = 0;
+
     let spectrumTimer = 0;
 
     const animate = () => {
       reqId = requestAnimationFrame(animate);
       const delta = clock.getDelta();
+      const elapsedTime = clock.getElapsedTime();
 
       const currentAction = activeActionNameRef.current || 'idle';
       const currentlySpeaking = isSpeakingRef.current;
+      const isListening = isListeningRef.current;
+      const isAnalyzing = isAnalyzingRef.current;
 
       if (mixerRef.current) {
         mixerRef.current.update(delta);
       }
 
-      // Procedural Arm Relaxation & Chalkboard Writing / Pointing
       const bones = bonesRef.current;
       const char = characterRef.current;
 
+      // ── 1. LIVING POSTURAL SWAY (NATURAL HUMAN WEIGHT TRANSFER) ──
+      const swayTime = elapsedTime * 0.32; // ~19-second gentle figure-8 sway cycle
+      const swayX = Math.sin(swayTime) * 0.014;
+      const swayZ = Math.cos(swayTime * 0.5) * 0.008;
+
+      if (char && currentAction !== 'write') {
+        char.position.x = THREE.MathUtils.lerp(char.position.x, -0.18 + swayX, 0.05);
+        char.position.z = THREE.MathUtils.lerp(char.position.z, swayZ, 0.05);
+        char.rotation.z = Math.sin(swayTime) * 0.006; // subtle natural pelvic angle
+      }
+
+      // ── 2. BIOLOGICAL RESPIRATION (DIAPHRAGMATIC BREATHING) ──
+      const breathFreq = 1.65; // ~15.7 breaths/min (relaxed human breathing)
+      const breathInhale = Math.max(0, Math.sin(elapsedTime * breathFreq));
+      const breathHarmonic = Math.sin(elapsedTime * breathFreq);
+
+      if (bones['Bip01_Spine2']) {
+        // Expand chest depth & width during inhalation
+        bones['Bip01_Spine2'].scale.x = 1 + breathInhale * 0.016;
+        bones['Bip01_Spine2'].scale.z = 1 + breathInhale * 0.022;
+      }
+      if (bones['Bip01_Spine1']) {
+        bones['Bip01_Spine1'].rotation.x = breathHarmonic * 0.01;
+        bones['Bip01_Spine1'].rotation.z = breathHarmonic * 0.008;
+      }
+      if (bones['Bip01_L_Clavicle']) {
+        bones['Bip01_L_Clavicle'].rotation.z = breathInhale * 0.012;
+      }
+      if (bones['Bip01_R_Clavicle']) {
+        bones['Bip01_R_Clavicle'].rotation.z = -breathInhale * 0.012;
+      }
+
+      // ── 3. PROCEDURAL ARM KINESICS & CONVERSATIONAL BEAT GESTURES ──
       if (bones['Bip01_L_UpperArm'] && bones['Bip01_R_UpperArm']) {
         if (currentAction === 'idle') {
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, 0.15, 0.06);
 
-          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 2.0, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 2.0, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -2.0, 0.08);
+          // Conversational beat gestures while speaking
+          const beatL = currentlySpeaking ? Math.sin(elapsedTime * 4.2) * 0.09 : 0;
+          const beatR = currentlySpeaking ? Math.cos(elapsedTime * 3.6) * 0.07 : 0;
+
+          // Relaxed, balanced human teacher stance (arms gently hanging near hips)
+          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.45 + beatL, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 0.35, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.15 + beatL * 0.3, 0.08);
           
-          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.5, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -1.4, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 0.7, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.45 + beatR, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.35, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 1.15 - beatR * 0.3, 0.08);
 
-          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, 0.25, 0.08);
-          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.25, 0.08);
+          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.25 - beatL * 0.4, 0.08);
+          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.25 + beatR * 0.4, 0.08);
 
-          if (bones['Bip01_Spine1']) {
-            bones['Bip01_Spine1'].rotation.z = Math.sin(clock.getElapsedTime() * 1.8) * 0.015;
-          }
         } else if (currentAction === 'point') {
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, 0.25, 0.06);
 
           // Raise left arm toward chalkboard equation and diagram
-          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.4, 0.1);
+          const pointWiggle = currentlySpeaking ? Math.sin(elapsedTime * 2.8) * 0.03 : 0;
+          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.4 + pointWiggle, 0.1);
           bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 0.7, 0.1);
           bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.35, 0.1);
           if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.4, 0.1);
 
           // Right arm resting naturally
-          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.5, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -1.4, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 0.7, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.45, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.35, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 1.15, 0.08);
+
         } else if (currentAction === 'write') {
-          // Turn Lumina directly toward chalkboard
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, -0.55, 0.08);
 
-          // Raise right arm with chalk against the board with realistic oscillating strokes
-          const writeOsc = Math.sin(clock.getElapsedTime() * 12) * 0.06;
-          const writeOscY = Math.cos(clock.getElapsedTime() * 10) * 0.04;
+          // Realistic oscillating chalk strokes
+          const writeOsc = Math.sin(elapsedTime * 12) * 0.06;
+          const writeOscY = Math.cos(elapsedTime * 10) * 0.04;
 
           bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 1.1 + writeOscY, 0.1);
           bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.65, 0.1);
@@ -714,52 +768,85 @@ export default function LuminaReal3DScene({
             bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.65 + writeOsc, 0.1);
           }
 
-          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 1.8, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 1.6, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.6, 0.08);
+          // Left arm relaxed at side while writing with right hand
+          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.45, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 0.35, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.15, 0.08);
+          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.25, 0.08);
         }
       }
 
-      // ── MICRO-ANIMATIONS: EYE SACCADES & HEAD TILT ──
+      // ── 4. MICRO-SACCADIC EYE TRACKING & INQUISITIVE HEAD DYNAMICS ──
       saccadeTimer += delta;
       if (saccadeTimer > saccadeInterval) {
         saccadeTimer = 0;
-        saccadeInterval = 0.4 + Math.random() * 0.6;
-        saccadeOffsetY = (Math.random() - 0.5) * 0.02;
+        saccadeInterval = 1.0 + Math.random() * 1.8;
+        saccadeTargetX = (Math.random() - 0.5) * 0.16;
+        saccadeTargetY = (Math.random() - 0.5) * 0.08;
       }
+      saccadeCurrentX = THREE.MathUtils.lerp(saccadeCurrentX, saccadeTargetX, 0.22);
+      saccadeCurrentY = THREE.MathUtils.lerp(saccadeCurrentY, saccadeTargetY, 0.22);
 
       if (bones['Head']) {
-        if (isListeningRef.current || isAnalyzingRef.current) {
-          // Attentive, inquisitive head tilt while student speaks or doubt is being analyzed
+        if (isListening || isAnalyzing) {
+          // Attentive, inquisitive head tilt with subtle conversational nod
+          const attentiveNod = isListening ? Math.sin(elapsedTime * 2.2) * 0.025 : 0;
+          bones['Head'].rotation.x = THREE.MathUtils.lerp(bones['Head'].rotation.x, attentiveNod, 0.08);
           bones['Head'].rotation.z = THREE.MathUtils.lerp(bones['Head'].rotation.z, 0.08, 0.08);
-          bones['Head'].rotation.y = THREE.MathUtils.lerp(bones['Head'].rotation.y, -0.06 + saccadeOffsetY, 0.08);
+          bones['Head'].rotation.y = THREE.MathUtils.lerp(bones['Head'].rotation.y, -0.06 + saccadeCurrentX * 0.2, 0.08);
         } else if (currentAction === 'idle') {
+          const speakHeadNod = currentlySpeaking ? Math.sin(elapsedTime * 3.5) * 0.02 : 0;
+          bones['Head'].rotation.x = THREE.MathUtils.lerp(bones['Head'].rotation.x, speakHeadNod, 0.05);
           bones['Head'].rotation.z = THREE.MathUtils.lerp(bones['Head'].rotation.z, 0, 0.05);
-          bones['Head'].rotation.y = THREE.MathUtils.lerp(bones['Head'].rotation.y, saccadeOffsetY, 0.05);
+          bones['Head'].rotation.y = THREE.MathUtils.lerp(bones['Head'].rotation.y, saccadeCurrentX * 0.2, 0.05);
         }
       }
 
-      // Facial Animation: Blinking & Lip-Sync Modulation
+      // ── 5. MORPH TARGET FACIAL KINESICS & EMOTIONS ──
       const mesh = skinnedMeshRef.current;
       if (mesh && mesh.morphTargetDictionary && mesh.morphTargetInfluences) {
         const dict = mesh.morphTargetDictionary;
         const infl = mesh.morphTargetInfluences;
 
-        // Warm smile matching reference
-        if (dict['mouthSmileLeft'] !== undefined) infl[dict['mouthSmileLeft']] = 0.52;
-        if (dict['mouthSmileRight'] !== undefined) infl[dict['mouthSmileRight']] = 0.52;
+        // A. Eye Gaze (Physical Cornea/Pupil Micro-Saccades)
+        if (saccadeCurrentX > 0) {
+          if (dict['eyeLookOutLeft'] !== undefined) infl[dict['eyeLookOutLeft']] = saccadeCurrentX;
+          if (dict['eyeLookInRight'] !== undefined) infl[dict['eyeLookInRight']] = saccadeCurrentX;
+          if (dict['eyeLookInLeft'] !== undefined) infl[dict['eyeLookInLeft']] = 0;
+          if (dict['eyeLookOutRight'] !== undefined) infl[dict['eyeLookOutRight']] = 0;
+        } else {
+          if (dict['eyeLookInLeft'] !== undefined) infl[dict['eyeLookInLeft']] = -saccadeCurrentX;
+          if (dict['eyeLookOutRight'] !== undefined) infl[dict['eyeLookOutRight']] = -saccadeCurrentX;
+          if (dict['eyeLookOutLeft'] !== undefined) infl[dict['eyeLookOutLeft']] = 0;
+          if (dict['eyeLookInRight'] !== undefined) infl[dict['eyeLookInRight']] = 0;
+        }
 
+        if (saccadeCurrentY > 0) {
+          if (dict['eyeLookUpLeft'] !== undefined) infl[dict['eyeLookUpLeft']] = saccadeCurrentY;
+          if (dict['eyeLookUpRight'] !== undefined) infl[dict['eyeLookUpRight']] = saccadeCurrentY;
+          if (dict['eyeLookDownLeft'] !== undefined) infl[dict['eyeLookDownLeft']] = 0;
+          if (dict['eyeLookDownRight'] !== undefined) infl[dict['eyeLookDownRight']] = 0;
+        } else {
+          if (dict['eyeLookDownLeft'] !== undefined) infl[dict['eyeLookDownLeft']] = -saccadeCurrentY;
+          if (dict['eyeLookDownRight'] !== undefined) infl[dict['eyeLookDownRight']] = -saccadeCurrentY;
+          if (dict['eyeLookUpLeft'] !== undefined) infl[dict['eyeLookUpLeft']] = 0;
+          if (dict['eyeLookUpRight'] !== undefined) infl[dict['eyeLookUpRight']] = 0;
+        }
+
+        // B. Dynamic Natural Blinking (Irregular intervals + 25% double-blink chance)
         timeSinceBlink += delta;
-        if (timeSinceBlink > 3.5) {
+        if (timeSinceBlink > nextBlinkInterval) {
           isBlinking = true;
           blinkTimer = 0;
           timeSinceBlink = 0;
+          const isDoubleBlink = Math.random() < 0.25;
+          nextBlinkInterval = isDoubleBlink ? 0.35 : (2.4 + Math.random() * 3.2);
         }
 
         if (isBlinking) {
           blinkTimer += delta;
           const blinkProgress = blinkTimer / blinkDuration;
-          const blinkVal = Math.sin(blinkProgress * Math.PI);
+          const blinkVal = Math.sin(Math.min(1.0, blinkProgress) * Math.PI);
           if (dict['eyeBlinkLeft'] !== undefined) infl[dict['eyeBlinkLeft']] = Math.max(0, blinkVal);
           if (dict['eyeBlinkRight'] !== undefined) infl[dict['eyeBlinkRight']] = Math.max(0, blinkVal);
 
@@ -770,17 +857,64 @@ export default function LuminaReal3DScene({
           }
         }
 
-        // Audio Viseme Lip-Sync
-        if (currentlySpeaking) {
-          const t = clock.getElapsedTime() * 12;
-          const speechOpen = (Math.sin(t) + 1) * 0.4;
-          if (dict['jawOpen'] !== undefined) infl[dict['jawOpen']] = speechOpen;
-          if (dict['viseme_aa'] !== undefined) infl[dict['viseme_aa']] = speechOpen * 0.8;
-          if (dict['viseme_E'] !== undefined) infl[dict['viseme_E']] = (Math.cos(t) + 1) * 0.3;
+        // C. Affective Emotional States (Smile, Eyebrows, Squint, Dimples)
+        if (isAnalyzing) {
+          // Thoughtful analytical focus
+          if (dict['browDownLeft'] !== undefined) infl[dict['browDownLeft']] = 0.28;
+          if (dict['browDownRight'] !== undefined) infl[dict['browDownRight']] = 0.28;
+          if (dict['browInnerUp'] !== undefined) infl[dict['browInnerUp']] = 0;
+          if (dict['eyeSquintLeft'] !== undefined) infl[dict['eyeSquintLeft']] = 0.16;
+          if (dict['eyeSquintRight'] !== undefined) infl[dict['eyeSquintRight']] = 0.16;
+          if (dict['mouthSmileLeft'] !== undefined) infl[dict['mouthSmileLeft']] = 0.22;
+          if (dict['mouthSmileRight'] !== undefined) infl[dict['mouthSmileRight']] = 0.22;
+        } else if (isListening) {
+          // Attentive listening
+          if (dict['browInnerUp'] !== undefined) infl[dict['browInnerUp']] = 0.24;
+          if (dict['browDownLeft'] !== undefined) infl[dict['browDownLeft']] = 0;
+          if (dict['browDownRight'] !== undefined) infl[dict['browDownRight']] = 0;
+          if (dict['eyeWideLeft'] !== undefined) infl[dict['eyeWideLeft']] = 0.14;
+          if (dict['eyeWideRight'] !== undefined) infl[dict['eyeWideRight']] = 0.14;
+          if (dict['mouthSmileLeft'] !== undefined) infl[dict['mouthSmileLeft']] = 0.45;
+          if (dict['mouthSmileRight'] !== undefined) infl[dict['mouthSmileRight']] = 0.45;
         } else {
-          if (dict['jawOpen'] !== undefined) infl[dict['jawOpen']] = 0.05;
+          // Warm mentor resting state (Duchenne smile with cheek puff and subtle dimples)
+          if (dict['mouthSmileLeft'] !== undefined) infl[dict['mouthSmileLeft']] = 0.50;
+          if (dict['mouthSmileRight'] !== undefined) infl[dict['mouthSmileRight']] = 0.50;
+          if (dict['mouthDimpleLeft'] !== undefined) infl[dict['mouthDimpleLeft']] = 0.22;
+          if (dict['mouthDimpleRight'] !== undefined) infl[dict['mouthDimpleRight']] = 0.22;
+          if (dict['cheekSquintLeft'] !== undefined) infl[dict['cheekSquintLeft']] = 0.18;
+          if (dict['cheekSquintRight'] !== undefined) infl[dict['cheekSquintRight']] = 0.18;
+
+          // Conversational eyebrow emphasis while speaking
+          if (currentlySpeaking) {
+            const browEmphasis = Math.max(0, Math.sin(elapsedTime * 2.8) * 0.35);
+            if (dict['browInnerUp'] !== undefined) infl[dict['browInnerUp']] = browEmphasis;
+          } else {
+            if (dict['browInnerUp'] !== undefined) infl[dict['browInnerUp']] = 0;
+            if (dict['browDownLeft'] !== undefined) infl[dict['browDownLeft']] = 0;
+            if (dict['browDownRight'] !== undefined) infl[dict['browDownRight']] = 0;
+          }
+        }
+
+        // D. Multi-Phoneme Co-Articulated Lip-Sync
+        if (currentlySpeaking) {
+          const spkTime = elapsedTime * 13;
+          const jawMod = (Math.sin(spkTime) + 1) * 0.38;
+          const vowelMod = Math.cos(spkTime * 0.7);
+
+          if (dict['jawOpen'] !== undefined) infl[dict['jawOpen']] = jawMod;
+          if (dict['viseme_aa'] !== undefined) infl[dict['viseme_aa']] = jawMod * 0.75;
+          if (dict['viseme_O'] !== undefined) infl[dict['viseme_O']] = Math.max(0, Math.sin(spkTime * 0.8) * 0.35);
+          if (dict['viseme_E'] !== undefined) infl[dict['viseme_E']] = Math.max(0, (vowelMod + 1) * 0.25);
+          if (dict['viseme_I'] !== undefined) infl[dict['viseme_I']] = Math.max(0, Math.cos(spkTime * 1.1) * 0.22);
+          if (dict['viseme_PP'] !== undefined) infl[dict['viseme_PP']] = Math.max(0, Math.sin(spkTime * 1.8) * 0.18);
+        } else {
+          if (dict['jawOpen'] !== undefined) infl[dict['jawOpen']] = 0.04;
           if (dict['viseme_aa'] !== undefined) infl[dict['viseme_aa']] = 0;
+          if (dict['viseme_O'] !== undefined) infl[dict['viseme_O']] = 0;
           if (dict['viseme_E'] !== undefined) infl[dict['viseme_E']] = 0;
+          if (dict['viseme_I'] !== undefined) infl[dict['viseme_I']] = 0;
+          if (dict['viseme_PP'] !== undefined) infl[dict['viseme_PP']] = 0;
         }
       }
 
@@ -1035,29 +1169,43 @@ export default function LuminaReal3DScene({
         </div>
       )}
 
-      {/* ─── C. SUBTLE AUDIO / SPEECH QUESTION CARD (CENTER BOTTOM) ─── */}
-      <div className="absolute bottom-36 left-1/2 -translate-x-1/2 z-30 w-full max-w-xl px-4 pointer-events-none">
-        <div className="p-3.5 rounded-2xl bg-black/65 border border-purple-500/30 backdrop-blur-xl shadow-2xl text-center">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className={`w-2 h-2 rounded-full ${isWriting ? 'bg-amber-400 animate-ping' : isAnalyzing ? 'bg-cyan-400 animate-pulse' : 'bg-purple-400 animate-pulse'}`} />
-            <span className="text-[10px] text-purple-300 font-mono uppercase tracking-wider">
-              {activeActionName === 'dance' 
-                ? `Dancing · Beat ${danceCount}/8` 
-                : isAnalyzing
-                  ? 'AI Knowledge Engine Analyzing Doubt...'
-                  : isWriting 
-                    ? `Writing Stroke ${progressiveStage}/5 on Chalkboard...` 
-                    : 'Lumina Audio Waveform Active'}
-            </span>
+      {/* ─── C. SLEEK HUD SPEECH & AUDIO SUBTITLE CARD (ANCHORED LOWER-LEFT, UNOBSTRUCTED VIEW) ─── */}
+      <div className="absolute bottom-24 left-4 sm:left-6 z-30 w-[calc(100%-2rem)] max-w-sm sm:max-w-md pointer-events-auto transition-all duration-300">
+        <div className="p-3.5 rounded-2xl bg-[#090714]/85 border border-purple-500/35 backdrop-blur-xl shadow-2xl shadow-purple-950/40 text-left">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${isWriting ? 'bg-amber-400 animate-ping' : isAnalyzing ? 'bg-cyan-400 animate-pulse' : isSpeaking ? 'bg-emerald-400 animate-pulse' : 'bg-purple-400'}`} />
+              <span className="text-[10px] sm:text-[11px] text-purple-300 font-mono uppercase tracking-wider font-semibold">
+                {activeActionName === 'dance' 
+                  ? `Dancing · Beat ${danceCount}/8` 
+                  : isAnalyzing
+                    ? 'AI Mentor Reasoning...'
+                    : isWriting 
+                      ? `Chalkboard Writing (${progressiveStage}/5)` 
+                      : isSpeaking
+                        ? 'Lumina Voice Narration Active'
+                        : 'Lumina 3D Polymath Mentor'}
+              </span>
+            </div>
+            {/* Live equalizer animation */}
+            <div className="flex items-center gap-0.5 h-3">
+              {[0.4, 0.9, 0.3, 0.8, 0.5, 0.7].map((h, i) => (
+                <div
+                  key={i}
+                  className={`w-0.5 rounded-full transition-all duration-150 ${isSpeaking ? 'bg-cyan-400' : 'bg-purple-500/40'}`}
+                  style={{ height: isSpeaking ? `${h * 12}px` : '3px' }}
+                />
+              ))}
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-gray-100 font-medium leading-relaxed">
+          <p className="text-xs sm:text-[13px] text-gray-100 font-medium leading-relaxed max-h-32 overflow-y-auto pr-1">
             "{spokenText}"
           </p>
         </div>
       </div>
 
       {/* ─── D. FLOATING QUICK-ACTION PILLS (SLIDERS & ASK DOUBT) ─── */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5">
+      <div className="absolute bottom-24 right-4 sm:right-6 z-40 flex items-center gap-2.5">
         
         {/* 1. Ask Doubt & Write Button */}
         <button
@@ -1069,7 +1217,7 @@ export default function LuminaReal3DScene({
           <span>✍️ Ask Any Doubt & Write</span>
         </button>
 
-        {/* 2. Interactive Coefficient Sliders Toggle (a, b, c) */}
+        {/* 2. Interactive Coefficient Sliders Toggle */}
         <button
           id="btn-toggle-sliders"
           onClick={() => setShowSliders(!showSliders)}
@@ -1080,7 +1228,11 @@ export default function LuminaReal3DScene({
           }`}
         >
           <Sliders className="w-3.5 h-3.5 text-cyan-300" />
-          <span>🎛️ Curve Sliders (a, b, c)</span>
+          <span>
+            {lecturePlan?.diagramType === 'parabola' || lecturePlan?.id === 'quadratic'
+              ? '🎛️ Parabola Sliders (a, b, c)'
+              : '🎛️ Curve Sliders (a, b, c)'}
+          </span>
         </button>
 
       </div>

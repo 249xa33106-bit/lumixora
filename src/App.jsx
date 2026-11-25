@@ -334,6 +334,11 @@ function App() {
       localStorage.setItem(`lumixora_tour_completed_${userId}`, 'true');
     }
     setShowTour(false);
+    const email = (user?.email || '').toLowerCase().trim();
+    const isF = user?.role === 'founder' || email === 'founder@lumixora.com';
+    const isOff = user?.isOfficer || user?.isDean || email === 'dean.placements@gprec.ac.in' || email === 'srikanth.csm@gprec.ac.in';
+    const homeTab = isF ? 'founder-portal' : (isGprecPlacementSubdomain() ? 'ai-commander' : ((isTpoSubdomain() || isOff) ? 'tpo-dashboard' : 'dashboard'));
+    handleTabChange(homeTab);
   };
 
   const handleUpdateUser = (updatedUser) => {
@@ -670,7 +675,7 @@ function App() {
           return;
         }
         
-        if (['dashboard', 'code-cinema', 'cinema', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'videos', 'video-lectures', 'video-portal', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'personal-mentor', 'lumina', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace'].includes(tab)) {
+        if (['dashboard', 'code-cinema', 'cinema', 'tpo-dashboard', 'tpo-analytics', 'placement-officer', 'student-database', 'student-placement-db', 'placement-database', 'tech-pulse', 'tech-news', 'jobs-radar', 'tech-radar', 'courses', 'courses-portal', 'all-courses', 'boloclass', 'bolo-class', 'openmaic', 'openmaic-classroom', 'ai-classroom', 'interactive-classroom', 'interview', 'mock-interview', 'certificates', 'proof-of-skill', 'badges', 'verify-cert', 'cert-verify', 'alumni-referrals', 'ai-commander', 'future-twin', 'twin', 'careerverse', 'coding-practice', 'code-editor', 'doubts', 'learning-hub', 'videos', 'video-lectures', 'video-portal', 'notes', 'tasks', 'contribute', 'notes-contribute', 'contribute-notes', 'contact', 'mentor', 'personal-mentor', 'lumina', 'report-bug', 'life-replay', 'founder-portal', 'team-portal', 'team-workspace', 'team-os', 'faculty-portal', 'test-portal', 'tests', 'assignments', 'tests-assignments', 'attendance', 'marketplace', 'simulation', 'internships', 'internship', 'internship-portal', 'apply-internship', 'intern-portal', 'interns', 'intern-workspace', 'clubs', 'clubs-portal', 'all-clubs', 'hackathons', 'hackathon'].includes(tab)) {
           if (['tech-news', 'jobs-radar', 'tech-radar'].includes(tab)) {
             setActiveTab('tech-pulse');
           } else if (['tests', 'assignments', 'tests-assignments'].includes(tab)) {

@@ -163,8 +163,18 @@ export default function PlatformTourModal({ isOpen, onClose, onNavigateTab }) {
         onNavigateTab(TOUR_STEPS[nextIdx].tab);
       }
     } else {
+      if (onNavigateTab) {
+        onNavigateTab('dashboard');
+      }
       onClose();
     }
+  };
+
+  const handleSkip = () => {
+    if (onNavigateTab) {
+      onNavigateTab('dashboard');
+    }
+    onClose();
   };
 
   const handlePrev = () => {
@@ -206,7 +216,7 @@ export default function PlatformTourModal({ isOpen, onClose, onNavigateTab }) {
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleSkip}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
             title="Skip Tour"
           >
