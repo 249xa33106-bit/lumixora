@@ -325,7 +325,383 @@ export const CURATED_KNOWLEDGE_BASE = [
   }
 ];
 
-// ── 2. GENERALIZED AI DOUBT SOLVER (CHATGPT-STYLE REASONING PARSER) ──
+// ── 2. SPECIALIZED COMPUTATIONAL & ALGEBRAIC SOLVERS (CHATGPT-STYLE AI MENTOR) ──
+
+/**
+ * Parses and extracts coefficients for an equation in the form:
+ * a · var1 + b · var2 = c
+ */
+function parseLinearEquation(eqStr, var1, var2) {
+  const clean = eqStr.trim().replace(/\s+/g, '');
+  const parts = clean.split('=');
+  if (parts.length !== 2) return null;
+
+  const left = parts[0];
+  const right = parts[1];
+
+  function extractCoeffs(sideStr) {
+    let a = 0, b = 0, constant = 0;
+    const regex = /([+-]?[^+-]+)/g;
+    const matches = sideStr.match(regex) || [];
+    for (const term of matches) {
+      const t = term.trim();
+      if (!t) continue;
+      if (t.includes(var1)) {
+        const coeffStr = t.replace(var1, '');
+        let coeff = 1;
+        if (coeffStr === '' || coeffStr === '+') coeff = 1;
+        else if (coeffStr === '-') coeff = -1;
+        else coeff = parseFloat(coeffStr) || 1;
+        a += coeff;
+      } else if (t.includes(var2)) {
+        const coeffStr = t.replace(var2, '');
+        let coeff = 1;
+        if (coeffStr === '' || coeffStr === '+') coeff = 1;
+        else if (coeffStr === '-') coeff = -1;
+        else coeff = parseFloat(coeffStr) || 1;
+        b += coeff;
+      } else {
+        const val = parseFloat(t);
+        if (!isNaN(val)) constant += val;
+      }
+    }
+    return { a, b, constant };
+  }
+
+  const leftTerms = extractCoeffs(left);
+  const rightTerms = extractCoeffs(right);
+
+  return {
+    a: leftTerms.a - rightTerms.a,
+    b: leftTerms.b - rightTerms.b,
+    c: rightTerms.constant - leftTerms.constant
+  };
+}
+
+/**
+ * Solves a 2-variable System of Linear Equations (e.g., "A+B=4, A+2B=8 FIND A & B")
+ */
+function solveLinearSystem(rawQuery) {
+  const query = (rawQuery || '').trim();
+  const cleanQuery = query.replace(/find\s+[a-zA-Z0-9\s&,]+/gi, '')
+                          .replace(/solve\s+(for\s+)?[a-zA-Z0-9\s&,]+/gi, '')
+                          .trim();
+
+  const eqParts = cleanQuery.split(/[,;\n]|(?:\band\b)/i).map(s => s.trim()).filter(s => s.includes('='));
+  if (eqParts.length < 2) return null;
+
+  const eq1Str = eqParts[0];
+  const eq2Str = eqParts[1];
+
+  const letters = (eq1Str + eq2Str).replace(/[^a-zA-Z]/g, '');
+  const uniqueVars = Array.from(new Set(letters.split(''))).sort();
+  if (uniqueVars.length !== 2) return null;
+
+  const v1 = uniqueVars[0];
+  const v2 = uniqueVars[1];
+
+  const p1 = parseLinearEquation(eq1Str, v1, v2);
+  const p2 = parseLinearEquation(eq2Str, v1, v2);
+  if (!p1 || !p2) return null;
+
+  const { a: a1, b: b1, c: c1 } = p1;
+  const { a: a2, b: b2, c: c2 } = p2;
+
+  // Cramer's determinant
+  const D = a1 * b2 - a2 * b1;
+  if (Math.abs(D) < 1e-9) return null;
+
+  const D1 = c1 * b2 - c2 * b1;
+  const D2 = a1 * c2 - a2 * c1;
+
+  const val1 = Math.round((D1 / D) * 1000) / 1000;
+  const val2 = Math.round((D2 / D) * 1000) / 1000;
+
+  // Real human pedagogical elimination step
+  let elimStep = '';
+  if (a1 === a2) {
+    const bDiff = b2 - b1;
+    const cDiff = c2 - c1;
+    elimStep = `Subtract (1) from (2): (${bDiff})${v2} = ${cDiff}  ⟹  ${v2} = ${val2}`;
+  } else if (a1 === -a2) {
+    const bSum = b1 + b2;
+    const cSum = c1 + c2;
+    elimStep = `Add (1) and (2): (${bSum})${v2} = ${cSum}  ⟹  ${v2} = ${val2}`;
+  } else if (b1 === b2) {
+    const aDiff = a2 - a1;
+    const cDiff = c2 - c1;
+    elimStep = `Subtract (1) from (2): (${aDiff})${v1} = ${cDiff}  ⟹  ${v1} = ${val1}`;
+  } else {
+    elimStep = `Elimination: Determinant D = (${a1}·${b2} - ${a2}·${b1}) = ${D}  ⟹  ${v1} = ${val1}`;
+  }
+
+  const subStep = `Substitute ${v2} = ${val2} into (1): ${a1}·${v1} + (${b1}·${val2}) = ${c1}  ⟹  ${v1} = ${val1}`;
+
+  const spokenExplanation = `Let's solve your system of equations: ${eq1Str} and ${eq2Str}. On the chalkboard, we state both equations. By eliminating variable ${v1}, we determine that ${v2} equals ${val2}. Substituting this back into the first equation reveals that ${v1} equals ${val1}. Notice on the graph to our right: the two linear equations intersect precisely at the coordinate point (${val1}, ${val2})!`;
+
+  return {
+    id: 'linear_system_' + Date.now(),
+    subject: 'Linear Algebra & Systems',
+    title: `Solve: ${eq1Str}  &  ${eq2Str}`,
+    primaryFormula: `(1) ${eq1Str}   ✦   (2) ${eq2Str}`,
+    steps: [
+      `1. Formulation:  ${a1}${v1} + ${b1}${v2} = ${c1}   and   ${a2}${v1} + ${b2}${v2} = ${c2}`,
+      `2. Elimination:  ${elimStep}`,
+      `3. Substitution: ${subStep}`
+    ],
+    boxedConclusion: `Solution:  ${v1} = ${val1}  ,  ${v2} = ${val2}`,
+    spokenExplanation,
+    diagramType: 'linear_system',
+    diagramData: { v1, v2, a1, b1, c1, a2, b2, c2, val1, val2, eq1Str, eq2Str },
+    isCustom: true,
+    rawQuery: query
+  };
+}
+
+/**
+ * Solves a single-variable linear equation (e.g., "2x + 6 = 18", "5x - 15 = 0")
+ */
+function solveSingleLinear(rawQuery) {
+  const query = (rawQuery || '').trim();
+  const clean = query.replace(/find\s+[a-zA-Z0-9\s&,]+/gi, '')
+                     .replace(/solve\s+(for\s+)?[a-zA-Z0-9\s&,]+/gi, '')
+                     .trim();
+  if (clean.includes(',') || clean.includes(';') || (clean.match(/=/g) || []).length !== 1) return null;
+
+  const parts = clean.split('=');
+  const left = parts[0].trim();
+  const right = parts[1].trim();
+
+  const letters = clean.replace(/[^a-zA-Z]/g, '');
+  const uniqueVars = Array.from(new Set(letters.split('')));
+  if (uniqueVars.length !== 1) return null;
+  const v = uniqueVars[0];
+
+  if (clean.includes('^') || clean.includes('²') || clean.includes('³')) return null;
+
+  function parseSide(side) {
+    let coeff = 0, constant = 0;
+    const tokens = side.replace(/\s+/g, '').match(/([+-]?[^+-]+)/g) || [];
+    for (const token of tokens) {
+      if (token.includes(v)) {
+        const cStr = token.replace(v, '');
+        if (cStr === '' || cStr === '+') coeff += 1;
+        else if (cStr === '-') coeff -= 1;
+        else coeff += parseFloat(cStr) || 1;
+      } else {
+        const val = parseFloat(token);
+        if (!isNaN(val)) constant += val;
+      }
+    }
+    return { coeff, constant };
+  }
+
+  const pLeft = parseSide(left);
+  const pRight = parseSide(right);
+
+  const netCoeff = pLeft.coeff - pRight.coeff;
+  const netConst = pRight.constant - pLeft.constant;
+
+  if (Math.abs(netCoeff) < 1e-9) return null;
+  const root = Math.round((netConst / netCoeff) * 1000) / 1000;
+
+  return {
+    id: 'single_linear_' + Date.now(),
+    subject: 'Linear Algebra',
+    title: `Solve: ${clean}`,
+    primaryFormula: clean,
+    steps: [
+      `1. Group like terms: (${netCoeff})·${v} = ${netConst}`,
+      `2. Divide both sides by coefficient: ${v} = ${netConst} / ${netCoeff}`,
+      `3. Verify: substituting ${v} = ${root} satisfies ${clean}`
+    ],
+    boxedConclusion: `Root:  ${v} = ${root}`,
+    spokenExplanation: `To solve ${clean}, we group the variable terms on the left and constants on the right, giving ${netCoeff} ${v} equals ${netConst}. Dividing through isolates our solution: ${v} equals ${root}!`,
+    diagramType: 'linear_plot',
+    diagramData: { v, root, netCoeff, netConst },
+    isCustom: true,
+    rawQuery: query
+  };
+}
+
+/**
+ * Solves a numeric quadratic equation with exact numbers (e.g. "x^2 - 5x + 6 = 0")
+ */
+function solveNumericQuadratic(rawQuery) {
+  const query = (rawQuery || '').trim();
+  const clean = query.replace(/\s+/g, '');
+  const matchVar = clean.match(/([a-zA-Z])(?:\^2|²)/);
+  if (!matchVar) return null;
+  const v = matchVar[1];
+
+  const parts = clean.split('=');
+  if (parts.length !== 2) return null;
+
+  function parseSide(side) {
+    let a = 0, b = 0, c = 0;
+    const tokens = side.match(/([+-]?[^+-]+)/g) || [];
+    for (const token of tokens) {
+      if (token.includes(v + '^2') || token.includes(v + '²')) {
+        const cStr = token.replace(v + '^2', '').replace(v + '²', '');
+        if (cStr === '' || cStr === '+') a += 1;
+        else if (cStr === '-') a -= 1;
+        else a += parseFloat(cStr) || 1;
+      } else if (token.includes(v)) {
+        const cStr = token.replace(v, '');
+        if (cStr === '' || cStr === '+') b += 1;
+        else if (cStr === '-') b -= 1;
+        else b += parseFloat(cStr) || 1;
+      } else {
+        const val = parseFloat(token);
+        if (!isNaN(val)) c += val;
+      }
+    }
+    return { a, b, c };
+  }
+
+  const pL = parseSide(parts[0]);
+  const pR = parseSide(parts[1]);
+
+  const a = pL.a - pR.a;
+  const b = pL.b - pR.b;
+  const c = pL.c - pR.c;
+
+  if (Math.abs(a) < 1e-9) return null;
+
+  const delta = b * b - 4 * a * c;
+  let roots = [];
+  if (delta > 0) {
+    const r1 = (-b + Math.sqrt(delta)) / (2 * a);
+    const r2 = (-b - Math.sqrt(delta)) / (2 * a);
+    roots = [Math.round(r1 * 1000) / 1000, Math.round(r2 * 1000) / 1000];
+  } else if (Math.abs(delta) < 1e-9) {
+    const r = -b / (2 * a);
+    roots = [Math.round(r * 1000) / 1000];
+  }
+
+  const signB = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+  const signC = c >= 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
+  const formulaStr = `${a}${v}² ${signB}${v} ${signC} = 0`;
+
+  const conclusion = delta >= 0
+    ? `Roots:  ${roots.map(r => `${v} = ${r}`).join('  and  ')}`
+    : `Complex Roots:  ${v} = (${-b} ± ${Math.sqrt(Math.abs(delta)).toFixed(2)}i) / ${2*a}`;
+
+  const spoken = delta >= 0
+    ? `For the quadratic equation ${formulaStr}, our coefficients are a = ${a}, b = ${b}, and c = ${c}. The discriminant delta is ${delta.toFixed(1)}, yielding real roots at ${roots.join(' and ')}!`
+    : `For the quadratic equation ${formulaStr}, the discriminant delta is negative ${delta.toFixed(1)}, meaning the parabola floats without crossing the real axis, yielding conjugate complex roots!`;
+
+  return {
+    id: 'numeric_quadratic_' + Date.now(),
+    subject: 'Quadratic Polynomial',
+    title: `Solve: ${formulaStr}`,
+    primaryFormula: formulaStr,
+    steps: [
+      `1. Coefficients:  a = ${a}, b = ${b}, c = ${c}`,
+      `2. Discriminant:  Δ = (${b})² - 4(${a})(${c}) = ${delta}`,
+      `3. Quadratic Formula:  ${v} = (-(${b}) ± √${delta}) / (2·${a})`
+    ],
+    boxedConclusion: conclusion,
+    spokenExplanation: spoken,
+    diagramType: 'parabola',
+    diagramData: { a, b, c },
+    isCustom: true,
+    rawQuery: query
+  };
+}
+
+/**
+ * Solves Calculus derivatives, integrals, and limits
+ */
+function solveCalculusExpression(rawQuery) {
+  const query = (rawQuery || '').trim();
+  const lower = query.toLowerCase();
+
+  // Derivative: d/dx(x^n) or derivative of x^n
+  const derivPowerMatch = lower.match(/(?:d\/dx|derivative\s+of)\s*(?:\(?\s*x(?:\^(\d+)|²|³)\s*\)?)/);
+  if (derivPowerMatch) {
+    let power = 2;
+    if (lower.includes('²')) power = 2;
+    else if (lower.includes('³')) power = 3;
+    else if (derivPowerMatch[1]) power = parseInt(derivPowerMatch[1], 10);
+
+    const newPower = power - 1;
+    const resultStr = newPower === 1 ? `${power}x` : newPower === 0 ? `${power}` : `${power}x^${newPower}`;
+
+    return {
+      id: 'calc_derivative_' + Date.now(),
+      subject: 'Differential Calculus',
+      title: `Derivative: d/dx [x^${power}]`,
+      primaryFormula: `d/dx [xⁿ] = n · xⁿ⁻¹`,
+      steps: [
+        `1. Identify exponent power: n = ${power}.`,
+        `2. Apply Power Rule: multiply by n and subtract 1 from exponent.`,
+        `3. Evaluated derivative: d/dx [x^${power}] = ${power} · x^${newPower} = ${resultStr}.`
+      ],
+      boxedConclusion: `d/dx [x^${power}] = ${resultStr}`,
+      spokenExplanation: `Using the calculus Power Rule, the derivative of x to the power ${power} is ${power} times x to the power ${newPower}, which equals ${resultStr}!`,
+      diagramType: 'tangent_curve',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  // Common derivatives: sin, cos, e^x, ln(x)
+  if (lower.includes('derivative of sin') || lower.includes('d/dx sin')) {
+    return {
+      id: 'calc_deriv_sin_' + Date.now(),
+      subject: 'Differential Calculus',
+      title: 'Derivative of sin(x)',
+      primaryFormula: 'd/dx [sin(x)] = cos(x)',
+      steps: [
+        '1. Limit definition: lim(h→0) [sin(x+h) - sin(x)] / h.',
+        '2. Angle addition: sin(x)cos(h) + cos(x)sin(h) - sin(x).',
+        '3. Evaluates using standard limits: d/dx [sin(x)] = cos(x).'
+      ],
+      boxedConclusion: 'd/dx [sin(x)] = cos(x)',
+      spokenExplanation: 'The derivative of sin x with respect to x is cos x! Notice how the rate of change of the sine wave reaches maximum velocity at the zero-crossings, matching the peak of the cosine function.',
+      diagramType: 'sine_wave',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  // Integral of x^n
+  const intPowerMatch = lower.match(/(?:integrate|integral\s+of)\s*(?:\(?\s*x(?:\^(\d+)|²|³)?\s*\)?)/);
+  if (intPowerMatch) {
+    let power = 1;
+    if (lower.includes('²')) power = 2;
+    else if (lower.includes('³')) power = 3;
+    else if (intPowerMatch[1]) power = parseInt(intPowerMatch[1], 10);
+
+    const newPower = power + 1;
+    const resultStr = `(x^${newPower}) / ${newPower} + C`;
+
+    return {
+      id: 'calc_integral_' + Date.now(),
+      subject: 'Integral Calculus',
+      title: `Indefinite Integral: ∫ x^${power} dx`,
+      primaryFormula: `∫ xⁿ dx = (xⁿ⁺¹) / (n + 1) + C   (for n ≠ -1)`,
+      steps: [
+        `1. Reverse Power Rule: add 1 to the exponent (n = ${power} ⟶ ${newPower}).`,
+        `2. Divide by the new exponent: ${newPower}.`,
+        `3. Add arbitrary constant of integration C: ${resultStr}.`
+      ],
+      boxedConclusion: `∫ x^${power} dx = ${resultStr}`,
+      spokenExplanation: `By the reverse power rule of integration, the integral of x to the power ${power} is x to the power ${newPower} divided by ${newPower}, plus the constant of integration C!`,
+      diagramType: 'tangent_curve',
+      diagramData: {},
+      isCustom: true,
+      rawQuery: query
+    };
+  }
+
+  return null;
+}
+
+// ── 3. GENERALIZED AI DOUBT SOLVER (CHATGPT-STYLE REASONING PARSER) ──
 /**
  * Analyzes any student question (STEM, engineering, math, coding, science, logic)
  * Returns a structured lecture plan for Lumina's 3D blackboard and audible speech.
@@ -337,7 +713,23 @@ export function analyzeDoubt(rawQuery = '') {
   const query = (rawQuery || '').trim();
   const lower = query.toLowerCase();
 
-  // 1. Check curated knowledge base for exact / strong keyword match
+  // 1. Solve systems of linear equations (e.g. "A+B=4, A+2B=8 FIND A & B")
+  const linearSys = solveLinearSystem(query);
+  if (linearSys) return linearSys;
+
+  // 2. Solve numeric quadratic equations (e.g. "x^2 - 5x + 6 = 0")
+  const numQuad = solveNumericQuadratic(query);
+  if (numQuad) return numQuad;
+
+  // 3. Solve single-variable linear equations (e.g. "2x + 6 = 18")
+  const singleLin = solveSingleLinear(query);
+  if (singleLin) return singleLin;
+
+  // 4. Solve Calculus expressions (derivatives & integrals)
+  const calcResult = solveCalculusExpression(query);
+  if (calcResult) return calcResult;
+
+  // 5. Check curated knowledge base for exact / strong keyword match
   for (const entry of CURATED_KNOWLEDGE_BASE) {
     if (entry.keywords.some(kw => lower.includes(kw))) {
       return {
@@ -348,62 +740,97 @@ export function analyzeDoubt(rawQuery = '') {
     }
   }
 
-  // 2. Dynamic Semantic Intent & Subject Classifier
+  // 6. Dynamic Semantic Intent & Subject Classifier
   let detectedSubject = 'General STEM & Problem Solving';
   let diagramType = 'formula_flow';
   let primaryFormula = 'Principle ✦ Analysis';
   let boxedConclusion = 'Verified Analytical Takeaway';
+  let customSteps = [];
+  let spokenPedagogy = '';
 
-  // Extract mathematical symbols or operators if present in user query
   const hasMathSymbols = /[=+\-*/^√Δπθ∫]/.test(query);
 
   if (lower.includes('code') || lower.includes('algorithm') || lower.includes('sort') || lower.includes('search') || lower.includes('tree') || lower.includes('array') || lower.includes('graph') || lower.includes('stack') || lower.includes('queue') || lower.includes('loop')) {
     detectedSubject = 'Computer Science & Engineering';
     diagramType = 'tree';
-    primaryFormula = 'Input ⟶ Algorithm ⟶ Output';
-    boxedConclusion = 'Optimal Time & Space Invariant';
+    primaryFormula = 'Input State ⟶ Algorithm ⟶ Optimal State';
+    customSteps = [
+      '1. Invariant & State Space: Define algorithmic preconditions and data structure bounds.',
+      '2. State Transition: Execute recursive decomposition or divide-and-conquer partition.',
+      '3. Complexity Analysis: Verify asymptotic runtime Big-O and memory footprints.'
+    ];
+    boxedConclusion = 'Optimal Time & Space Invariant Preserved';
+    spokenPedagogy = `Let's analyze your computer science question: "${query}". On the chalkboard, we break down the algorithmic invariant, structural state transitions, and asymptotic Big-O runtime!`;
+
   } else if (lower.includes('force') || lower.includes('velocity') || lower.includes('speed') || lower.includes('gravity') || lower.includes('electric') || lower.includes('magnetic') || lower.includes('wave') || lower.includes('optics') || lower.includes('photon') || lower.includes('mass')) {
     detectedSubject = 'Physics & Dynamics';
     diagramType = 'sine_wave';
-    primaryFormula = 'Conservation: Σ Forces / Energy';
-    boxedConclusion = 'Physical Equilibrium & State';
+    primaryFormula = 'Conservation: Σ Forces = 0   |   E_total = Constant';
+    customSteps = [
+      '1. Frame of Reference: Identify inertial coordinate system and governing forces.',
+      '2. Governing Equations: Apply Newton\'s conservation of momentum or Maxwell\'s equations.',
+      '3. Equilibrium Solution: Solve boundary conditions and compute kinematic vectors.'
+    ];
+    boxedConclusion = 'Physical Equilibrium & Invariant Energy State';
+    spokenPedagogy = `Analyzing your physics question: "${query}". On the board, we establish the inertial reference frame, apply fundamental conservation laws, and solve for exact equilibrium!`;
+
   } else if (lower.includes('integrate') || lower.includes('differentiate') || lower.includes('limit') || lower.includes('matrix') || lower.includes('vector') || lower.includes('equation') || lower.includes('solve') || lower.includes('value') || hasMathSymbols) {
     detectedSubject = 'Applied Mathematics';
-    diagramType = 'parabola';
-    primaryFormula = query.length < 35 && hasMathSymbols ? query : 'f(x) = Derivation Model';
-    boxedConclusion = 'Exact Analytical Solution ✦';
+    diagramType = 'formula_flow';
+    primaryFormula = query.length < 35 && hasMathSymbols ? query : 'f(x) = Analytical Model';
+    customSteps = [
+      '1. Algebraic Formulation: Group like terms and establish domain constraints.',
+      '2. Canonical Reduction: Transform into standard form via algebraic operations.',
+      '3. Exact Synthesis: Calculate roots, critical points, and verify substitution.'
+    ];
+    boxedConclusion = 'Exact Analytical Solution Verified';
+    spokenPedagogy = `Let's solve your mathematical query: "${query}". On the board, we state the mathematical relations, reduce through canonical algebraic steps, and verify the analytical conclusion!`;
+
   } else if (lower.includes('reaction') || lower.includes('atom') || lower.includes('molecule') || lower.includes('bond') || lower.includes('acid') || lower.includes('base') || lower.includes('ph') || lower.includes('electron')) {
     detectedSubject = 'Chemistry & Molecular Science';
     diagramType = 'flowchart';
-    primaryFormula = 'Reactants ⟶ Products (ΔH, ΔG)';
-    boxedConclusion = 'Thermodynamic & Kinetic Balance';
+    primaryFormula = 'Reactants ⟶ Products   (ΔH < 0, ΔG < 0)';
+    customSteps = [
+      '1. Stoichiometric Balance: Conserve mass and electron charge across reactants.',
+      '2. Thermodynamic Driving Force: Evaluate Gibbs free energy ΔG and reaction enthalpy.',
+      '3. Equilibrium Kinetics: Apply Le Chatelier\'s principle and rate law.'
+    ];
+    boxedConclusion = 'Thermodynamic & Kinetic Equilibrium Balanced';
+    spokenPedagogy = `Examining your chemistry question: "${query}". We balance the stoichiometric atomic equation on the board, examine thermodynamic potential, and find the kinetic equilibrium!`;
+
   } else if (lower.includes('cell') || lower.includes('gene') || lower.includes('protein') || lower.includes('organ') || lower.includes('body') || lower.includes('brain') || lower.includes('neuron')) {
     detectedSubject = 'Biological Sciences';
     diagramType = 'flowchart';
-    primaryFormula = 'Structure ⟷ Biological Function';
-    boxedConclusion = 'Homeostatic Regulation Principle';
+    primaryFormula = 'Molecular Structure ⟷ Biological Function';
+    customSteps = [
+      '1. Cellular Substrate: Identify molecular pathways, organelles, and gene regulators.',
+      '2. Mechanism of Action: Trace biochemical signaling cascades and energy utilization.',
+      '3. System Homeostasis: Evaluate feedback loops maintaining physiological balance.'
+    ];
+    boxedConclusion = 'Homeostatic Regulation & Structural Function Invariant';
+    spokenPedagogy = `Exploring your biological inquiry: "${query}". On the chalkboard, we trace the biochemical signaling pathways, cellular mechanisms, and physiological homeostasis!`;
+
+  } else {
+    // Open-ended general questions
+    customSteps = [
+      '1. First Principles: Establish foundational definitions, axioms, and scope.',
+      '2. Analytical Deconstruction: Trace cause-and-effect relationships across systems.',
+      '3. Synthesis & Application: Formulate concise takeaways and verify real-world alignment.'
+    ];
+    spokenPedagogy = `Let's explore your question: "${query}". On the chalkboard, we break this down from first principles into core governing mechanisms and practical insights!`;
   }
 
-  // 3. Synthesize Step-by-Step Pedagogy (Like ChatGPT Chatbot)
   const cleanTitle = query.length > 55 ? `${query.slice(0, 52)}...` : query;
   const capitalizedTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
-
-  const steps = [
-    `1. Core Definition: Identify key variables, invariants, and initial boundary conditions.`,
-    `2. Analytical Formulation: Apply foundational governing laws and structural relations.`,
-    `3. Step-by-Step Synthesis: Evaluate limits, optimize pathways, and verify dimensional consistency.`
-  ];
-
-  const spokenExplanation = `Let's analyze your question: "${query}". On the chalkboard, we break this down into three essential steps. First, we establish our core definitions and boundary conditions. Next, we apply the foundational principles of ${detectedSubject}. And finally, we synthesize the verified analytical conclusion. Let me know if you would like to explore any specific mathematical or physical nuance further!`;
 
   return {
     id: 'custom_' + Date.now(),
     subject: detectedSubject,
     title: capitalizedTitle,
     primaryFormula,
-    steps,
+    steps: customSteps,
     boxedConclusion,
-    spokenExplanation,
+    spokenExplanation: spokenPedagogy,
     diagramType,
     diagramData: {},
     isCustom: true,

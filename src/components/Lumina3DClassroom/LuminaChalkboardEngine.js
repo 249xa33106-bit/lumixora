@@ -271,6 +271,210 @@ function renderDiagram(ctx, lecturePlan, sliderParams) {
       ctx.fill();
     }
 
+  } else if (diagType === 'linear_system') {
+    // ── SYSTEM OF LINEAR EQUATIONS (TWO INTERSECTING LINES) ──
+    const data = lecturePlan.diagramData || {};
+    const v1 = data.v1 || 'x';
+    const v2 = data.v2 || 'y';
+    const a1 = data.a1 ?? 1;
+    const b1 = data.b1 ?? 1;
+    const c1 = data.c1 ?? 4;
+    const a2 = data.a2 ?? 1;
+    const b2 = data.b2 ?? 2;
+    const c2 = data.c2 ?? 8;
+    const val1 = data.val1 ?? 0;
+    const val2 = data.val2 ?? 4;
+
+    const maxVal = Math.max(Math.abs(val1), Math.abs(val2), 5);
+    const scale = Math.min(32, 130 / (maxVal * 0.8 + 1));
+    const originX = midX - (val1 !== 0 ? Math.sign(val1) * 35 : 0);
+    const originY = midY + (val2 > 0 ? 60 : -40);
+
+    const toPixX = (x) => originX + x * scale;
+    const toPixY = (y) => originY - y * scale;
+
+    // 1. Cartesian Grid & Axes
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+
+    // X Axis (v1)
+    ctx.beginPath();
+    ctx.moveTo(startX, originY);
+    ctx.lineTo(endX, originY);
+    ctx.stroke();
+
+    // Y Axis (v2)
+    ctx.beginPath();
+    ctx.moveTo(originX, 100);
+    ctx.lineTo(originX, 520);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = 'bold 18px "Courier New", monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(v1, endX - 10, originY + 22);
+    ctx.fillText(v2, originX + 12, 115);
+
+    // Title Badge
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 18px "Courier New", monospace';
+    ctx.fillText('System of Linear Equations', startX + 20, 125);
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 15px "Courier New", monospace';
+    ctx.fillText(`Intersection: (${val1}, ${val2})`, startX + 20, 150);
+
+    // Plot Line 1: a1·v1 + b1·v2 = c1  ⟹  v2 = (c1 - a1·v1) / b1
+    ctx.lineWidth = 3.0;
+    ctx.strokeStyle = '#38bdf8';
+    ctx.beginPath();
+    let started1 = false;
+    for (let u = -10; u <= 10; u += 0.5) {
+      const px = toPixX(u);
+      let py = 0;
+      if (Math.abs(b1) > 1e-6) {
+        const yVal = (c1 - a1 * u) / b1;
+        py = toPixY(yVal);
+      } else {
+        // Vertical line
+        py = toPixY(u);
+      }
+      if (py >= 95 && py <= 525 && px >= startX && px <= endX) {
+        if (!started1) { ctx.moveTo(px, py); started1 = true; }
+        else { ctx.lineTo(px, py); }
+      }
+    }
+    ctx.stroke();
+
+    // Plot Line 2: a2·v1 + b2·v2 = c2  ⟹  v2 = (c2 - a2·v1) / b2
+    ctx.strokeStyle = '#f59e0b';
+    ctx.beginPath();
+    let started2 = false;
+    for (let u = -10; u <= 10; u += 0.5) {
+      const px = toPixX(u);
+      let py = 0;
+      if (Math.abs(b2) > 1e-6) {
+        const yVal = (c2 - a2 * u) / b2;
+        py = toPixY(yVal);
+      } else {
+        py = toPixY(u);
+      }
+      if (py >= 95 && py <= 525 && px >= startX && px <= endX) {
+        if (!started2) { ctx.moveTo(px, py); started2 = true; }
+        else { ctx.lineTo(px, py); }
+      }
+    }
+    ctx.stroke();
+
+    // Line Equation Labels
+    ctx.font = 'bold 13px "Courier New", monospace';
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText(`(1) ${data.eq1Str || 'Line 1'}`, startX + 20, 480);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText(`(2) ${data.eq2Str || 'Line 2'}`, startX + 20, 505);
+
+    // Intersection Node Highlight
+    const intPixX = toPixX(val1);
+    const intPixY = toPixY(val2);
+    if (intPixX >= startX && intPixX <= endX && intPixY >= 90 && intPixY <= 530) {
+      // Glow Ring
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(intPixX, intPixY, 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Filled Center
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(intPixX, intPixY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Intersection Tag Pill
+      const pillText = `(${v1}=${val1}, ${v2}=${val2})`;
+      ctx.font = 'bold 14px "Courier New", monospace';
+      const textW = ctx.measureText(pillText).width;
+      const tagX = Math.min(endX - textW - 20, Math.max(startX + 10, intPixX + 14));
+      const tagY = Math.max(120, intPixY - 14);
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(tagX - 6, tagY - 16, textW + 12, 24, [6]);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#e9d5ff';
+      ctx.fillText(pillText, tagX, tagY);
+    }
+
+  } else if (diagType === 'linear_plot') {
+    // ── SINGLE LINEAR EQUATION PLOT ──
+    const data = lecturePlan.diagramData || {};
+    const root = data.root ?? 0;
+    const v = data.v || 'x';
+
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(startX, midY); ctx.lineTo(endX, midY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(midX, 100); ctx.lineTo(midX, 520); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Line through root
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(startX + 30, 480);
+    ctx.lineTo(endX - 30, 160);
+    ctx.stroke();
+
+    // Highlight root point
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath();
+    ctx.arc(midX, midY, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = 'bold 18px "Courier New", monospace';
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText(`Root Point: ${v} = ${root}`, startX + 30, 140);
+
+  } else if (diagType === 'tangent_curve') {
+    // ── CALCULUS TANGENT CURVE ──
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(startX, midY + 40); ctx.lineTo(endX, midY + 40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(midX - 40, 120); ctx.lineTo(midX - 40, 500); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Curve f(x)
+    ctx.strokeStyle = '#a7f3d0';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    for (let px = startX + 20; px <= endX - 20; px++) {
+      const u = (px - (midX - 40)) * 0.02;
+      const py = (midY + 40) - (u * u * u * 4 - u * 35);
+      if (px === startX + 20) ctx.moveTo(px, py);
+      else if (py >= 100 && py <= 520) ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Tangent Line
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(midX - 100, midY + 110);
+    ctx.lineTo(midX + 60, midY - 60);
+    ctx.stroke();
+
+    ctx.font = 'bold 18px "Courier New", monospace';
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText('f(x) & Tangent Slope dy/dx', startX + 30, 140);
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillText('Tangent Slope dy/dx', midX + 30, midY - 70);
+
   } else if (diagType === 'sine_wave') {
     // ── SINE WAVE / HARMONIC OSCILLATION PLOT ──
     ctx.strokeStyle = '#475569';

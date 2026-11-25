@@ -156,6 +156,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showFounderJourneyModal, setShowFounderJourneyModal] = useState(false);
+  const [showJourneyVideoModal, setShowJourneyVideoModal] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -243,8 +244,7 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
   }, [isHovered, isDragging]);
 
   const handleWatchOverview = () => {
-    // Dispatch event to open onboarding/platform tour modal
-    window.dispatchEvent(new CustomEvent('lumixora_open_onboarding'));
+    setShowJourneyVideoModal(true);
   };
 
   return (
@@ -670,6 +670,102 @@ export default function LumixoraHeroSuite({ onNavigateTab, user }) {
                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white font-bold text-xs transition-all cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── JOURNEY VIDEO MODAL ─── */}
+      {showJourneyVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xl p-3 sm:p-6 animate-fade-in">
+          <div className="bg-[#0b0f19] border border-cyan-500/30 rounded-3xl max-w-4xl w-full p-5 sm:p-7 relative shadow-[0_0_60px_rgba(6,182,212,0.25)] text-left max-h-[95vh] overflow-y-auto space-y-4">
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowJourneyVideoModal(false)}
+              className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all cursor-pointer z-20"
+              title="Close Video"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4 pr-12">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-purple-600 p-0.5 flex items-center justify-center shrink-0 shadow-lg">
+                <div className="w-full h-full bg-[#070b14] rounded-[10px] flex items-center justify-center text-amber-300">
+                  <Play className="w-4 h-4 fill-amber-400" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg sm:text-xl font-black text-white font-sora">
+                    Lumixora Journey & Vision Demo
+                  </h3>
+                  <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold border border-cyan-500/30">
+                    HD 1080p
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Shaik Sowban • Built by Students for Engineering Scholars Worldwide
+                </p>
+              </div>
+            </div>
+
+            {/* Video Player */}
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black border border-white/15 shadow-2xl group">
+              <video 
+                src="/LUMIXORA_90S_CINEMATIC_DEMO.mp4" 
+                controls 
+                autoPlay 
+                playsInline
+                className="w-full h-full object-contain bg-black"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* Interactive Jump Points & Alternate Modes */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => {
+                    setShowJourneyVideoModal(false);
+                    window.dispatchEvent(new CustomEvent('lumixora_open_tour'));
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 font-bold border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Interactive 8-Step Tour</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowJourneyVideoModal(false);
+                    window.dispatchEvent(new CustomEvent('lumixora_open_tom_and_jerry_intro'));
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 font-bold border border-amber-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Rocket className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Cartoon Multiverse Showcase</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowJourneyVideoModal(false);
+                    setShowFounderJourneyModal(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-purple-300 font-bold border border-purple-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Read Founder Story</span>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowJourneyVideoModal(false)}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white font-bold transition-all cursor-pointer ml-auto"
+              >
+                Close Video
               </button>
             </div>
           </div>

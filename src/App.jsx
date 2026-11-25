@@ -528,10 +528,14 @@ function App() {
     const handleOpenTourEvent = () => setShowTour(true);
     const handleOpenTjEvent = () => setShowTomAndJerryIntro(true);
     window.addEventListener('lumixora_open_tour', handleOpenTourEvent);
+    window.addEventListener('lumixora_open_onboarding', handleOpenTourEvent);
     window.addEventListener('lumixora_open_tom_and_jerry_intro', handleOpenTjEvent);
+    window.addEventListener('lumixora_open_journey_video', handleOpenTjEvent);
     return () => {
       window.removeEventListener('lumixora_open_tour', handleOpenTourEvent);
+      window.removeEventListener('lumixora_open_onboarding', handleOpenTourEvent);
       window.removeEventListener('lumixora_open_tom_and_jerry_intro', handleOpenTjEvent);
+      window.removeEventListener('lumixora_open_journey_video', handleOpenTjEvent);
     };
   }, []);
 

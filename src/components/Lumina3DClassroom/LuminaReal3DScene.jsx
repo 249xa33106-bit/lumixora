@@ -723,20 +723,20 @@ export default function LuminaReal3DScene({
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, 0.15, 0.06);
 
           // Conversational beat gestures while speaking
-          const beatL = currentlySpeaking ? Math.sin(elapsedTime * 4.2) * 0.09 : 0;
-          const beatR = currentlySpeaking ? Math.cos(elapsedTime * 3.6) * 0.07 : 0;
+          const beatL = currentlySpeaking ? Math.sin(elapsedTime * 4.2) * 0.08 : 0;
+          const beatR = currentlySpeaking ? Math.cos(elapsedTime * 3.6) * 0.08 : 0;
 
-          // Relaxed, balanced human teacher stance (arms gently hanging near hips)
-          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.45 + beatL, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 0.35, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.15 + beatL * 0.3, 0.08);
-          
-          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.45 + beatR, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.35, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 1.15 - beatR * 0.3, 0.08);
+          // Natural human teacher rest stance: both arms hanging gracefully along sides
+          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 2.0 + beatL, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 2.0, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -2.0 + beatL * 0.4, 0.08);
 
-          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.25 - beatL * 0.4, 0.08);
-          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.25 + beatR * 0.4, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 2.0 + beatR, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -2.0, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 2.0 - beatR * 0.4, 0.08);
+
+          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, 0.2, 0.08);
+          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, -0.2, 0.08);
 
         } else if (currentAction === 'point') {
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, 0.25, 0.06);
@@ -748,31 +748,29 @@ export default function LuminaReal3DScene({
           bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.35, 0.1);
           if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.4, 0.1);
 
-          // Right arm resting naturally
-          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 0.45, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.35, 0.08);
-          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 1.15, 0.08);
+          // Right arm resting naturally along side
+          bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 2.0, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -2.0, 0.08);
+          bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 2.0, 0.08);
+          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, -0.2, 0.08);
 
         } else if (currentAction === 'write') {
           if (char) char.rotation.y = THREE.MathUtils.lerp(char.rotation.y, -0.55, 0.08);
 
-          // Realistic oscillating chalk strokes
+          // Realistic oscillating chalk strokes with right arm
           const writeOsc = Math.sin(elapsedTime * 12) * 0.06;
           const writeOscY = Math.cos(elapsedTime * 10) * 0.04;
 
           bones['Bip01_R_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.x, 1.1 + writeOscY, 0.1);
           bones['Bip01_R_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.y, -0.65, 0.1);
           bones['Bip01_R_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_R_UpperArm'].rotation.z, 0.25 + writeOsc, 0.1);
+          if (bones['Bip01_R_Forearm']) bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.65 + writeOsc, 0.1);
 
-          if (bones['Bip01_R_Forearm']) {
-            bones['Bip01_R_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_R_Forearm'].rotation.y, 0.65 + writeOsc, 0.1);
-          }
-
-          // Left arm relaxed at side while writing with right hand
-          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 0.45, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 0.35, 0.08);
-          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -1.15, 0.08);
-          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, -0.25, 0.08);
+          // Left arm hanging naturally at side while writing
+          bones['Bip01_L_UpperArm'].rotation.x = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.x, 2.0, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.y, 2.0, 0.08);
+          bones['Bip01_L_UpperArm'].rotation.z = THREE.MathUtils.lerp(bones['Bip01_L_UpperArm'].rotation.z, -2.0, 0.08);
+          if (bones['Bip01_L_Forearm']) bones['Bip01_L_Forearm'].rotation.y = THREE.MathUtils.lerp(bones['Bip01_L_Forearm'].rotation.y, 0.2, 0.08);
         }
       }
 
