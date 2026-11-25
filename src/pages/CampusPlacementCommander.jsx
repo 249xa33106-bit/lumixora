@@ -2,9 +2,17 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import {
   ShieldCheck, FileText, Bot, Zap, Code2, Award, TrendingUp,
   MapPin, LogOut, ChevronRight, User, Building2, Sparkles,
-  ExternalLink, CheckCircle, Menu, X, ArrowLeft, RefreshCw
+  ExternalLink, CheckCircle2, Menu, X, ArrowLeft, RefreshCw,
+  Target, Flame, Download, Check, Star, Printer
 } from 'lucide-react';
-import { logoutCampusScholar, getStoredCampusProfile } from '../services/campusAuthService';
+import {
+  logoutCampusScholar,
+  getStoredCampusProfile,
+  DREAM_COMPANIES,
+  getTargetDreamCompany,
+  saveTargetDreamCompany,
+  getCampusReadinessMetrics
+} from '../services/campusAuthService';
 import lazyWithRetry from '../utils/lazyWithRetry';
 
 // Lazy load standard placement engines
@@ -37,6 +45,9 @@ export default function CampusPlacementCommander({
 }) {
   const [activeModule, setActiveModule] = useState('company-papers');
   const [scholar, setScholar] = useState(() => user || getStoredCampusProfile() || {});
+  const [targetCompany, setTargetCompany] = useState(() => getTargetDreamCompany());
+  const [metrics, setMetrics] = useState(() => getCampusReadinessMetrics());
+  const [showDossierModal, setShowDossierModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +58,11 @@ export default function CampusPlacementCommander({
     }
   }, [user]);
 
+  const handleTargetCompanyChange = (companyId) => {
+    setTargetCompany(companyId);
+    saveTargetDreamCompany(companyId);
+  };
+
   const handleLogout = () => {
     logoutCampusScholar();
     if (onLogout) {
@@ -55,6 +71,8 @@ export default function CampusPlacementCommander({
       window.location.reload();
     }
   };
+
+  const selectedDream = DREAM_COMPANIES.find(c => c.id === targetCompany) || DREAM_COMPANIES[0];
 
   const MODULES = [
     {
@@ -166,6 +184,16 @@ export default function CampusPlacementCommander({
               </div>
             </div>
 
+            {/* Print / Download Dossier Button */}
+            <button
+              onClick={() => setShowDossierModal(true)}
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5 text-xs font-bold"
+              title="View Placement Dossier"
+            >
+              <Award className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Placement Dossier</span>
+            </button>
+
             {/* Logout button */}
             <button
               onClick={handleLogout}
@@ -214,6 +242,81 @@ export default function CampusPlacementCommander({
         </div>
       </header>
 
+      {/* ── CAMPUS READINESS INDEX (CRI) COCKPIT ── */}
+      <section className="border-b border-slate-800 bg-slate-950/70 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            {/* CRI Readiness Score Gauge */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Placement Readiness (CRI)</div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-black text-emerald-400">{metrics.totalScore}%</span>
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                    {metrics.tier}
+                  </span>
+                </div>
+              </div>
+              <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-emerald-400 flex items-center justify-center font-black text-xs text-white">
+                CRI
+              </div>
+            </div>
+
+            {/* Target Dream Recruiter */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Target className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Target Recruiter</span>
+                </div>
+                <div className="mt-1 font-bold text-xs text-white truncate max-w-[170px]">
+                  {selectedDream.name}
+                </div>
+                <div className="text-[10px] text-emerald-400 font-semibold">{selectedDream.package}</div>
+              </div>
+              <select
+                value={targetCompany}
+                onChange={(e) => handleTargetCompanyChange(e.target.value)}
+                className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-lg p-1.5 outline-none"
+              >
+                {DREAM_COMPANIES.map(c => (
+                  <option key={c.id} value={c.id}>{c.name.split(' ')[0]}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Prep Streak & Activity */}
+            <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Preparation Streak</span>
+                </div>
+                <div className="mt-1 text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>{metrics.streakDays} Days Consistent</span>
+                  <span className="text-[10px] text-orange-400">🔥 On Fire</span>
+                </div>
+                <div className="text-[10px] text-slate-400">{metrics.papersViewed} company drills completed</div>
+              </div>
+            </div>
+
+            {/* Daily 15-Minute Placement Workout */}
+            <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-teal-950/40 border border-emerald-500/40 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-emerald-300">Daily 15-Min Workout</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">3 Aptitude + 1 Coding + 1 Interview</div>
+              </div>
+              <button
+                onClick={() => setActiveModule('aptitude-arena')}
+                className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition shadow-md shadow-emerald-500/20 shrink-0"
+              >
+                Start →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── ACTIVE MODULE CONTAINER ── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6">
         <Suspense fallback={<ModuleFallback title="Loading Placement Engine..." />}>
@@ -254,6 +357,85 @@ export default function CampusPlacementCommander({
           )}
         </Suspense>
       </main>
+
+      {/* ── OFFICIAL PLACEMENT DOSSIER MODAL ── */}
+      {showDossierModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-lg bg-[#070B19] border border-emerald-500/40 rounded-2xl p-6 shadow-2xl relative space-y-5 text-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-black text-white">Official Placement Dossier</h3>
+              </div>
+              <button
+                onClick={() => setShowDossierModal(false)}
+                className="text-slate-400 hover:text-white text-sm p-1 rounded-lg hover:bg-slate-800"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Dossier Card Preview */}
+            <div className="p-5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-4 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <div className="text-sm font-black text-white">{scholar.name || 'Campus Scholar'}</div>
+                  <div className="text-slate-400 font-mono mt-0.5">{scholar.roll_number || 'USN-VERIFIED'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Verified Scholar</div>
+                  <div className="text-slate-400 text-[11px]">{scholar.batch || 'Class of 2026'}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-slate-300">
+                <div>
+                  <span className="text-slate-500 block text-[10px] uppercase">Institution</span>
+                  <span className="font-semibold text-white">{scholar.college_name || scholar.college || 'Higher Education College'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px] uppercase">Department / Branch</span>
+                  <span className="font-semibold text-white">{scholar.branch || scholar.department || 'Computer Science'}</span>
+                </div>
+              </div>
+
+              {/* CRI Breakdown */}
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between font-bold">
+                  <span className="text-emerald-400">Campus Readiness Index (CRI)</span>
+                  <span className="text-white font-mono">{metrics.totalScore}%</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                  <div>• Aptitude Mastery: <strong className="text-slate-200">{metrics.aptitudeScore}%</strong></div>
+                  <div>• Coding & DSA: <strong className="text-slate-200">{metrics.codingScore}%</strong></div>
+                  <div>• AI Mock Interviews: <strong className="text-slate-200">{metrics.interviewScore}%</strong></div>
+                  <div>• ATS Resume Score: <strong className="text-slate-200">{metrics.resumeScore}%</strong></div>
+                </div>
+              </div>
+
+              <div className="text-[10px] text-slate-500 text-center">
+                Cryptographically bound & signed by Lumixora Campus • Autonomous OS
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowDossierModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print Official Dossier</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── FOOTER ── */}
       <footer className="mt-auto border-t border-slate-800/80 bg-[#070D1E] py-4 text-center text-xs text-slate-500">

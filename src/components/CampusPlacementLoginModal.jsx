@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ShieldCheck, Mail, KeyRound, ArrowRight, CheckCircle2,
   AlertCircle, RefreshCw, Lock, Sparkles, Building2, ChevronLeft,
-  GraduationCap, UserCheck, Shield, ExternalLink
+  GraduationCap, UserCheck, Shield, Search, Check, ExternalLink
 } from 'lucide-react';
 import {
   sendCampusOtp,
@@ -10,6 +10,7 @@ import {
   signInWithGoogleCampus,
   saveCampusScholarProfile,
   getStoredCampusProfile,
+  resolveCollegeFromEmail,
   POPULAR_CAMPUS_COLLEGES,
   POPULAR_CAMPUS_BRANCHES
 } from '../services/campusAuthService';
@@ -28,10 +29,16 @@ export default function CampusPlacementLoginModal({
   const [otpCode, setOtpCode] = useState('');
   const [honeypot, setHoneypot] = useState('');
 
+  // Auto-detected college info from email domain
+  const detectedInstitution = useMemo(() => {
+    return resolveCollegeFromEmail(email);
+  }, [email]);
+
   // Profile binding states
   const [studentName, setStudentName] = useState('');
+  const [collegeSearch, setCollegeSearch] = useState('');
   const [collegeName, setCollegeName] = useState('');
-  const [customCollege, setCustomCollege] = useState('');
+  const [isCollegeCustom, setIsCollegeCustom] = useState(false);
   const [rollNumber, setRollNumber] = useState('');
   const [branch, setBranch] = useState(POPULAR_CAMPUS_BRANCHES[0]);
   const [customBranch, setCustomBranch] = useState('');
@@ -43,6 +50,13 @@ export default function CampusPlacementLoginModal({
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [cooldown, setCooldown] = useState(0);
+
+  // Filtered colleges for combobox
+  const filteredColleges = useMemo(() => {
+    if (!collegeSearch) return POPULAR_CAMPUS_COLLEGES.slice(0, 8);
+    const q = collegeSearch.toLowerCase().trim();
+    return POPULAR_CAMPUS_COLLEGES.filter(c => c.toLowerCase().includes(q));
+  }, [collegeSearch]);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -68,6 +82,13 @@ export default function CampusPlacementLoginModal({
     }
   }, [isOpen]);
 
+  // Apply auto-detected college if available
+  useEffect(() => {
+    if (detectedInstitution?.college && !collegeName) {
+      setCollegeName(detectedInstitution.college);
+    }
+  }, [detectedInstitution]);
+
   if (!isOpen) return null;
 
   // ─── 1. SEND OTP ────────────────────────────────────────────────────────
@@ -86,7 +107,7 @@ export default function CampusPlacementLoginModal({
       const res = await sendCampusOtp({
         email,
         name: studentName,
-        collegeName,
+        collegeName: detectedInstitution?.college || collegeName,
         honeypot
       });
       setSuccessMsg(res.message);
@@ -121,6 +142,9 @@ export default function CampusPlacementLoginModal({
 
       setSuccessMsg('Security verification successful! Complete your institutional profile.');
       setStep('profile');
+      if (detectedInstitution?.college) {
+        setCollegeName(detectedInstitution.college);
+      }
     } catch (err) {
       setErrorMsg(err.message || 'Verification failed. Please retry.');
     } finally {
@@ -140,6 +164,10 @@ export default function CampusPlacementLoginModal({
       setAuthMode('google');
       setSuccessMsg('Google identity verified! Complete your academic details.');
       setStep('profile');
+      const det = resolveCollegeFromEmail(gUser.email);
+      if (det?.college) {
+        setCollegeName(det.college);
+      }
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message || 'Google sign-in was cancelled or failed.');
@@ -154,7 +182,7 @@ export default function CampusPlacementLoginModal({
     setErrorMsg('');
     setSuccessMsg('');
 
-    const finalCollege = (collegeName === 'Other' ? customCollege : collegeName).trim();
+    const finalCollege = (isCollegeCustom ? collegeSearch : collegeName).trim();
     const finalBranch = (branch === 'Other' ? customBranch : branch).trim();
     const finalRoll = rollNumber.trim().toUpperCase();
 
@@ -163,7 +191,7 @@ export default function CampusPlacementLoginModal({
       return;
     }
     if (!finalCollege) {
-      setErrorMsg('Please specify your College or University name.');
+      setErrorMsg('Please specify or select your College / University name.');
       return;
     }
     if (!finalRoll) {
@@ -208,17 +236,17 @@ export default function CampusPlacementLoginModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div 
         className="relative w-full max-w-lg bg-[#070B19] border border-emerald-500/30 rounded-2xl shadow-2xl shadow-emerald-950/50 overflow-hidden text-slate-100"
         style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
       >
-        {/* Subtle Cyber Grid & Ambient Glow */}
+        {/* Ambient Glow */}
         <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Top Header */}
-        <div className="relative p-6 pb-4 border-b border-emerald-500/15 bg-gradient-to-r from-emerald-950/30 via-slate-900/40 to-cyan-950/30">
+        <div className="relative p-5 pb-3 border-b border-emerald-500/15 bg-gradient-to-r from-emerald-950/30 via-slate-900/40 to-cyan-950/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 border border-emerald-400/40">
@@ -247,23 +275,35 @@ export default function CampusPlacementLoginModal({
             </button>
           </div>
 
-          {/* Security Safeguards Banner */}
-          <div className="mt-3 flex items-center gap-4 text-[11px] text-slate-400 border-t border-slate-800/80 pt-2.5">
-            <span className="flex items-center gap-1 text-emerald-400/90 font-medium">
-              <Shield className="w-3.5 h-3.5" /> 256-Bit SSL
-            </span>
-            <span className="flex items-center gap-1 font-medium">
-              <UserCheck className="w-3.5 h-3.5 text-cyan-400" /> All Colleges Allowed
-            </span>
-            <span className="flex items-center gap-1 font-medium">
-              <Lock className="w-3.5 h-3.5 text-amber-400" /> Anti-Bot Shield
-            </span>
+          {/* 3-Step Visual Progress Breadcrumb */}
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[10px] font-bold uppercase tracking-wider">
+            <div className={`py-1 rounded-md border transition ${
+              step === 'auth' 
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
+                : 'bg-slate-900/60 border-slate-800 text-slate-500'
+            }`}>
+              1. Security Check
+            </div>
+            <div className={`py-1 rounded-md border transition ${
+              step === 'otp' 
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
+                : 'bg-slate-900/60 border-slate-800 text-slate-500'
+            }`}>
+              2. Verify Code
+            </div>
+            <div className={`py-1 rounded-md border transition ${
+              step === 'profile' 
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
+                : 'bg-slate-900/60 border-slate-800 text-slate-500'
+            }`}>
+              3. College ID
+            </div>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-4">
-          {/* Honeypot field (hidden from real users, traps bots) */}
+        <div className="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar">
+          {/* Honeypot field (anti-bot trap) */}
           <input
             type="text"
             name="hp_field"
@@ -339,12 +379,22 @@ export default function CampusPlacementLoginModal({
                     <input
                       type="email"
                       required
-                      placeholder="e.g. yourname@college.edu or scholar@gmail.com"
+                      placeholder="e.g. scholar@vit.ac.in or student@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm text-white placeholder-slate-500 transition outline-none"
                     />
                   </div>
+
+                  {/* Auto-detected College Pill */}
+                  {detectedInstitution?.college && (
+                    <div className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs animate-in fade-in">
+                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="truncate">
+                        <strong>Detected:</strong> {detectedInstitution.college}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -433,10 +483,10 @@ export default function CampusPlacementLoginModal({
             <form onSubmit={handleCompleteProfile} className="space-y-3.5">
               <div className="pb-1 border-b border-slate-800">
                 <p className="text-sm font-semibold text-slate-200">
-                  Institutional Identity Verification
+                  Academic Identity Binding
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Bind your verified academic credentials to access the Placement Suite
+                  Your credentials will be bound to your verified Lumixora Campus profile
                 </p>
               </div>
 
@@ -448,40 +498,88 @@ export default function CampusPlacementLoginModal({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Ananya Reddy"
+                  placeholder="e.g. Sravani K"
                   value={studentName}
                   onChange={(e) => setStudentName(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-emerald-500 text-sm text-white placeholder-slate-500 outline-none transition"
                 />
               </div>
 
-              {/* College / University Name */}
+              {/* Searchable College Combobox */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  College / University
-                </label>
-                <select
-                  value={collegeName}
-                  onChange={(e) => setCollegeName(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 focus:border-emerald-500 text-xs text-white outline-none transition"
-                >
-                  <option value="">-- Select Your College or University --</option>
-                  {POPULAR_CAMPUS_COLLEGES.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                  <option value="Other">Other (Type Custom Name Below)</option>
-                </select>
-                {collegeName === 'Other' && (
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter complete college name & city"
-                    value={customCollege}
-                    onChange={(e) => setCustomCollege(e.target.value)}
-                    className="w-full mt-2 px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-emerald-500 text-xs text-white placeholder-slate-500 outline-none transition"
-                  />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-300">
+                    College / University
+                  </label>
+                  {collegeName && (
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                      Selected
+                    </span>
+                  )}
+                </div>
+
+                {/* Selected College Card or Search Input */}
+                {collegeName ? (
+                  <div className="p-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 truncate">
+                      <Building2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-xs font-bold text-white truncate">{collegeName}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCollegeName('');
+                        setCollegeSearch('');
+                      }}
+                      className="text-[11px] text-slate-400 hover:text-rose-400 px-2 py-0.5 rounded hover:bg-slate-800 shrink-0 transition"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search college (e.g. VIT, CBIT, JNTUA, RGMCET, SRIT)..."
+                        value={collegeSearch}
+                        onChange={(e) => {
+                          setCollegeSearch(e.target.value);
+                          setIsCollegeCustom(false);
+                        }}
+                        className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-emerald-500 text-xs text-white placeholder-slate-500 outline-none transition"
+                      />
+                    </div>
+
+                    {/* Suggestions Dropdown */}
+                    <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/90 divide-y divide-slate-800/60 no-scrollbar">
+                      {filteredColleges.map((col) => (
+                        <div
+                          key={col}
+                          onClick={() => {
+                            setCollegeName(col);
+                            setIsCollegeCustom(false);
+                          }}
+                          className="p-2 hover:bg-emerald-500/10 text-xs text-slate-300 hover:text-white cursor-pointer transition flex items-center justify-between"
+                        >
+                          <span className="truncate">{col}</span>
+                          <span className="text-[10px] text-emerald-400 opacity-60">Select</span>
+                        </div>
+                      ))}
+                      <div
+                        onClick={() => {
+                          if (collegeSearch.trim()) {
+                            setCollegeName(collegeSearch.trim());
+                            setIsCollegeCustom(true);
+                          }
+                        }}
+                        className="p-2 bg-slate-900/80 hover:bg-slate-800 text-[11px] text-cyan-400 cursor-pointer font-semibold flex items-center gap-1.5"
+                      >
+                        <span>➕ Use custom name: "{collegeSearch || 'Enter name'}"</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -566,8 +664,9 @@ export default function CampusPlacementLoginModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 text-center text-[11px] text-slate-500">
-          Universal higher education access powered by Lumixora Campus • Zero-Trust Cloud Architecture
+        <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/60 text-center text-[11px] text-slate-500 flex items-center justify-between px-5">
+          <span>End-to-End Encrypted Session</span>
+          <span className="text-emerald-400/80 font-medium">All Higher Education Scholars Welcome</span>
         </div>
       </div>
     </div>
