@@ -719,11 +719,11 @@ export default function LandingCodeCinema({ onGetStarted }) {
 
       ctx.clearRect(0, 0, width, height);
 
-      // Deep Cosmic Background with Glowing Radial Flare
-      const bgGrad = ctx.createRadialGradient(width / 2, height / 2 - 20, 20, width / 2, height / 2, width);
-      bgGrad.addColorStop(0, '#100e1f');
-      bgGrad.addColorStop(0.5, '#090814');
-      bgGrad.addColorStop(1, '#030206');
+      // Deep Obsidian Cosmic Background with Subtle Ambient Vignette
+      const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 20, width / 2, height / 2, width * 0.7);
+      bgGrad.addColorStop(0, '#090d1a');
+      bgGrad.addColorStop(0.5, '#040711');
+      bgGrad.addColorStop(1, '#020308');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
@@ -736,48 +736,40 @@ export default function LandingCodeCinema({ onGetStarted }) {
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
 
-        const pulseAlpha = p.alpha * (0.6 + Math.sin(tick * 0.05 + p.hue) * 0.4);
-        ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${pulseAlpha})`;
+        const pulseAlpha = p.alpha * (0.5 + Math.sin(tick * 0.04 + p.hue) * 0.5);
+        ctx.fillStyle = `hsla(${p.hue}, 85%, 65%, ${pulseAlpha})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // 3D Perspective Cyber Floor Grid
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.09)';
+      // Subtle Cybernetic Ambient Grid (Clean & Modern)
+      ctx.strokeStyle = 'rgba(8, 191, 208, 0.05)';
       ctx.lineWidth = 1;
-      const horizonY = height * 0.84;
-      for (let x = -width * 0.5; x < width * 1.5; x += 45) {
+      const step = 48;
+      for (let x = 0; x < width; x += step) {
         ctx.beginPath();
-        ctx.moveTo(width / 2, horizonY * 0.48);
+        ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
-      for (let y = horizonY * 0.48; y < height; y += 20) {
+      for (let y = 0; y < height; y += step) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
         ctx.stroke();
       }
 
-      // Overhead Projection Light Ray Cone
-      ctx.save();
-      const projGrad = ctx.createLinearGradient(width / 2, 0, width / 2, height * 0.7);
-      projGrad.addColorStop(0, 'rgba(212, 175, 55, 0.16)');
-      projGrad.addColorStop(0.6, 'rgba(212, 175, 55, 0.04)');
-      projGrad.addColorStop(1, 'rgba(212, 175, 55, 0.0)');
-      ctx.fillStyle = projGrad;
-      ctx.beginPath();
-      ctx.moveTo(width / 2 - 20, 0);
-      ctx.lineTo(width / 2 + 20, 0);
-      ctx.lineTo(width * 0.9, height * 0.75);
-      ctx.lineTo(width * 0.1, height * 0.75);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      // Soft Holographic Ambient Light Glow
+      const centerGlow = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, width * 0.45);
+      centerGlow.addColorStop(0, 'rgba(8, 191, 208, 0.08)');
+      centerGlow.addColorStop(0.6, 'rgba(117, 83, 232, 0.04)');
+      centerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = centerGlow;
+      ctx.fillRect(0, 0, width, height);
 
       const cx = width / 2;
-      const cy = height / 2 - 10;
+      const cy = height / 2 - 6;
 
       // ───────────────────────────────────────────────────────────
       // ACT 1: NEURAL PLACEMENT MATRIX & TIER-1 CONSTELLATION
@@ -1232,7 +1224,7 @@ export default function LandingCodeCinema({ onGetStarted }) {
         ctx.fillText('O(N log N)', cx - 120, cy - 55);
         ctx.fillText('f(x) = λe^-λx', cx + 120, cy - 55);
         ctx.fillText('QuickSort(A, p, r)', cx - 110, cy + 18);
-        ctx.fillText('P(A|B) = \frac{P(B|A)}{P(B)}', cx + 110, cy + 18);
+        ctx.fillText('P(A|B) = P(B|A)·P(A) / P(B)', cx + 110, cy + 18);
 
         ctx.font = 'bold 12px monospace';
         ctx.fillStyle = '#c084fc';
@@ -1241,61 +1233,128 @@ export default function LandingCodeCinema({ onGetStarted }) {
       }
 
       // ───────────────────────────────────────────────────────────
-      // ACT 5: CRYPTOGRAPHIC PROOF OF SKILL PROTOCOL
+      // ACT 5: CRYPTOGRAPHIC PROOF OF SKILL PROTOCOL (ULTRA-CLEAN HUD)
       // ───────────────────────────────────────────────────────────
       else {
-        // Rotating 3D Isometric Blockchain Cube
-        const cubeSize = 56 + Math.sin(tick * 0.05) * 5;
+        const radius = 68;
+
+        // 1. Concentric Holographic Orbital Rings
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.35, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(8, 191, 208, 0.35)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 2. Rotating Orbital Data Nodes (Verified Projects)
+        const nodeCount = 4;
+        for (let i = 0; i < nodeCount; i++) {
+          const a = (i * Math.PI * 2) / nodeCount + tick * 0.015;
+          const nx = cx + Math.cos(a) * (radius * 1.35);
+          const ny = cy + Math.sin(a) * (radius * 1.35);
+
+          // Connecting Laser Arc
+          ctx.strokeStyle = 'rgba(8, 191, 208, 0.15)';
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(nx, ny);
+          ctx.stroke();
+
+          // Satellite Node
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(nx, ny, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 3. Central Glassmorphic Credential Shield
+        const shieldPulse = Math.sin(tick * 0.06) * 3;
+        const sW = 62 + shieldPulse;
+        const sH = 70 + shieldPulse;
 
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(Math.PI / 6);
-
-        // Outer Hexagonal Block
-        ctx.shadowBlur = 25;
-        ctx.shadowColor = '#f59e0b';
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3.5;
+        ctx.shadowBlur = 24;
+        ctx.shadowColor = 'rgba(16, 185, 129, 0.4)';
+        
+        // Shield Path
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const angle = (i * Math.PI) / 3;
-          const hx = Math.cos(angle) * (cubeSize + 28);
-          const hy = Math.sin(angle) * (cubeSize + 28);
-          if (i === 0) ctx.moveTo(hx, hy);
-          else ctx.lineTo(hx, hy);
-        }
+        ctx.moveTo(cx, cy - sH * 0.55);
+        ctx.lineTo(cx + sW * 0.55, cy - sH * 0.3);
+        ctx.lineTo(cx + sW * 0.45, cy + sH * 0.25);
+        ctx.lineTo(cx, cy + sH * 0.6);
+        ctx.lineTo(cx - sW * 0.45, cy + sH * 0.25);
+        ctx.lineTo(cx - sW * 0.55, cy - sH * 0.3);
         ctx.closePath();
-        ctx.stroke();
 
-        ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+        const shieldGrad = ctx.createLinearGradient(cx, cy - sH * 0.5, cx, cy + sH * 0.5);
+        shieldGrad.addColorStop(0, 'rgba(8, 191, 208, 0.25)');
+        shieldGrad.addColorStop(0.5, 'rgba(16, 185, 129, 0.20)');
+        shieldGrad.addColorStop(1, 'rgba(5, 150, 105, 0.35)');
+        ctx.fillStyle = shieldGrad;
         ctx.fill();
-        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         ctx.restore();
 
-        // Center Verified Shield
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#10b981';
+        // 4. Center Verified Emblem (Clean Vector Checkmark)
         ctx.fillStyle = '#10b981';
         ctx.beginPath();
-        ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+        ctx.arc(cx, cy - 2, 18, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - 7, cy - 2);
+        ctx.lineTo(cx - 2, cy + 4);
+        ctx.lineTo(cx + 8, cy - 7);
         ctx.stroke();
-        ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 22px monospace';
+        // 5. Top Header Badge: SHA-256 Ledger (Spaced at cy - 88)
         ctx.textAlign = 'center';
-        ctx.fillText('✓', cx, cy + 8);
+        const topTagText = 'SHA-256 LEDGER: 0x8F4A92...E17B';
+        ctx.font = 'bold 10px monospace';
+        const topTagW = ctx.measureText(topTagText).width + 20;
+        
+        ctx.fillStyle = 'rgba(8, 191, 208, 0.12)';
+        ctx.strokeStyle = 'rgba(8, 191, 208, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(cx - topTagW / 2, cy - 98, topTagW, 20, [10]);
+        ctx.fill();
+        ctx.stroke();
 
-        // Floating Cryptographic Hashes
-        ctx.font = 'bold 11px monospace';
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText('SHA-256: 0x8F4A92...E17B', cx, cy - 72);
-        ctx.fillText('12 PROJECTS • 60+ COMMITS VERIFIED', cx, cy + 74);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText(topTagText, cx, cy - 84);
+
+        // 6. Bottom Stat Plate: Verified Repos & Commits (Spaced at cy + 76)
+        const statText = '12 PRODUCTION APPS • 60+ COMMITS VERIFIED';
+        ctx.font = 'bold 10px monospace';
+        const statW = ctx.measureText(statText).width + 20;
+
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(cx - statW / 2, cy + 66, statW, 20, [10]);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.fillStyle = '#34d399';
-        ctx.fillText('★ 100% RECRUITER VERIFIED CREDENTIAL ★', cx, cy + 92);
+        ctx.fillText(statText, cx, cy + 80);
+
+        // 7. Recruiter Credential Footer Tag (Spaced at cy + 104)
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = '#a7f3d0';
+        ctx.fillText('★ 100% RECRUITER VERIFIED ON-CHAIN CREDENTIAL ★', cx, cy + 104);
         ctx.textAlign = 'left';
       }
 
