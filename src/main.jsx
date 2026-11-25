@@ -20,6 +20,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Auto-recover from Vite dynamic import chunk mismatch when a new deployment occurs
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    console.warn('Vite preloadError detected. Auto-reloading latest deployment assets...');
+    window.location.reload();
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
