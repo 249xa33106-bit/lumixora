@@ -11,7 +11,7 @@ import {
   Volume2, CheckCircle2, ChevronRight, Zap, Play, 
   BarChart3, Clock, Sparkles, AlertCircle, ArrowUpRight,
   ShieldCheck, Check, RotateCcw, MessageCircle, BookOpen,
-  ArrowRight, Radio, Compass, Languages
+  ArrowRight, Radio, Compass, Languages, Download, FileText
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
@@ -30,7 +30,8 @@ export default function SpeakVerseDashboard({
   user = null, 
   metrics = {}, 
   onLaunchExercise = () => {},
-  onNavigateTab = () => {}
+  onNavigateTab = () => {},
+  onDownloadCertificate = () => {}
 }) {
   const {
     overallScore = 0,
@@ -184,6 +185,15 @@ export default function SpeakVerseDashboard({
             >
               <Play className="w-3.5 h-3.5 fill-white" />
               <span>{hasActivity ? 'Launch Diagnosed Weakness Drill' : 'Launch Baseline Speech Diagnostic'}</span>
+            </button>
+
+            <button
+              onClick={onDownloadCertificate}
+              className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-indigo-700 border border-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              title="Export official CEFR Communication Development Index certificate as PDF"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Download Official CEFR Certificate (PDF)</span>
             </button>
           </div>
         </div>

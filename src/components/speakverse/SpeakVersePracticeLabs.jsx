@@ -9,13 +9,38 @@ import React, { useState } from 'react';
 import { 
   Target, Users, Brain, Briefcase, Flame, MessageCircle, 
   Play, Sparkles, Volume2, Mic, RotateCcw, ShieldCheck, 
-  ChevronRight, Award, AlertCircle, CheckCircle2
+  ChevronRight, Award, AlertCircle, CheckCircle2, Bot, Layers
 } from 'lucide-react';
 import { PRACTICE_LABS } from './SpeakVerseData';
+import SpeakVerseEnvironments from './SpeakVerseEnvironments';
 
 export default function SpeakVersePracticeLabs({ onLaunchVoiceModal = () => {} }) {
   const [activeLabId, setActiveLabId] = useState('debate-arena');
   const [selectedGdIndex, setSelectedGdIndex] = useState(0);
+  const [showAmbientEnvironments, setShowAmbientEnvironments] = useState(false);
+  const [speakingPeer, setSpeakingPeer] = useState(null);
+
+  const handleSpeakPeerDialogue = (peerName, text) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+
+    if (speakingPeer === peerName) {
+      setSpeakingPeer(null);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const indianVoice = voices.find(v => v.lang === 'en-IN' || v.name.toLowerCase().includes('india'));
+    if (indianVoice) utterance.voice = indianVoice;
+    else utterance.lang = 'en-US';
+
+    utterance.rate = 1.0;
+    utterance.onstart = () => setSpeakingPeer(peerName);
+    utterance.onend = () => setSpeakingPeer(null);
+    utterance.onerror = () => setSpeakingPeer(null);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleShuffleGdTopic = (topicsLength) => {
     if (!topicsLength) return;
@@ -267,15 +292,110 @@ export default function SpeakVersePracticeLabs({ onLaunchVoiceModal = () => {} }
                   </button>
                 </div>
 
-                {/* Simulated AI Peers Opening Dialogue */}
-                {activeTopic.openingAi && (
-                  <div className="p-3.5 rounded-2xl bg-white/90 border border-emerald-200/80 text-xs text-slate-700 space-y-1">
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase font-mono block">Live AI Peer Dialogue In Progress:</span>
-                    <p className="italic font-medium leading-relaxed">
-                      "{activeTopic.openingAi}"
-                    </p>
+                {/* Multi-Agent GD Simulation: Live Active Debate */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-emerald-900 uppercase font-mono flex items-center gap-1.5">
+                      <Bot className="w-4 h-4 text-emerald-600" />
+                      Multi-Agent AI Debate In Progress:
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Listen to peers then interject politely
+                    </span>
                   </div>
-                )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Agent 1: Ananya (Optimist) */}
+                    <div className="p-4 rounded-2xl bg-white border border-emerald-200/90 shadow-2xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          Ananya (Tech Optimist)
+                        </span>
+                        <button
+                          onClick={() => handleSpeakPeerDialogue('ananya', "Automation in software engineering accelerates high-velocity prototypes. Junior engineers who learn AI orchestration will become 10x more valuable architects rather than repetitive coders.")}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] font-mono flex items-center gap-1 cursor-pointer transition-all"
+                        >
+                          <Volume2 className="w-3 h-3" />
+                          <span>{speakingPeer === 'ananya' ? 'Speaking...' : 'Listen to Ananya'}</span>
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed italic">
+                        "Automation in software engineering accelerates high-velocity prototypes. Junior engineers who learn AI orchestration will become 10x more valuable architects rather than repetitive coders."
+                      </p>
+                    </div>
+
+                    {/* Agent 2: Vikram (Skeptic) */}
+                    <div className="p-4 rounded-2xl bg-white border border-rose-200/90 shadow-2xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-rose-500" />
+                          Vikram (Critical Pragmatist)
+                        </span>
+                        <button
+                          onClick={() => handleSpeakPeerDialogue('vikram', "I respectfully disagree with Ananya. If boilerplate and entry-level scaffolding are automated, companies will slash junior hiring quotas by 40%, leaving new campus graduates with fewer initial pathways.")}
+                          className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[10px] font-mono flex items-center gap-1 cursor-pointer transition-all"
+                        >
+                          <Volume2 className="w-3 h-3" />
+                          <span>{speakingPeer === 'vikram' ? 'Speaking...' : 'Listen to Vikram'}</span>
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed italic">
+                        "I respectfully disagree with Ananya. If boilerplate and entry-level scaffolding are automated, companies will slash junior hiring quotas by 40%, leaving new campus graduates with fewer initial pathways."
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3 Polite Interjection Practice Options */}
+                  <div className="p-4 rounded-2xl bg-emerald-100/60 border border-emerald-300/80 space-y-2">
+                    <span className="text-[10px] font-black uppercase text-emerald-950 font-mono block">
+                      Choose Your Interjection Strategy:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <button
+                        onClick={() => onLaunchVoiceModal({
+                          id: 'interject-ananya',
+                          title: 'Interjection: Build on Ananya',
+                          prompt: 'Deliver your interjection: "Building upon Ananya\'s valid point regarding velocity..."',
+                          sampleResponse: "If I may build upon Ananya's point: while toolsets evolve, human domain intuition and system safety cannot be outsourced to generative models...",
+                          difficulty: "Consensus Building"
+                        })}
+                        className="p-2.5 rounded-xl bg-white hover:bg-emerald-50 text-left border border-emerald-200 text-xs text-slate-800 font-bold cursor-pointer transition-all shadow-2xs"
+                      >
+                        <span className="text-[10px] text-emerald-700 block font-mono">Strategy A:</span>
+                        "Building on Ananya's point..."
+                      </button>
+
+                      <button
+                        onClick={() => onLaunchVoiceModal({
+                          id: 'interject-vikram',
+                          title: 'Interjection: Polite Counter to Vikram',
+                          prompt: 'Deliver your interjection: "While Vikram raises a valid concern regarding hiring quotas..."',
+                          sampleResponse: "While Vikram raises an understandable concern about junior roles, historical transitions like cloud computing created entirely new disciplines like SRE and DevOps...",
+                          difficulty: "Polite Rebuttal"
+                        })}
+                        className="p-2.5 rounded-xl bg-white hover:bg-rose-50 text-left border border-rose-200 text-xs text-slate-800 font-bold cursor-pointer transition-all shadow-2xs"
+                      >
+                        <span className="text-[10px] text-rose-700 block font-mono">Strategy B:</span>
+                        "Countering Vikram with data..."
+                      </button>
+
+                      <button
+                        onClick={() => onLaunchVoiceModal({
+                          id: 'interject-moderator',
+                          title: 'Interjection: Executive Consensus Summary',
+                          prompt: 'Deliver your interjection: "Synthesizing both perspectives, the key lies in curriculum alignment..."',
+                          sampleResponse: "Synthesizing both perspectives: Vikram correctly highlights entry barrier risks, while Ananya highlights upside. The strategic equilibrium is modernizing tier-2 engineering labs...",
+                          difficulty: "Leadership Summary"
+                        })}
+                        className="p-2.5 rounded-xl bg-white hover:bg-indigo-50 text-left border border-indigo-200 text-xs text-slate-800 font-bold cursor-pointer transition-all shadow-2xs"
+                      >
+                        <span className="text-[10px] text-indigo-700 block font-mono">Strategy C:</span>
+                        "Synthesizing both into consensus..."
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Simulated AI Cohort Members */}
@@ -394,6 +514,35 @@ export default function SpeakVersePracticeLabs({ onLaunchVoiceModal = () => {} }
               <Mic className="w-4 h-4" />
               <span>Start Free-Flow Voice Conversation</span>
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* ─── INTEGRATED IMMERSIVE ENVIRONMENTS SECTION ──────────────────── */}
+      <div className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h4 className="text-sm font-black text-slate-900 font-sora flex items-center gap-2">
+              <Layers className="w-4 h-4 text-indigo-600" />
+              <span>Immersive Atmospheric Environments (8 Real-World Backdrops)</span>
+            </h4>
+            <p className="text-xs text-slate-500">
+              Switch physical acoustics and high-stakes roleplay backdrops: Classroom, Group Discussion, Technical Interview, Boardroom Pitch.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setShowAmbientEnvironments(prev => !prev)}
+            className="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span>{showAmbientEnvironments ? 'Hide Environments' : 'Explore 8 Environments'}</span>
+            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAmbientEnvironments ? 'rotate-90' : ''}`} />
+          </button>
+        </div>
+
+        {showAmbientEnvironments && (
+          <div className="pt-2 border-t border-slate-100 animate-fade-in">
+            <SpeakVerseEnvironments onSelectScenario={(scenario) => onLaunchVoiceModal(scenario)} />
           </div>
         )}
       </div>

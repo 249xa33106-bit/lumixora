@@ -21,15 +21,19 @@ import SpeakVerseDashboard from '../components/speakverse/SpeakVerseDashboard';
 import SpeakVerseEcosystem from '../components/speakverse/SpeakVerseEcosystem';
 import SpeakVerseCoach from '../components/speakverse/SpeakVerseCoach';
 import SpeakVersePracticeLabs from '../components/speakverse/SpeakVersePracticeLabs';
+import SpeakVerseEnvironments from '../components/speakverse/SpeakVerseEnvironments';
 import SpeakVerseInterviewPrep from '../components/speakverse/SpeakVerseInterviewPrep';
 import SpeakVerseVocabVault from '../components/speakverse/SpeakVerseVocabVault';
 import SpeakVerseFeatures from '../components/speakverse/SpeakVerseFeatures';
 import SpeakVerseVoiceModal from '../components/speakverse/SpeakVerseVoiceModal';
 import { SPEAKVERSE_TAGLINE, calculateCDI } from '../components/speakverse/SpeakVerseData';
+import { generateSpeakVerseCEFRCertificatePDF } from '../utils/pdfGenerator';
 
 export default function SpeakVersePortal({ user = null, setActiveTab = () => {} }) {
-  // Navigation: 'dashboard' | 'learning-path' | 'coach' | 'arenas' | 'interview-prep' | 'vocab-vault' | 'features'
+  // Navigation: 5 Clean Consolidated Hubs
+  // 'dashboard' | 'learning-path' | 'coach-labs' | 'interview-prep' | 'vocab-vault'
   const [activeTab, setActiveNavTab] = useState('dashboard');
+  const [coachLabsSubMode, setCoachLabsSubMode] = useState('coach'); // 'coach' | 'arenas' | 'environments' | 'fluency'
 
   // Real Student Telemetry State (Strict Real User Data — No Fake Numbers)
   const userKey = (user?.id || user?.uid || user?.email || 'guest').toLowerCase();
@@ -77,19 +81,20 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
           setMetrics(prev => {
             const hasRemoteSessions = (remote.sessionsCount && remote.sessionsCount > 0) || (remote.speakingMinutes && remote.speakingMinutes > 0) || (remote.fluencyScore && remote.fluencyScore > 0);
             
+            // STRICT AUTHENTIC PROGRESS: If 0 sessions, cleanly initialize at 0 and 'A1' (no artificial 60/B1 fallbacks)
             const updated = {
               ...prev,
-              overallScore: remote.overallScore ?? (hasRemoteSessions ? 60 : 0),
-              fluencyScore: remote.fluencyScore ?? (hasRemoteSessions ? 60 : 0),
-              pronunciationScore: remote.pronunciationScore ?? (hasRemoteSessions ? 60 : 0),
-              vocabLevel: remote.cefrBenchmark || (hasRemoteSessions ? 'B1' : 'A1'),
-              grammarScore: remote.grammarScore ?? (hasRemoteSessions ? 65 : 0),
-              confidenceProgress: remote.confidenceProgress ?? (hasRemoteSessions ? 60 : 0),
+              overallScore: remote.overallScore ?? (hasRemoteSessions ? (remote.overallScore || 0) : 0),
+              fluencyScore: remote.fluencyScore ?? (hasRemoteSessions ? (remote.fluencyScore || 0) : 0),
+              pronunciationScore: remote.pronunciationScore ?? (hasRemoteSessions ? (remote.pronunciationScore || 0) : 0),
+              vocabLevel: remote.cefrBenchmark || 'A1',
+              grammarScore: remote.grammarScore ?? (hasRemoteSessions ? (remote.grammarScore || 0) : 0),
+              confidenceProgress: remote.confidenceProgress ?? (hasRemoteSessions ? (remote.confidenceProgress || 0) : 0),
               streak: remote.streak ?? user?.streak ?? prev.streak ?? 0,
               speakingMinutesTotal: remote.speakingMinutes ?? prev.speakingMinutesTotal ?? 0,
               fillerWordRatio: remote.fillerWordRatio ?? prev.fillerWordRatio ?? 0,
               wpm: remote.wpm ?? prev.wpm ?? 0,
-              sessionsCount: remote.sessionsCount ?? prev.sessionsCount ?? (hasRemoteSessions ? 1 : 0),
+              sessionsCount: remote.sessionsCount ?? prev.sessionsCount ?? 0,
               weeklyMinutes: remote.weeklyMinutes || prev.weeklyMinutes || [0, 0, 0, 0, 0, 0, 0]
             };
             try {
@@ -205,12 +210,10 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
 
   const navTabs = [
     { id: 'dashboard', label: 'My Dashboard', icon: LayoutDashboard, badge: 'CDI / 100' },
-    { id: 'learning-path', label: '8-Stage Learning Path', icon: BookOpen, badge: '8 STAGES' },
-    { id: 'coach', label: 'AI Speaking Coach', icon: Mic, badge: 'LIVE 2-WAY' },
-    { id: 'arenas', label: 'Practice Laboratories', icon: Building2, badge: '6 LABS' },
-    { id: 'interview-prep', label: 'Interview Preparation', icon: Briefcase, badge: 'PLACEMENT' },
-    { id: 'vocab-vault', label: 'Vocab Vault & Mistake Memory', icon: Sparkles, badge: 'ACTIVE' },
-    { id: 'features', label: 'Pronunciation & Fluency Lab', icon: Volume2, badge: 'LABS' }
+    { id: 'learning-path', label: '8-Stage Curriculum', icon: BookOpen, badge: '8 STAGES' },
+    { id: 'coach-labs', label: 'AI Coach & Practice Labs', icon: Mic, badge: 'LIVE HUBS' },
+    { id: 'interview-prep', label: 'Placement Prep & STAR', icon: Briefcase, badge: 'INTERVIEW' },
+    { id: 'vocab-vault', label: 'Vocab & Vernacular Bridge', icon: Sparkles, badge: 'BRIDGE' }
   ];
 
   return (
@@ -299,56 +302,129 @@ export default function SpeakVersePortal({ user = null, setActiveTab = () => {} 
       {/* ─── MAIN CONTENT CONTAINER ────────────────────────────────────────── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 animate-fade-in">
         
-        {/* TAB 1: STUDENT DASHBOARD */}
+        {/* HUB 1: STUDENT DASHBOARD */}
         {activeTab === 'dashboard' && (
           <SpeakVerseDashboard
             user={user}
             metrics={metrics}
             onLaunchExercise={handleLaunchExercise}
-            onNavigateTab={setActiveNavTab}
+            onNavigateTab={(targetTab, subMode) => {
+              if (['coach', 'arenas', 'environments', 'features'].includes(targetTab)) {
+                setActiveNavTab('coach-labs');
+                setCoachLabsSubMode(targetTab === 'features' ? 'fluency' : targetTab);
+              } else {
+                setActiveNavTab(targetTab);
+                if (subMode) setCoachLabsSubMode(subMode);
+              }
+            }}
+            onDownloadCertificate={() => generateSpeakVerseCEFRCertificatePDF(user, metrics)}
           />
         )}
 
-        {/* TAB 2: COMPLETE 8-STAGE LEARNING PATH */}
+        {/* HUB 2: COMPLETE 8-STAGE CURRICULUM */}
         {activeTab === 'learning-path' && (
           <SpeakVerseEcosystem
             onSelectDrill={(drill) => setActiveVoiceModal({ isOpen: true, drill })}
           />
         )}
 
-        {/* TAB 3: AI PERSONAL SPEAKING COACH */}
-        {activeTab === 'coach' && (
-          <SpeakVerseCoach
-            user={user}
-            onRecordSessionScore={handleRecordScore}
-          />
+        {/* HUB 3: AI COACH & PRACTICE LABORATORIES (CONSOLIDATED 4-MODE HUB) */}
+        {activeTab === 'coach-labs' && (
+          <div className="space-y-6">
+            {/* Sub-Hub Selector Navigation */}
+            <div className="flex items-center gap-2 p-1.5 bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-x-auto custom-scrollbar">
+              <button
+                onClick={() => setCoachLabsSubMode('coach')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  coachLabsSubMode === 'coach'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Mic className="w-3.5 h-3.5" />
+                <span>2-Way AI Speaking Coach</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${coachLabsSubMode === 'coach' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>LIVE</span>
+              </button>
+
+              <button
+                onClick={() => setCoachLabsSubMode('arenas')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  coachLabsSubMode === 'arenas'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>6 Practice Arenas (Debate, GD, Pitch, Speeches)</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${coachLabsSubMode === 'arenas' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>ARENAS</span>
+              </button>
+
+              <button
+                onClick={() => setCoachLabsSubMode('environments')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  coachLabsSubMode === 'environments'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>Immersive Simulation Environments</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${coachLabsSubMode === 'environments' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>8 SCENARIOS</span>
+              </button>
+
+              <button
+                onClick={() => setCoachLabsSubMode('fluency')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  coachLabsSubMode === 'fluency'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>Fluency & Pronunciation Differentiators</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${coachLabsSubMode === 'fluency' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>LABS</span>
+              </button>
+            </div>
+
+            {/* Active Sub-Mode Renderer */}
+            {coachLabsSubMode === 'coach' && (
+              <SpeakVerseCoach
+                user={user}
+                onRecordSessionScore={handleRecordScore}
+              />
+            )}
+
+            {coachLabsSubMode === 'arenas' && (
+              <SpeakVersePracticeLabs
+                onLaunchVoiceModal={(drill) => setActiveVoiceModal({ isOpen: true, drill })}
+              />
+            )}
+
+            {coachLabsSubMode === 'environments' && (
+              <SpeakVerseEnvironments
+                onSelectScenario={(scenarioDrill) => setActiveVoiceModal({ isOpen: true, drill: scenarioDrill })}
+              />
+            )}
+
+            {coachLabsSubMode === 'fluency' && (
+              <SpeakVerseFeatures
+                onLaunchFeature={(featureDrill) => setActiveVoiceModal({ isOpen: true, drill: featureDrill })}
+              />
+            )}
+          </div>
         )}
 
-        {/* TAB 4: 6 SPECIAL PRACTICE LABORATORIES */}
-        {activeTab === 'arenas' && (
-          <SpeakVersePracticeLabs
-            onLaunchVoiceModal={(drill) => setActiveVoiceModal({ isOpen: true, drill })}
-          />
-        )}
-
-        {/* TAB 5: CAREER & PLACEMENT INTERVIEW PREPARATION */}
+        {/* HUB 4: CAREER & PLACEMENT INTERVIEW PREPARATION */}
         {activeTab === 'interview-prep' && (
           <SpeakVerseInterviewPrep
             onLaunchVoiceModal={(drill) => setActiveVoiceModal({ isOpen: true, drill })}
           />
         )}
 
-        {/* TAB 6: VOCABULARY VAULT & MISTAKE MEMORY */}
+        {/* HUB 5: VOCABULARY VAULT, MISTAKE MEMORY & VERNACULAR BRIDGE */}
         {activeTab === 'vocab-vault' && (
           <SpeakVerseVocabVault
             onLaunchVoiceModal={(drill) => setActiveVoiceModal({ isOpen: true, drill })}
-          />
-        )}
-
-        {/* TAB 7: PRONUNCIATION & FLUENCY LAB */}
-        {activeTab === 'features' && (
-          <SpeakVerseFeatures
-            onLaunchFeature={(featureDrill) => setActiveVoiceModal({ isOpen: true, drill: featureDrill })}
           />
         )}
       </main>

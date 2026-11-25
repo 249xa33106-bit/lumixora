@@ -1177,3 +1177,163 @@ export const PRONUNCIATION_DRILLS = [
     drillSentence: "Real leaders rarely let rapid rumours ruin reliability."
   }
 ];
+
+// ─── 8. Immersive Simulation Environments ────────────────────────────────────
+export const SPEAKVERSE_ENVIRONMENTS = [
+  {
+    id: "classroom",
+    name: "Seminar Hall",
+    badge: "ACADEMIC",
+    iconName: "GraduationCap",
+    tagline: "Academic presentations, viva-voce defenses, and student symposium lectures.",
+    scenarios: [
+      {
+        id: "seminar-defense",
+        title: "Major Project Synopsis Defense",
+        context: "You are standing before the Department Review Committee presenting your distributed database architecture proposal.",
+        objective: "Explain the technical trade-offs of Cassandra versus PostgreSQL in 90 seconds clearly.",
+        rubric: ["Clear Academic Terminology", "Confidence Under Interrogation", "Zero Filler Words"]
+      },
+      {
+        id: "seminar-qa",
+        title: "Challenging Faculty Inquiry",
+        context: "A professor challenges your choice of consensus algorithm, asking why Raft was chosen over Paxos.",
+        objective: "Defend your design decision respectfully with concrete implementation trade-offs.",
+        rubric: ["Respectful Tone", "Technical Precision", "Concise Justification"]
+      }
+    ]
+  },
+  {
+    id: "gd",
+    name: "GD Arena",
+    badge: "CAMPUS DRIVE",
+    iconName: "Users",
+    tagline: "High-stakes campus recruitment group discussions with aggressive interjections.",
+    scenarios: [
+      {
+        id: "gd-opening",
+        title: "Topic Initiation & Framing",
+        context: "The placement evaluator announces: 'Digital Currency: Sovereignty vs Decentralization'. 8 candidates hesitate.",
+        objective: "Seize the initiative by defining scope, historical context, and steering the debate.",
+        rubric: ["Authoritative Opening", "Balanced Framing", "Inviting Collaborative Discourse"]
+      },
+      {
+        id: "gd-interjection",
+        title: "Polite Intervention in Cross-Talk",
+        context: "Two peers are passionately talking over each other. The discussion has stalled.",
+        objective: "Intervene gracefully: 'If I may bring our focus back to fiscal policy...' and present your point.",
+        rubric: ["Acoustic Volume Modulation", "Firm Politeness", "Value-Add Synthesis"]
+      }
+    ]
+  },
+  {
+    id: "tech-interview",
+    name: "Tech Room",
+    badge: "TECHNICAL",
+    iconName: "Briefcase",
+    tagline: "1-on-1 engineering interviews, system design thinking, and algorithmic explanation.",
+    scenarios: [
+      {
+        id: "tech-complexity",
+        title: "Thinking Aloud During Dynamic Programming",
+        context: "Interviewer asks you to optimize an exponential recursion problem to polynomial time.",
+        objective: "Explain state definition, memoization table dimensions, and Big-O trade-offs aloud as you solve.",
+        rubric: ["Vocalized Reasoning", "State Definition Clarity", "Complexity Articulation"]
+      },
+      {
+        id: "tech-tradeoff",
+        title: "System Design: Cache Invalidation",
+        context: "Discussing write-through versus write-back caching for high-throughput payment gateways.",
+        objective: "Articulate cache staleness risks, atomicity guarantees, and failover fallbacks.",
+        rubric: ["Architectural Depth", "Zero Stammering", "Executive Delivery"]
+      }
+    ]
+  },
+  {
+    id: "boardroom",
+    name: "Boardroom",
+    badge: "CORPORATE",
+    iconName: "Building2",
+    tagline: "Executive meetings, client sprint sign-offs, and enterprise budget approvals.",
+    scenarios: [
+      {
+        id: "board-scope",
+        title: "Client Scope Creep Pushback",
+        context: "Enterprise client requests major auth refactoring 48 hours before scheduled sprint release.",
+        objective: "Diplomatically explain capacity constraints and negotiate a phased delivery schedule.",
+        rubric: ["Corporate Diplomacy", "Boundaries Without Conflict", "Win-Win Compromise"]
+      },
+      {
+        id: "board-appraisal",
+        title: "Annual Value Impact Demonstration",
+        context: "Executive panel reviewing your promotion case from Junior to Systems Lead.",
+        objective: "Quantify your impact on CI/CD latency, server cost reductions, and junior onboarding velocity.",
+        rubric: ["Metric-Driven Narrative", "Leadership Bearing", "Executive Cadence"]
+      }
+    ]
+  },
+  {
+    id: "keynote",
+    name: "Keynote",
+    badge: "PODIUM",
+    iconName: "Mic",
+    tagline: "Keynotes, developer conference talks, and campus convocation addresses.",
+    scenarios: [
+      {
+        id: "keynote-open",
+        title: "DevFest Opening Keynote",
+        context: "Speaking to 400 engineering students on 'The Next Decade of Agentic AI Infrastructure'.",
+        objective: "Deliver a compelling 2-minute introductory hook that captures attention instantly.",
+        rubric: ["Vocal Variety & Projection", "Engaging Hook", "Authentic Energy"]
+      }
+    ]
+  },
+  {
+    id: "standup",
+    name: "Agile Standup",
+    badge: "DAILY SYNC",
+    iconName: "MessageCircle",
+    tagline: "Crisp 60-second scrum updates: yesterday's wins, today's targets, and blockers.",
+    scenarios: [
+      {
+        id: "scrum-blocker",
+        title: "Critical Blocker Articulation",
+        context: "Third-party payment gateway sandbox is throwing 401s, blocking your auth integration.",
+        objective: "Clearly state impact, dependency, and the specific assistance needed from devops.",
+        rubric: ["Crisp Brevity (<60s)", "Actionable Dependency", "Zero Fluff"]
+      }
+    ]
+  },
+  {
+    id: "crisis",
+    name: "Incident War Room",
+    badge: "P0 CRISIS",
+    iconName: "ShieldAlert",
+    tagline: "Live production outages, security vulnerabilities, and C-suite status communications.",
+    scenarios: [
+      {
+        id: "crisis-status",
+        title: "P0 Outage Executive Briefing",
+        context: "Payment database is experiencing deadlocks during peak flash sale. CEO joins the bridge.",
+        objective: "Calmly brief executive leadership on root cause, blast radius, rollback status, and ETA.",
+        rubric: ["Absolute Calm Under Pressure", "Root Cause Articulation", "Reassurance"]
+      }
+    ]
+  },
+  {
+    id: "sharktank",
+    name: "Pitch Stage",
+    badge: "SHARK TANK",
+    iconName: "Rocket",
+    tagline: "Demo Day investor pitching: Problem, Solution, Traction, TAM, and Ask.",
+    scenarios: [
+      {
+        id: "shark-traction",
+        title: "Seed Round 90-Second Pitch",
+        context: "Facing 2 Tier-1 venture angels evaluating your campus career navigation platform.",
+        objective: "Pitch customer pain, product moat, active MRR growth, and unit economics with conviction.",
+        rubric: ["Investor Magnetism", "Defensible Moat", "Confidence in Metrics"]
+      }
+    ]
+  }
+];

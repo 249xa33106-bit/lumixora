@@ -27,6 +27,13 @@ export default function SpeakVerseCoach({ user = null, onRecordSessionScore = ()
   const timerRef = useRef(null);
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const chatBottomRef = useRef(null);
+  const canvasRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const audioStreamRef = useRef(null);
+  const prevFillerCountRef = useRef(0);
+  const [recentFillerAlert, setRecentFillerAlert] = useState(null);
 
   const personas = [
     { id: 'hr', name: 'HR Recruiter', desc: 'Behavioral rounds, culture fit, STAR method', badge: 'Placement' },
@@ -89,12 +96,85 @@ export default function SpeakVerseCoach({ user = null, onRecordSessionScore = ()
     };
   }, [isRecording]);
 
-  const startListening = () => {
+  const playSoftChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.16);
+      }
+    } catch (_) {}
+  };
+
+  const drawWaveform = () => {
+    if (!canvasRef.current || !analyserRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const render = () => {
+      animFrameRef.current = requestAnimationFrame(render);
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barCount = 20;
+      const barWidth = canvas.width / barCount;
+
+      for (let i = 0; i < barCount; i++) {
+        const val = dataArray[i % bufferLength] || 10;
+        const barHeight = Math.max(3, (val / 255) * canvas.height * 0.9);
+        const x = i * barWidth;
+        const y = (canvas.height - barHeight) / 2;
+
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, '#4F46E5');
+        gradient.addColorStop(1, '#818CF8');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(x + 1, y, barWidth - 2, barHeight, [2, 2, 2, 2]);
+        ctx.fill();
+      }
+    };
+    render();
+  };
+
+  const startListening = async () => {
     setTranscript('');
     setDurationSeconds(0);
+    setRecentFillerAlert(null);
+    prevFillerCountRef.current = 0;
     setIsRecording(true);
     try {
       if (recognitionRef.current) recognitionRef.current.start();
+    } catch (_) {}
+
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStreamRef.current = stream;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const audioCtx = new AudioCtx();
+          audioCtxRef.current = audioCtx;
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          analyserRef.current = analyser;
+          const source = audioCtx.createMediaStreamSource(stream);
+          source.connect(analyser);
+          drawWaveform();
+        }
+      }
     } catch (_) {}
   };
 
@@ -103,15 +183,30 @@ export default function SpeakVerseCoach({ user = null, onRecordSessionScore = ()
     try {
       if (recognitionRef.current) recognitionRef.current.stop();
     } catch (_) {}
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(t => t.stop());
+      audioStreamRef.current = null;
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
   };
 
-  // Text-to-speech for AI speech
+  // Text-to-speech for AI speech prioritizing Indian English (en-IN)
   const speakAiResponse = (text) => {
     if (!synthRef.current) return;
     synthRef.current.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    const voices = synthRef.current.getVoices ? synthRef.current.getVoices() : [];
+    const indianVoice = voices.find(v => v.lang === 'en-IN' || v.name.toLowerCase().includes('india'));
+    if (indianVoice) {
+      utterance.voice = indianVoice;
+    } else {
+      utterance.lang = 'en-US';
+    }
     utterance.rate = 1.0;
 
     utterance.onstart = () => setIsSpeakingAi(true);
@@ -199,6 +294,20 @@ Return ONLY JSON:
   const liveWpm = calculateWpm(currentFillers.totalWords, durationSeconds);
   const wpmRating = classifyWpm(liveWpm);
 
+  // Monitor filler words for real-time acoustic alert HUD
+  useEffect(() => {
+    if (isRecording && currentFillers.count > prevFillerCountRef.current) {
+      const latest = currentFillers.detected[currentFillers.detected.length - 1];
+      if (latest) {
+        setRecentFillerAlert(latest.word);
+        playSoftChime();
+        const timeout = setTimeout(() => setRecentFillerAlert(null), 2400);
+        prevFillerCountRef.current = currentFillers.count;
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [isRecording, currentFillers.count]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* ─── LEFT COLUMN: CHAT INTERACTION & LIVE MIC ──────────────────────── */}
@@ -280,6 +389,17 @@ Return ONLY JSON:
 
         {/* Spoken Input & Live Controls */}
         <div className="p-4 border-t border-slate-100 bg-white space-y-3">
+          {/* Real-time Filler Word Warning HUD in Coach */}
+          {recentFillerAlert && (
+            <div className="p-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold flex items-center justify-between shadow-md shadow-rose-600/30 animate-bounce">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 fill-white text-rose-600" />
+                <span>Filler Word: "{recentFillerAlert}" detected — Maintain silent composure between thoughts!</span>
+              </div>
+              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-mono uppercase">Live Alert</span>
+            </div>
+          )}
+
           {/* Live Transcript Preview */}
           {transcript && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
@@ -321,20 +441,35 @@ Return ONLY JSON:
             </button>
           </div>
 
-          {/* Live Telemetry Pill */}
+          {/* Live Waveform & Telemetry Speedometer Pill */}
           {isRecording && (
-            <div className="flex items-center gap-4 text-[11px] font-mono text-slate-500 pt-1">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-indigo-600" /> {durationSeconds}s
-              </span>
-              <span className="flex items-center gap-1">
-                <Activity className="w-3 h-3 text-cyan-600" /> {liveWpm} WPM ({wpmRating.label})
-              </span>
-              {currentFillers.count > 0 && (
-                <span className="text-rose-600 font-bold">
-                  {currentFillers.count} Filler Words
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100">
+              <div className="flex items-center gap-2">
+                <canvas ref={canvasRef} width={160} height={24} className="rounded-lg bg-slate-900/5 shadow-2xs" />
+                <span className="text-[9px] font-mono text-slate-400 uppercase">Oscilloscope</span>
+              </div>
+
+              <div className="flex items-center gap-3 text-[11px] font-mono">
+                <span className="flex items-center gap-1 text-slate-500">
+                  <Clock className="w-3 h-3 text-indigo-600" /> {durationSeconds}s
                 </span>
-              )}
+                
+                {/* WPM Speedometer */}
+                <span className={`px-2 py-0.5 rounded font-extrabold flex items-center gap-1 ${
+                  liveWpm >= 130 && liveWpm <= 155
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : (liveWpm > 155 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800')
+                }`}>
+                  <Activity className="w-3 h-3" />
+                  {liveWpm} WPM ({liveWpm >= 130 && liveWpm <= 155 ? '🟢 Ideal' : (liveWpm > 155 ? '🔴 Rushed' : '🟡 Slow')})
+                </span>
+
+                {currentFillers.count > 0 && (
+                  <span className="text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                    {currentFillers.count} Fillers
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

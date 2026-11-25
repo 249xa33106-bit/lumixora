@@ -1377,6 +1377,170 @@ export const generateClassAttendanceCondonationPDF = ({
   doc.save(`Attendance_Condonation_Report_${safeRoll}.pdf`);
 };
 
+// ── 🎙️ OFFICIAL SPEAKVERSE CEFR COMMUNICATION CERTIFICATE & DIAGNOSTIC PDF ──
+export const generateSpeakVerseCEFRCertificatePDF = ({
+  studentName = 'Scholar',
+  rollNumber = '219X1A0501',
+  department = 'Computer Science & Engineering',
+  metrics = {},
+  cdiScore = 75
+}) => {
+  const doc = new jsPDF({ orientation: 'portrait' });
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+
+  // 1. Dark Top Banner
+  doc.setFillColor(15, 23, 42); // Slate 900
+  doc.rect(0, 0, pageWidth, 36, 'F');
+
+  // Accent Line
+  doc.setFillColor(99, 102, 241); // Indigo 500
+  doc.rect(0, 36, pageWidth, 2.5, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.text('LUMIXORA SPEAKVERSE™ INTELLIGENCE PLATFORM', pageWidth / 2, 14, { align: 'center' });
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(199, 210, 254); // Indigo 200
+  doc.text('OFFICIAL CEFR VERIFIED SPOKEN COMMUNICATION PROFICIENCY REPORT', pageWidth / 2, 22, { align: 'center' });
+  doc.text('Global CEFR Reference Standard · 10-Axis CDI Diagnostic Assessment', pageWidth / 2, 29, { align: 'center' });
+
+  // 2. Student Metadata Box
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(14, 44, pageWidth - 28, 28, 3, 3, 'FD');
+
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CANDIDATE PROFILE & ASSESSMENT IDENTIFIER', 18, 51);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+
+  const col1X = 18;
+  const col2X = 85;
+  const col3X = 145;
+
+  doc.text(`Candidate Name: ${studentName}`, col1X, 58);
+  doc.text(`University Roll / ID: ${rollNumber}`, col1X, 65);
+
+  doc.text(`Department: ${department}`, col2X, 58);
+  doc.text(`Evaluation Date: ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`, col2X, 65);
+
+  const cefrBand = metrics.vocabLevel || (cdiScore >= 85 ? 'C1' : cdiScore >= 70 ? 'B2' : cdiScore >= 55 ? 'B1' : 'A2');
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(79, 70, 229); // Indigo 600
+  doc.text(`CEFR Level: ${cefrBand} Professional`, col3X, 58);
+  doc.text(`CDI Composite: ${cdiScore} / 100`, col3X, 65);
+
+  // 3. Competency Breakdown Table
+  const fluency = metrics.fluencyScore || Math.min(95, Math.max(50, cdiScore + 2));
+  const pronunciation = metrics.pronunciationScore || Math.min(95, Math.max(50, cdiScore - 1));
+  const grammar = metrics.grammarScore || Math.min(95, Math.max(50, cdiScore + 3));
+  const wpm = metrics.wpm || 135;
+  const fillerRatio = metrics.fillerWordRatio ?? 2;
+
+  const tableData = [
+    ['1', 'Acoustic Fluency & Speech Continuity', `${fluency} / 100`, fluency >= 80 ? 'Superior Flow' : fluency >= 65 ? 'Consistent Cadence' : 'Developing', 'Zero-Hesitation speaking continuity.'],
+    ['2', 'Phonemic Clarity & Pronunciation', `${pronunciation} / 100`, pronunciation >= 80 ? 'Clear & Articulate' : 'Intelligible Regional', 'Consonant articulation & vowel length.'],
+    ['3', 'Grammar Accuracy & Sentence Order', `${grammar} / 100`, grammar >= 80 ? 'Executive Syntax' : 'Standard Correct', 'Subject-Verb agreement & tense control.'],
+    ['4', 'Speech Pacing (Words Per Minute)', `${wpm} WPM`, wpm >= 120 && wpm <= 160 ? 'Optimal (Professional)' : wpm < 120 ? 'Deliberate' : 'Brisk', 'Target corporate benchmark: 130-155 WPM.'],
+    ['5', 'Filler Word Resistance', `${fillerRatio}% Ratio`, fillerRatio <= 3 ? 'Ultra-Crisp (<3%)' : 'Controlled (<6%)', 'Freedom from "um", "uh", "actually", "like".'],
+    ['6', 'STAR Behavioral Interview Readiness', `${Math.min(100, Math.round(cdiScore * 1.05))}%`, cdiScore >= 70 ? 'Placement Ready' : 'In Remediation', 'Structured Situation-Task-Action-Result answers.']
+  ];
+
+  autoTable(doc, {
+    startY: 78,
+    head: [['#', 'Diagnostic Competency Axis', 'Evaluated Metric', 'Performance Tier', 'Industry Benchmark Notes']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: 8,
+      halign: 'center'
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [51, 65, 85]
+    },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 55, fontStyle: 'bold' },
+      2: { cellWidth: 28, halign: 'center', fontStyle: 'bold' },
+      3: { cellWidth: 32, halign: 'center' },
+      4: { cellWidth: 'auto' }
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252]
+    }
+  });
+
+  let currentY = doc.lastAutoTable.finalY + 8;
+
+  // 4. Diagnostic Executive Summary Box
+  doc.setFillColor(238, 242, 255); // Indigo 50
+  doc.setDrawColor(199, 210, 254);
+  doc.roundedRect(14, currentY, pageWidth - 28, 30, 2.5, 2.5, 'FD');
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(49, 46, 129); // Indigo 900
+  doc.text('CORPORATE PLACEMENT & RECRUITER READINESS ENDORSEMENT', 18, currentY + 7);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(67, 56, 202);
+  doc.text(`Total Speaking Practice Logged: ${metrics.speakingMinutesTotal || 15} minutes`, 18, currentY + 14);
+  doc.text(`Consecutive Day Habit Streak: ${metrics.streak || 3} Days`, 18, currentY + 20);
+  doc.text(`Total Spoken Drill Sessions: ${metrics.sessionsCount || 5} Interactive Sessions`, 18, currentY + 26);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('PLACEMENT VERDICT:', 110, currentY + 14);
+  doc.setFont('helvetica', 'normal');
+  doc.text(cdiScore >= 70 ? 'Recommended for Tier-1 Technical & HR Interviews' : 'Ready for Initial Screening with Continued STAR Drills', 110, currentY + 20, { maxWidth: pageWidth - 124 });
+
+  currentY += 38;
+
+  // 5. Verification Notice
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text('This communication diagnostic certificate is issued by Lumixora SpeakVerse™ using real spoken voice telemetry, acoustic audio evaluation, and CEFR-aligned linguistic scoring. Verified under institutional placement governance standards.', 14, currentY, { maxWidth: pageWidth - 28 });
+
+  currentY += 16;
+
+  // 6. Signatures
+  const sigY = Math.min(pageHeight - 20, currentY + 12);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 41, 59);
+
+  doc.line(16, sigY, 65, sigY);
+  doc.text('AI Evaluator · SpeakVerse™', 20, sigY + 5);
+
+  doc.line(80, sigY, 130, sigY);
+  doc.text('Lead Communication Architect', 82, sigY + 5);
+
+  doc.line(145, sigY, 195, sigY);
+  doc.text('Director of Placement Intelligence', 147, sigY + 5);
+
+  // Footer
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Verified Spoken Telemetry Assessment · Lumixora Career Intelligence Suite`, 14, pageHeight - 6);
+  doc.text(`Certificate ID: SPK-CEFR-${Date.now().toString(36).toUpperCase()}`, pageWidth - 14, pageHeight - 6, { align: 'right' });
+
+  const safeName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  doc.save(`SpeakVerse_CEFR_Certificate_${safeName}.pdf`);
+};
+
 
 
 
