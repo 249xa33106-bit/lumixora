@@ -257,8 +257,8 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
     
     try {
       let res;
-      if (customInput && customInput.trim()) {
-        res = await runPiston(code, language, customInput.trim());
+      if (activeProblem?.id === 'sandbox' || (customInput && customInput.trim())) {
+        res = await runPiston(code, language, customInput ? customInput.trim() : '');
         res.isPiston = true;
       } else {
         res = await executeCode(activeProblem, code, language, false);
@@ -292,7 +292,13 @@ export default function CodeEditorPage({ problem, setActiveTab, user }) {
     setRightTab('console');
 
     try {
-      const res = await executeCode(activeProblem, code, language, true);
+      let res;
+      if (activeProblem?.id === 'sandbox') {
+        res = await runPiston(code, language, customInput ? customInput.trim() : '');
+        res.isPiston = true;
+      } else {
+        res = await executeCode(activeProblem, code, language, true);
+      }
       setRunResult(res);
 
       if (res.success) {
