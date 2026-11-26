@@ -427,7 +427,8 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
         return;
       }
 
-      const role = isFounderOrAdmin ? 'founder' : (authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : (authMode === 'intern' ? 'intern' : 'user')));
+      const isOAuthTeammate = isTeammateEmail(oauthEmail);
+      const role = isFounderOrAdmin ? 'founder' : (isOAuthTeammate ? 'teammate' : (authMode === 'faculty' ? 'faculty' : (authMode === 'teammate' ? 'teammate' : (authMode === 'intern' ? 'intern' : 'user'))));
 
       // Check if user already exists in Supabase
       const { data: sbUsers } = await supabase
@@ -452,7 +453,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
           uid: firebaseUser.uid, 
           name: cleanName || firebaseUser.displayName || oauthEmail.split('@')[0],
           emailVerified: true,
-          role: isFounderOrAdmin ? 'founder' : (sbUsers[0].role || role) 
+          role: isFounderOrAdmin ? 'founder' : (isOAuthTeammate ? 'teammate' : (sbUsers[0].role || role)) 
         };
         sendFounderNotification('login', userProfile).catch(() => {});
       } else {
@@ -707,7 +708,8 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     try {
       const cleanEmail = regData.email.toLowerCase().trim();
       const cleanName = regData.name.trim();
-      const determinedRole = regData.role || (regData.authMode === 'faculty' ? 'faculty' : (regData.authMode === 'teammate' ? 'teammate' : (regData.authMode === 'intern' ? 'intern' : 'user')));
+      const isRegTeammate = isTeammateEmail(cleanEmail) || isTeammateEmail(regData.rollNumber);
+      const determinedRole = regData.role || (isRegTeammate ? 'teammate' : (regData.authMode === 'faculty' ? 'faculty' : (regData.authMode === 'teammate' ? 'teammate' : (regData.authMode === 'intern' ? 'intern' : 'user'))));
       const finalReferralCode = (regData.referralCode || referralCode || '').trim().toUpperCase();
 
       const profileMetadata = {

@@ -50,6 +50,9 @@ export const checkUserAccessStatus = (u) => {
   const isFounder = u.role === 'founder' || isFounderEmail(email);
   if (isFounder) return { allowed: true, isFounder: true };
 
+  const isTeammate = u.role === 'teammate' || u.role === 'team' || u.role === 'team_member';
+  if (isTeammate) return { allowed: true, isTeammate: true };
+
   // 1. Explicitly Blocked, Suspended, or Deleted
   const isBlocked = u.is_blocked === true || 
                     u.is_blocked === 'true' || 

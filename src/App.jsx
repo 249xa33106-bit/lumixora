@@ -18,7 +18,7 @@ import { ThemeProvider } from './context/ThemeContext';
 const CodingPractice = lazy(() => import('./pages/CodingPractice'));
 const CodeEditorPage = lazy(() => import('./pages/CodeEditorPage'));
 const PersonalMentor = lazy(() => import('./pages/PersonalMentor'));
-import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment, KNOWN_PAID_EMAILS } from './data/collegesData';
+import { isValidInstitutionalEmail, isGprecScholar, hasPaidCollegeFee, isAnjum, isExemptFromPayment, KNOWN_PAID_EMAILS, isTeammateEmail, isTeammateUser } from './data/collegesData';
 import CollegeAccessFeeModal from './components/CollegeAccessFeeModal';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -188,6 +188,13 @@ function App() {
       try {
         const u = JSON.parse(saved);
         if (u && (u.email || u.name)) {
+          // Zero-Friction Teammate Auto-Promotion: elevated directly on load
+          if (u.role !== 'founder' && !isFounderEmail(u.email) && (isTeammateEmail(u.email) || isTeammateUser(u))) {
+            if (u.role !== 'teammate') {
+              u.role = 'teammate';
+              try { localStorage.setItem('lumixora_user', JSON.stringify(u)); } catch (e) {}
+            }
+          }
           return u;
         }
       } catch (e) {}

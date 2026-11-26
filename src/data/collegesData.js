@@ -499,10 +499,75 @@ export const getAllAllowedDomains = (customColleges = []) => {
   return Array.from(domainSet);
 };
 
+export const STORAGE_CUSTOM_TEAMMATES_KEY = 'lumixora_custom_teammates';
+
+export const CORE_TEAMMATE_IDENTIFIERS = new Set([
+  // Founder
+  'founder@lumixora.com',
+  '249xa33106@gprec.ac.in',
+  '249xa33106',
+  // M. Akhil (Marketing Head)
+  'akhil@lumixora.com',
+  '249xa33112@gprec.ac.in',
+  '249xa33112',
+  // A. Pooja Reddy (Mentorship Head)
+  'pooja@lumixora.com',
+  '259xa33002@gprec.ac.in',
+  '259xa33002',
+  // Usha Eswari (Product Testing & QA Lead)
+  'ushaeswari@lumixora.com',
+  '259xa33030@gprec.ac.in',
+  '259xa33030',
+  // C. Manasa (Feature Strategy Lead)
+  'manasa@lumixora.com',
+  // Bandi Meghana (UI/UX Designer)
+  'meghana@lumixora.com',
+  // Y. Usha Sree (AI & Innovation Lead)
+  'ushasree@lumixora.com',
+  // Shaik Tousif Basha (Lead — AI Solutions)
+  'tousif@lumixora.com',
+  // Syed Riyaz (AI Solutions Developer)
+  'riyaz@lumixora.com'
+]);
+
+export const getStoredCustomTeammates = () => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_CUSTOM_TEAMMATES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 export const isTeammateEmail = (email) => {
-  if (!email) return false;
+  if (!email || typeof email !== 'string') return false;
   const lower = email.toLowerCase().trim();
-  return lower.endsWith('@lumixora.com') || lower.endsWith('@team.lumixora.com') || lower.endsWith('@lumixora.in') || lower.endsWith('@team.lumixora.in') ;
+  if (
+    lower.endsWith('@lumixora.com') ||
+    lower.endsWith('@team.lumixora.com') ||
+    lower.endsWith('@lumixora.in') ||
+    lower.endsWith('@team.lumixora.in')
+  ) {
+    return true;
+  }
+  if (CORE_TEAMMATE_IDENTIFIERS.has(lower)) {
+    return true;
+  }
+  const rollPrefix = lower.split('@')[0];
+  if (CORE_TEAMMATE_IDENTIFIERS.has(rollPrefix)) {
+    return true;
+  }
+  const custom = getStoredCustomTeammates();
+  if (custom.some(item => {
+    const val = (typeof item === 'string' ? item : (item.email || item.rollNumber || '')).toLowerCase().trim();
+    return val === lower || val === rollPrefix;
+  })) {
+    return true;
+  }
+  return false;
 };
 
 export const isTeammateUser = (user) => {
@@ -511,7 +576,14 @@ export const isTeammateUser = (user) => {
   // Explicitly treat client role as non‑teammate even if email matches @lumixora.com
   if (role === 'client') return false;
   const isTeamRole = role === 'teammate' || role === 'team' || role === 'team_member' || role === 'contributor' || role === 'founder';
-  return isTeamRole || isTeammateEmail(user.email);
+  if (isTeamRole) return true;
+  const email = (user.email || '').toLowerCase().trim();
+  if (isTeammateEmail(email)) return true;
+  const roll = (user.rollNumber || user.roll_number || user.rawRoll || '').toLowerCase().trim();
+  if (roll && (CORE_TEAMMATE_IDENTIFIERS.has(roll) || isTeammateEmail(`${roll}@gprec.ac.in`))) {
+    return true;
+  }
+  return false;
 };
 
 export const isValidInstitutionalEmail = (email, customColleges = []) => {
@@ -896,6 +968,11 @@ export const KNOWN_PAID_EMAILS = new Set([
 export const isExemptFromPayment = (userOrEmail) => {
   if (!userOrEmail) return false;
   const email = (typeof userOrEmail === 'string' ? userOrEmail : (userOrEmail?.email || '')).toLowerCase().trim();
+
+  // 0. Teammate & Core Leadership Exemption (Zero-Friction Access)
+  if (isTeammateEmail(email) || isTeammateUser(userOrEmail)) {
+    return true;
+  }
 
   // 1. Founder & Super Admin
   if (

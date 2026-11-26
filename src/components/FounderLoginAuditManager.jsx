@@ -26,7 +26,8 @@ import {
   Edit3,
   X,
   Zap,
-  Printer
+  Printer,
+  Crown
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
@@ -44,6 +45,7 @@ import {
   bulkAddGprecScholarRolls, 
   removeGprecScholarRoll,
   updateGprecScholarData,
+  toggleScholarTeammateRole,
   syncCustomRollsFromCloud,
   KNOWN_GPREC_SCHOLAR_NAMES
 } from '../services/gprecPlacementAuth';
@@ -81,6 +83,9 @@ export default function FounderLoginAuditManager() {
   const [editDept, setEditDept] = useState('CSE');
   const [editYear, setEditYear] = useState('3rd Year');
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  // Teammate Role Elevation State
+  const [togglingTeammate, setTogglingTeammate] = useState({});
 
   // Quick Whitelist Bar State
   const [quickRollInput, setQuickRollInput] = useState('');
@@ -437,6 +442,35 @@ export default function FounderLoginAuditManager() {
       addToast({ message: `🗑️ Scholar ${roll.toUpperCase()} permanently deleted & access revoked.`, type: 'info' });
     } catch (err) {
       addToast({ message: 'Failed to delete scholar.', type: 'error' });
+    }
+  };
+
+  const handleToggleTeammate = async (scholar) => {
+    const raw = (scholar.rawRoll || scholar.rollNumber || '').toLowerCase().trim();
+    if (!raw) return;
+
+    setTogglingTeammate(prev => ({ ...prev, [scholar.rollNumber]: true }));
+    try {
+      const res = await toggleScholarTeammateRole(scholar);
+      setRoster(getGprecScholarRoster());
+      if (res && res.isTeammate) {
+        addToast({
+          message: `👑 ${scholar.name || scholar.rollNumber} promoted to Core Teammate! Full Team Workspace and internal project controls unlocked.`,
+          type: 'success'
+        });
+      } else {
+        addToast({
+          message: `Scholar ${scholar.name || scholar.rollNumber} demoted to standard user.`,
+          type: 'info'
+        });
+      }
+    } catch (e) {
+      addToast({
+        message: 'Failed to update teammate role: ' + (e.message || e),
+        type: 'error'
+      });
+    } finally {
+      setTogglingTeammate(prev => ({ ...prev, [scholar.rollNumber]: false }));
     }
   };
 
@@ -1172,6 +1206,12 @@ export default function FounderLoginAuditManager() {
                               Founder
                             </span>
                           )}
+                          {scholar.isTeammate && scholar.rawRoll !== '249xa33106' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <Crown className="w-2.5 h-2.5 text-amber-400" />
+                              Teammate
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
@@ -1209,6 +1249,29 @@ export default function FounderLoginAuditManager() {
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* 👑 1-Click Promote / Demote to Teammate */}
+                          {scholar.rawRoll !== '249xa33106' && (
+                            <button
+                              onClick={() => handleToggleTeammate(scholar)}
+                              disabled={togglingTeammate[scholar.rollNumber]}
+                              className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs border ${
+                                scholar.isTeammate
+                                  ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40'
+                                  : 'bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border-purple-500/30'
+                              }`}
+                              title={scholar.isTeammate ? "Click to demote from Teammate back to standard user" : "Click to promote to Core Teammate (unlocks Team Workspace & Project Controls)"}
+                            >
+                              {togglingTeammate[scholar.rollNumber] ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <Crown className={`w-3 h-3 ${scholar.isTeammate ? 'text-amber-400 fill-amber-400' : 'text-purple-400'}`} />
+                                  <span>{scholar.isTeammate ? 'Teammate' : '+ Team'}</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+
                           {/* 📲 Instant WhatsApp Share */}
                           <button
                             onClick={() => handleOpenWhatsAppInvite(scholar)}

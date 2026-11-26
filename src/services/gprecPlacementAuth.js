@@ -7,6 +7,13 @@
 import { supabase } from '../config/supabase';
 import { db } from '../config/firebase';
 import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
+import { 
+  isTeammateEmail, 
+  isTeammateUser, 
+  getStoredCustomTeammates, 
+  STORAGE_CUSTOM_TEAMMATES_KEY, 
+  CORE_TEAMMATE_IDENTIFIERS 
+} from '../data/collegesData';
 
 // Built-in Approved GPREC Roll Numbers for the placement pilot (STRICT USER SPECIFIED)
 export const GPREC_ALLOWED_ROLL_NUMBERS = [
@@ -291,6 +298,12 @@ export function getGprecScholarRoster() {
     let scholarName = KNOWN_GPREC_SCHOLAR_NAMES[norm] || 
       (!customMeta?.name?.startsWith('GPREC Scholar (') ? customMeta?.name : undefined) || 
       (norm === '249xa33106' ? 'Founder Scholar (249XA33106)' : `GPREC Scholar (${norm.toUpperCase()})`);
+
+    const isTeammate = isTeammateEmail(norm) || 
+      isTeammateEmail(`${norm}@gprec.ac.in`) || 
+      customMeta?.isTeammate === true || 
+      customMeta?.role === 'teammate';
+
     fullList.push({
       rollNumber: norm.toUpperCase(),
       rawRoll: norm,
@@ -301,6 +314,8 @@ export function getGprecScholarRoster() {
       status: 'Active',
       type: 'Core Cohort',
       isCustom: true, // Empower founder to delete ANY scholar from the roster
+      isTeammate: Boolean(isTeammate),
+      role: isTeammate ? 'teammate' : 'user',
       addedAt: customMeta?.addedAt || 1731500000000
     });
     customMap.delete(norm);
@@ -312,6 +327,12 @@ export function getGprecScholarRoster() {
     let scholarName = KNOWN_GPREC_SCHOLAR_NAMES[r] || 
       (!meta.name?.startsWith('GPREC Scholar (') ? meta.name : undefined) || 
       `GPREC Scholar (${r.toUpperCase()})`;
+
+    const isTeammate = isTeammateEmail(r) || 
+      isTeammateEmail(`${r}@gprec.ac.in`) || 
+      meta?.isTeammate === true || 
+      meta?.role === 'teammate';
+
     fullList.push({
       rollNumber: r.toUpperCase(),
       rawRoll: r,
@@ -322,12 +343,94 @@ export function getGprecScholarRoster() {
       status: 'Active',
       type: 'Founder Whitelisted',
       isCustom: true,
+      isTeammate: Boolean(isTeammate),
+      role: isTeammate ? 'teammate' : 'user',
       addedAt: meta.addedAt || Date.now(),
       addedBy: meta.addedBy || 'Founder'
     });
   });
 
   return fullList;
+}
+
+/**
+ * 👑 Toggles or sets scholar's Core Teammate status
+ * Synchronizes with local storage, Supabase whitelisted scholars, and Supabase users table
+ */
+export async function toggleScholarTeammateRole(scholarOrRoll, explicitTarget = null) {
+  const norm = normalizeRollNumber(typeof scholarOrRoll === 'string' ? scholarOrRoll : (scholarOrRoll.rawRoll || scholarOrRoll.rollNumber || scholarOrRoll.email));
+  const email = typeof scholarOrRoll === 'object' && scholarOrRoll.email ? scholarOrRoll.email.toLowerCase().trim() : `${norm}@gprec.ac.in`;
+  
+  const currentList = getStoredCustomTeammates();
+  const isCurrentlyTeammate = isTeammateEmail(norm) || isTeammateEmail(email) || currentList.some(item => {
+    const val = (typeof item === 'string' ? item : (item.email || item.rollNumber || '')).toLowerCase().trim();
+    return val === norm || val === email;
+  });
+
+  const nextState = explicitTarget !== null ? Boolean(explicitTarget) : !isCurrentlyTeammate;
+
+  // 1. Update localStorage custom teammates
+  let updatedList;
+  if (nextState) {
+    const newEntry = { rollNumber: norm, email, addedAt: Date.now() };
+    updatedList = [...currentList.filter(item => {
+      const val = (typeof item === 'string' ? item : (item.email || item.rollNumber || '')).toLowerCase().trim();
+      return val !== norm && val !== email;
+    }), newEntry];
+  } else {
+    updatedList = currentList.filter(item => {
+      const val = (typeof item === 'string' ? item : (item.email || item.rollNumber || '')).toLowerCase().trim();
+      return val !== norm && val !== email;
+    });
+  }
+  try {
+    localStorage.setItem(STORAGE_CUSTOM_TEAMMATES_KEY, JSON.stringify(updatedList));
+  } catch (e) {}
+
+  // 2. Update scholar in custom rolls list so roster reflects it immediately
+  const customList = getStoredCustomRolls();
+  const existingCustomIdx = customList.findIndex(item => {
+    const r = normalizeRollNumber(typeof item === 'string' ? item : item.rollNumber);
+    return r === norm;
+  });
+  if (existingCustomIdx >= 0) {
+    if (typeof customList[existingCustomIdx] === 'string') {
+      customList[existingCustomIdx] = { rollNumber: norm, isTeammate: nextState, role: nextState ? 'teammate' : 'user' };
+    } else {
+      customList[existingCustomIdx] = { ...customList[existingCustomIdx], isTeammate: nextState, role: nextState ? 'teammate' : 'user' };
+    }
+    saveCustomRolls(customList);
+  } else {
+    customList.push({ rollNumber: norm, email, isTeammate: nextState, role: nextState ? 'teammate' : 'user', addedAt: Date.now() });
+    saveCustomRolls(customList);
+  }
+
+  // 3. Supabase Cloud Sync (Background)
+  try {
+    if (supabase) {
+      supabase.from('gprec_whitelisted_scholars')
+        .update({ role: nextState ? 'teammate' : 'user' })
+        .or(`roll_lower.eq.${norm},roll_number.ilike.${norm},email.ilike.${email}`)
+        .catch(() => {});
+
+      supabase.from('users')
+        .update({ role: nextState ? 'teammate' : 'user' })
+        .or(`email.ilike.${email},roll_number.ilike.${norm}`)
+        .catch(() => {});
+
+      supabase.from('founder_notifications')
+        .insert({
+          type: nextState ? 'teammate_promoted' : 'teammate_demoted',
+          title: nextState ? `👑 Scholar Promoted to Teammate: ${norm.toUpperCase()}` : `Scholar Demoted from Teammate: ${norm.toUpperCase()}`,
+          message: nextState ? `Promoted ${norm.toUpperCase()} (${email}) to Core Teammate role.` : `Revoked teammate role for ${norm.toUpperCase()} (${email}).`,
+          meta: { rollNumber: norm, email, role: nextState ? 'teammate' : 'user', timestamp: new Date().toISOString() },
+          created_at: new Date().toISOString()
+        })
+        .catch(() => {});
+    }
+  } catch (e) {}
+
+  return { success: true, isTeammate: nextState };
 }
 
 /**
