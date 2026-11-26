@@ -79,6 +79,7 @@ export default function FounderLoginAuditManager() {
 
   // Edit Scholar State
   const [editingScholar, setEditingScholar] = useState(null);
+  const [editRoll, setEditRoll] = useState('');
   const [editName, setEditName] = useState('');
   const [editDept, setEditDept] = useState('CSE');
   const [editYear, setEditYear] = useState('3rd Year');
@@ -399,6 +400,7 @@ export default function FounderLoginAuditManager() {
 
   const handleOpenEditModal = (scholar) => {
     setEditingScholar(scholar);
+    setEditRoll(scholar.rollNumber || scholar.rawRoll || '');
     setEditName(scholar.name || '');
     setEditDept(scholar.department || 'CSE');
     setEditYear(scholar.year || '3rd Year');
@@ -409,14 +411,29 @@ export default function FounderLoginAuditManager() {
     if (!editingScholar) return;
     setIsSubmittingEdit(true);
     try {
-      await updateGprecScholarData(editingScholar.rawRoll || editingScholar.rollNumber, {
-        name: editName.trim(),
-        department: editDept,
-        year: editYear,
-        addedBy: 'Founder'
-      });
+      const oldRoll = (editingScholar.rawRoll || editingScholar.rollNumber || '').toLowerCase().trim();
+      const newRoll = (editRoll || oldRoll).toLowerCase().trim();
+
+      // If roll number was changed/corrected (e.g., fixing 239X1A05L9 to 239X1A0519)
+      if (newRoll && newRoll !== oldRoll) {
+        await removeGprecScholarRoll(oldRoll);
+        await addGprecScholarRoll(newRoll, {
+          name: editName.trim(),
+          department: editDept,
+          year: editYear,
+          addedBy: 'Founder'
+        });
+      } else {
+        await updateGprecScholarData(oldRoll, {
+          name: editName.trim(),
+          department: editDept,
+          year: editYear,
+          addedBy: 'Founder'
+        });
+      }
+
       setRoster(getGprecScholarRoster());
-      addToast({ message: `Updated details for scholar ${editingScholar.rollNumber} in real database!`, type: 'success' });
+      addToast({ message: `Updated details for scholar ${newRoll.toUpperCase()} in real database!`, type: 'success' });
       setEditingScholar(null);
     } catch (err) {
       addToast({ message: err.message || 'Failed to update scholar.', type: 'error' });
@@ -1750,16 +1767,18 @@ export default function FounderLoginAuditManager() {
             <form onSubmit={handleSaveScholarEdit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Roll Number
+                  Roll Number <span className="text-amber-400">*</span>
                 </label>
                 <input
                   type="text"
-                  disabled
-                  value={editingScholar.rollNumber}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm font-mono text-amber-400 font-bold uppercase tracking-wider opacity-80 cursor-not-allowed"
+                  required
+                  value={editRoll}
+                  onChange={(e) => setEditRoll(e.target.value.toUpperCase().replace(/\s+/g, ''))}
+                  placeholder="e.g. 239X1A0519"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/20 text-sm font-mono text-amber-400 font-bold uppercase tracking-wider focus:outline-none focus:border-amber-400 transition-colors"
                 />
                 <p className="text-[10px] text-slate-500 mt-1">
-                  Institutional Email: <span className="text-slate-300 font-mono">{editingScholar.email}</span>
+                  Institutional Email: <span className="text-slate-300 font-mono">{(editRoll ? editRoll.toLowerCase() : (editingScholar.rawRoll || editingScholar.rollNumber))}@gprec.ac.in</span>
                 </p>
               </div>
 

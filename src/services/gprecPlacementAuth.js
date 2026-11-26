@@ -31,7 +31,7 @@ export const GPREC_ALLOWED_ROLL_NUMBERS = [
   '239x1a33a0',
   '259xa33013',
   '269x103013',
-  '239x1a05l9',
+  '239x1a0519',
   '259xa33095',
   '259xa05089'
 ];
@@ -51,7 +51,8 @@ export const KNOWN_GPREC_SCHOLAR_NAMES = {
   '239x1a33a0': 'M BHARANI KUMAR REDDY',
   '259xa33013': 'BICHALA HEMASREE',
   '269x103013': 'RUTHIKA',
-  '239x1a05l9': 'AMMENA BANU',
+  '239x1a0519': 'AMEENA BANU',
+  '239x1a05l9': 'AMEENA BANU',
   '259xa33095': 'LAIQA KHAN',
   '259xa05089': 'GAJJALA GNANAMANI'
 };
@@ -91,7 +92,9 @@ export function saveRevokedRolls(rolls = []) {
  */
 export function normalizeRollNumber(input = '') {
   if (!input || typeof input !== 'string') return '';
-  return input.trim().toLowerCase().replace(/\s+/g, '');
+  let norm = input.trim().toLowerCase().replace(/\s+/g, '');
+  if (norm === '239x1a05l9') norm = '239x1a0519';
+  return norm;
 }
 
 /**
@@ -128,8 +131,28 @@ export function getStoredCustomRolls() {
   try {
     const raw = localStorage.getItem(STORAGE_CUSTOM_ROLLS_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    let parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Auto-migrate any legacy 239x1a05l9 to 239x1a0519
+    let migrated = false;
+    parsed = parsed.map(item => {
+      if (typeof item === 'string') {
+        if (item.toLowerCase().trim() === '239x1a05l9') {
+          migrated = true;
+          return '239x1a0519';
+        }
+        return item;
+      }
+      if (item && item.rollNumber && item.rollNumber.toLowerCase().trim() === '239x1a05l9') {
+        migrated = true;
+        return { ...item, rollNumber: '239x1a0519', email: '239x1a0519@gprec.ac.in', name: item.name || 'AMEENA BANU' };
+      }
+      return item;
+    });
+    if (migrated) {
+      try { localStorage.setItem(STORAGE_CUSTOM_ROLLS_KEY, JSON.stringify(parsed)); } catch (e) {}
+    }
+    return parsed;
   } catch (e) {
     return [];
   }
