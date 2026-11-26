@@ -284,6 +284,16 @@ export default function LandingPage({ onLoginClick }) {
               </span>
             </button>
 
+            {/* Official Core Team Quick Login */}
+            <button
+              onClick={() => handleAuth('teammate')}
+              className="px-3 py-1.5 rounded-xl text-xs font-black text-purple-900 hover:text-black bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/35 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 hover:scale-[1.02]"
+              title="Official Lumixora Core Team Member Sign In"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+              <span>Team Login</span>
+            </button>
+
             <button
               onClick={() => handleAuth('student')}
               className="px-3 py-2 text-xs font-bold text-[#101A35] hover:text-[#7553E8] transition-colors cursor-pointer"
@@ -352,6 +362,13 @@ export default function LandingPage({ onLoginClick }) {
                 className="w-full py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs"
               >
                 Intern Portal Sign In
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); handleAuth('teammate'); }}
+                className="w-full py-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                <span>Team Workspace Sign In</span>
               </button>
               <button 
                 onClick={() => { setMobileMenuOpen(false); handleAuth('faculty'); }}

@@ -1230,12 +1230,12 @@ function App() {
 
     const email = (userData?.email || '').toLowerCase().trim();
     const isF = userData?.role === 'founder' || isFounderEmail(email);
-    const isTeammate = userData?.role === 'teammate' || userData?.role === 'team' || userData?.role === 'team_member' || email.endsWith('@lumixora.com');
+    const isTeammate = userData?.role === 'teammate' || userData?.role === 'team' || userData?.role === 'team_member' || isTeammateEmail(email) || isTeammateUser(userData);
     const isFeeSatisfied = isExemptFromPayment(userData) || hasPaidCollegeFee(userData) || userData?.role === 'intern' || userData?.isIntern;
                 
     const finalizedUser = {
       ...userData,
-      role: isF ? 'founder' : (userData.role || 'user'),
+      role: isF ? 'founder' : (isTeammate ? 'teammate' : (userData.role || 'user')),
       emailVerified: true,
       oneTimeFeePaid: isFeeSatisfied
     };
@@ -1243,6 +1243,10 @@ function App() {
     setUser(finalizedUser);
     setIsAuthenticated(true);
     setShowLogin(null);
+    if (isTeammate && !isF) {
+      setActiveTab('team-workspace');
+      window.location.hash = 'team-workspace';
+    }
     localStorage.setItem('lumixora_user', JSON.stringify(finalizedUser));
     localStorage.setItem('lumixora_isAuthenticated', 'true');
     if (isFeeSatisfied && finalizedUser.email) {

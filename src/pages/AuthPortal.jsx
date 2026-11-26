@@ -1274,6 +1274,13 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     }
   };
 
+  const getSubmitButtonLabel = () => {
+    if (authMode === 'founder') return 'Sign In to Executive Console';
+    if (authMode === 'teammate') return 'Sign In to ⚡ Team Workspace';
+    if (isLogin) return 'Sign In to Workspace';
+    return isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F2F5FB] via-[#EAF0F9] to-[#DFE7F3] text-slate-900 flex flex-col justify-between relative overflow-x-hidden selection:bg-indigo-500/20 selection:text-indigo-900 font-sans transition-colors duration-300">
       
@@ -1409,6 +1416,28 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                       <Briefcase className="w-4 h-4 text-slate-700" />
                       <span>Intern</span>
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center ${authMode === 'intern' ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500'}`}>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </button>
+
+                    {/* 4. Team Workspace Portal */}
+                    <button
+                      type="button"
+                      onClick={() => { 
+                        setAuthMode('teammate'); 
+                        setSelectedCollege({ id: 'team', name: 'Lumixora Core Engineering HQ', shortName: 'Lumixora Core Team', code: 'TEAM', logo: '⚡' }); 
+                        setCollegeName('Lumixora HQ');
+                        setError(''); 
+                      }}
+                      className={`relative px-4 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all duration-300 cursor-pointer flex items-center gap-2.5 ${
+                        authMode === 'teammate'
+                          ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 text-white shadow-[0_8px_25px_rgba(124,58,237,0.5)] border border-purple-400/40 z-10 scale-[1.03]'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-white/40'
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                      <span>Team</span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${authMode === 'teammate' ? 'bg-white/20 text-white' : 'bg-black/5 text-slate-500'}`}>
                         <ArrowRight className="w-3 h-3" />
                       </div>
                     </button>
@@ -1646,6 +1675,10 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                   <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
                     <Crown className="w-5 h-5 text-amber-950" />
                   </div>
+                ) : authMode === 'teammate' ? (
+                  <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
                 ) : (
                   <div className="absolute -left-1 -top-2 w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 flex items-center justify-center transform -rotate-12 pointer-events-none hidden sm:flex">
                     <GraduationCap className="w-5 h-5 text-white" />
@@ -1657,12 +1690,18 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
 
                 <h2 className="text-2xl sm:text-[28px] font-black text-slate-900 tracking-tight leading-tight">
                   {isLogin ? 'Sign In ' : 'Create Account '}
-                  <span className={authMode === 'founder' ? "text-amber-600" : "text-violet-600"}>
-                    ({authMode === 'founder' ? 'Founder Console' : (authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student'))})
+                  <span className={authMode === 'founder' ? "text-amber-600" : (authMode === 'teammate' ? "text-purple-600" : "text-violet-600")}>
+                    ({authMode === 'founder' ? 'Founder Console' : (authMode === 'teammate' ? 'Core Teammate' : (authMode === 'faculty' ? 'Faculty' : (authMode === 'intern' ? 'Lumixora Intern' : 'Student')))})
                   </span>
                 </h2>
                 <p className="text-slate-500 text-xs font-medium mt-1 max-w-sm">
-                  {authMode === 'founder' ? 'Lumixora Executive Office // Root Administration' : selectedCollege.name}
+                  {authMode === 'founder' 
+                    ? 'Lumixora Executive Office // Root Administration' 
+                    : (authMode === 'teammate'
+                        ? 'Lumixora Core Engineering HQ // 360° Team Workspace Access'
+                        : selectedCollege.name
+                      )
+                  }
                 </p>
               </div>
 
@@ -1698,6 +1737,31 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                           alt="Founder" 
                           className="w-14 h-14 object-cover rounded-full shadow-md border-2 border-white ring-2 ring-amber-300/60"
                         />
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (authMode === 'teammate') {
+                  return (
+                    <div className="rounded-2xl border border-purple-300/80 bg-gradient-to-r from-purple-50/90 via-indigo-50/80 to-purple-50/90 p-3.5 mb-5 flex items-center justify-between gap-3 shadow-xs relative overflow-hidden">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                          <Sparkles className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <strong className="block font-bold text-purple-950 text-xs leading-tight">
+                              Lumixora Core Team & Engineering HQ
+                            </strong>
+                            <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-900 border border-purple-500/30 text-[10px] font-bold">
+                              ⚡ Team Clearance (All Portals Unlocked)
+                            </span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-purple-900/80">
+                            Welcome, Core Team Member. Sign in with your registered college email or official team address to unlock the 360° Team Workspace and internal project controls.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1906,9 +1970,12 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                     <span>
                       {authMode === 'founder'
                         ? 'Founder Official Email'
-                        : (authMode === 'intern' 
-                            ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
-                            : 'Official Campus Email'
+                        : (authMode === 'teammate'
+                            ? 'Teammate Email (College or @lumixora.com)'
+                            : (authMode === 'intern' 
+                                ? 'Intern ID (e.g. LMX-B01-XXXX) or Registered Email' 
+                                : 'Official Campus Email'
+                              )
                           )
                       }
                     </span>
@@ -1921,7 +1988,17 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       className="w-full bg-transparent px-3 py-3 text-sm text-slate-900 placeholder:text-slate-400 font-mono outline-none"
-                      placeholder={authMode === 'intern' ? 'LMX-B01-4783 or registered email' : `rollnumber@${selectedCollege?.domains?.[0] || 'gprec.ac.in'}`}
+                      placeholder={
+                        authMode === 'founder'
+                          ? 'founder@lumixora.com'
+                          : (authMode === 'teammate'
+                              ? 'e.g. 249xa33112@gprec.ac.in or akhil@lumixora.com'
+                              : (authMode === 'intern'
+                                  ? 'LMX-B01-4783 or registered email'
+                                  : `rollnumber@${selectedCollege?.domains?.[0] || 'gprec.ac.in'}`
+                                )
+                            )
+                      }
                     />
                   </div>
 
@@ -2066,13 +2143,7 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
                     </span>
                   ) : (
                     <>
-                      <span className="tracking-wide">
-                        {authMode === 'founder'
-                          ? 'Sign In to Executive Console'
-                          : (isLogin 
-                              ? 'Sign In to Workspace' 
-                              : (isExemptFromPayment(email) ? 'Create Verified Account (Approved)' : 'Pay ₹10 & Create Verified Account'))}
-                      </span>
+                      <span className="tracking-wide">{getSubmitButtonLabel()}</span>
                       <span className="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
                         <ArrowRight className="w-4 h-4 text-white" />
                       </span>
