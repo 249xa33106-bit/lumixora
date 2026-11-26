@@ -42,6 +42,11 @@ const QUICK_FEATURES = [
 ];
 
 export default function MainLayout({ children, activeTab, setActiveTab, user, onUpdateUser, onLogout, onExitApp }) {
+  const isIntern = user?.role === 'intern' || 
+                   user?.isIntern || 
+                   Boolean(user?.internRoleId) || 
+                   (user?.email || '').toLowerCase().includes('intern') ||
+                   activeTab === 'intern-portal';
   const { addToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
@@ -1445,47 +1450,49 @@ export default function MainLayout({ children, activeTab, setActiveTab, user, on
       </div>
 
                   {/* Mobile App Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0b0b14]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 flex justify-around items-center text-white shadow-2xl">
-        <button
-          onClick={() => setActiveTab(user?.role === 'founder' ? 'founder-portal' : 'dashboard')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'dashboard' || activeTab === 'founder-portal' ? 'text-brand-pink' : 'text-gray-400'}`}
-        >
-          <Home className="w-4 h-4" />
-          <span>Home</span>
-        </button>
+      {!isIntern && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0b0b14]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 flex justify-around items-center text-white shadow-2xl">
+          <button
+            onClick={() => setActiveTab(user?.role === 'founder' ? 'founder-portal' : 'dashboard')}
+            className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'dashboard' || activeTab === 'founder-portal' ? 'text-brand-pink' : 'text-gray-400'}`}
+          >
+            <Home className="w-4 h-4" />
+            <span>Home</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('coding-practice')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'coding-practice' || activeTab === 'code-editor' ? 'text-brand-teal' : 'text-gray-400'}`}
-        >
-          <Code className="w-4 h-4" />
-          <span>Arena</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('coding-practice')}
+            className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'coding-practice' || activeTab === 'code-editor' ? 'text-brand-teal' : 'text-gray-400'}`}
+          >
+            <Code className="w-4 h-4" />
+            <span>Arena</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('clubs')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'clubs' ? 'text-brand-purple' : 'text-gray-400'}`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Clubs</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('clubs')}
+            className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'clubs' ? 'text-brand-purple' : 'text-gray-400'}`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Clubs</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('ai-commander')}
-          className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'ai-commander' ? 'text-brand-pink' : 'text-gray-400'}`}
-        >
-          <Briefcase className="w-4 h-4" />
-          <span>Placement</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('ai-commander')}
+            className={`flex flex-col items-center gap-0.5 text-[9px] font-bold cursor-pointer ${activeTab === 'ai-commander' ? 'text-brand-pink' : 'text-gray-400'}`}
+          >
+            <Briefcase className="w-4 h-4" />
+            <span>Placement</span>
+          </button>
 
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[9px] font-bold text-gray-400 cursor-pointer"
-        >
-          <Menu className="w-4 h-4" />
-          <span>Menu</span>
-        </button>
-      </div>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex flex-col items-center gap-0.5 text-[9px] font-bold text-gray-400 cursor-pointer"
+          >
+            <Menu className="w-4 h-4" />
+            <span>Menu</span>
+          </button>
+        </div>
+      )}
 
 {/* Scholar Profile & Verified Progress Center Modal */}
       {showProfileModal && (

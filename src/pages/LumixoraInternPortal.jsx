@@ -6,7 +6,7 @@ import {
   AlertCircle, Lock, ChevronRight, Video, Download, RefreshCw,
   LogOut, Filter, Search, Layers, Zap, BookOpen, MessageSquare,
   ThumbsUp, CheckSquare, Eye, Briefcase, GraduationCap, Share2, Printer,
-  ShieldCheck, CheckCheck, Mail
+  ShieldCheck, CheckCheck, Mail, Compass, Lightbulb, TrendingUp
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import realInternsData from '../data/realInternsBatch01.json';
@@ -15,6 +15,18 @@ import CertificateRenderer, { CERTIFICATE_STYLES } from '../components/Certifica
 import EvaluatorReviewDrawer from '../components/EvaluatorReviewDrawer';
 import { notifyFounder, notifyFounderInternLogin, sendInternPasscodeEmail } from '../services/founderNotificationService';
 import { isFounderEmail } from '../utils/authSecurity';
+
+// ── Nexus Modular Workplace Components ──
+import NexusMissionControl from '../components/internPortal/NexusMissionControl';
+import NexusMissionBoard from '../components/internPortal/NexusMissionBoard';
+import NexusDepartmentWorkspace from '../components/internPortal/NexusDepartmentWorkspace';
+import NexusSubmissionStudio from '../components/internPortal/NexusSubmissionStudio';
+import NexusMeetingsAndPolls from '../components/internPortal/NexusMeetingsAndPolls';
+import NexusPerformanceAnalytics from '../components/internPortal/NexusPerformanceAnalytics';
+import NexusInternPassport from '../components/internPortal/NexusInternPassport';
+import NexusAiMentor from '../components/internPortal/NexusAiMentor';
+import NexusInnovationArena from '../components/internPortal/NexusInnovationArena';
+import NexusResourceHub from '../components/internPortal/NexusResourceHub';
 
 // ── The 4 Real Official Intern Roles & Specifications (20 Selected Batch 01 Interns) ──
 // ── Suggested Curricular Templates for Founder to Import On-Demand ──
@@ -486,8 +498,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const [sendingPasscode, setSendingPasscode] = useState(false);
   const [passcodeSuccess, setPasscodeSuccess] = useState('');
 
-  // Active Workspace Tab
-  const [activeTab, setInternActiveTab] = useState('roadmap'); // 'roadmap' | 'submit' | 'standup' | 'cohort' | 'certificate'
+  // Active Workspace Tab (Nexus Mission Control as default)
+  const [activeTab, setInternActiveTab] = useState('mission_control');
   const [selectedRosterFilter, setSelectedRosterFilter] = useState('all');
   const [viewingRoleId, setViewingRoleId] = useState(null);
 
@@ -1499,8 +1511,23 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       {/* ── STICKY COMMAND HEADER ── */}
       <header className="sticky top-0 z-30 w-full bg-[#090c15]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 sm:p-4 shadow-2xl flex flex-wrap items-center justify-between gap-3">
         
-        {/* Left: Active Intern Profile Badge */}
+        {/* Left: Branding & Active Intern Profile Badge */}
         <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5 pr-3 border-r border-white/10">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-purple-600 flex items-center justify-center font-black text-white text-xs shadow-lg shadow-cyan-500/20">
+              LX
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black tracking-wider text-white">LUMIXORA NEXUS</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                  STARTUP OS
+                </span>
+              </div>
+              <p className="text-[9px] text-slate-400 font-medium">A Product of Vyomra • Where talent becomes impact</p>
+            </div>
+          </div>
+
           <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${activeRole.gradient} flex items-center justify-center text-white font-black text-sm shadow-lg shadow-cyan-400/20`}>
             {session.name.substring(0, 2).toUpperCase()}
           </div>
@@ -1637,33 +1664,142 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         </div>
       </div>
 
-      {/* ── WORKSPACE TABS BAR ── */}
+      {/* ── NEXUS HORIZONTAL NAVIGATION TRAY (Apple Precision, Zero Sidebar) ── */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar border-b border-white/10 text-xs">
         {[
-          { id: 'roadmap', label: 'Weekly Tasks & Curriculum', icon: Layers },
-          { id: 'submit', label: '+ Submit Work (PDF / Drive / GitHub)', icon: Send },
-          { id: 'standup', label: 'Daily 60s Check-in', icon: Clock },
-          { id: 'cohort', label: 'All 48 Cohort Interns', icon: Users },
-          { id: 'certificate', label: 'Official Completion Certificate', icon: Award }
+          { id: 'mission_control', label: 'Mission Control', icon: Compass },
+          { id: 'weekly_missions', label: 'Weekly Missions', icon: Layers },
+          { id: 'department_workspace', label: 'Department Suite', icon: Users },
+          { id: 'submission_studio', label: 'Submission Studio', icon: Send },
+          { id: 'meetings', label: 'Meetings & Polls', icon: Calendar },
+          { id: 'performance', label: 'Performance', icon: TrendingUp },
+          { id: 'passport', label: 'Passport & DNA', icon: ShieldCheck },
+          { id: 'innovation', label: 'Innovation Arena', icon: Lightbulb },
+          { id: 'ai_mentor', label: 'AI Mentor', icon: Sparkles },
+          { id: 'resources', label: 'Resource Hub', icon: BookOpen },
+          { id: 'standup', label: 'Daily Standup', icon: Clock },
+          { id: 'cohort', label: 'Batch 01 Cohort', icon: Users },
+          { id: 'certificate', label: 'Certificates & LOR', icon: Award }
         ].map(tab => {
           const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+          const isActive = activeTab === tab.id || (tab.id === 'weekly_missions' && activeTab === 'roadmap') || (tab.id === 'submission_studio' && activeTab === 'submit');
           return (
             <button
               key={tab.id}
               onClick={() => setInternActiveTab(tab.id)}
-              className={`px-3.5 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              className={`px-3 py-2 rounded-xl font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
                 isActive
-                  ? 'bg-white/15 text-white border border-white/20 shadow-md'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-cyan-500/20 via-blue-500/15 to-purple-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-gray-400'}`} />
-              <span>{tab.label}</span>
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+              <span className="whitespace-nowrap">{tab.label}</span>
             </button>
           );
         })}
       </div>
+
+      {/* ── 1. MISSION CONTROL VIEW ── */}
+      {activeTab === 'mission_control' && (
+        <NexusMissionControl
+          session={session}
+          activeRole={activeRole}
+          onNavigateTab={setInternActiveTab}
+          allottedTasks={roleAllottedTasks}
+          submissions={submissions}
+        />
+      )}
+
+      {/* ── 2. WEEKLY MISSIONS (TASK SELECTION SYSTEM) ── */}
+      {activeTab === 'weekly_missions' && (
+        <NexusMissionBoard
+          session={session}
+          activeRole={activeRole}
+          onNavigateTab={setInternActiveTab}
+          allottedTasks={roleAllottedTasks}
+          submissions={submissions}
+          onOpenSubmitModal={(task) => {
+            setSelectedDeliverableId(task?.id || '');
+            setInternActiveTab('submission_studio');
+          }}
+        />
+      )}
+
+      {/* ── 3. DEPARTMENT-SPECIFIC WORKSPACE ── */}
+      {activeTab === 'department_workspace' && (
+        <NexusDepartmentWorkspace
+          session={session}
+          activeRole={activeRole}
+          onNavigateTab={setInternActiveTab}
+        />
+      )}
+
+      {/* ── 4. SUBMISSION STUDIO ── */}
+      {activeTab === 'submission_studio' && (
+        <NexusSubmissionStudio
+          session={session}
+          activeRole={activeRole}
+          onNavigateTab={setInternActiveTab}
+          allottedTasks={roleAllottedTasks}
+          submissions={submissions}
+          onSaveSubmission={(newSub) => {
+            setSubmissions(prev => [newSub, ...prev]);
+            try {
+              const key = `lumixora_intern_submissions_${session?.id}`;
+              localStorage.setItem(key, JSON.stringify([newSub, ...submissions]));
+            } catch (_) {}
+          }}
+        />
+      )}
+
+      {/* ── 5. MEETINGS & ORIENTATION POLLS ── */}
+      {activeTab === 'meetings' && (
+        <NexusMeetingsAndPolls
+          session={session}
+          activeRole={activeRole}
+          onNavigateTab={setInternActiveTab}
+        />
+      )}
+
+      {/* ── 6. PERFORMANCE ANALYTICS ── */}
+      {activeTab === 'performance' && (
+        <NexusPerformanceAnalytics
+          session={session}
+          activeRole={activeRole}
+          submissions={submissions}
+        />
+      )}
+
+      {/* ── 7. INTERN PASSPORT & IMPACT DNA ── */}
+      {activeTab === 'passport' && (
+        <NexusInternPassport
+          session={session}
+          activeRole={activeRole}
+          submissions={submissions}
+        />
+      )}
+
+      {/* ── 8. INNOVATION ARENA ── */}
+      {activeTab === 'innovation' && (
+        <NexusInnovationArena
+          session={session}
+          activeRole={activeRole}
+        />
+      )}
+
+      {/* ── 9. AI INTERNSHIP MENTOR ── */}
+      {activeTab === 'ai_mentor' && (
+        <NexusAiMentor
+          session={session}
+          activeRole={activeRole}
+        />
+      )}
+
+      {/* ── 10. RESOURCE HUB ── */}
+      {activeTab === 'resources' && (
+        <NexusResourceHub />
+      )}
 
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {/* VIEW 1: MY SPRINT ROADMAP & DELIVERABLES                                      */}

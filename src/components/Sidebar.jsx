@@ -61,7 +61,12 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
                      userEmail.endsWith('@lumixora.com') || 
                      isFounder;
   const isFaculty = user?.role === 'faculty' || user?.role === 'mentor' || isFounder;
-  const isIntern = user?.role === 'intern' || userEmail.includes('intern');
+  const isIntern = user?.role === 'intern' || 
+                   user?.isIntern || 
+                   Boolean(user?.internRoleId) || 
+                   userEmail.includes('intern') || 
+                   activeTab === 'intern-portal' ||
+                   (typeof window !== 'undefined' && Boolean(localStorage.getItem('lumixora_intern_active_session') || sessionStorage.getItem('lumixora_intern_active_session')));
 
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
   const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
@@ -187,8 +192,18 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
     }
   ];
 
-  const menuSections = isTpo ? tpoSections : isGprecSubdomain ? gprecSections : [
-    ...(isFounder || isFaculty || isTeammate || isIntern ? [{
+  const internSections = [
+    {
+      key: 'intern_workspace',
+      title: '⚡ Lumixora Intern Suite',
+      items: [
+        { id: 'intern-portal', label: 'Intern Portal (Batch 01)', icon: Award, badge: 'ACTIVE 🚀' },
+      ]
+    }
+  ];
+
+  const menuSections = isTpo ? tpoSections : isGprecSubdomain ? gprecSections : isIntern ? internSections : [
+    ...(isFounder || isFaculty || isTeammate ? [{
       key: 'admin',
       title: '🛡️ Command & Ops',
       items: [
@@ -371,7 +386,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         </div>
 
         {/* ─── 4 Workspace Mode Segmented Control (Academics / Career / Campus / More / All) ─── */}
-        {!isGprecSubdomain && !isTpo && (
+        {!isGprecSubdomain && !isTpo && !isIntern && (
           <div className="px-3 pt-2.5 pb-1 bg-black/20 border-b border-white/5 space-y-1.5">
             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-gray-400 px-1">
               <span>Workspaces</span>
@@ -434,7 +449,7 @@ export default function Sidebar({ activeTab, setActiveTab, user, isOpen, onClose
         <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
 
           {/* ─── 📌 Pinned Favorites / Quick Access Tray ─── */}
-          {!menuSearchQuery && pinnedPortals.length > 0 && (
+          {!menuSearchQuery && !isIntern && pinnedPortals.length > 0 && (
             <div className="space-y-1.5 pb-2 border-b border-white/10">
               <div className="flex items-center justify-between px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-amber-400/90 select-none">
                 <span className="flex items-center gap-1.5">
