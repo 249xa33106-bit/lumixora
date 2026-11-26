@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Terminal, Activity, ShieldCheck, Cpu, Volume2, 
   CheckCircle2, Play, Code2, Award, Zap, Radio, Globe, 
-  Lock, ArrowRight, Layers, Flame, Target, ChevronRight
+  Lock, ArrowRight, Layers, Flame, Target, ChevronRight,
+  Headphones, Mic, RotateCcw
 } from 'lucide-react';
 
 /* ─── WEB AUDIO FEEDBACK HELPER ─── */
@@ -24,6 +25,46 @@ const playHologramClick = (freq = 720) => {
   } catch (e) {}
 };
 
+/* ─── BOLOCLASS SOCRATIC SCENARIOS ─── */
+const BOLO_SCENARIOS = [
+  {
+    id: 'dsa',
+    tag: 'DSA & System Logic',
+    icon: '🧩',
+    title: 'Quicksort Degradation',
+    mentorPrompt: 'Why does choosing the first element as pivot degrade Quicksort to O(n²) on sorted arrays, and how does median-of-three eliminate this trap?',
+    studentSpeech: 'On sorted arrays, an unbalanced pivot yields one empty sub-array and one of size n-1, creating O(n) recursion depth. Median-of-three guarantees balanced partitions and preserves O(n log n) expected performance.',
+    metrics: { accuracy: '96%', cadence: '142 WPM (Optimal)', tone: 'High Precision', score: 'Tier-1 Ready' }
+  },
+  {
+    id: 'sysdesign',
+    tag: 'System Design & Scalability',
+    icon: '🌐',
+    title: 'CAP Split-Brain Invariants',
+    mentorPrompt: 'When cross-region network partitions occur during banking settlement, why must we strictly sacrifice Availability for Consistency to prevent double-spending?',
+    studentSpeech: 'Financial ledgers require linearizable consistency. If both partitions accept mutations without consensus, divergence causes irrecoverable double debits. Restricting minority writes preserves system integrity.',
+    metrics: { accuracy: '98%', cadence: '138 WPM (Optimal)', tone: 'Staff+ Authority', score: 'Top 1% Verdict' }
+  },
+  {
+    id: 'hr',
+    tag: 'STAR Placement Behavioral',
+    icon: '💼',
+    title: 'High-Stakes Production Incident',
+    mentorPrompt: 'Describe a moment when production staging failed minutes before a recruiter demo. How did you coordinate resolution without blaming teammates?',
+    studentSpeech: 'I isolated the breaking commit using git bisect, initiated an automated rollback to restore customer uptime, and paired with the author to patch the race condition within 20 minutes with zero downtime.',
+    metrics: { accuracy: '95%', cadence: '134 WPM (Crisp)', tone: 'Executive Maturity', score: 'Placement Ready' }
+  },
+  {
+    id: 'ai',
+    tag: 'AI Architecture & Deep Learning',
+    icon: '🤖',
+    title: 'Self-Attention vs RNN Gradients',
+    mentorPrompt: 'Why did transformer self-attention mechanisms fundamentally replace recurrent models for long-range token dependencies in natural language?',
+    studentSpeech: 'Recurrence forces backpropagation through time across sequential chain links, causing exponential gradient decay. Multi-head self-attention provides direct O(1) paths between any two positions in the context window.',
+    metrics: { accuracy: '97%', cadence: '140 WPM (Optimal)', tone: 'Research Rigor', score: 'AI Specialist' }
+  }
+];
+
 export default function HolographicGlassCockpit({ onActionClick }) {
   const containerRef = useRef(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
@@ -32,6 +73,67 @@ export default function HolographicGlassCockpit({ onActionClick }) {
   const [testRunSuccess, setTestRunSuccess] = useState(false);
   const [isSimulatingAudio, setIsSimulatingAudio] = useState(false);
   const [hoveredRole, setHoveredRole] = useState(null);
+  const [activeBoloScenario, setActiveBoloScenario] = useState(0);
+  const [boloSimStage, setBoloSimStage] = useState('idle'); // 'idle' | 'mentor' | 'student' | 'evaluated'
+  const [audioOscPhase, setAudioOscPhase] = useState(0);
+
+  // Dynamic audio spectrum oscillation loop
+  useEffect(() => {
+    let animId;
+    if (isSimulatingAudio || boloSimStage !== 'idle') {
+      const step = () => {
+        setAudioOscPhase((prev) => (prev + 0.16) % (Math.PI * 2));
+        animId = requestAnimationFrame(step);
+      };
+      animId = requestAnimationFrame(step);
+    }
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [isSimulatingAudio, boloSimStage]);
+
+  // Voice synthesis & Socratic drill trigger
+  const handleStartSocraticVoiceDrill = () => {
+    playHologramClick(680);
+    const scenario = BOLO_SCENARIOS[activeBoloScenario];
+    setBoloSimStage('mentor');
+    setIsSimulatingAudio(true);
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(scenario.mentorPrompt);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.02;
+
+      utterance.onend = () => {
+        setBoloSimStage('student');
+        setTimeout(() => {
+          setBoloSimStage('evaluated');
+          setIsSimulatingAudio(false);
+        }, 2400);
+      };
+
+      utterance.onerror = () => {
+        setTimeout(() => {
+          setBoloSimStage('student');
+          setTimeout(() => {
+            setBoloSimStage('evaluated');
+            setIsSimulatingAudio(false);
+          }, 2000);
+        }, 2200);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setTimeout(() => {
+        setBoloSimStage('student');
+        setTimeout(() => {
+          setBoloSimStage('evaluated');
+          setIsSimulatingAudio(false);
+        }, 2000);
+      }, 2400);
+    }
+  };
 
   // 3D Parallax Mouse Physics
   const handleMouseMove = (e) => {
@@ -296,60 +398,226 @@ export default function HolographicGlassCockpit({ onActionClick }) {
           )}
 
           {/* TAB 2: BOLOCLASS INTERACTIVE AUDIO */}
-          {activeTab === 'boloclass' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center animate-fadeIn">
-              <div className="lg:col-span-7 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7553E8]/20 border border-[#7553E8]/40 text-[11px] font-bold text-[#7553E8] uppercase tracking-wider">
-                  <Volume2 className="w-3 h-3 text-[#7553E8]" />
-                  Interactive Voice-First Classroom
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  BoloClass — Learn by Speaking
-                </h3>
-                <p className="text-sm text-gray-300 leading-relaxed font-normal">
-                  Stop passively watching hours of boring videos. In BoloClass, you debate concepts out loud, answer live Socratic questions, and get evaluated by AI voice mentors in real time.
-                </p>
+          {activeTab === 'boloclass' && (() => {
+            const currentScenario = BOLO_SCENARIOS[activeBoloScenario];
+            const spectrumBars = [
+              22, 38, 55, 78, 92, 64, 45, 82, 100, 88, 70, 95, 
+              75, 48, 86, 94, 62, 40, 72, 85, 96, 68, 50, 32
+            ].map((base, idx) => {
+              if (isSimulatingAudio || boloSimStage !== 'idle') {
+                const wave = Math.sin(audioOscPhase + idx * 0.45);
+                return Math.min(100, Math.max(18, Math.round(base * 0.5 + (wave + 1) * 28)));
+              }
+              return Math.max(base * 0.35, 14);
+            });
 
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={handlePulseAudio}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-[#7553E8]/25 hover:scale-105 transition-all cursor-pointer"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    {isSimulatingAudio ? 'Audio Stream Pulsing...' : 'Test Voice Waveform'}
-                  </button>
-                  <span className="text-xs text-gray-400 font-mono">
-                    Ultra-Low Latency WebRTC
-                  </span>
-                </div>
-              </div>
+            const oscilloscopePath = Array.from({ length: 30 }, (_, i) => {
+              const x = (i / 29) * 300;
+              const wave = Math.sin(audioOscPhase * 2 + (i / 29) * Math.PI * 4);
+              const amp = isSimulatingAudio || boloSimStage !== 'idle' ? 24 : 6;
+              const y = 60 + wave * amp;
+              return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+            }).join(' ');
 
-              {/* Right: Audio Waveform Visualizer */}
-              <div className="lg:col-span-5 p-6 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col items-center justify-center">
-                <div className="w-full flex items-end justify-center gap-1.5 h-28 px-4 bg-black/40 rounded-xl border border-white/5">
-                  {[24, 48, 70, 95, 60, 35, 80, 100, 75, 45, 90, 65, 30, 85, 40].map((h, i) => (
-                    <div
-                      key={i}
-                      className={`w-2 rounded-t-full transition-all duration-200 ${
-                        isSimulatingAudio 
-                          ? 'bg-gradient-to-t from-[#7553E8] to-[#08BFD0] animate-pulse' 
-                          : 'bg-white/20'
-                      }`}
-                      style={{ 
-                        height: isSimulatingAudio ? `${Math.min(h * 1.1, 100)}%` : `${Math.max(h * 0.35, 12)}%` 
+            return (
+              <div className="space-y-4 animate-fadeIn">
+                {/* Header & Socratic Studio Status */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1 border-b border-white/10">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7553E8]/20 border border-[#7553E8]/40 text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1.5">
+                      <Volume2 className="w-3.5 h-3.5 text-[#08BFD0]" />
+                      Interactive Voice-First Socratic Crucible
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                      <span>BoloClass — Learn by Speaking & Debating</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#00B987]/20 border border-[#00B987]/40 text-[#00B987] font-mono font-bold">WEBRTC HD</span>
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => onActionClick && onActionClick('boloclass')}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] hover:from-[#6543D8] hover:to-[#07AEC0] text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-[#7553E8]/30 transition-all cursor-pointer"
+                    >
+                      <span>Explore Live inside Lumixora</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Socratic Scenario Switcher */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {BOLO_SCENARIOS.map((sc, idx) => (
+                    <button
+                      key={sc.id}
+                      onClick={() => {
+                        playHologramClick(640 + idx * 70);
+                        setActiveBoloScenario(idx);
+                        setBoloSimStage('idle');
                       }}
-                    />
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                        activeBoloScenario === idx
+                          ? 'bg-gradient-to-r from-[#7553E8]/30 to-[#08BFD0]/20 border-[#08BFD0]/60 shadow-md shadow-[#7553E8]/25 text-white'
+                          : 'bg-white/[0.03] border-white/10 hover:border-white/20 text-gray-400 hover:text-gray-200'
+                      }`}
+                    >
+                      <span className="text-base">{sc.icon}</span>
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold truncate text-white">{sc.title}</div>
+                        <div className="text-[9px] text-gray-400 truncate">{sc.tag}</div>
+                      </div>
+                    </button>
                   ))}
                 </div>
-                <div className="mt-3 flex items-center justify-between w-full text-xs font-mono text-gray-400">
-                  <span className="flex items-center gap-1 text-[#00B987]">
-                    <Radio className="w-3 h-3" /> Voice Synthesizer Ready
-                  </span>
-                  <span>Noise Gate: -42dB</span>
+
+                {/* Socratic Dialogue & Real-Time Waveform Arena */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                  {/* Left (7 cols): Socratic Dialogue & Real-Time Rubric */}
+                  <div className="lg:col-span-7 p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 flex flex-col justify-between space-y-3.5">
+                    {/* AI Mentor Prompt */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="flex items-center gap-1.5 font-bold text-[#08BFD0]">
+                          <Headphones className="w-3.5 h-3.5" />
+                          Dr. Sophia • Socratic AI Voice Mentor
+                        </span>
+                        <span className="text-[10px] font-mono text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/30">
+                          {currentScenario.tag}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/20 text-xs text-purple-100 font-medium leading-relaxed italic">
+                        "{currentScenario.mentorPrompt}"
+                      </div>
+                    </div>
+
+                    {/* Student Spoken Hypothesis */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="flex items-center gap-1.5 font-bold text-emerald-400">
+                          <Mic className="w-3.5 h-3.5" />
+                          Candidate Voice Formulation (Transcribed Live)
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-300">
+                          Accuracy: {currentScenario.metrics.accuracy}
+                        </span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-100 font-normal leading-relaxed">
+                        "{currentScenario.studentSpeech}"
+                      </div>
+                    </div>
+
+                    {/* Live Rubric Score Strip */}
+                    <div className="grid grid-cols-4 gap-2 pt-1 border-t border-white/10 text-center">
+                      <div className="p-1.5 rounded-lg bg-white/[0.04]">
+                        <div className="text-[9px] text-gray-400 uppercase font-bold">Accuracy</div>
+                        <div className="text-xs font-black text-emerald-400">{currentScenario.metrics.accuracy}</div>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-white/[0.04]">
+                        <div className="text-[9px] text-gray-400 uppercase font-bold">Cadence</div>
+                        <div className="text-xs font-black text-cyan-300">{currentScenario.metrics.cadence}</div>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-white/[0.04]">
+                        <div className="text-[9px] text-gray-400 uppercase font-bold">Tone</div>
+                        <div className="text-xs font-black text-purple-300">{currentScenario.metrics.tone}</div>
+                      </div>
+                      <div className="p-1.5 rounded-lg bg-white/[0.04]">
+                        <div className="text-[9px] text-gray-400 uppercase font-bold">Verdict</div>
+                        <div className="text-xs font-black text-amber-300">{currentScenario.metrics.score}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right (5 cols): Oscilloscope & Dynamic Spectrum Visualizer */}
+                  <div className="lg:col-span-5 p-4 sm:p-5 rounded-2xl bg-black/60 border border-white/10 flex flex-col justify-between space-y-3">
+                    <div className="flex items-center justify-between text-xs font-mono text-gray-400">
+                      <span className="flex items-center gap-1.5 text-[#00B987] font-bold">
+                        <Radio className="w-3.5 h-3.5 animate-pulse" />
+                        {boloSimStage === 'mentor' ? 'AI Voice Speaking...' : boloSimStage === 'student' ? 'Transcribing Response...' : boloSimStage === 'evaluated' ? 'Socratic Evaluated' : 'Voice Synthesizer Ready'}
+                      </span>
+                      <span className="text-[10px] text-gray-400">Noise Gate: -44dB</span>
+                    </div>
+
+                    {/* Frequency Spectrum Bar & Oscilloscope Display */}
+                    <div className="relative w-full h-32 px-3 pt-3 pb-2 bg-[#060a12] rounded-xl border border-white/10 overflow-hidden flex flex-col justify-end">
+                      {/* Glowing Sine Wave Oscilloscope Overlay */}
+                      <div className="absolute inset-0 pointer-events-none opacity-40">
+                        <svg className="w-full h-full" viewBox="0 0 300 120" preserveAspectRatio="none">
+                          <path
+                            d={oscilloscopePath}
+                            fill="none"
+                            stroke="url(#cockpitWaveGrad)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                          <defs>
+                            <linearGradient id="cockpitWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#7553E8" />
+                              <stop offset="50%" stopColor="#08BFD0" />
+                              <stop offset="100%" stopColor="#00B987" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                      </div>
+
+                      {/* 24 Dynamic Spectrum Bars with Glowing Peaks */}
+                      <div className="relative z-10 w-full flex items-end justify-between gap-1 h-24">
+                        {spectrumBars.map((heightPct, idx) => (
+                          <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
+                            {/* Peak Dot */}
+                            <div
+                              className="w-full h-0.5 rounded-full mb-0.5 bg-cyan-200 transition-all duration-150 shadow-[0_0_6px_#08BFD0]"
+                              style={{
+                                opacity: isSimulatingAudio || boloSimStage !== 'idle' ? 0.9 : 0.3
+                              }}
+                            />
+                            {/* Bar */}
+                            <div
+                              className={`w-full rounded-t-sm transition-all duration-150 ${
+                                isSimulatingAudio || boloSimStage !== 'idle'
+                                  ? 'bg-gradient-to-t from-[#7553E8] via-[#08BFD0] to-[#00B987]'
+                                  : 'bg-white/15'
+                              }`}
+                              style={{
+                                height: `${heightPct}%`
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Telemetry Footnote */}
+                    <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 pt-1">
+                      <span>Latency: 18ms WebRTC</span>
+                      <span className="text-[#08BFD0]">Cadence: 138 WPM</span>
+                      <span className="text-emerald-400">Zero-Config Browser</span>
+                    </div>
+
+                    {/* Interactive Control Buttons */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={handleStartSocraticVoiceDrill}
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#7553E8] to-[#08BFD0] hover:from-[#6543D8] hover:to-[#07AEC0] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#7553E8]/30 transition-all cursor-pointer"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>{boloSimStage === 'mentor' ? 'Dr. Sophia Speaking...' : boloSimStage === 'student' ? 'Evaluating Voice...' : 'Test Socratic Voice Debate'}</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          playHologramClick(440);
+                          handlePulseAudio();
+                        }}
+                        title="Pulse Audio Waveform"
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* TAB 3: CODE ARENA */}
           {activeTab === 'code' && (

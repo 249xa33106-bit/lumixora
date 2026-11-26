@@ -37,7 +37,8 @@ import {
   formatTimeAgo, 
   formatDuration, 
   deriveUserRoleMeta,
-  deleteLoginLog
+  deleteLoginLog,
+  isGprecUserEntity
 } from '../services/userActivityLogService';
 import { 
   getGprecScholarRoster, 
@@ -65,6 +66,7 @@ export default function FounderLoginAuditManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPortal, setSelectedPortal] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all'); // 'all' | 'today' | '7days'
+  const [institutionFilter, setInstitutionFilter] = useState('all'); // 'all' | 'gprec' | 'other'
 
   // Scholar Roster & Access Management State
   const [roster, setRoster] = useState([]);
@@ -285,7 +287,7 @@ export default function FounderLoginAuditManager() {
   const loadLogs = async (showToast = false) => {
     setIsRefreshing(true);
     try {
-      const data = await fetchAllLoginLogs();
+      const data = await fetchAllLoginLogs({ gprecOnly: false });
       setLogs(data);
       // Also refresh and sync scholars roster
       await syncCustomRollsFromCloud();
@@ -526,6 +528,10 @@ export default function FounderLoginAuditManager() {
   // Filtered logs computation
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
+      // 0. Institution Scope Filter
+      if (institutionFilter === 'gprec' && !isGprecUserEntity(log)) return false;
+      if (institutionFilter === 'other' && isGprecUserEntity(log)) return false;
+
       // 1. Category Tab Filter
       if (activeCategory === 'student' && log.role !== 'student') return false;
       if (activeCategory === 'tpo' && log.role !== 'tpo') return false;
@@ -548,20 +554,21 @@ export default function FounderLoginAuditManager() {
         if (log.loginTimestamp < sevenDaysAgo) return false;
       }
 
-      // 4. Search Filter (Name, Email, Roll Number, Department)
+      // 4. Search Filter (Name, Email, Roll Number, Department, College, Portal)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchName = log.name?.toLowerCase().includes(q);
         const matchEmail = log.email?.toLowerCase().includes(q);
         const matchRoll = log.rollNumber?.toLowerCase().includes(q);
         const matchDept = log.department?.toLowerCase().includes(q);
+        const matchCollege = log.college?.toLowerCase().includes(q);
         const matchPortal = log.portal?.toLowerCase().includes(q);
-        if (!matchName && !matchEmail && !matchRoll && !matchDept && !matchPortal) return false;
+        if (!matchName && !matchEmail && !matchRoll && !matchDept && !matchCollege && !matchPortal) return false;
       }
 
       return true;
     });
-  }, [logs, activeCategory, selectedPortal, timeFilter, searchQuery]);
+  }, [logs, activeCategory, selectedPortal, timeFilter, institutionFilter, searchQuery]);
 
   // Aggregate Metrics
   const metrics = useMemo(() => {
@@ -1025,8 +1032,18 @@ export default function FounderLoginAuditManager() {
           </button>
         </div>
 
-        {/* Portal Filter Dropdown */}
-        <div className="flex items-center gap-2">
+        {/* Portal & Institution Filter Dropdowns */}
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={institutionFilter}
+            onChange={(e) => setInstitutionFilter(e.target.value)}
+            className="px-3 py-1.5 rounded-xl bg-[#0B132B] border border-white/15 text-xs text-slate-200 focus:outline-none focus:border-[#C5A059]"
+          >
+            <option value="all">All Campuses & Lumixora</option>
+            <option value="gprec">GPREC Autonomous Only</option>
+            <option value="other">Other Campuses</option>
+          </select>
+
           <select
             value={selectedPortal}
             onChange={(e) => setSelectedPortal(e.target.value)}

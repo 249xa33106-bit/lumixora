@@ -31,6 +31,7 @@ const STORAGE_CURRENT_SESSION_KEY = 'lumixora_current_session_id';
 export const isGprecUserEntity = (entity = {}) => {
   if (!entity) return false;
   const email = (entity.email || '').toLowerCase().trim();
+  const college = (entity.college || entity.collegeCode || '').toLowerCase();
   const rollNumber = normalizeRollNumber(entity.rollNumber || entity.roll_no || (/\d{10}/.exec(email)?.[0] || ''));
 
   // 1. Explicit GPREC official placement coordinators
@@ -41,18 +42,15 @@ export const isGprecUserEntity = (entity = {}) => {
     return true;
   }
 
-  // 2. Allowed or whitelisted GPREC roll numbers ONLY
+  // 2. Any institutional email ending in @gprec.ac.in or college named GPREC
+  if (email.endsWith('@gprec.ac.in') || college.includes('gprec') || college.includes('pulla reddy')) {
+    return true;
+  }
+
+  // 3. Allowed or whitelisted GPREC roll numbers
   if (rollNumber) {
     const allowed = getAllowedGprecRollNumbers().map(normalizeRollNumber);
     if (allowed.includes(rollNumber) || allowed.some(r => rollNumber.includes(r))) {
-      return true;
-    }
-  }
-
-  // Check if email contains an allowed roll number
-  if (email.endsWith('@gprec.ac.in')) {
-    const allowed = getAllowedGprecRollNumbers().map(normalizeRollNumber);
-    if (allowed.some(r => email.includes(r))) {
       return true;
     }
   }
@@ -296,7 +294,7 @@ export const recordSessionHeartbeat = async (user) => {
  * Supports filtering strictly for institutional GPREC ecosystem when requested or on GPREC portals.
  */
 export const fetchAllLoginLogs = async (options = {}) => {
-  const { gprecOnly = true } = options;
+  const { gprecOnly = false } = options;
   const mergedMap = new Map();
 
   // 1. Load from local cache first for instant UI response
@@ -311,34 +309,41 @@ export const fetchAllLoginLogs = async (options = {}) => {
     });
   } catch (e) {}
 
-  // 2. Fetch from Firestore dedicated collection `gprec_placement_login_logs` if gprecOnly
+  // 2. Fetch from Firestore collections: 'user_login_logs' and 'gprec_placement_login_logs'
   if (db) {
-    try {
-      const collectionName = gprecOnly ? 'gprec_placement_login_logs' : 'user_login_logs';
-      const q = query(
-        collection(db, collectionName), 
-        orderBy('loginTimestamp', 'desc'), 
-        limit(200)
-      );
-      const snap = await getDocs(q);
-      snap.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!gprecOnly || isGprecUserEntity(data)) {
-          mergedMap.set(docSnap.id, {
-            id: docSnap.id,
-            ...data
-          });
-        }
-      });
-    } catch (err) {
-      // Graceful fallback to user_login_logs if empty
-      if (gprecOnly) {
+    const collectionsToQuery = gprecOnly 
+      ? ['gprec_placement_login_logs', 'user_login_logs'] 
+      : ['user_login_logs', 'gprec_placement_login_logs'];
+
+    for (const coll of collectionsToQuery) {
+      try {
+        const q = query(
+          collection(db, coll), 
+          orderBy('loginTimestamp', 'desc'), 
+          limit(200)
+        );
+        const snap = await getDocs(q);
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          if (!gprecOnly || isGprecUserEntity(data)) {
+            if (!mergedMap.has(docSnap.id)) {
+              mergedMap.set(docSnap.id, {
+                id: docSnap.id,
+                ...data
+              });
+            }
+          }
+        });
+      } catch (err) {
+        // Fallback without ordering if composite index is pending
         try {
-          const fallbackSnap = await getDocs(query(collection(db, 'user_login_logs'), limit(100)));
+          const fallbackSnap = await getDocs(query(collection(db, coll), limit(150)));
           fallbackSnap.forEach(docSnap => {
             const data = docSnap.data();
-            if (isGprecUserEntity(data)) {
-              mergedMap.set(docSnap.id, { id: docSnap.id, ...data });
+            if (!gprecOnly || isGprecUserEntity(data)) {
+              if (!mergedMap.has(docSnap.id)) {
+                mergedMap.set(docSnap.id, { id: docSnap.id, ...data });
+              }
             }
           });
         } catch (e) {}
@@ -346,43 +351,55 @@ export const fetchAllLoginLogs = async (options = {}) => {
     }
   }
 
-  // 3. Query dedicated isolated GPREC cloud session logs from Supabase
+  // 3. Query all cloud session & login logs from Supabase founder_notifications
   if (supabase) {
     try {
-      const targetType = gprecOnly ? 'gprec_isolated_session_log' : 'login';
+      const targetTypes = gprecOnly 
+        ? ['gprec_isolated_session_log', 'login'] 
+        : ['login', 'gprec_isolated_session_log', 'register'];
+
       const { data: supaLogins, error: supaErr } = await supabase
         .from('founder_notifications')
         .select('*')
-        .eq('type', targetType)
+        .in('type', targetTypes)
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(300);
 
       if (!supaErr && Array.isArray(supaLogins)) {
         supaLogins.forEach(item => {
           const m = item.meta || {};
           const id = `supa_iso_${item.id}`;
           if (!mergedMap.has(id)) {
-            const email = (m.email || '').toLowerCase().trim();
-            if (gprecOnly && !isGprecUserEntity(m)) {
+            const email = (m.email || item.email || '').toLowerCase().trim();
+            if (!email) return;
+
+            if (gprecOnly && !isGprecUserEntity({ ...m, email })) {
               return;
             }
 
             const timeVal = new Date(item.created_at).getTime();
-            const roleMeta = deriveUserRoleMeta(m);
-            const isVeryRecent = (Date.now() - timeVal) < 15 * 60 * 1000;
+            const roleMeta = deriveUserRoleMeta({ ...m, email, role: m.role || (email === 'founder@lumixora.com' ? 'founder' : undefined) });
+            const isVeryRecent = (Date.now() - timeVal) < 20 * 60 * 1000;
+            const extractedRoll = (m.rollNumber || (/\d{2,3}[a-zA-Z0-9]{7,8}/i.exec(email)?.[0] || /\d{10}/.exec(email)?.[0] || /\d{2,3}[a-zA-Z0-9]{7,8}/i.exec(item.title || '')?.[0] || '')).toUpperCase();
+            const cleanedTitleName = (item.title || '')
+              .replace(/Active Scholar Login:\s*/i, '')
+              .replace(/GPREC Scholar Session:\s*/i, '')
+              .replace(/New Scholar Enrolled:\s*/i, '')
+              .trim();
+            const finalName = cleanScholarName(m.name || cleanedTitleName, email);
 
             mergedMap.set(id, {
               id,
               userId: m.userId || m.appId || id,
-              name: cleanScholarName(m.name || item.title?.replace('GPREC Scholar Session: ', ''), email),
+              name: finalName,
               email,
               role: roleMeta.category,
               roleTitle: roleMeta.title,
               college: m.college || 'G. Pulla Reddy Engineering College (Autonomous)',
-              collegeCode: 'GPREC',
-              department: m.department || 'CSE',
-              rollNumber: m.rollNumber || (/\d{10}/.exec(email)?.[0] || ''),
-              portal: m.portal || 'Placement Suite',
+              collegeCode: (m.collegeCode || (email.endsWith('@gprec.ac.in') ? 'GPREC' : 'LUMIXORA')),
+              department: m.department || (email.includes('csm') ? 'CSM' : 'CSE'),
+              rollNumber: extractedRoll,
+              portal: m.portal || (item.type === 'gprec_isolated_session_log' ? 'Placement Suite' : 'Lumixora Core'),
               deviceType: m.deviceType || 'Desktop (Web Browser)',
               userAgent: m.userAgent || 'Web Browser',
               loginTimestamp: timeVal,
@@ -402,7 +419,73 @@ export const fetchAllLoginLogs = async (options = {}) => {
         });
       }
     } catch (err) {
-      console.warn('Supabase isolated login logs notice:', err);
+      console.warn('Supabase login logs notice:', err);
+    }
+
+    // 4. Also fetch recently active registered users from Supabase users table as complementary fallback
+    try {
+      const { data: recentUsers, error: uErr } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (!uErr && Array.isArray(recentUsers)) {
+        recentUsers.forEach(u => {
+          const email = (u.email || '').toLowerCase().trim();
+          if (!email) return;
+
+          let unpacked = {};
+          if (u.name && u.name.includes('{')) {
+            try {
+              unpacked = JSON.parse(u.name.substring(u.name.indexOf('{')));
+            } catch (e) {}
+          }
+
+          if (gprecOnly && !isGprecUserEntity({ ...unpacked, ...u, email })) {
+            return;
+          }
+
+          const existingLog = Array.from(mergedMap.values()).find(l => (l.email || '').toLowerCase() === email);
+          if (!existingLog) {
+            const timeVal = new Date(u.last_login || u.created_at || Date.now()).getTime();
+            const roleMeta = deriveUserRoleMeta({ ...unpacked, ...u, email });
+            const isVeryRecent = (Date.now() - timeVal) < 20 * 60 * 1000;
+            const extractedRoll = (u.roll_no || u.rollNumber || unpacked.rollNumber || (/\d{2,3}[a-zA-Z0-9]{7,8}/i.exec(email)?.[0] || /\d{10}/.exec(email)?.[0] || '')).toUpperCase();
+            const id = `user_entry_${u.id}`;
+
+            mergedMap.set(id, {
+              id,
+              userId: u.id,
+              name: cleanScholarName(unpacked.name || u.full_name || u.name, email),
+              email,
+              role: roleMeta.category,
+              roleTitle: roleMeta.title,
+              college: unpacked.college || u.college || 'G. Pulla Reddy Engineering College (Autonomous)',
+              collegeCode: (email.endsWith('@gprec.ac.in') ? 'GPREC' : 'LUMIXORA'),
+              department: unpacked.department || u.department || (email.includes('csm') ? 'CSM' : 'CSE'),
+              rollNumber: extractedRoll,
+              portal: 'Lumixora Core',
+              deviceType: 'Desktop (Web Browser)',
+              userAgent: 'Web Browser',
+              loginTimestamp: timeVal,
+              loginTimeFormatted: new Date(timeVal).toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              }),
+              lastActiveAt: timeVal,
+              durationSeconds: isVeryRecent ? Math.floor((Date.now() - timeVal) / 1000) : 1800,
+              status: isVeryRecent ? 'active' : 'completed'
+            });
+          }
+        });
+      }
+    } catch (uSyncErr) {
+      console.warn('Supabase users fallback notice:', uSyncErr);
     }
   }
 

@@ -31,7 +31,7 @@ import { cloudSync } from './services/cloudSyncService';
 const ReportBug = lazy(() => import('./pages/ReportBug'));
 const FounderPortal = lazy(() => import('./pages/FounderPortal'));
 import FounderLoginModal from './components/FounderLoginModal';
-import { recordSessionHeartbeat } from './services/userActivityLogService';
+import { recordSessionHeartbeat, recordUserLogin } from './services/userActivityLogService';
 const TestPortal = lazy(() => import('./pages/TestPortal'));
 const AttendancePortal = lazy(() => import('./pages/AttendancePortal'));
 const StudentOffersPortal = lazy(() => import('./pages/StudentOffersPortal'));
@@ -1261,9 +1261,20 @@ function App() {
       }).catch(() => {});
     }
 
+    // Telemetry: Record login event for Founder Login Audit Manager & active sessions
+    try {
+      const activePortal = isGprecPlacementSubdomain() ? 'Placement Suite' : (isCampusSubdomain() ? 'Campus Commander' : 'Lumixora Core');
+      recordUserLogin(finalizedUser, activePortal).catch(() => {});
+    } catch (_) {}
+
+    const isInternUser = finalizedUser?.role === 'intern' || finalizedUser?.isIntern || Boolean(finalizedUser?.internRoleId) || (finalizedUser?.email || '').toLowerCase().includes('intern');
+
     if (isF) {
       setActiveTab('founder-portal');
       window.location.hash = 'founder-portal';
+    } else if (isInternUser) {
+      setActiveTab('intern-portal');
+      window.location.hash = 'intern-portal';
     } else if (finalizedUser?.isOfficer || finalizedUser?.isDean || finalizedUser?.email === 'dean.placements@gprec.ac.in' || finalizedUser?.email === 'srikanth.csm@gprec.ac.in') {
       setActiveTab('tpo-dashboard');
       window.location.hash = 'tpo-dashboard';
@@ -2133,7 +2144,14 @@ function App() {
             {showTomAndJerryIntro && !isGprecPlacementSubdomain(user) && !isCampusSubdomain() && (
               <TomAndJerryIntro onClose={() => setShowTomAndJerryIntro(false)} onComplete={() => setShowTomAndJerryIntro(false)} />
             )}
-            {(user?.role === 'intern' || user?.isIntern) ? (
+            {(
+              user?.role === 'intern' || 
+              user?.isIntern || 
+              Boolean(user?.internRoleId) || 
+              (user?.email || '').toLowerCase().includes('intern') ||
+              ['intern-portal', 'interns', 'intern-workspace', 'intern-hub', 'intern-cohort'].includes(activeTab) ||
+              (typeof window !== 'undefined' && Boolean(localStorage.getItem('lumixora_intern_active_session') || sessionStorage.getItem('lumixora_intern_active_session')))
+            ) ? (
               <div className="min-h-screen bg-[#06080e] text-slate-100 p-2 md:p-6 space-y-4">
                 <div className="max-w-[1720px] mx-auto space-y-4">
                   <Suspense fallback={<PortalFallback />}>
@@ -2141,6 +2159,9 @@ function App() {
                       user={user} 
                       setActiveTab={handleTabChange} 
                       onLogout={handleLogout} 
+                      onBackHome={() => {
+                        handleTabChange('dashboard');
+                      }}
                     />
                   </Suspense>
                 </div>

@@ -20,6 +20,7 @@ import {
   isAnjum, isExemptFromPayment
 } from '../data/collegesData';
 import { notifyFounderLogin, notifyFounderRegister, recordFounderNotification, notifyFounderPayment, notifyFounderAmbassadorReferral } from '../services/founderNotificationService';
+import { recordUserLogin } from '../services/userActivityLogService';
 import { checkUserAccessStatus } from '../utils/authSecurity';
 import { validateInternLogin } from '../services/internDbService';
 import { internshipDb } from '../services/internshipDb';
@@ -232,9 +233,6 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     if (col.id === 'annamacharya' || col.code === 'AU' || col.code === 'AITS') {
       return '/images/campuses/campus_annama.jpg?v=2';
     }
-    if (col.id === 'bits' || col.code === 'BITS') {
-      return '/images/campuses/campus_bheema.jpg';
-    }
     if (col.id === 'svce' || col.code === 'SVCE') {
       return '/images/campuses/campus_svce.jpg';
     }
@@ -254,7 +252,6 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
       '/images/campuses/campus_gprec.jpg?v=2',
       '/images/campuses/campus_ashoka.jpg?v=2',
       '/images/campuses/campus_annama.jpg?v=2',
-      '/images/campuses/campus_bheema.jpg',
       '/images/campuses/campus_svce.jpg',
       '/images/campuses/campus_narayana.jpg',
       '/images/campuses/campus_rgukt.jpg',
@@ -332,9 +329,6 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     } else if (domain?.includes('annamacharya') || domain?.includes('aits')) {
       isInstitutional = true;
       detectedCollege = 'Annamacharya University';
-    } else if (domain?.includes('bits') || (selectedCollege && (selectedCollege.id === 'bits' || selectedCollege.code === 'BITS'))) {
-      isInstitutional = true;
-      detectedCollege = 'Bheema Institute Of Technology & Science';
     } else if (selectedCollege && selectedCollege.id !== 'gprec') {
       isInstitutional = true;
       detectedCollege = selectedCollege.name || selectedCollege.shortName;
@@ -396,6 +390,9 @@ export default function AuthPortal({ onLogin, mode = 'student', onBackHome }) {
     if (rememberMe && userDoc?.email) {
       localStorage.setItem('lumixora_remembered_email', userDoc.email);
     }
+    try {
+      recordUserLogin(userDoc, 'Lumixora Core').catch(() => {});
+    } catch (_) {}
     onLogin(userDoc);
   };
 

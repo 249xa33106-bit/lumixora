@@ -1397,7 +1397,11 @@ export const generateSpeakVerseCEFRCertificatePDF = (param1 = {}, param2 = {}, p
   // Fallback to localStorage if user or metrics is sparse
   let localUser = null;
   try {
-    const raw = localStorage.getItem('lumixora_current_user') || localStorage.getItem('user');
+    const raw = localStorage.getItem('lumixora_current_user') || 
+                localStorage.getItem('user') || 
+                localStorage.getItem('gprec_student_profile') || 
+                localStorage.getItem('student_profile') ||
+                localStorage.getItem('lumixora_auth_user');
     if (raw) localUser = JSON.parse(raw);
   } catch (_) {}
 
@@ -1563,7 +1567,7 @@ export const generateSpeakVerseCEFRCertificatePDF = (param1 = {}, param2 = {}, p
   doc.text(`University Roll / ID: `, col1X, 70);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
-  doc.text(rollNumber, col1X + 28, 70);
+  doc.text(rollNumber || '229X1A0501', col1X + 31, 70);
 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(71, 85, 105);
