@@ -2098,7 +2098,7 @@ export default function AiPlacementCommander({ user, setActiveTab, onLogout, ini
                 saveCodingSubmissionToSupabase(user, {
                   problemId: activeCodeProblem.id,
                   problemTitle: activeCodeProblem.title,
-                  language: activeCodeLang,
+                  language: codeLanguage || 'javascript',
                   status: 'Accepted',
                   runtime: results[0]?.duration || '12 ms',
                   memory: '14.2 MB',
