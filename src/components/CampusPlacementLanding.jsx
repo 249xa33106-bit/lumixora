@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { POPULAR_CAMPUS_COLLEGES } from '../services/campusAuthService';
 import CampusPlacementLoginModal from './CampusPlacementLoginModal';
+import Realistic3DLogo from './Realistic3DLogo';
 
 // Official Campus Recruitment Tiers & Criteria Matrix (2025–2026 Drive Data)
 const CTC_TIERS = [
@@ -303,14 +304,12 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
       {/* ── 2. EXECUTIVE ULTRA-CLEAN TOP BAR (JADE & GOLD SHEEN) ── */}
       <header className="border-b border-emerald-500/20 bg-[#040C10]/90 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          {/* Logo & Identity - Kept Exact Official Icon & Typography */}
+          {/* Logo & Identity - Original 3D Lumixora Brand Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0">
-              <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.2} />
-            </div>
+            <Realistic3DLogo size="md" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black tracking-tight text-white">
+                <span className="text-xl font-black tracking-tight text-white font-sora">
                   LUMIXORA <span className="text-emerald-400">CAMPUS</span>
                 </span>
                 <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 hidden sm:inline-block">
@@ -1189,7 +1188,8 @@ export default function CampusPlacementLanding({ onLoginSuccess, onEnterPortal, 
       <footer className="mt-auto border-t border-emerald-950/80 bg-[#010406] py-8 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300">LUMIXORA CAMPUS</span>
+            <Realistic3DLogo size="xs" interactive={false} showGlow={false} />
+            <span className="font-bold text-slate-300 font-sora">LUMIXORA CAMPUS</span>
             <span>• Universal Placement Operating System</span>
           </div>
           <div className="flex items-center gap-4 text-slate-400 text-[11px]">

@@ -22,6 +22,7 @@ import {
 } from '../services/campusDbService';
 import { initiateRazorpayPayment, fetchRemoteRazorpayKey } from '../services/razorpayService';
 import { validateUtrFormat } from '../data/collegesData';
+import Realistic3DLogo from './Realistic3DLogo';
 
 export default function CampusPlacementLoginModal({
   isOpen,
@@ -394,12 +395,10 @@ export default function CampusPlacementLoginModal({
         <div className="relative p-5 pb-3 border-b border-amber-500/20 bg-gradient-to-r from-[#031510] via-[#060D12] to-[#120B03]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0">
-                <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.2} />
-              </div>
+              <Realistic3DLogo size="sm" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-black tracking-tight text-white">
+                  <h3 className="text-lg font-black tracking-tight text-white font-sora">
                     LUMIXORA <span className="text-emerald-400">CAMPUS</span>
                   </h3>
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
