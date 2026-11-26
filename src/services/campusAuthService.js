@@ -4,7 +4,7 @@
  * Dedicated to all college/university scholars outside GPREC.
  */
 
-import { supabase } from '../config/supabase';
+import { campusSupabase } from '../config/campusSupabase';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { 

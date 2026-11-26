@@ -7,7 +7,10 @@
  *  - `campus_readiness`
  */
 
-import { supabase } from '../config/supabase';
+import { campusSupabase } from '../config/campusSupabase';
+
+// Dedicated isolated client for Lumixora Campus
+const supabase = campusSupabase;
 
 const LOCAL_SCHOLAR_PREFIX = 'lumixora_campus_profile_';
 const LOCAL_PAYMENT_PREFIX = 'lumixora_campus_payment_';
