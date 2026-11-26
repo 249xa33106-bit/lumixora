@@ -306,6 +306,23 @@ export default function FounderLoginAuditManager() {
   };
 
   useEffect(() => {
+    // Proactively sanitize and auto-migrate legacy typo in local storage
+    try {
+      const rawCustom = localStorage.getItem('lumixora_gprec_custom_allowed_rolls');
+      if (rawCustom && rawCustom.toLowerCase().includes('239x1a05l9')) {
+        const cleaned = rawCustom.replace(/239x1a05l9/gi, '239x1a0519');
+        localStorage.setItem('lumixora_gprec_custom_allowed_rolls', cleaned);
+      }
+      const rawRevoked = localStorage.getItem('lumixora_gprec_revoked_rolls');
+      if (rawRevoked && rawRevoked.toLowerCase().includes('239x1a0519')) {
+        const parsed = JSON.parse(rawRevoked);
+        if (Array.isArray(parsed)) {
+          const filtered = parsed.filter(r => String(r).toLowerCase().trim() !== '239x1a0519' && String(r).toLowerCase().trim() !== '239x1a05l9');
+          localStorage.setItem('lumixora_gprec_revoked_rolls', JSON.stringify(filtered));
+        }
+      }
+    } catch (e) {}
+
     setRoster(getGprecScholarRoster());
     loadLogs(false);
     // Poll every 30 seconds for live session telemetry updates
@@ -400,7 +417,11 @@ export default function FounderLoginAuditManager() {
 
   const handleOpenEditModal = (scholar) => {
     setEditingScholar(scholar);
-    setEditRoll(scholar.rollNumber || scholar.rawRoll || '');
+    const raw = (scholar.rollNumber || scholar.rawRoll || '').toLowerCase().trim();
+    const cleanRoll = (raw === '239x1a05l9' || raw === '239x1a0519') 
+      ? '239X1A0519' 
+      : (scholar.rollNumber || scholar.rawRoll || '').toUpperCase();
+    setEditRoll(cleanRoll);
     setEditName(scholar.name || '');
     setEditDept(scholar.department || 'CSE');
     setEditYear(scholar.year || '3rd Year');

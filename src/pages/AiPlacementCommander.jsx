@@ -154,6 +154,66 @@ const TARGET_COMPANIES = [
   { id: 'accenture', name: 'Accenture FSE', role: 'Full Stack Engineer', ctc: '₹6.5 - ₹11 LPA', rounds: ['Cognitive & Technical Assessment', 'Coding Test', 'Communication Assessment', 'HR Interview'] }
 ];
 
+export function calculateCompanyReadinessMatch(companyId, scores = {}) {
+  const dsa = scores.dsa || 0;
+  const coding = scores.coding || 0;
+  const coreCs = scores.coreCs || 0;
+  const apt = scores.aptitude || 0;
+  const proj = scores.projects || 0;
+  const res = scores.resume || 0;
+  const mock = scores.interview || 0;
+  const comm = scores.communication || 0;
+
+  let weighted = 0;
+  let cutoff = 70;
+
+  switch (companyId) {
+    case 'amazon':
+      weighted = dsa * 0.40 + coding * 0.30 + mock * 0.15 + proj * 0.15;
+      cutoff = 78;
+      break;
+    case 'microsoft':
+      weighted = dsa * 0.35 + coreCs * 0.25 + coding * 0.25 + mock * 0.15;
+      cutoff = 75;
+      break;
+    case 'google':
+      weighted = dsa * 0.45 + coding * 0.35 + comm * 0.10 + mock * 0.10;
+      cutoff = 82;
+      break;
+    case 'tcs':
+      weighted = apt * 0.35 + coding * 0.25 + coreCs * 0.25 + comm * 0.15;
+      cutoff = 65;
+      break;
+    case 'infosys':
+      weighted = coding * 0.40 + dsa * 0.30 + apt * 0.20 + mock * 0.10;
+      cutoff = 68;
+      break;
+    case 'accenture':
+      weighted = apt * 0.35 + comm * 0.25 + coding * 0.20 + coreCs * 0.20;
+      cutoff = 62;
+      break;
+    default:
+      weighted = (dsa + coding + coreCs + apt) / 4;
+      cutoff = 65;
+  }
+
+  const matchPct = Math.min(100, Math.round(weighted));
+  const hasStarted = (dsa + coding + coreCs + apt + proj + res + mock) > 0;
+
+  let odds = { label: 'Complete Drills', color: 'bg-slate-100 text-slate-600 border-slate-200', barColor: 'bg-slate-300' };
+  if (!hasStarted) {
+    odds = { label: 'Calibrate (0 Drills)', color: 'bg-slate-100 text-slate-500 border-slate-200', barColor: 'bg-slate-300' };
+  } else if (matchPct >= cutoff) {
+    odds = { label: '🟢 High Selection Odds', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', barColor: 'bg-emerald-500' };
+  } else if (matchPct >= 40) {
+    odds = { label: '🟡 Moderate Match', color: 'bg-amber-50 text-amber-700 border-amber-200', barColor: 'bg-amber-500' };
+  } else {
+    odds = { label: '🔵 Foundation Needed', color: 'bg-blue-50 text-blue-700 border-blue-200', barColor: 'bg-blue-500' };
+  }
+
+  return { matchPct, cutoff, odds };
+}
+
 // Curated Aptitude Question Bank with Real Placement Topics
 const APTITUDE_BANK = [
   {
@@ -3702,30 +3762,55 @@ Return ONLY a valid JSON object without markdown:
 
                   {/* Company Cards Selector */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-                    {TARGET_COMPANIES.map(company => (
-                      <div
-                        key={company.id}
-                        onClick={() => setSelectedCompanySim(company)}
-                        className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
-                          selectedCompanySim.id === company.id
-                            ? 'border-blue-600 bg-blue-50/40 shadow-xs'
-                            : 'border-slate-200/80 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-bold text-slate-900">{company.name}</h4>
-                          <span className="text-xs font-semibold text-blue-600">{company.ctc}</span>
+                    {TARGET_COMPANIES.map(company => {
+                      const matchData = calculateCompanyReadinessMatch(company.id, twinScores);
+                      return (
+                        <div
+                          key={company.id}
+                          onClick={() => setSelectedCompanySim(company)}
+                          className={`p-4 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                            selectedCompanySim.id === company.id
+                              ? 'border-blue-600 bg-blue-50/40 shadow-xs'
+                              : 'border-slate-200/80 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-bold text-slate-900">{company.name}</h4>
+                              <span className="text-xs font-semibold text-blue-600">{company.ctc}</span>
+                            </div>
+                            <div className="text-xs text-slate-500 mt-1">{company.role}</div>
+                            <div className="mt-2.5 flex flex-wrap gap-1">
+                              {company.rounds.map((r, i) => (
+                                <span key={i} className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600 font-medium">
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Dynamic Company Readiness Match % Breakdown */}
+                          <div className="mt-3.5 pt-3 border-t border-slate-200/70">
+                            <div className="flex items-center justify-between text-xs mb-1.5">
+                              <span className="text-[11px] font-bold text-slate-600">Readiness Match</span>
+                              <span className="font-mono font-black text-xs text-slate-900">{matchData.matchPct}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${matchData.odds.barColor}`}
+                                style={{ width: `${Math.max(4, matchData.matchPct)}%` }}
+                              />
+                            </div>
+                            <div className="mt-2 flex items-center justify-between text-[10px]">
+                              <span className={`px-1.5 py-0.5 rounded font-bold border ${matchData.odds.color}`}>
+                                {matchData.odds.label}
+                              </span>
+                              <span className="text-slate-400 font-medium">Cutoff: {matchData.cutoff}%</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">{company.role}</div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {company.rounds.map((r, i) => (
-                            <span key={i} className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600 font-medium">
-                              {r}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">

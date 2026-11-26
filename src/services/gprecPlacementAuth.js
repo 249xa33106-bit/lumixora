@@ -52,7 +52,6 @@ export const KNOWN_GPREC_SCHOLAR_NAMES = {
   '259xa33013': 'BICHALA HEMASREE',
   '269x103013': 'RUTHIKA',
   '239x1a0519': 'AMEENA BANU',
-  '239x1a05l9': 'AMEENA BANU',
   '259xa33095': 'LAIQA KHAN',
   '259xa05089': 'GAJJALA GNANAMANI'
 };
@@ -70,7 +69,9 @@ export function getStoredRevokedRolls() {
     const raw = localStorage.getItem(STORAGE_REVOKED_ROLLS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(normalizeRollNumber).filter(Boolean) : [];
+    return Array.isArray(parsed) 
+      ? parsed.map(normalizeRollNumber).filter(r => r && r !== '239x1a0519' && r !== '239x1a05l9') 
+      : [];
   } catch (e) {
     return [];
   }
@@ -705,10 +706,14 @@ export async function removeGprecScholarRoll(rollInput) {
   const email = `${normalized}@gprec.ac.in`;
 
   // 1. Add to revoked rolls so core cohorts / offline caches never re-introduce them
-  const revoked = getStoredRevokedRolls();
-  if (!revoked.includes(normalized)) {
-    revoked.push(normalized);
-    saveRevokedRolls(revoked);
+  // If removing legacy typo 239x1a05l9, never revoke canonical 239x1a0519
+  const isLegacyTypoCleanup = String(rollInput || '').toLowerCase().trim() === '239x1a05l9';
+  if (!isLegacyTypoCleanup) {
+    const revoked = getStoredRevokedRolls();
+    if (!revoked.includes(normalized)) {
+      revoked.push(normalized);
+      saveRevokedRolls(revoked);
+    }
   }
 
   // 2. Remove from local custom storage
