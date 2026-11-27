@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Award, TrendingUp, CheckCircle2, Zap, Target, Star,
-  ShieldCheck, BarChart2, Flame, ArrowUpRight, Clock
+  ShieldCheck, BarChart2, Flame, ArrowUpRight, Clock, Sparkles
 } from 'lucide-react';
 
 export default function NexusPerformanceAnalytics({
