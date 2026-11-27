@@ -117,8 +117,8 @@ export default function CertificateRenderer({
   }
 
   // Dates formatting
-  const formattedStartDate = cert.startDate || '1 Nov 2025';
-  const formattedEndDate = cert.endDate || '30 Nov 2025';
+  const formattedStartDate = cert.startDate || '15 Nov 2026';
+  const formattedEndDate = cert.endDate || '30 Dec 2026';
 
   // 3 Competency tags based on domain
   let comp1 = 'Product Testing';

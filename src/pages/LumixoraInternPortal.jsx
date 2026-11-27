@@ -567,11 +567,11 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       if (globalSaved) return JSON.parse(globalSaved);
     } catch (_) {}
     return {
-      studentName: session?.name || 'C. Chandrika',
+      studentName: session?.name || 'Intern Scholar',
       rollNumber: session?.id || 'LMX-B01-1726',
-      domain: 'Product Testing',
-      startDate: '1 Nov 2025',
-      endDate: '30 Nov 2025',
+      domain: 'Software Testing & QA',
+      startDate: '15 Nov 2026',
+      endDate: '30 Dec 2026',
       wishesText: 'We wish them all the best for their future endeavors.',
       statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
       comp1: 'Product Testing',
@@ -580,11 +580,21 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
       founderSignatureName: 'Shaik Sowban',
       founderRole: 'Founder, CEO & Tech Lead',
       certId: `LMX-INT-2026-${(session?.id || '1726').replace(/[^a-zA-Z0-9]/g, '')}`,
-      isIssued: true,
+      isIssued: false,
       githubUrl: '',
       driveUrl: '',
       pdfUrl: ''
     };
+  });
+
+  // Track issued certificates per intern
+  const [issuedCertificates, setIssuedCertificates] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_issued_certificates');
+      return saved ? JSON.parse(saved) : {};
+    } catch (_) {
+      return {};
+    }
   });
 
   const [certEditModalOpen, setCertEditModalOpen] = useState(false);
@@ -633,13 +643,13 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         if (saved) existingDetails = JSON.parse(saved);
       } catch (_) {}
 
-      const cleanDomain = found.roleTitle ? found.roleTitle.replace(' Intern', '') : 'Product Testing';
+      const cleanDomain = found.roleTitle ? found.roleTitle.replace(' Intern', '') : 'Software Testing & QA';
       const updated = existingDetails || {
         studentName: found.name,
         rollNumber: found.id,
         domain: cleanDomain,
-        startDate: '1 Nov 2025',
-        endDate: '30 Nov 2025',
+        startDate: '15 Nov 2026',
+        endDate: '30 Dec 2026',
         wishesText: 'We wish them all the best for their future endeavors.',
         statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
         comp1: cleanDomain.includes('Research') ? 'Market Research' : cleanDomain.includes('Marketing') ? 'Growth Marketing' : 'Product Testing',
@@ -648,7 +658,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         founderSignatureName: 'Shaik Sowban',
         founderRole: 'Founder, CEO & Tech Lead',
         certId: `LMX-INT-2026-${found.id.replace(/[^a-zA-Z0-9]/g, '')}`,
-        isIssued: true,
+        isIssued: false,
         githubUrl: '',
         driveUrl: '',
         pdfUrl: ''
@@ -660,6 +670,14 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
 
   const handleSaveCertDetails = (e) => {
     if (e) e.preventDefault();
+    
+    // Enforce completion of required tasks before allowing certificate issuance
+    if (certEditForm.isIssued && !hasCompletedRequiredTasks) {
+      alert(`Cannot issue certificate yet. Intern has only completed ${approvedTasksCount} of ${REQUIRED_TASKS_THRESHOLD} required tasks. Please approve their deliverables first in the Evaluator Review Drawer.`);
+      setCertEditForm(prev => ({ ...prev, isIssued: false }));
+      return;
+    }
+
     setCustomCertDetails(certEditForm);
     
     // Save per recipient
@@ -667,14 +685,17 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
     try {
       localStorage.setItem(`lumixora_custom_cert_details_${targetId}`, JSON.stringify(certEditForm));
       localStorage.setItem('lumixora_custom_cert_details_global', JSON.stringify(certEditForm));
-      
-      // Also register in issued certificates dictionary for public verification
-      const registryKey = 'lumixora_issued_certificates';
-      const registryRaw = localStorage.getItem(registryKey);
-      const registry = registryRaw ? JSON.parse(registryRaw) : {};
-      registry[certEditForm.certId] = certEditForm;
-      registry[targetId] = certEditForm;
-      localStorage.setItem(registryKey, JSON.stringify(registry));
+
+      if (certEditForm.isIssued && hasCompletedRequiredTasks) {
+        const certId = certEditForm.certId || `LMX-INT-2026-${targetId.replace(/[^a-zA-Z0-9]/g, '')}`;
+        const registry = {
+          ...issuedCertificates,
+          [targetId]: { isIssued: true, issuedAt: new Date().toLocaleDateString('en-GB'), certId },
+          [certId]: { isIssued: true, issuedAt: new Date().toLocaleDateString('en-GB'), certId }
+        };
+        setIssuedCertificates(registry);
+        localStorage.setItem('lumixora_issued_certificates', JSON.stringify(registry));
+      }
     } catch (_) {}
 
     setCertEditModalOpen(false);
@@ -683,11 +704,11 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const handleResetCertDetails = () => {
     if (window.confirm('Reset certificate content to standard default values?')) {
       const defaultDetails = {
-        studentName: session?.name || 'C. Chandrika',
+        studentName: session?.name || 'Intern Scholar',
         rollNumber: session?.id || 'LMX-B01-1726',
-        domain: activeRole.title || 'Product Testing',
-        startDate: '1 Nov 2025',
-        endDate: '30 Nov 2025',
+        domain: activeRole.title || 'Software Testing & QA',
+        startDate: '15 Nov 2026',
+        endDate: '30 Dec 2026',
         wishesText: 'We wish them all the best for their future endeavors.',
         statementText: 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
         comp1: 'Product Testing',
@@ -696,7 +717,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         founderSignatureName: 'Shaik Sowban',
         founderRole: 'Founder, CEO & Tech Lead',
         certId: `LMX-INT-2026-${(session?.id || '1726').replace(/[^a-zA-Z0-9]/g, '')}`,
-        isIssued: true,
+        isIssued: false,
         githubUrl: '',
         driveUrl: '',
         pdfUrl: ''
@@ -773,6 +794,77 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
   const isFounder = useMemo(() => {
     return isInternPortalFounder(session?.email) || isInternPortalFounder(session?.id) || session?.isFounder === true;
   }, [session]);
+
+  // Current intern evaluation & sprint deliverable completion metrics
+  const currentInternId = session?.id || 'LMX-B01-1726';
+  const REQUIRED_TASKS_THRESHOLD = 2;
+
+  // A task is completed when it has been submitted and approved or scored >= 70 by Founder
+  const approvedTasksCount = useMemo(() => {
+    return submissions.filter(s => s.status === 'approved' || (s.score && Number(s.score) >= 70)).length;
+  }, [submissions]);
+
+  const hasCompletedRequiredTasks = approvedTasksCount >= REQUIRED_TASKS_THRESHOLD;
+
+  // Verification if certificate is officially issued by Founder
+  const isCertOfficiallyIssued = useMemo(() => {
+    const certId = customCertDetails?.certId;
+    return Boolean(
+      issuedCertificates[currentInternId]?.isIssued ||
+      (certId && issuedCertificates[certId]?.isIssued) ||
+      (customCertDetails?.isIssued && hasCompletedRequiredTasks)
+    );
+  }, [issuedCertificates, currentInternId, customCertDetails?.certId, customCertDetails?.isIssued, hasCompletedRequiredTasks]);
+
+  // Founder actions to officially issue or revoke certificate
+  const handleIssueCertificate = () => {
+    if (!hasCompletedRequiredTasks) {
+      alert(`Cannot issue certificate yet. Intern has only completed ${approvedTasksCount} of ${REQUIRED_TASKS_THRESHOLD} required tasks. Please approve their deliverables first in the Evaluator Review Drawer.`);
+      return;
+    }
+    const targetId = customCertDetails?.rollNumber || currentInternId;
+    const certId = customCertDetails?.certId || `LMX-INT-2026-${targetId.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const issueRecord = {
+      isIssued: true,
+      issuedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      certId: certId,
+      internName: customCertDetails?.studentName || session?.name,
+      approvedTasksCount,
+      issuedBy: 'Shaik Sowban (Founder, CEO & Tech Lead)'
+    };
+
+    const updated = {
+      ...issuedCertificates,
+      [targetId]: issueRecord,
+      [certId]: issueRecord
+    };
+    setIssuedCertificates(updated);
+    try {
+      localStorage.setItem('lumixora_issued_certificates', JSON.stringify(updated));
+      const updatedDetails = { ...customCertDetails, isIssued: true, certId };
+      setCustomCertDetails(updatedDetails);
+      localStorage.setItem(`lumixora_custom_cert_details_${targetId}`, JSON.stringify(updatedDetails));
+      localStorage.setItem('lumixora_custom_cert_details_global', JSON.stringify(updatedDetails));
+    } catch (_) {}
+  };
+
+  const handleRevokeCertificate = () => {
+    if (window.confirm('Revoke this issued certificate back to locked status?')) {
+      const targetId = customCertDetails?.rollNumber || currentInternId;
+      const certId = customCertDetails?.certId;
+      const updated = { ...issuedCertificates };
+      delete updated[targetId];
+      if (certId) delete updated[certId];
+      setIssuedCertificates(updated);
+      try {
+        localStorage.setItem('lumixora_issued_certificates', JSON.stringify(updated));
+        const updatedDetails = { ...customCertDetails, isIssued: false };
+        setCustomCertDetails(updatedDetails);
+        localStorage.setItem(`lumixora_custom_cert_details_${targetId}`, JSON.stringify(updatedDetails));
+        localStorage.setItem('lumixora_custom_cert_details_global', JSON.stringify(updatedDetails));
+      } catch (_) {}
+    }
+  };
 
   // Tasks allotted specifically for the active track
   const roleAllottedTasks = useMemo(() => {
@@ -1995,163 +2087,342 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
             </p>
           </div>
 
-          {/* Founder Certificate Editor Bar & Verification Status */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-black/40 border border-white/10 shadow-lg">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Batch 01 Official Registry • Cryptographically Verified ✓</span>
-              </span>
-            </div>
+          {/* FOUNDER EXECUTIVE ISSUANCE CONTROL DESK */}
+          {isFounder && (
+            <div className={`p-4 sm:p-5 rounded-2xl border shadow-xl transition-all ${
+              isCertOfficiallyIssued 
+                ? 'bg-emerald-950/20 border-emerald-500/30' 
+                : hasCompletedRequiredTasks 
+                  ? 'bg-cyan-950/30 border-cyan-500/40' 
+                  : 'bg-amber-950/20 border-amber-500/30'
+            }`}>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    {isCertOfficiallyIssued ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-mono font-bold flex items-center gap-1">
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        CERTIFICATE OFFICIALLY ISSUED & ACTIVE
+                      </span>
+                    ) : hasCompletedRequiredTasks ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-mono font-bold flex items-center gap-1">
+                        <Zap className="w-3.5 h-3.5" />
+                        CRITERIA MET — READY FOR FOUNDER ISSUANCE
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-mono font-bold flex items-center gap-1">
+                        <Lock className="w-3.5 h-3.5" />
+                        ISSUANCE LOCKED: REQUIRED TASKS INCOMPLETE
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-extrabold text-white">
+                    Founder Executive Issuance Control Desk (Shaik Sowban)
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-2xl">
+                    {isCertOfficiallyIssued ? (
+                      `Official credential issued on ${issuedCertificates[currentInternId]?.issuedAt || '15 Nov 2026'}. Verifiable across LinkedIn & public verification ledger.`
+                    ) : hasCompletedRequiredTasks ? (
+                      `Intern ${session?.name || customCertDetails?.studentName} has completed ${approvedTasksCount}/${REQUIRED_TASKS_THRESHOLD} approved tasks. Ready for your official signature & release.`
+                    ) : (
+                      `Intern has only completed ${approvedTasksCount}/${REQUIRED_TASKS_THRESHOLD} required tasks. Lumixora policy requires at least 2 approved sprint submissions before a certificate can be issued.`
+                    )}
+                  </p>
+                </div>
 
-            {isFounder && (
-              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {!isCertOfficiallyIssued ? (
+                    hasCompletedRequiredTasks ? (
+                      <button
+                        onClick={handleIssueCertificate}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black text-xs font-black flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 cursor-pointer"
+                        title="Authorize and officially stamp this certificate for the intern"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span>Officially Issue Certificate</span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          disabled
+                          className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-500 text-xs font-bold flex items-center gap-1.5 opacity-60 cursor-not-allowed"
+                          title="Locked: Intern must complete at least 2 required tasks first"
+                        >
+                          <Lock className="w-3.5 h-3.5" />
+                          <span>Issuance Locked ({approvedTasksCount}/2 Tasks)</span>
+                        </button>
+                        <button
+                          onClick={() => setEvaluatorDrawerOpen(true)}
+                          className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                          title="Open Evaluator Drawer to grade submissions"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Review & Grade Tasks</span>
+                        </button>
+                      </div>
+                    )
+                  ) : (
+                    <button
+                      onClick={handleRevokeCertificate}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+                      title="Revoke certificate back to locked status"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Revoke Certificate</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setCertEditForm({
+                        studentName: customCertDetails.studentName || session?.name || '',
+                        domain: customCertDetails.domain || activeRole.title || 'Software Testing & QA',
+                        startDate: customCertDetails.startDate || '15 Nov 2026',
+                        endDate: customCertDetails.endDate || '30 Dec 2026',
+                        wishesText: customCertDetails.wishesText || 'We wish them all the best for their future endeavors.',
+                        statementText: customCertDetails.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+                        comp1: customCertDetails.comp1 || 'Product Testing',
+                        comp2: customCertDetails.comp2 || 'Quality Analysis',
+                        comp3: customCertDetails.comp3 || 'Innovation Mindset',
+                        founderSignatureName: customCertDetails.founderSignatureName || 'Shaik Sowban',
+                        founderRole: customCertDetails.founderRole || 'Founder, CEO & Tech Lead',
+                        signer2Name: customCertDetails.signer2Name || 'Team Lumixora',
+                        signer2Role: customCertDetails.signer2Role || 'Product Development Team',
+                        isIssued: isCertOfficiallyIssued
+                      });
+                      setCertEditModalOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit Details</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Real Tasks Progress Bar inside Founder Desk */}
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-300">Sprint Requirement:</span>
+                  <span>Minimum 2 approved weekly deliverables</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono">
+                  <span className={hasCompletedRequiredTasks ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
+                    {approvedTasksCount} / {REQUIRED_TASKS_THRESHOLD} Approved
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MAIN CERTIFICATE VIEW: LOCKED SCREEN OR OFFICIAL CERTIFICATE */}
+          {!isCertOfficiallyIssued ? (
+            /* LOCKED SCREEN FOR INTERNS & AWAITING ISSUANCE */
+            <div className="p-8 sm:p-12 rounded-3xl bg-[#080b14] border border-amber-500/25 text-center space-y-6 max-w-2xl mx-auto shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mx-auto flex items-center justify-center shadow-lg shadow-amber-500/10">
+                <Lock className="w-10 h-10" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-mono font-bold">
+                  <span>CERTIFICATE STATUS: NOT YET ISSUED</span>
+                </div>
+                <h3 className="text-2xl font-black text-white tracking-tight">
+                  Official Internship Certificate Locked
+                </h3>
+                <p className="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
+                  Lumixora proof-of-skill credentials are cryptographically authorized by Founder Shaik Sowban only upon verified completion of the required weekly sprint deliverables.
+                </p>
+              </div>
+
+              {/* Live Requirement Progress Card */}
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-left space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-300 font-bold">Weekly Sprint Requirement:</span>
+                  <span className={`font-mono font-bold ${hasCompletedRequiredTasks ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {approvedTasksCount} / {REQUIRED_TASKS_THRESHOLD} Approved Tasks
+                  </span>
+                </div>
+                
+                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${hasCompletedRequiredTasks ? 'bg-gradient-to-r from-emerald-500 to-cyan-400' : 'bg-gradient-to-r from-amber-500 to-amber-400'}`}
+                    style={{ width: `${Math.min(100, (approvedTasksCount / REQUIRED_TASKS_THRESHOLD) * 100)}%` }}
+                  />
+                </div>
+
+                <div className="text-[11px] text-gray-400 flex items-start gap-2 pt-1">
+                  {hasCompletedRequiredTasks ? (
+                    <div className="text-emerald-400 flex items-center gap-1.5 font-semibold">
+                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                      <span>Requirements completed! Awaiting Founder Shaik Sowban's final authorization stamp.</span>
+                    </div>
+                  ) : (
+                    <div className="text-amber-300/90 flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>Select and submit deliverables for at least 2 weekly tasks to unlock your certificate.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Navigation Actions */}
+              <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
                 <button
-                  onClick={() => {
-                    setCertEditForm({
-                      studentName: customCertDetails.studentName || session?.name || '',
-                      domain: customCertDetails.domain || activeRole.title || 'Product Testing',
-                      startDate: customCertDetails.startDate || '15 Nov 2026',
-                      endDate: customCertDetails.endDate || '30 Dec 2026',
-                      wishesText: customCertDetails.wishesText || 'We wish them all the best for their future endeavors.',
-                      statementText: customCertDetails.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
-                      comp1: customCertDetails.comp1 || 'Product Testing',
-                      comp2: customCertDetails.comp2 || 'Quality Analysis',
-                      comp3: customCertDetails.comp3 || 'Innovation Mindset',
-                      founderSignatureName: customCertDetails.founderSignatureName || 'Shaik Sowban',
-                      founderRole: customCertDetails.founderRole || 'Founder, CEO & Tech Lead',
-                      signer2Name: customCertDetails.signer2Name || 'Team Lumixora',
-                      signer2Role: customCertDetails.signer2Role || 'Product Development Team'
-                    });
-                    setCertEditModalOpen(true);
-                  }}
-                  className="px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
-                  title="Edit certificate recipient name, domain, dates, competencies, wishes ribbon, and signatures"
+                  onClick={() => setActiveTab('tasks')}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-cyan-400/20 cursor-pointer transition-all"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit Certificate Details</span>
+                  <Briefcase className="w-4 h-4" />
+                  <span>Go to Weekly Mission Board</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={handleResetCertDetails}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
-                  title="Reset to defaults"
+                  onClick={() => setActiveTab('submissions')}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 border border-white/10 cursor-pointer transition-all"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset</span>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Submission Studio</span>
                 </button>
               </div>
-            )}
-          </div>
 
-          {/* Master Certificate Canvas (Executive Ivory / Midnight / Sapphire / Classic) */}
-          <div className="rounded-3xl overflow-hidden shadow-2xl">
-            <CertificateRenderer
-              cert={{
-                id: customCertDetails?.certId || `LMX-INT-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
-                title: 'Certificate of Internship Completion',
-                isInternship: true,
-                internName: customCertDetails?.studentName || session.name,
-                issuedTo: customCertDetails?.studentName || session.name,
-                studentName: customCertDetails?.studentName || session.name,
-                rollNumber: customCertDetails?.rollNumber || session.id,
-                college: session.college || 'G. Pulla Reddy Engineering College (Autonomous)',
-                track: customCertDetails?.domain || activeRole.title,
-                domain: customCertDetails?.domain || activeRole.title,
-                category: customCertDetails?.domain || activeRole.title,
-                duration: '6-Week Intensive Engineering Internship (Batch 01)',
-                startDate: customCertDetails?.startDate || '15 Nov 2026',
-                endDate: customCertDetails?.endDate || '30 Dec 2026',
-                hoursLogged: 120,
-                score: '98% Distinction',
-                grade: 'Elite Distinction (A+ Grade)',
-                verificationHash: certSha256,
-                wishesText: customCertDetails?.wishesText || 'We wish them all the best for their future endeavors.',
-                statementText: customCertDetails?.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
-                founderSignatureName: customCertDetails?.founderSignatureName || 'Shaik Sowban',
-                founderRole: customCertDetails?.founderRole || 'Founder, CEO & Tech Lead',
-                signer2Name: customCertDetails?.signer2Name || 'Team Lumixora',
-                signer2Role: customCertDetails?.signer2Role || 'Product Development Team',
-                signer2Org: 'Lumixora Engineering Council',
-                tasks: submissions,
-                githubUrl: customCertDetails?.githubUrl || submissions.find(s => s.githubUrl)?.githubUrl || '',
-                driveUrl: customCertDetails?.driveUrl || submissions.find(s => s.driveUrl)?.driveUrl || '',
-                pdfUrl: customCertDetails?.pdfUrl || submissions.find(s => s.pdfUrl)?.pdfUrl || '',
-                demoUrl: submissions.find(s => s.demoUrl)?.demoUrl || '',
-                skills: [
-                  customCertDetails?.comp1 || 'Product Testing',
-                  customCertDetails?.comp2 || 'Quality Analysis',
-                  customCertDetails?.comp3 || 'Innovation Mindset'
-                ]
-              }}
-              studentName={customCertDetails?.studentName || session.name}
-              collegeName={session.college}
-              styleId={certTheme}
-              qrCodeDataUrl={certQrUrl}
-              user={user}
-            />
-          </div>
-
-          {/* Action Bar (LinkedIn + Verify + Print + Copy Link) */}
-          <div className="p-4 rounded-2xl bg-[#0b0e19] border border-white/10 flex flex-wrap items-center justify-between gap-3 shadow-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-300">Credential Actions:</span>
+              {/* Founder Notice */}
+              {isFounder && (
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-[11px] text-cyan-400 font-mono">
+                    Founder Notice: Certificate canvas is strictly hidden until criteria is met and you authorize issuance above.
+                  </p>
+                </div>
+              )}
             </div>
+          ) : (
+            /* OFFICIALLY ISSUED MASTER CERTIFICATE CANVAS */
+            <>
+              {/* Verification Status Pill */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-black/40 border border-emerald-500/30 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+                    <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Batch 01 Official Registry • Cryptographically Verified ✓</span>
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 font-mono">
+                  Issued: <span className="text-white font-bold">{issuedCertificates[currentInternId]?.issuedAt || '15 Nov 2026'}</span>
+                </div>
+              </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* 1-Click LinkedIn Add to Profile */}
-              <a
-                href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Lumixora Certified ' + activeRole.title)}&organizationName=Lumixora&issueYear=2026&issueMonth=12&certUrl=${encodeURIComponent('https://lumixora.in/verify?id=' + session.id)}&certId=${encodeURIComponent(session.id)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3.5 py-2 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-[#0A66C2]/20 cursor-pointer"
-                title="Add this certification directly to your official LinkedIn profile"
-              >
-                <Award className="w-3.5 h-3.5" />
-                <span>Add to LinkedIn Profile</span>
-              </a>
+              {/* Master Certificate Canvas (Executive Ivory / Midnight / Sapphire / Classic) */}
+              <div className="rounded-3xl overflow-hidden shadow-2xl">
+                <CertificateRenderer
+                  cert={{
+                    id: customCertDetails?.certId || `LMX-INT-2026-${session.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+                    title: 'Certificate of Internship Completion',
+                    isInternship: true,
+                    internName: customCertDetails?.studentName || session.name,
+                    issuedTo: customCertDetails?.studentName || session.name,
+                    studentName: customCertDetails?.studentName || session.name,
+                    rollNumber: customCertDetails?.rollNumber || session.id,
+                    college: session.college || 'G. Pulla Reddy Engineering College (Autonomous)',
+                    track: customCertDetails?.domain || activeRole.title,
+                    domain: customCertDetails?.domain || activeRole.title,
+                    category: customCertDetails?.domain || activeRole.title,
+                    duration: '6-Week Intensive Engineering Internship (Batch 01)',
+                    startDate: customCertDetails?.startDate || '15 Nov 2026',
+                    endDate: customCertDetails?.endDate || '30 Dec 2026',
+                    hoursLogged: 120,
+                    score: '98% Distinction',
+                    grade: 'Elite Distinction (A+ Grade)',
+                    verificationHash: certSha256,
+                    wishesText: customCertDetails?.wishesText || 'We wish them all the best for their future endeavors.',
+                    statementText: customCertDetails?.statementText || 'the intern demonstrated dedication, enthusiasm and a strong willingness to learn.',
+                    founderSignatureName: customCertDetails?.founderSignatureName || 'Shaik Sowban',
+                    founderRole: customCertDetails?.founderRole || 'Founder, CEO & Tech Lead',
+                    signer2Name: customCertDetails?.signer2Name || 'Team Lumixora',
+                    signer2Role: customCertDetails?.signer2Role || 'Product Development Team',
+                    signer2Org: 'Lumixora Engineering Council',
+                    tasks: submissions,
+                    githubUrl: customCertDetails?.githubUrl || submissions.find(s => s.githubUrl)?.githubUrl || '',
+                    driveUrl: customCertDetails?.driveUrl || submissions.find(s => s.driveUrl)?.driveUrl || '',
+                    pdfUrl: customCertDetails?.pdfUrl || submissions.find(s => s.pdfUrl)?.pdfUrl || '',
+                    demoUrl: submissions.find(s => s.demoUrl)?.demoUrl || '',
+                    skills: [
+                      customCertDetails?.comp1 || 'Product Testing',
+                      customCertDetails?.comp2 || 'Quality Analysis',
+                      customCertDetails?.comp3 || 'Innovation Mindset'
+                    ]
+                  }}
+                  studentName={customCertDetails?.studentName || session.name}
+                  collegeName={session.college}
+                  styleId={certTheme}
+                  qrCodeDataUrl={certQrUrl}
+                  user={user}
+                />
+              </div>
 
-              {/* Online Verification Link */}
-              <button
-                onClick={() => {
-                  const url = `https://lumixora.in/verify?id=${session.id}`;
-                  window.open(url, '_blank');
-                }}
-                className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Verify Online</span>
-              </button>
+              {/* Action Bar (LinkedIn + Verify + Print + Copy Link) */}
+              <div className="p-4 rounded-2xl bg-[#0b0e19] border border-white/10 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-300">Credential Actions:</span>
+                </div>
 
-              {/* Copy Direct Link */}
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`https://lumixora.in/verify?id=${session.id}`);
-                  setCopiedLink(true);
-                  setTimeout(() => setCopiedLink(false), 2000);
-                }}
-                className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-white/10"
-              >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
-              </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* 1-Click LinkedIn Add to Profile */}
+                  <a
+                    href={`https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Lumixora Certified ' + activeRole.title)}&organizationName=Lumixora&issueYear=2026&issueMonth=12&certUrl=${encodeURIComponent('https://lumixora.in/verify?id=' + session.id)}&certId=${encodeURIComponent(session.id)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-[#0A66C2]/20 cursor-pointer"
+                    title="Add this certification directly to your official LinkedIn profile"
+                  >
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Add to LinkedIn Profile</span>
+                  </a>
 
-              {/* Print / Download PDF */}
-              <button
-                onClick={() => window.print()}
-                className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-white/10"
-                title="Print or Save as High-Res PDF"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print / Save PDF</span>
-              </button>
-            </div>
-          </div>
+                  {/* Online Verification Link */}
+                  <button
+                    onClick={() => {
+                      const url = `https://lumixora.in/verify?id=${session.id}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Verify Online</span>
+                  </button>
+
+                  {/* Copy Direct Link */}
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://lumixora.in/verify?id=${session.id}`);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-white/10"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
+                  </button>
+
+                  {/* Print / Download PDF */}
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-white/10"
+                    title="Print or Save as High-Res PDF"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Print / Save PDF</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
 
         </div>
       )}
 
-      
-      {/* ───────────────────────────────────────────────────────────────────────────── */}
+            {/* ───────────────────────────────────────────────────────────────────────────── */}
       {/* FOUNDER TASK ALLOTMENT & EDIT MODAL                                           */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {taskModalOpen && (
@@ -2400,7 +2671,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                       type="text"
                       value={certEditForm.startDate || ''}
                       onChange={e => setCertEditForm(p => ({ ...p, startDate: e.target.value }))}
-                      placeholder="e.g. 1 Nov 2025 or 15 Nov 2026"
+                      placeholder="e.g. 15 Nov 2026"
                       className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-amber-400 text-xs font-mono"
                     />
                   </div>
@@ -2410,7 +2681,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                       type="text"
                       value={certEditForm.endDate || ''}
                       onChange={e => setCertEditForm(p => ({ ...p, endDate: e.target.value }))}
-                      placeholder="e.g. 30 Nov 2025 or 30 Dec 2026"
+                      placeholder="e.g. 30 Dec 2026"
                       className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white focus:outline-none focus:border-amber-400 text-xs font-mono"
                     />
                   </div>
@@ -2589,7 +2860,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                     className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-black text-xs shadow-lg shadow-cyan-500/20 cursor-pointer flex items-center gap-1.5"
                   >
                     <Check className="w-4 h-4" />
-                    <span>Save & Issue Certificate</span>
+                    <span>Save Certificate Details</span>
                   </button>
                 </div>
               </div>
