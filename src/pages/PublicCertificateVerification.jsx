@@ -94,6 +94,20 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
                 if (local) savedSubs = JSON.parse(local);
               } catch (e) {}
 
+              let issuedCertificates = {};
+              try {
+                const reg = localStorage.getItem('lumixora_issued_certificates');
+                if (reg) issuedCertificates = JSON.parse(reg);
+              } catch (_) {}
+
+              const approvedCount = savedSubs.filter(s => s.status === 'approved' || (s.score && Number(s.score) >= 70)).length;
+              const isOfficiallyIssued = Boolean(
+                issuedCertificates[internMatch.id]?.isIssued ||
+                issuedCertificates[internMatch.refId]?.isIssued ||
+                (customCert?.isIssued && approvedCount >= 12) ||
+                approvedCount >= 12
+              );
+
               // Only show real submitted tasks - zero fake fallback tasks or dummy links!
               const displayTasks = savedSubs.length > 0 ? savedSubs.map((s, idx) => ({
                 id: s.deliverableId || s.id || `task-${idx + 1}`,
@@ -117,8 +131,11 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
 
               setCert({
                 id: `LMX-INT-2026-${(internMatch.refId || internMatch.id).replace(/[^a-zA-Z0-9]/g, '')}`,
-                title: 'Certificate of Internship Completion',
+                title: isOfficiallyIssued ? 'Certificate of Internship Completion' : 'Certificate of Internship (In Progress)',
                 isInternship: true,
+                isPending: !isOfficiallyIssued,
+                status: isOfficiallyIssued ? 'active' : 'in_progress',
+                pendingReason: !isOfficiallyIssued ? `Candidate is currently active in the 6-week cohort (${approvedCount}/12 approved tasks completed). Official certificate will be signed and unlocked by Founder Shaik Sowban upon completion of all 12 sprint deliverables.` : null,
                 internName: internMatch.name,
                 issuedTo: internMatch.name,
                 studentName: internMatch.name,
@@ -130,10 +147,10 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
                 duration: '6-Week Intensive Engineering Internship (Batch 01)',
                 startDate: '15 Nov 2026',
                 endDate: '30 Dec 2026',
-                hoursLogged: 120,
-                score: '98% Distinction',
-                grade: 'Elite Distinction (A+ Grade)',
-                verificationHash: `sha256:${(internMatch.id || '').toLowerCase()}c92a4e8f1b6d0e37a8c4f5291b8e0347a5f69201`,
+                hoursLogged: isOfficiallyIssued ? 120 : (approvedCount * 10),
+                score: isOfficiallyIssued ? '98% Distinction' : `${Math.min(100, Math.round((approvedCount / 12) * 100))}% (In Progress)`,
+                grade: isOfficiallyIssued ? 'Elite Distinction (A+ Grade)' : 'Cohort In Progress',
+                verificationHash: isOfficiallyIssued ? `sha256:${(internMatch.id || '').toLowerCase()}c92a4e8f1b6d0e37a8c4f5291b8e0347a5f69201` : 'sha256:pending_12_tasks_completion',
                 founderSignatureName: 'Shaik Sowban',
                 founderRole: 'Founder, CEO & Tech Lead',
                 signer2Name: 'Team Lumixora',
@@ -308,6 +325,33 @@ export default function PublicCertificateVerification({ certId: propCertId, onBa
                 <span className="text-[10px] text-red-400 font-mono font-bold shrink-0">
                   ID: {cert.id}
                 </span>
+              </div>
+            ) : (cert.status === 'in_progress' || cert.isPending) ? (
+              <div className="p-5 rounded-3xl bg-gradient-to-r from-amber-950/40 via-amber-900/20 to-black border border-amber-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                    <Clock className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-sm font-black text-amber-300 uppercase tracking-wider">
+                        Cohort In Progress · Credential Pending
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-mono font-black border border-amber-500/30 uppercase">
+                        Requires 12 Approved Deliverables ({cert.tasks?.length || 0}/12 Completed)
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      {cert.pendingReason || 'Official cryptographic certificate is unlocked only after completing all 12 required sprint deliverables across the 6-week cohort and receiving final Founder authorization.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick Identification Pill */}
+                <div className="text-right text-[11px] font-mono text-slate-400 border-t md:border-t-0 pt-2 md:pt-0 border-white/10">
+                  <span className="text-amber-400 font-bold block">Sprint Requirement: 12 Tasks</span>
+                  <span className="text-slate-400 text-[10px]">Founder Shaik Sowban Authorization</span>
+                </div>
               </div>
             ) : (
               <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-black border border-emerald-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">

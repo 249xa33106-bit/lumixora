@@ -797,7 +797,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
 
   // Current intern evaluation & sprint deliverable completion metrics
   const currentInternId = session?.id || 'LMX-B01-1726';
-  const REQUIRED_TASKS_THRESHOLD = 2;
+  const REQUIRED_TASKS_THRESHOLD = 12;
 
   // A task is completed when it has been submitted and approved or scored >= 70 by Founder
   const approvedTasksCount = useMemo(() => {
@@ -2122,11 +2122,11 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                   </h4>
                   <p className="text-xs text-gray-400 max-w-2xl">
                     {isCertOfficiallyIssued ? (
-                      `Official credential issued on ${issuedCertificates[currentInternId]?.issuedAt || '15 Nov 2026'}. Verifiable across LinkedIn & public verification ledger.`
+                      `Official credential issued on ${issuedCertificates[currentInternId]?.issuedAt || '30 Dec 2026'}. Verifiable across LinkedIn & public verification ledger.`
                     ) : hasCompletedRequiredTasks ? (
                       `Intern ${session?.name || customCertDetails?.studentName} has completed ${approvedTasksCount}/${REQUIRED_TASKS_THRESHOLD} approved tasks. Ready for your official signature & release.`
                     ) : (
-                      `Intern has only completed ${approvedTasksCount}/${REQUIRED_TASKS_THRESHOLD} required tasks. Lumixora policy requires at least 2 approved sprint submissions before a certificate can be issued.`
+                      `Intern has completed ${approvedTasksCount}/${REQUIRED_TASKS_THRESHOLD} required tasks. Lumixora policy requires at least 12 approved sprint submissions across the 6-week cohort (2 tasks/week) before an internship certificate can be issued.`
                     )}
                   </p>
                 </div>
@@ -2147,10 +2147,10 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                         <button
                           disabled
                           className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-500 text-xs font-bold flex items-center gap-1.5 opacity-60 cursor-not-allowed"
-                          title="Locked: Intern must complete at least 2 required tasks first"
+                          title="Locked: Intern must complete at least 12 required tasks across the 6-week cohort first"
                         >
                           <Lock className="w-3.5 h-3.5" />
-                          <span>Issuance Locked ({approvedTasksCount}/2 Tasks)</span>
+                          <span>Issuance Locked ({approvedTasksCount}/{REQUIRED_TASKS_THRESHOLD} Tasks)</span>
                         </button>
                         <button
                           onClick={() => setEvaluatorDrawerOpen(true)}
@@ -2204,8 +2204,8 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
               {/* Real Tasks Progress Bar inside Founder Desk */}
               <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-300">Sprint Requirement:</span>
-                  <span>Minimum 2 approved weekly deliverables</span>
+                  <span className="font-semibold text-gray-300">Cohort Requirement:</span>
+                  <span>Minimum 12 approved sprint deliverables (6 weeks × 2 tasks)</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono">
                   <span className={hasCompletedRequiredTasks ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
@@ -2235,14 +2235,14 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                   Official Internship Certificate Locked
                 </h3>
                 <p className="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-                  Lumixora proof-of-skill credentials are cryptographically authorized by Founder Shaik Sowban only upon verified completion of the required weekly sprint deliverables.
+                  Lumixora proof-of-skill credentials are cryptographically authorized by Founder Shaik Sowban only upon verified completion of at least 12 required sprint deliverables across the 6-week cohort.
                 </p>
               </div>
 
               {/* Live Requirement Progress Card */}
               <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-left space-y-3">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-300 font-bold">Weekly Sprint Requirement:</span>
+                  <span className="text-gray-300 font-bold">6-Week Cohort Requirement:</span>
                   <span className={`font-mono font-bold ${hasCompletedRequiredTasks ? 'text-emerald-400' : 'text-amber-400'}`}>
                     {approvedTasksCount} / {REQUIRED_TASKS_THRESHOLD} Approved Tasks
                   </span>
@@ -2259,12 +2259,12 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                   {hasCompletedRequiredTasks ? (
                     <div className="text-emerald-400 flex items-center gap-1.5 font-semibold">
                       <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span>Requirements completed! Awaiting Founder Shaik Sowban's final authorization stamp.</span>
+                      <span>Requirements completed (12/12)! Awaiting Founder Shaik Sowban's final authorization stamp.</span>
                     </div>
                   ) : (
                     <div className="text-amber-300/90 flex items-center gap-1.5">
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>Select and submit deliverables for at least 2 weekly tasks to unlock your certificate.</span>
+                      <span>Select and submit deliverables for at least 12 tasks across your 6-week internship (2 tasks/week) to qualify for certification.</span>
                     </div>
                   )}
                 </div>

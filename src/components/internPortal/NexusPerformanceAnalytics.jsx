@@ -23,16 +23,16 @@ export default function NexusPerformanceAnalytics({
   const hasRepoOrDrive = submissions.some(s => s.githubUrl || s.driveUrl || s.pdfUrl);
 
   const rigorScore = hasEvaluations ? overallScore : (submittedCount > 0 ? 80 : 0);
-  const velocityScore = submittedCount >= 2 ? 100 : submittedCount === 1 ? 75 : 30;
+  const velocityScore = Math.min(100, Math.round((submittedCount / 12) * 100));
   const evidenceScore = hasRepoOrDrive ? 95 : (submittedCount > 0 ? 70 : 0);
-  const completionScore = completedApprovedCount >= 2 ? 100 : completedApprovedCount === 1 ? 50 : (submittedCount > 0 ? 30 : 0);
+  const completionScore = completedApprovedCount >= 12 ? 100 : Math.round((completedApprovedCount / 12) * 100);
   const cohortCollaborationScore = 85; // Baseline cohort standup engagement
 
   const metrics = [
     { label: 'Technical & Domain Rigor', value: rigorScore, max: 100, color: 'from-cyan-400 to-blue-500', note: hasEvaluations ? 'Derived from evaluated rubric' : 'Pending Founder evaluation' },
-    { label: 'Sprint Speed & Velocity', value: velocityScore, max: 100, color: 'from-emerald-400 to-teal-500', note: `${submittedCount}/2 Weekly deliverables submitted` },
+    { label: 'Sprint Speed & Velocity', value: velocityScore, max: 100, color: 'from-emerald-400 to-teal-500', note: `${submittedCount}/12 Cohort deliverables submitted` },
     { label: 'Analytical Polish & Evidence', value: evidenceScore, max: 100, color: 'from-purple-400 to-indigo-500', note: hasRepoOrDrive ? 'Valid deliverable links attached' : 'Provide Drive/GitHub/PDF proof' },
-    { label: 'Sprint Goal Completion', value: completionScore, max: 100, color: 'from-amber-400 to-orange-500', note: `${completedApprovedCount}/2 Tasks approved` },
+    { label: 'Sprint Goal Completion', value: completionScore, max: 100, color: 'from-amber-400 to-orange-500', note: `${completedApprovedCount}/12 Tasks approved across 6-week cohort` },
     { label: 'Cohort Synergy & Standups', value: cohortCollaborationScore, max: 100, color: 'from-pink-400 to-rose-500', note: 'Async standup check-in rate' }
   ];
 
