@@ -4,6 +4,7 @@ import {
   ExternalLink, Clock, RotateCcw, ShieldCheck, Eye, Video,
   Check, ChevronRight, Upload, Info, MessageSquare
 } from 'lucide-react';
+import { notifyFounderInternDeliverable } from '../../services/founderNotificationService';
 
 export default function NexusSubmissionStudio({
   session,
@@ -130,6 +131,15 @@ export default function NexusSubmissionStudio({
         localStorage.setItem(key, JSON.stringify([newSubmission, ...existing]));
       } catch (_) {}
     }
+
+    // Trigger instant real-time webhook & phone notification to Founder Shaik Sowban
+    try {
+      notifyFounderInternDeliverable({
+        ...newSubmission,
+        internEmail: session?.email,
+        college: session?.college
+      });
+    } catch (_) {}
 
     setSubmitSuccess(true);
     setTimeout(() => setSubmitSuccess(false), 4000);

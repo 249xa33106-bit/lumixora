@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   CheckCircle2, Circle, AlertCircle, Clock, Calendar, FileText, Send,
   ArrowRight, Sparkles, Layers, ShieldCheck, ChevronRight, Check,
-  ExternalLink, RotateCcw, AlertTriangle, Eye, HelpCircle
+  ExternalLink, RotateCcw, AlertTriangle, Eye, HelpCircle, Download,
+  Copy, X, Lock, Flame, Compass, Target, BookmarkCheck
 } from 'lucide-react';
 
 export default function NexusMissionBoard({
@@ -13,6 +14,106 @@ export default function NexusMissionBoard({
   submissions = [],
   onOpenSubmitModal
 }) {
+  // ── SPRINT ROADMAP (Weeks 1 to 6) ──
+  const SPRINT_ROADMAP = [
+    {
+      week: 'Week 01',
+      num: 1,
+      title: 'Architecture & Strategy',
+      sub: 'Active Sprint',
+      startDate: '15 Nov 2026',
+      endDate: '29 Nov 2026',
+      status: 'active',
+      desc: 'Foundation sprint establishing core technical plans, competitive baselines, and quality criteria.'
+    },
+    {
+      week: 'Week 02',
+      num: 2,
+      title: 'Cross-Platform & Loops',
+      sub: 'Starts 30 Nov',
+      startDate: '30 Nov 2026',
+      endDate: '06 Dec 2026',
+      status: 'upcoming',
+      desc: 'Mobile viewport testing, responsive breakpoints, student referral viral loops and campaign funnels.'
+    },
+    {
+      week: 'Week 03',
+      num: 3,
+      title: 'Automated Test Regressions',
+      sub: 'Starts 07 Dec',
+      startDate: '07 Dec 2026',
+      endDate: '13 Dec 2026',
+      status: 'locked',
+      desc: 'Postman/Newman API automation, deep competitor moat benchmarking, and qualitative user interviews.'
+    },
+    {
+      week: 'Week 04',
+      num: 4,
+      title: 'Telemetry & Institutional B2B',
+      sub: 'Starts 14 Dec',
+      startDate: '14 Dec 2026',
+      endDate: '20 Dec 2026',
+      status: 'locked',
+      desc: 'College TPO value frameworks, production error monitoring, and multi-channel editorial scaling.'
+    },
+    {
+      week: 'Week 05',
+      num: 5,
+      title: 'Capstone Releases',
+      sub: 'Starts 21 Dec',
+      startDate: '21 Dec 2026',
+      endDate: '27 Dec 2026',
+      status: 'locked',
+      desc: 'Production release testing, live student campus drives, and verified bug bounty resolution.'
+    },
+    {
+      week: 'Week 06',
+      num: 6,
+      title: 'Graduation & Portfolio',
+      sub: 'Starts 28 Dec',
+      startDate: '28 Dec 2026',
+      endDate: '30 Dec 2026',
+      status: 'locked',
+      desc: 'Founder evaluation, executive letters of recommendation, and cryptographic certificate issuance.'
+    }
+  ];
+
+  const [selectedSprintWeek, setSelectedSprintWeek] = useState('Week 01');
+
+  // ── DYNAMIC LIVE SPRINT CUTOFF COUNTDOWN (Target: Sunday 23:59:59 IST) ──
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const calculateCountdown = () => {
+      const now = new Date();
+      // Next Sunday 23:59:59
+      const target = new Date();
+      const currentDay = now.getDay();
+      const daysUntilSunday = (7 - currentDay) % 7;
+      target.setDate(now.getDate() + (daysUntilSunday === 0 && now.getHours() >= 23 && now.getMinutes() >= 59 ? 7 : daysUntilSunday));
+      target.setHours(23, 59, 59, 999);
+
+      const diff = target.getTime() - now.getTime();
+      if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ── TEMPLATE GENERATOR MODAL STATE ──
+  const [templateModalTask, setTemplateModalTask] = useState(null);
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
+
   // Weekly missions pool (3 curated missions per department for Week 01)
   const DEPARTMENT_TASK_POOLS = {
     marketing: [
@@ -26,7 +127,8 @@ export default function NexusMissionBoard({
         deliverables: 'PDF Brand Guide or Google Drive Slides deck (10+ slides).',
         estimatedHours: '6-8 hours',
         skills: ['Brand Architecture', 'Copywriting', 'Positioning'],
-        dueDate: '2026-12-01'
+        dueDate: '2026-11-29',
+        templateType: 'strategy'
       },
       {
         id: 'mk-w1-t2',
@@ -38,7 +140,8 @@ export default function NexusMissionBoard({
         deliverables: 'PDF Strategy Playbook or Google Docs operational brief.',
         estimatedHours: '7-9 hours',
         skills: ['Growth Marketing', 'Community Loops', 'GTM Strategy'],
-        dueDate: '2026-12-02'
+        dueDate: '2026-11-29',
+        templateType: 'playbook'
       },
       {
         id: 'mk-w1-t3',
@@ -50,7 +153,8 @@ export default function NexusMissionBoard({
         deliverables: 'Google Drive Spreadsheet or Notion / Markdown calendar.',
         estimatedHours: '5-7 hours',
         skills: ['Content Strategy', 'Funnel Optimization', 'Audience Analytics'],
-        dueDate: '2026-12-03'
+        dueDate: '2026-11-29',
+        templateType: 'calendar'
       }
     ],
     research: [
@@ -64,7 +168,8 @@ export default function NexusMissionBoard({
         deliverables: 'PDF Moat Dossier or Google Drive Comparison Matrix.',
         estimatedHours: '8-10 hours',
         skills: ['Market Intelligence', 'Competitive Analysis', 'Benchmarking'],
-        dueDate: '2026-12-01'
+        dueDate: '2026-11-29',
+        templateType: 'competitive_matrix'
       },
       {
         id: 'rs-w1-t2',
@@ -76,7 +181,8 @@ export default function NexusMissionBoard({
         deliverables: 'Google Drive Interview Transcripts + PDF Qualitative Synthesis.',
         estimatedHours: '7-9 hours',
         skills: ['User Research', 'Survey Design', 'Qualitative Synthesis'],
-        dueDate: '2026-12-02'
+        dueDate: '2026-11-29',
+        templateType: 'survey_synthesis'
       },
       {
         id: 'rs-w1-t3',
@@ -88,7 +194,8 @@ export default function NexusMissionBoard({
         deliverables: 'PDF Executive Whitepaper or Google Slides Pitch Deck.',
         estimatedHours: '6-8 hours',
         skills: ['B2B Research', 'Higher-Ed Policy', 'Value Engineering'],
-        dueDate: '2026-12-03'
+        dueDate: '2026-11-29',
+        templateType: 'whitepaper'
       }
     ],
     content_creation: [
@@ -98,35 +205,38 @@ export default function NexusMissionBoard({
         week: 'Week 01',
         title: 'Flagship Lumixora AI Platform 60s Cinematic Explainer Video',
         tagline: 'Produce a high-energy, Apple-grade motion preview of the student OS.',
-        description: 'Write script, storyboard, and edit a crisp 60-second video walkthrough showcasing the Omiverse Hub, Code Arena, and SpeakVerse AI coach. Focus on slick UI screen captures, kinetic typography, and inspiring audio.',
-        deliverables: 'MP4 Video file (Drive/YouTube unlisted) + Project timeline export.',
+        description: 'Script, storyboard, and edit a 60-second high-tempo showcase of Lumixora AI features (Notes, Coding Practice, Mock Interview Room, Placement Radar). Use dynamic typography, crisp audio design, and authentic UI captures.',
+        deliverables: 'Google Drive MP4 or YouTube unlisted preview link + Script file.',
         estimatedHours: '8-10 hours',
         skills: ['Video Editing', 'Motion Graphics', 'Storyboarding'],
-        dueDate: '2026-12-01'
+        dueDate: '2026-11-29',
+        templateType: 'video_script'
       },
       {
         id: 'cc-w1-t2',
         department: 'content_creation',
         week: 'Week 01',
-        title: '5-Part LinkedIn Carousel Series: Demystifying Tech Placement Prep',
-        tagline: 'Craft visually stunning 1080x1350 editorial carousels for engineering students.',
-        description: 'Design 5 educational carousel slide decks (8-10 slides each) covering topics like "Cracking DSA in 90 Days", "Top 5 Resume Red Flags", and "The Future of AI Mock Interviews". Adhere to Lumixora brand typography.',
-        deliverables: 'Figma link or export PDF slide packages.',
+        title: 'Complete Visual Brand Asset Library (Social Banners, Emblems, Icons)',
+        tagline: 'Create vector-perfect marketing design assets for multi-platform distribution.',
+        description: 'Design high-resolution Figma assets for Lumixora campus promotion: 5 LinkedIn carousel graphics, 3 Instagram story templates, 2 WhatsApp announcement posters, and crisp SVG emblems.',
+        deliverables: 'Figma Community file or Google Drive folder with exported WebP / PNGs.',
         estimatedHours: '7-9 hours',
-        skills: ['Figma Design', 'Information Design', 'Social Branding'],
-        dueDate: '2026-12-02'
+        skills: ['Figma Design', 'Visual Hierarchy', 'Brand Collateral'],
+        dueDate: '2026-11-29',
+        templateType: 'design_specs'
       },
       {
         id: 'cc-w1-t3',
         department: 'content_creation',
         week: 'Week 01',
-        title: 'Interactive Student UI Walkthrough & Feature Spotlight Media Kit',
-        tagline: 'Create annotated GIFs, video b-rolls, and high-res feature mockups.',
-        description: 'Generate high-fidelity animated clips and media assets spotlighting the 3D Lumina Classroom and TechPulse Radar. These assets will feed marketing outreach and founder product releases.',
-        deliverables: 'Google Drive Media Archive with categorized folders (GIFs, MP4s, PNGs).',
+        title: 'Viral Placement Success Stories & Student Interview Series (3 Articles)',
+        tagline: 'Write deep-dive student success articles highlighting tier-1 placements.',
+        description: 'Draft 3 long-form editorial spotlights (800-1200 words each) covering real student placement journeys (TCS Digital, Cognizant GenC Next, Google hiring). Focus on specific DSA concepts, interview hurdles, and practical guidance.',
+        deliverables: 'Google Docs manuscript or Markdown articles with curated headers.',
         estimatedHours: '6-8 hours',
-        skills: ['Asset Curation', 'Micro-Interactions', 'Visual Media'],
-        dueDate: '2026-12-03'
+        skills: ['Technical Writing', 'Student Journalism', 'SEO Optimization'],
+        dueDate: '2026-11-29',
+        templateType: 'editorial'
       }
     ],
     software_testing: [
@@ -140,19 +250,21 @@ export default function NexusMissionBoard({
         deliverables: 'PDF Master Test Plan or Google Drive Spreadsheet matrix.',
         estimatedHours: '8-10 hours',
         skills: ['Test Planning', 'Severity Matrix', 'Edge Case Analysis'],
-        dueDate: '2026-12-01'
+        dueDate: '2026-11-29',
+        templateType: 'qa_strategy'
       },
       {
         id: 'st-w1-t2',
         department: 'software_testing',
         week: 'Week 01',
-        title: 'Cross-Browser & Mobile Viewport Layout Audit Report (375px to 1920px)',
+        title: 'Cross-Browser UI/UX & Mobile Breakpoint Bug Audit Report',
         tagline: 'Audit Chromium, WebKit and responsive breakpoints identifying defects.',
         description: 'Conduct exhaustive rendering tests across Chrome, Safari/WebKit, Firefox, and mobile screen viewports (iPhone SE, Pixel, iPad, 1080p desktop). Document layout shifts, broken overflows, contrast issues, and click-target collisions.',
         deliverables: 'PDF Audit Dossier with annotated screenshots and reproduction steps.',
         estimatedHours: '7-9 hours',
         skills: ['Cross-Browser QA', 'Responsive UI Auditing', 'Defect Logging'],
-        dueDate: '2026-12-02'
+        dueDate: '2026-11-29',
+        templateType: 'bug_dossier'
       },
       {
         id: 'st-w1-t3',
@@ -164,7 +276,8 @@ export default function NexusMissionBoard({
         deliverables: 'GitHub repository or exported Postman Collection JSON with run logs.',
         estimatedHours: '6-8 hours',
         skills: ['API Testing', 'Postman / Playwright', 'Security Boundary QA'],
-        dueDate: '2026-12-03'
+        dueDate: '2026-11-29',
+        templateType: 'api_test_suite'
       }
     ]
   };
@@ -198,7 +311,6 @@ export default function NexusMissionBoard({
         updated = prev.filter(id => id !== taskId);
       } else {
         if (prev.length >= 2) {
-          // Replace the oldest
           updated = [prev[1], taskId];
         } else {
           updated = [...prev, taskId];
@@ -249,75 +361,198 @@ export default function NexusMissionBoard({
     return { label: 'Under Review', color: 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30', isSelected: true, sub };
   };
 
+  // Generate standardized Markdown deliverable scaffold
+  const generateScaffoldText = (task) => {
+    if (!task) return '';
+    return `# LUMIXORA ENGINEERING & INNOVATION WORKPLACE
+## Official Sprint Deliverable Report • ${task.week}
+---
+**Project**: Lumixora (A Product of Vyomra)
+**Track**: ${activeRole?.title || 'Engineering Intern'}
+**Mission**: ${task.title}
+**Author**: ${session?.name || 'Intern Scholar'} (ID: ${session?.id || 'LMX-B01'})
+**Date**: ${new Date().toLocaleDateString('en-GB')}
+**Status**: Ready for Founder Evaluation (Shaik Sowban)
+
+---
+
+### 1. Executive Summary
+<!-- Brief 2-3 sentence overview of what was accomplished, why it matters, and core outcomes -->
+- Summary: 
+
+### 2. Objectives & Methodology
+- Scope Covered:
+- Tools / Frameworks Employed:
+- Key Hypotheses or Quality Standards:
+
+### 3. Deliverable Core Artifacts & Links
+- Primary Deliverable (Google Drive / GitHub): 
+- Secondary Walkthrough / Demo (Loom / Video): 
+- Supporting Spreadsheets / Raw Data: 
+
+### 4. Findings, Test Matrix & Analysis
+| Category / Module | Scope Tested / Action Taken | Observed Outcome | Severity / Priority |
+| :--- | :--- | :--- | :--- |
+| Core Flow 01 | | Pass / Verified | S3 Normal |
+| Edge Case 02 | | | S2 Major |
+
+### 5. Identified Bottlenecks & Recommendations
+1. 
+2. 
+
+### 6. Sign-off & Verification Telemetry
+- Estimated Hours Invested: ${task.estimatedHours || '15 Hours'}
+- Authenticity Attestation: I confirm all work herein represents verified, original engineering output for Lumixora.
+`;
+  };
+
   return (
     <div className="space-y-6 animate-fade-in font-sans">
-      {/* ── HEADER BANNER: Apple-inspired precision ── */}
-      <div className="rounded-3xl bg-[#090d18] border border-white/10 p-6 sm:p-7 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="space-y-1.5">
+      
+      {/* ── SPRINT 1–6 TIMELINE ROADMAP BAR ── */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-[#080c16] border border-white/10 shadow-xl space-y-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-black uppercase tracking-wider text-cyan-400">
-              {activeRole?.shortTitle?.toUpperCase()} · WEEK 01
+            <Compass className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs font-black uppercase text-white tracking-wider">
+              6-Week Intensive Sprint Roadmap
             </span>
-            <span className="text-white/30">•</span>
-            <span className="text-xs font-bold text-slate-300">Choose your missions</span>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-              ({selectedMissions.length}/2 selected)
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              Batch 01
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Weekly Mission Board
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
-            Founder Shaik Sowban has assigned 3 targeted missions for this sprint. Select any two to execute, upload your verified deliverables, and earn official contribution credit.
-          </p>
+
+          {/* Live Cutoff Countdown Clock */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold">
+            <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span>Sprint Cutoff:</span>
+            <span className="text-white font-extrabold">
+              {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+            </span>
+          </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 shrink-0 self-start md:self-auto">
-          {!isConfirmed ? (
-            <button
-              onClick={handleConfirmMissions}
-              disabled={selectedMissions.length !== 2}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
-                selectedMissions.length === 2
-                  ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/25'
-                  : 'bg-white/10 text-slate-500 cursor-not-allowed border border-white/5'
-              }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Confirm Weekly Missions ({selectedMissions.length}/2)</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Missions Locked (Sprint in Progress)</span>
-              </span>
+        {/* Horizontal Sprint Pills */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 pt-1">
+          {SPRINT_ROADMAP.map((sprint) => {
+            const isCurrent = sprint.week === selectedSprintWeek;
+            const isActive = sprint.status === 'active';
+            const isLocked = sprint.status === 'locked' || sprint.status === 'upcoming';
+            return (
               <button
-                onClick={handleUnlockMissions}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 text-xs transition-all cursor-pointer"
-                title="Change mission selections"
+                key={sprint.week}
+                onClick={() => setSelectedSprintWeek(sprint.week)}
+                className={`p-3 rounded-2xl text-left transition-all border cursor-pointer relative ${
+                  isCurrent
+                    ? 'bg-cyan-500/15 border-cyan-400 shadow-md shadow-cyan-500/10'
+                    : 'bg-white/[0.03] border-white/5 hover:border-white/15'
+                }`}
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-mono font-bold ${isCurrent ? 'text-cyan-300' : 'text-gray-400'}`}>
+                    {sprint.week}
+                  </span>
+                  {isActive ? (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  ) : isLocked ? (
+                    <Lock className="w-3 h-3 text-gray-500" />
+                  ) : null}
+                </div>
+                <p className="text-xs font-bold text-white truncate mt-1">{sprint.title}</p>
+                <p className="text-[10px] text-gray-400 truncate">{sprint.sub}</p>
               </button>
-            </div>
-          )}
+            );
+          })}
         </div>
+
+        {/* Selected Sprint Notice if viewing future weeks */}
+        {selectedSprintWeek !== 'Week 01' && (
+          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-blue-300" />
+              <span>
+                <strong>{selectedSprintWeek} Objectives Preview</strong>: {SPRINT_ROADMAP.find(s => s.week === selectedSprintWeek)?.desc}
+              </span>
+            </div>
+            <button
+              onClick={() => setSelectedSprintWeek('Week 01')}
+              className="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-[11px] font-bold text-white transition-all"
+            >
+              Back to Active Week 01
+            </button>
+          </div>
+        )}
       </div>
 
-      {confirmFeedback && (
-        <div className={`p-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-fade-in ${
-          isConfirmed
-            ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-200'
-            : 'bg-amber-500/15 border border-amber-500/30 text-amber-200'
-        }`}>
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{confirmFeedback}</span>
-        </div>
-      )}
+      {/* ── ACTIVE SPRINT BANNER & CONTROLS (Only for Active Week 01) ── */}
+      {selectedSprintWeek === 'Week 01' ? (
+        <>
+          <div className="rounded-3xl bg-[#090d18] border border-white/10 p-6 sm:p-7 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono font-black uppercase tracking-wider text-cyan-400">
+                  {activeRole?.shortTitle?.toUpperCase()} · WEEK 01 (ACTIVE SPRINT)
+                </span>
+                <span className="text-white/30">•</span>
+                <span className="text-xs font-bold text-slate-300">Choose your missions</span>
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  ({selectedMissions.length}/2 selected)
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Weekly Mission Board
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
+                Founder Shaik Sowban has assigned 3 targeted missions for this sprint. Select any two to execute, download standardized templates, and upload verified deliverables.
+              </p>
+            </div>
 
-      {/* ── 3 MISSION SELECTION CARDS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Action Controls */}
+            <div className="flex items-center gap-2 shrink-0 self-start md:self-auto">
+              {!isConfirmed ? (
+                <button
+                  onClick={handleConfirmMissions}
+                  disabled={selectedMissions.length !== 2}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
+                    selectedMissions.length === 2
+                      ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/25'
+                      : 'bg-white/10 text-slate-500 cursor-not-allowed border border-white/5'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Confirm Weekly Missions ({selectedMissions.length}/2)</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>Missions Locked (Sprint in Progress)</span>
+                  </span>
+                  <button
+                    onClick={handleUnlockMissions}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 text-xs transition-all cursor-pointer"
+                    title="Change mission selections"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {confirmFeedback && (
+            <div className={`p-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-fade-in ${
+              isConfirmed
+                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-200'
+                : 'bg-amber-500/15 border border-amber-500/30 text-amber-200'
+            }`}>
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{confirmFeedback}</span>
+            </div>
+          )}
+
+          {/* ── 3 MISSION SELECTION CARDS ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {currentPool.map((task, idx) => {
           const isSelected = selectedMissions.includes(task.id);
           const status = getTaskStatus(task.id);
@@ -403,28 +638,85 @@ export default function NexusMissionBoard({
                   </span>
                 </div>
 
-                {/* Submit Action Button (if mission is selected) */}
-                {isSelected && (
+                {/* ACTION BUTTONS: Template Generator + Submit Button */}
+                <div className="space-y-2 pt-1">
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onOpenSubmitModal) {
-                        onOpenSubmitModal(task);
-                      } else {
-                        onNavigateTab('submission_studio');
-                      }
+                      setTemplateModalTask(task);
                     }}
-                    className="w-full py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                    className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Submit Deliverable for Mission 0{idx + 1}</span>
+                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Get Official Lumixora Template</span>
                   </button>
-                )}
+
+                  {isSelected && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onOpenSubmitModal) {
+                          onOpenSubmitModal(task);
+                        } else {
+                          onNavigateTab('submission_studio');
+                        }
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Submit Deliverable for Mission 0{idx + 1}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
-      </div>
+          </div>
+        </>
+      ) : (
+        /* ── SPRINT LOCKED HORIZON SCREEN FOR FUTURE WEEKS ── */
+        <div className="p-8 sm:p-12 rounded-3xl bg-[#090d18] border border-white/10 text-center space-y-6 max-w-2xl mx-auto shadow-2xl animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mx-auto flex items-center justify-center">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 uppercase tracking-widest">
+              {selectedSprintWeek} · SPRINT HORIZON LOCKED
+            </span>
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              {SPRINT_ROADMAP.find(s => s.week === selectedSprintWeek)?.title}
+            </h2>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              {SPRINT_ROADMAP.find(s => s.week === selectedSprintWeek)?.desc}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-left space-y-2.5 max-w-md mx-auto text-xs">
+            <div className="flex items-center justify-between text-gray-400 font-mono text-[11px]">
+              <span>SCHEDULED SPRINT WINDOW</span>
+              <span className="text-cyan-300 font-bold">{SPRINT_ROADMAP.find(s => s.week === selectedSprintWeek)?.startDate} – {SPRINT_ROADMAP.find(s => s.week === selectedSprintWeek)?.endDate}</span>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-normal">
+              Weekly missions for {selectedSprintWeek} will be assigned by Founder Shaik Sowban following Week 01 deliverable evaluations and orientation kickoff.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={() => setSelectedSprintWeek('Week 01')}
+              className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs inline-flex items-center gap-2 shadow-lg shadow-cyan-400/20 cursor-pointer transition-all"
+            >
+              <span>Return to Active Week 01 Missions</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── WORKFLOW TIMELINE CARD: The 6-Stage Real Startup Loop ── */}
       <div className="rounded-3xl bg-[#0a0e18] border border-white/10 p-6 sm:p-7 shadow-xl space-y-4">
@@ -448,6 +740,75 @@ export default function NexusMissionBoard({
           ))}
         </div>
       </div>
+
+      {/* ── DELIVERABLE TEMPLATE MODAL ── */}
+      {templateModalTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-2xl bg-[#0b0f1c] border border-cyan-500/30 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    Official Lumixora Deliverable Template
+                  </h3>
+                  <p className="text-[11px] text-gray-400">{templateModalTask.title}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTemplateModalTask(null)}
+                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-300">
+              Use this standardized template to document your mission findings. You can copy the Markdown scaffold directly into your Google Docs, GitHub README, or Notion document before submitting.
+            </p>
+
+            <div className="p-4 rounded-2xl bg-black/70 border border-white/10 font-mono text-[11px] text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-72 custom-scrollbar">
+              {generateScaffoldText(templateModalTask)}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-white/10">
+              <span className="text-[11px] text-gray-400">
+                Format: Standardized Markdown • Startup Grade
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(generateScaffoldText(templateModalTask));
+                    setCopiedTemplate(true);
+                    setTimeout(() => setCopiedTemplate(false), 2500);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer"
+                >
+                  {copiedTemplate ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedTemplate ? 'Copied to Clipboard!' : 'Copy Template Markdown'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const blob = new Blob([generateScaffoldText(templateModalTask)], { type: 'text/markdown' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Lumixora_${templateModalTask.id}_Deliverable_Template.md`;
+                    a.click();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5 border border-white/10 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .md</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

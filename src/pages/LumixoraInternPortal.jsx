@@ -1824,6 +1824,7 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
           session={session}
           activeRole={activeRole}
           onNavigateTab={setInternActiveTab}
+          isFounder={isFounder}
         />
       )}
 

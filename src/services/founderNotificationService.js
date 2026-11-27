@@ -384,6 +384,55 @@ export const notifyFounderInternLogin = (intern) => {
   return notifObj;
 };
 
+export const notifyFounderInternDeliverable = (submission) => {
+  if (!submission) return;
+  const name = submission.internName || 'Intern Scholar';
+  const email = (submission.internEmail || '').toLowerCase().trim();
+  const taskTitle = submission.taskTitle || 'Weekly Sprint Deliverable';
+  const internId = submission.internId || 'LMX-B01';
+  const dept = submission.department || 'Technology';
+  const deliverableUrl = submission.driveUrl || submission.githubUrl || submission.pdfUrl || submission.loomUrl || 'Attached';
+
+  // 1. Record for Founder Portal with immediate priority
+  const notifObj = recordFounderNotification({
+    type: 'intern_submission',
+    name,
+    email,
+    role: 'intern',
+    college: submission.college || 'GPREC',
+    department: dept,
+    details: `🚀 New Sprint Deliverable Submitted: "${taskTitle}" by ${name} (${internId})`,
+    appId: internId,
+    meta: {
+      internId,
+      taskTitle,
+      deliverableId: submission.deliverableId,
+      deliverableUrl,
+      hours: submission.hours,
+      submittedAt: submission.submittedAt || new Date().toISOString()
+    }
+  });
+
+  // 2. Dispatch instant mobile push & sound notification to Founder's phone
+  notifyFounder({
+    type: 'INTERN_DELIVERABLE',
+    userName: name,
+    userEmail: email,
+    role: `Intern (${dept})`,
+    college: submission.college || 'GPREC',
+    meta: `Mission: ${taskTitle} · Artifact: ${deliverableUrl}`
+  }).catch(() => {});
+
+  // 3. Audio & Vibration chime for Founder device
+  try {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate([100, 50, 100]);
+    }
+  } catch (_) {}
+
+  return notifObj;
+};
+
 export const notifyFounderRegister = (user) => {
   if (!user) return;
   const meta = parseUserMetadata(user.name);

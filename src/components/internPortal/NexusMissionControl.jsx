@@ -223,60 +223,59 @@ export default function NexusMissionControl({
             </p>
           </div>
 
-          {/* Upcoming Orientation & Availability Poll Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-transparent border border-purple-500/20 space-y-3">
+          {/* Upcoming Orientation: Real Confirmed Founder Session */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-transparent border border-purple-500/30 space-y-3 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-purple-400" />
+                <Video className="w-4 h-4 text-purple-400" />
                 <span className="text-xs font-bold text-white">Upcoming Orientation</span>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                {pollSelected ? 'Vote Cast' : 'Poll Open'}
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                Confirmed Live Session
               </span>
             </div>
 
-            <p className="text-xs text-slate-300">
-              Founder Shaik Sowban is scheduling the official Batch 01 orientation. Vote for your preferred time:
-            </p>
-
-            <div className="space-y-1.5">
-              {pollOptions.map(opt => {
-                const voteCount = Object.values(cohortVotes).filter(v => v === opt.id).length;
-                const isMyVote = pollSelected === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => handleVote(opt.id)}
-                    className={`w-full p-2 rounded-xl text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
-                      isMyVote
-                        ? 'bg-purple-500/25 border border-purple-400 text-white font-bold'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className={`w-3 h-3 rounded-full border flex items-center justify-center ${isMyVote ? 'border-purple-400 bg-purple-400' : 'border-white/30'}`}>
-                        {isMyVote && <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
-                      </span>
-                      <span>{opt.label}</span>
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400">
-                      {voteCount} {voteCount === 1 ? 'vote' : 'votes'}
-                    </span>
-                  </button>
-                );
-              })}
+            <div>
+              <h4 className="text-sm font-extrabold text-white">
+                Batch 01 Official Cohort Kickoff & Founder Keynote
+              </h4>
+              <p className="text-[11px] text-purple-300 font-semibold mt-0.5">
+                Sunday, 30 Nov 2026 · 11:00 AM – 12:15 PM IST
+              </p>
             </div>
 
-            {pollSelected ? (
-              <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Your vote is confirmed for {pollOptions.find(o => o.id === pollSelected)?.label}</span>
+            <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 space-y-1">
+              <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono">
+                <span>HOST: Shaik Sowban (Founder)</span>
+                <span>PLATFORM: Google Meet</span>
+              </div>
+              <p className="text-gray-300 text-[11px]">
+                Welcome manifesto, sprint deliverables standard, and live Q&A on capstone projects and recommendation letters.
               </p>
-            ) : (
-              <p className="text-[11px] text-amber-400/90 font-medium">
-                Select your preferred slot to help finalize the meeting time.
-              </p>
-            )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <a
+                href="https://meet.google.com/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 px-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 cursor-pointer"
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>Join Google Meet</span>
+              </a>
+              <a
+                href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Lumixora+Batch+01+Cohort+Orientation&dates=20261130T053000Z/20261130T064500Z&details=Batch+01+Kickoff+with+Founder+Shaik+Sowban&location=Google+Meet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/10 transition-all cursor-pointer"
+                title="Add to Google Calendar"
+              >
+                <Calendar className="w-3.5 h-3.5 text-gray-300" />
+                <span>Add to Cal</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
