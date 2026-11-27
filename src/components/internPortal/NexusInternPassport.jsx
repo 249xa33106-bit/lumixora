@@ -33,11 +33,51 @@ export default function NexusInternPassport({
     setTimeout(() => setCopiedLink(false), 3000);
   };
 
-  // Impact DNA Record: Real contributions
+  // Real Impact DNA Record: Dynamically built from actual submissions, standups, and activity
+  const realDeliverableImpacts = submissions.map(s => ({
+    type: 'Sprint Deliverable',
+    title: s.taskTitle || 'Weekly Sprint Deliverable',
+    date: new Date(s.submittedAt).toLocaleDateString(),
+    impact: s.status === 'approved'
+      ? `Approved by Founder (Score: ${s.score || 'Pass'}/100)`
+      : (s.status === 'under_review' ? 'Submitted · Under Founder Review' : 'Revision Requested')
+  }));
+
+  // Check for any logged standups
+  let standupCount = 0;
+  try {
+    const rawStandups = localStorage.getItem(`lumixora_standup_history_${session?.id}`);
+    if (rawStandups) standupCount = JSON.parse(rawStandups).length;
+  } catch (_) {}
+
+  const standupImpact = standupCount > 0 ? [{
+    type: 'Cohort Standups',
+    title: `${standupCount} Daily Async Check-ins Recorded`,
+    date: 'Active Sprint',
+    impact: 'Consistent Sprint Telemetry'
+  }] : [];
+
+  // Check for any innovation pitches
+  let internPitches = [];
+  try {
+    const rawPitches = localStorage.getItem('lumixora_innovation_pitches');
+    if (rawPitches) {
+      const allPitches = JSON.parse(rawPitches);
+      internPitches = allPitches.filter(p => p.author && p.author.includes(session?.name));
+    }
+  } catch (_) {}
+
+  const pitchImpact = internPitches.map(p => ({
+    type: 'Innovation Pitch',
+    title: p.title,
+    date: 'Batch 01',
+    impact: `Status: ${p.status} · ${p.upvotes || 0} Upvotes`
+  }));
+
   const impactContributions = [
-    { type: 'Sprint Deliverable', title: 'Week 01 Department Milestone Completed', date: 'Nov 2026', impact: 'Core Architecture Rubric Sign-off' },
-    { type: 'Peer Review', title: 'Cross-functional Collaboration & Standup', date: 'Nov 2026', impact: 'Synchronous Cohort Check-in' },
-    { type: 'Quality Sign-off', title: 'Production Edge Cases & Verification', date: 'Nov 2026', impact: 'Production Grade Reliability' }
+    ...realDeliverableImpacts,
+    ...standupImpact,
+    ...pitchImpact
   ];
 
   // Behind the build release notes
@@ -177,21 +217,31 @@ export default function NexusInternPassport({
           </div>
 
           <div className="space-y-4">
-            {impactContributions.map((c, i) => (
-              <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-cyan-400">{c.type}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{c.date}</span>
+            {impactContributions.length > 0 ? (
+              impactContributions.map((c, i) => (
+                <div key={i} className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-4 h-4" />
                   </div>
-                  <h4 className="text-xs font-bold text-white mt-0.5">{c.title}</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{c.impact}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-cyan-400">{c.type}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">{c.date}</span>
+                    </div>
+                    <h4 className="text-xs font-bold text-white mt-0.5">{c.title}</h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{c.impact}</p>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-2">
+                <Clock className="w-6 h-6 text-slate-500 mx-auto" />
+                <h4 className="text-xs font-bold text-slate-300">Impact DNA Awaiting First Sprint Activity</h4>
+                <p className="text-[11px] text-slate-500 max-w-sm mx-auto leading-relaxed">
+                  Your verifiable proof of impact will automatically populate here as you submit sprint deliverables, log daily standups, and pitch feature proposals.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

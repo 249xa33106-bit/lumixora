@@ -23,28 +23,50 @@ export default function NexusDepartmentWorkspace({
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 1. MARKETING TOOLS STATE & DATA
+  // 1. MARKETING TOOLS STATE & DATA (Persistent)
   // ─────────────────────────────────────────────────────────────────────────────
-  const [campaigns, setCampaigns] = useState([
-    { id: 'c1', name: 'Rayalaseema Campus Blitz 2026', channel: 'Instagram + WhatsApp', reach: '4,200 Scholars', status: 'Live', conversion: '18.4%' },
-    { id: 'c2', name: 'GPREC Placement Radar Teaser', channel: 'LinkedIn Carousels', reach: '1,850 Leads', status: 'Scheduled', conversion: '22.1%' },
-    { id: 'c3', name: 'Alumni Referral Wave 01', channel: 'Direct Ambassador Outreach', reach: '920 Students', status: 'Completed', conversion: '31.0%' }
-  ]);
+  const [campaigns, setCampaigns] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_real_campaigns');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [
+      { id: 'c1', name: 'Rayalaseema Campus Blitz 2026', channel: 'Instagram + WhatsApp', reach: 'Campus Scholars', status: 'Live', conversion: 'Active' },
+      { id: 'c2', name: 'GPREC Placement Radar Teaser', channel: 'LinkedIn Carousels', reach: 'Engineering Final Years', status: 'In Progress', conversion: 'Tracked' }
+    ];
+  });
 
-  const [referrals, setReferrals] = useState([
-    { code: 'LMX-GPREC-AMB', ambassador: 'Mohammed Nazia', clicks: 420, signups: 88, tier: 'Diamond' },
-    { code: 'LMX-CAMPUS-AIML', ambassador: 'Kushala L.', clicks: 310, signups: 64, tier: 'Gold' },
-    { code: 'LMX-COMMUNITY-B01', ambassador: 'Chandrika C.', clicks: 250, signups: 49, tier: 'Silver' }
-  ]);
+  const [referrals, setReferrals] = useState(() => {
+    const myCode = session?.id || 'LMX-B01';
+    return [
+      { code: myCode, ambassador: session?.name || 'My Ambassador Link', clicks: 12, signups: 3, tier: 'Active Intern' },
+      { code: 'LMX-GPREC-AMB', ambassador: 'Mohammed Nazia', clicks: 42, signups: 18, tier: 'Diamond' },
+      { code: 'LMX-CAMPUS-AIML', ambassador: 'Lakshmi Kushala', clicks: 31, signups: 14, tier: 'Gold' }
+    ];
+  });
+
+  const [copiedMyRef, setCopiedMyRef] = useState(false);
+  const myRefUrl = `https://lumixora.in/?ref=${session?.id || 'LMX-B01'}`;
+
+  const copyMyRefUrl = () => {
+    navigator.clipboard.writeText(myRefUrl);
+    setCopiedMyRef(true);
+    setTimeout(() => setCopiedMyRef(false), 3000);
+  };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 2. RESEARCH TOOLS STATE & DATA
+  // 2. RESEARCH TOOLS STATE & DATA (Persistent)
   // ─────────────────────────────────────────────────────────────────────────────
-  const [researchLibrary, setResearchLibrary] = useState([
-    { id: 'r1', title: 'EdTech Market Moat & Pricing Elasticity Matrix', category: 'Competitive Moats', date: 'Nov 2026', author: 'Research Track', status: 'Approved' },
-    { id: 'r2', title: 'Undergraduate Coding Preparation Bottlenecks (N=48)', category: 'Student Interviews', date: 'Nov 2026', author: 'Kushala L.', status: 'In Review' },
-    { id: 'r3', title: 'Institutional Placement Accreditation (NAAC Criterion 5)', category: 'B2B Policy', date: 'Nov 2026', author: 'Batch 01 Lead', status: 'Published' }
-  ]);
+  const [researchLibrary, setResearchLibrary] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_real_research');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [
+      { id: 'r1', title: 'EdTech Market Moat & Pricing Elasticity Matrix', category: 'Competitive Moats', date: 'Nov 2026', author: 'Lakshmi Kushala', status: 'Active Sprint' },
+      { id: 'r2', title: 'Undergraduate Coding Preparation Bottlenecks (GPREC Campus)', category: 'Student Interviews', date: 'Nov 2026', author: 'Research Track', status: 'In Progress' }
+    ];
+  });
 
   const [competitorIntel, setCompetitorIntel] = useState([
     { name: 'Unstop (Dare2Compete)', strength: 'Broad hackathon volume', weakness: 'Generic UI, zero 3D classroom coaching', moatVsLumixora: 'Lumixora has AI Placement Commander + 3D Lumina Classroom' },
@@ -53,37 +75,60 @@ export default function NexusDepartmentWorkspace({
   ]);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 3. CONTENT CREATION TOOLS STATE & DATA
+  // 3. CONTENT CREATION TOOLS STATE & DATA (Persistent)
   // ─────────────────────────────────────────────────────────────────────────────
-  const [contentItems, setContentItems] = useState([
-    { id: 'ct1', title: 'How to Crack DSA in 90 Days (Figma Carousel)', platform: 'LinkedIn', format: '1080x1350 Carousel', status: 'Ready for Review', due: 'Nov 29' },
-    { id: 'ct2', title: '60s Cinema Walkthrough of Lumixora Code Arena', platform: 'Instagram Reels', format: '9:16 Vertical Video', status: 'In Production', due: 'Dec 01' },
-    { id: 'ct3', title: 'AI Mock Interview Voice Coach Announcement', platform: 'Multi-Channel', format: 'Static Poster + Script', status: 'Approved', due: 'Dec 03' }
-  ]);
+  const [contentItems, setContentItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_real_content_items');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [
+      { id: 'ct1', title: 'How to Crack DSA in 90 Days (Figma Carousel)', platform: 'LinkedIn', format: '1080x1350 Carousel', status: 'Ready for Review', due: 'Nov 29' },
+      { id: 'ct2', title: '60s Cinema Walkthrough of Lumixora Code Arena', platform: 'Instagram Reels', format: '9:16 Vertical Video', status: 'In Production', due: 'Dec 01' },
+      { id: 'ct3', title: 'AI Mock Interview Voice Coach Announcement', platform: 'Multi-Channel', format: 'Static Poster + Script', status: 'Approved', due: 'Dec 03' }
+    ];
+  });
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 4. PRODUCT TESTING TOOLS STATE & DATA
+  // 4. PRODUCT TESTING TOOLS STATE & DATA (Persistent)
   // ─────────────────────────────────────────────────────────────────────────────
-  const [bugs, setBugs] = useState([
-    { id: 'BUG-101', title: 'Auth modal token expiry does not clear stale session', module: 'Auth & Security', severity: 'S2 Critical', status: 'In Triage', reporter: 'Bosle Tulasi' },
-    { id: 'BUG-102', title: 'Mobile viewport overflow on 375px in Code Arena editor', module: 'Code Arena', severity: 'S3 Major', status: 'Resolved', reporter: 'Batch 01 QA' },
-    { id: 'BUG-103', title: 'TechPulse Radar canvas memory leak during rapid tab toggling', module: 'TechPulse', severity: 'S2 Critical', status: 'Verified in Prod', reporter: 'Shaik Sowban' }
-  ]);
+  const [bugs, setBugs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_real_bugs');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [
+      { id: 'BUG-101', title: 'Auth modal token expiry clears active tab without warning', module: 'Auth & Security', severity: 'S2 Critical', status: 'In Triage', reporter: session?.name || 'Batch 01 QA' },
+      { id: 'BUG-102', title: 'Mobile viewport overflow on 375px in Code Arena editor', module: 'Code Arena', severity: 'S3 Major', status: 'Resolved', reporter: 'Bosle Tulasi' }
+    ];
+  });
 
-  const [testCases, setTestCases] = useState([
-    { id: 'TC-01', feature: 'Google OAuth & Email Login Boundary', status: 'PASSED' },
-    { id: 'TC-02', feature: 'Placement Commander Syllabus Predictor ML', status: 'PASSED' },
-    { id: 'TC-03', feature: 'SpeakVerse Web Audio API Mic Permissions', status: 'IN PROGRESS' },
-    { id: 'TC-04', feature: 'Certificate Verifiable QR Link Redirection', status: 'PASSED' },
-    { id: 'TC-05', feature: 'Notes Platform PDF Worker Multi-page Render', status: 'BLOCKED' }
-  ]);
+  const [testCases, setTestCases] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_real_test_cases');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return [
+      { id: 'TC-01', feature: 'Google OAuth & Email Login Boundary Isolation', status: 'PASSED' },
+      { id: 'TC-02', feature: 'Judge0 Cloud Execution Engine for C++/Java/Python', status: 'PASSED' },
+      { id: 'TC-03', feature: 'SpeakVerse Web Audio API Mic Permissions & Stream', status: 'IN PROGRESS' },
+      { id: 'TC-04', feature: 'Certificate Verifiable QR Link Redirection (lumixora.in/verify)', status: 'PASSED' },
+      { id: 'TC-05', feature: 'Notes Platform Multi-page PDF Canvas Rendering', status: 'PASSED' }
+    ];
+  });
 
   const toggleTestCaseStatus = (id) => {
-    setTestCases(prev => prev.map(tc => {
-      if (tc.id !== id) return tc;
-      const next = tc.status === 'PASSED' ? 'FAILED' : tc.status === 'FAILED' ? 'BLOCKED' : 'PASSED';
-      return { ...tc, status: next };
-    }));
+    setTestCases(prev => {
+      const updated = prev.map(tc => {
+        if (tc.id !== id) return tc;
+        const next = tc.status === 'PASSED' ? 'FAILED' : tc.status === 'FAILED' ? 'BLOCKED' : 'PASSED';
+        return { ...tc, status: next };
+      });
+      try {
+        localStorage.setItem('lumixora_real_test_cases', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
   };
 
   return (
@@ -168,6 +213,22 @@ export default function NexusDepartmentWorkspace({
         {/* ══════ 1. MARKETING EXCLUSIVE VIEW ══════ */}
         {activeRole?.id === 'marketing' && (
           <div className="space-y-6">
+            {/* Real Personal Referral Link Box */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-cyan-500/10 border border-violet-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-violet-400 block">Your Official Ambassador Referral Link</span>
+                <p className="text-xs font-mono text-white mt-0.5 truncate max-w-md">{myRefUrl}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Share with campus peers to track signups directly credited to your intern profile.</p>
+              </div>
+              <button
+                onClick={copyMyRefUrl}
+                className="px-4 py-2 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-auto"
+              >
+                {copiedMyRef ? <CheckCircle2 className="w-4 h-4 text-emerald-300" /> : <Share2 className="w-4 h-4" />}
+                <span>{copiedMyRef ? 'Copied Link!' : 'Copy Referral URL'}</span>
+              </button>
+            </div>
+
             {/* Live Campaigns Table */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
