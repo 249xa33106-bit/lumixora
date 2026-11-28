@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles, CheckCircle2, Clock, Calendar, ArrowRight,
   TrendingUp, Award, Users, AlertCircle, FileText, Send,
-  Vote, Video, ShieldCheck, ChevronRight, Bell, Zap, Compass, Check
+  Vote, Video, ShieldCheck, ChevronRight, Bell, Zap, Compass, Check,
+  Edit3, Plus, X, Radio, MessageSquare, Megaphone
 } from 'lucide-react';
 
 export default function NexusMissionControl({
@@ -13,6 +14,40 @@ export default function NexusMissionControl({
   submissions = [],
   selectedMissions = []
 }) {
+  // Detect if current session is Founder Shaik Sowban
+  const isFounder = useMemo(() => {
+    return session?.email?.includes('sowban') || session?.role === 'founder' || session?.isFounder === true;
+  }, [session]);
+
+  // Dynamic Orientation Session & Poll State (Updated / Posted by Founder)
+  const [orientation, setOrientation] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_live_orientation_session');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return {
+      mode: 'poll', // 'poll' | 'confirmed'
+      title: 'Batch 01 Official Cohort Kickoff & Founder Keynote',
+      dateTime: 'Sunday, 30 Nov 2026 · 11:00 AM – 12:15 PM IST',
+      platform: 'Google Meet',
+      meetUrl: 'https://meet.google.com/new',
+      calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Lumixora+Batch+01+Cohort+Orientation&dates=20261130T053000Z/20261130T064500Z&details=Batch+01+Kickoff+with+Founder+Shaik+Sowban&location=Google+Meet',
+      description: 'Welcome manifesto, sprint deliverables standard, and live Q&A on capstone projects and recommendation letters.',
+      status: 'Confirmed Live Session',
+      pollQuestion: 'Founder Shaik Sowban is scheduling the official Batch 01 orientation. Vote for your preferred time:',
+      pollStatus: 'Poll is open',
+      pollOptions: [
+        { id: 'sat_6pm', label: 'Saturday · 6:00 PM IST', baseVotes: 14 },
+        { id: 'sun_11am', label: 'Sunday · 11:00 AM IST', baseVotes: 22 },
+        { id: 'sun_5pm', label: 'Sunday · 5:00 PM IST', baseVotes: 12 }
+      ]
+    };
+  });
+
+  // Modal State for Founder Orientation & Meeting Manager
+  const [orientationModalOpen, setOrientationModalOpen] = useState(false);
+  const [orientationForm, setOrientationForm] = useState(orientation);
+
   // Real Cohort Availability Poll State (persisted & aggregated)
   const [cohortVotes, setCohortVotes] = useState(() => {
     try {
@@ -25,12 +60,6 @@ export default function NexusMissionControl({
 
   const pollSelected = session?.id ? cohortVotes[session.id] || '' : '';
 
-  const pollOptions = [
-    { id: 'sat_6pm', label: 'Saturday · 6:00 PM IST', rawSlot: 'Saturday, 29 Nov 2026' },
-    { id: 'sun_11am', label: 'Sunday · 11:00 AM IST', rawSlot: 'Sunday, 30 Nov 2026' },
-    { id: 'sun_5pm', label: 'Sunday · 5:00 PM IST', rawSlot: 'Sunday, 30 Nov 2026' }
-  ];
-
   const handleVote = (optionId) => {
     if (!session?.id) return;
     const updated = { ...cohortVotes, [session.id]: optionId };
@@ -38,6 +67,41 @@ export default function NexusMissionControl({
     try {
       localStorage.setItem('lumixora_cohort_poll_votes', JSON.stringify(updated));
     } catch (_) {}
+  };
+
+  const handleSaveOrientation = (e) => {
+    if (e) e.preventDefault();
+    setOrientation(orientationForm);
+    try {
+      localStorage.setItem('lumixora_live_orientation_session', JSON.stringify(orientationForm));
+      window.dispatchEvent(new Event('lumixora_orientation_updated'));
+    } catch (_) {}
+    setOrientationModalOpen(false);
+  };
+
+  // Dynamic Founder Notice State
+  const [founderNotice, setFounderNotice] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lumixora_founder_broadcast_notice');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return {
+      badge: 'Founder Notice · Nov 2026',
+      author: 'From Shaik Sowban',
+      message: '"Batch 01 tasks are live! Select your two weekly missions, complete deliverables with production rigor, and earn verified contribution credit towards your Letter of Recommendation."'
+    };
+  });
+
+  const [noticeModalOpen, setNoticeModalOpen] = useState(false);
+  const [noticeForm, setNoticeForm] = useState(founderNotice);
+
+  const handleSaveNotice = (e) => {
+    if (e) e.preventDefault();
+    setFounderNotice(noticeForm);
+    try {
+      localStorage.setItem('lumixora_founder_broadcast_notice', JSON.stringify(noticeForm));
+    } catch (_) {}
+    setNoticeModalOpen(false);
   };
 
   // Department mission briefs
@@ -223,59 +287,144 @@ export default function NexusMissionControl({
             </p>
           </div>
 
-          {/* Upcoming Orientation: Real Confirmed Founder Session */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-transparent border border-purple-500/30 space-y-3 shadow-lg">
+          {/* Upcoming Orientation: Interactive Poll OR Confirmed Session (Founder Configurable) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-transparent border border-purple-500/30 space-y-3 shadow-lg relative overflow-hidden">
+            
+            {/* Header with Title and Mode Badge / Founder Edit Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Video className="w-4 h-4 text-purple-400" />
+                <Calendar className="w-4 h-4 text-purple-400" />
                 <span className="text-xs font-bold text-white">Upcoming Orientation</span>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                Confirmed Live Session
-              </span>
-            </div>
+              
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono flex items-center gap-1 ${
+                  orientation.mode === 'confirmed'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                }`}>
+                  {orientation.mode === 'confirmed' ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>{orientation.status || 'Confirmed Live Session'}</span>
+                    </>
+                  ) : (
+                    <span>{orientation.pollStatus || 'Poll is open'}</span>
+                  )}
+                </span>
 
-            <div>
-              <h4 className="text-sm font-extrabold text-white">
-                Batch 01 Official Cohort Kickoff & Founder Keynote
-              </h4>
-              <p className="text-[11px] text-purple-300 font-semibold mt-0.5">
-                Sunday, 30 Nov 2026 · 11:00 AM – 12:15 PM IST
-              </p>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 space-y-1">
-              <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono">
-                <span>HOST: Shaik Sowban (Founder)</span>
-                <span>PLATFORM: Google Meet</span>
+                {/* Founder Edit / Post Button */}
+                {isFounder && (
+                  <button
+                    onClick={() => {
+                      setOrientationForm(orientation);
+                      setOrientationModalOpen(true);
+                    }}
+                    className="p-1 px-2 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 text-[10px] font-black flex items-center gap-1 cursor-pointer transition-all"
+                    title="Founder: Update or Post Orientation & Poll details"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>Update / Post</span>
+                  </button>
+                )}
               </div>
-              <p className="text-gray-300 text-[11px]">
-                Welcome manifesto, sprint deliverables standard, and live Q&A on capstone projects and recommendation letters.
-              </p>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <a
-                href="https://meet.google.com/new"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 px-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 cursor-pointer"
-              >
-                <Video className="w-3.5 h-3.5" />
-                <span>Join Google Meet</span>
-              </a>
-              <a
-                href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Lumixora+Batch+01+Cohort+Orientation&dates=20261130T053000Z/20261130T064500Z&details=Batch+01+Kickoff+with+Founder+Shaik+Sowban&location=Google+Meet"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/10 transition-all cursor-pointer"
-                title="Add to Google Calendar"
-              >
-                <Calendar className="w-3.5 h-3.5 text-gray-300" />
-                <span>Add to Cal</span>
-              </a>
-            </div>
+            {/* ── MODE A: INTERACTIVE AVAILABILITY POLL ── */}
+            {orientation.mode === 'poll' ? (
+              <div className="space-y-3">
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {orientation.pollQuestion || 'Founder Shaik Sowban is scheduling the official Batch 01 orientation. Vote for your preferred time:'}
+                </p>
+
+                <div className="space-y-1.5">
+                  {(orientation.pollOptions || []).map((opt) => {
+                    const extraVotes = Object.values(cohortVotes).filter(v => v === opt.id).length;
+                    const totalVotes = (opt.baseVotes || 0) + extraVotes;
+                    const isMyVote = pollSelected === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleVote(opt.id)}
+                        className={`w-full p-2.5 rounded-xl text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer border ${
+                          isMyVote
+                            ? 'bg-purple-500/25 border-purple-400 text-white font-bold shadow-md shadow-purple-500/15'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                            isMyVote ? 'border-purple-400 bg-purple-400' : 'border-white/30'
+                          }`}>
+                            {isMyVote && <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
+                          </span>
+                          <span>{opt.label}</span>
+                        </span>
+                        <span className="text-[11px] font-mono font-bold text-slate-400">
+                          {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {pollSelected ? (
+                  <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Your vote is confirmed for {orientation.pollOptions.find(o => o.id === pollSelected)?.label || 'this slot'}!</span>
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-amber-400/90 font-medium">
+                    Select your preferred slot to help finalize the meeting time.
+                  </p>
+                )}
+              </div>
+            ) : (
+              /* ── MODE B: CONFIRMED LIVE ORIENTATION SESSION ── */
+              <div className="space-y-3">
+                <div>
+                  <h4 className="text-sm font-extrabold text-white">
+                    {orientation.title || 'Batch 01 Official Cohort Kickoff & Founder Keynote'}
+                  </h4>
+                  <p className="text-[11px] text-purple-300 font-semibold mt-0.5">
+                    {orientation.dateTime || 'Sunday, 30 Nov 2026 · 11:00 AM – 12:15 PM IST'}
+                  </p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 space-y-1">
+                  <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono">
+                    <span>HOST: {orientation.host || 'Shaik Sowban (Founder)'}</span>
+                    <span>PLATFORM: {orientation.platform || 'Google Meet'}</span>
+                  </div>
+                  <p className="text-gray-300 text-[11px] leading-relaxed">
+                    {orientation.description || 'Welcome manifesto, sprint deliverables standard, and live Q&A on capstone projects and recommendation letters.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <a
+                    href={orientation.meetUrl || 'https://meet.google.com/new'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2 px-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 cursor-pointer"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Join Google Meet</span>
+                  </a>
+                  <a
+                    href={orientation.calendarUrl || 'https://calendar.google.com'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/10 transition-all cursor-pointer"
+                    title="Add to Google Calendar"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-gray-300" />
+                    <span>Add to Cal</span>
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -342,7 +491,7 @@ export default function NexusMissionControl({
         })}
       </div>
 
-      {/* ── FOUNDER ANNOUNCEMENTS STRIP ── */}
+      {/* ── FOUNDER ANNOUNCEMENTS STRIP (Configurable by Founder) ── */}
       <div className="rounded-2xl bg-gradient-to-r from-cyan-950/30 via-slate-900 to-indigo-950/30 border border-cyan-500/20 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
@@ -351,12 +500,25 @@ export default function NexusMissionControl({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
-                Founder Notice · Nov 2026
+                {founderNotice.badge || 'Founder Notice · Nov 2026'}
               </span>
-              <span className="text-xs text-slate-400">From Shaik Sowban</span>
+              <span className="text-xs text-slate-400">{founderNotice.author || 'From Shaik Sowban'}</span>
+              
+              {isFounder && (
+                <button
+                  onClick={() => {
+                    setNoticeForm(founderNotice);
+                    setNoticeModalOpen(true);
+                  }}
+                  className="px-2 py-0.5 rounded bg-cyan-400/20 hover:bg-cyan-400/30 text-cyan-300 text-[10px] font-bold border border-cyan-400/40 ml-2 cursor-pointer transition-all flex items-center gap-1"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>Edit Notice</span>
+                </button>
+              )}
             </div>
             <p className="text-xs sm:text-sm font-semibold text-white mt-1">
-              "Batch 01 tasks are live! Select your two weekly missions, complete deliverables with production rigor, and earn verified contribution credit towards your Letter of Recommendation."
+              {founderNotice.message}
             </p>
           </div>
         </div>
@@ -369,6 +531,238 @@ export default function NexusMissionControl({
           <span>Join Standup Room</span>
         </button>
       </div>
+      {/* ── FOUNDER MODAL: UPDATE OR POST ORIENTATION / POLL ── */}
+      {orientationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in font-sans">
+          <div className="relative w-full max-w-lg rounded-3xl bg-[#0a0e1a] border border-cyan-500/30 p-6 shadow-2xl space-y-5 text-slate-200">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                  <Megaphone className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">Founder Orientation & Meeting Desk</h3>
+                  <p className="text-[11px] text-gray-400">Post orientation dates, update Google Meet link, or manage availability poll.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOrientationModalOpen(false)}
+                className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveOrientation} className="space-y-4 text-xs">
+              {/* Mode Toggle */}
+              <div>
+                <label className="text-gray-300 font-bold block mb-1.5">Card Display Mode</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrientationForm(prev => ({ ...prev, mode: 'poll' }))}
+                    className={`p-2.5 rounded-xl font-bold border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                      orientationForm.mode === 'poll'
+                        ? 'bg-purple-500/25 border-purple-400 text-white shadow-md shadow-purple-500/20'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Interactive Poll Mode</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setOrientationForm(prev => ({ ...prev, mode: 'confirmed' }))}
+                    className={`p-2.5 rounded-xl font-bold border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                      orientationForm.mode === 'confirmed'
+                        ? 'bg-emerald-500/25 border-emerald-400 text-white shadow-md shadow-emerald-500/20'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Confirmed Session Mode</span>
+                  </button>
+                </div>
+              </div>
+
+              {orientationForm.mode === 'poll' ? (
+                /* Poll Configuration Fields */
+                <div className="space-y-3 p-3.5 rounded-2xl bg-black/40 border border-white/5">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Poll Question / Headline</label>
+                    <input
+                      type="text"
+                      value={orientationForm.pollQuestion}
+                      onChange={e => setOrientationForm({ ...orientationForm, pollQuestion: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Poll Badge</label>
+                    <input
+                      type="text"
+                      value={orientationForm.pollStatus}
+                      onChange={e => setOrientationForm({ ...orientationForm, pollStatus: e.target.value })}
+                      placeholder="e.g. Poll is open / Voting closes tonight"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-400"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-gray-300 font-bold block">Poll Options & Base Votes</label>
+                    {orientationForm.pollOptions.map((opt, idx) => (
+                      <div key={opt.id} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={opt.label}
+                          onChange={e => {
+                            const updated = [...orientationForm.pollOptions];
+                            updated[idx].label = e.target.value;
+                            setOrientationForm({ ...orientationForm, pollOptions: updated });
+                          }}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white outline-none focus:border-purple-400"
+                        />
+                        <input
+                          type="number"
+                          value={opt.baseVotes}
+                          onChange={e => {
+                            const updated = [...orientationForm.pollOptions];
+                            updated[idx].baseVotes = parseInt(e.target.value) || 0;
+                            setOrientationForm({ ...orientationForm, pollOptions: updated });
+                          }}
+                          className="w-16 bg-white/5 border border-white/10 rounded-xl px-2 py-1.5 text-white font-mono text-center outline-none focus:border-purple-400"
+                        />
+                        <span className="text-[10px] text-gray-400">votes</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Confirmed Session Configuration Fields */
+                <div className="space-y-3 p-3.5 rounded-2xl bg-black/40 border border-white/5">
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Session Title</label>
+                    <input
+                      type="text"
+                      value={orientationForm.title}
+                      onChange={e => setOrientationForm({ ...orientationForm, title: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Date & Time Slot</label>
+                    <input
+                      type="text"
+                      value={orientationForm.dateTime}
+                      onChange={e => setOrientationForm({ ...orientationForm, dateTime: e.target.value })}
+                      placeholder="e.g. Sunday, 30 Nov 2026 · 11:00 AM – 12:15 PM IST"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Google Meet / Live Link</label>
+                    <input
+                      type="text"
+                      value={orientationForm.meetUrl}
+                      onChange={e => setOrientationForm({ ...orientationForm, meetUrl: e.target.value })}
+                      placeholder="https://meet.google.com/..."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-400 font-mono text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-gray-300 font-bold block mb-1">Agenda / Description</label>
+                    <textarea
+                      rows={2}
+                      value={orientationForm.description}
+                      onChange={e => setOrientationForm({ ...orientationForm, description: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-white outline-none focus:border-cyan-400 resize-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setOrientationModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-slate-950 font-black shadow-lg shadow-purple-500/25 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save & Post to Cohort</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── FOUNDER MODAL: UPDATE BROADCAST NOTICE ── */}
+      {noticeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in font-sans">
+          <div className="relative w-full max-w-md rounded-3xl bg-[#0a0e1a] border border-cyan-500/30 p-6 shadow-2xl space-y-4 text-slate-200">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
+                <Bell className="w-4 h-4 text-cyan-400" />
+                <span>Founder Broadcast Notice</span>
+              </h3>
+              <button onClick={() => setNoticeModalOpen(false)} className="p-1 rounded bg-white/5 hover:bg-white/10">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNotice} className="space-y-3 text-xs">
+              <div>
+                <label className="text-gray-300 font-bold block mb-1">Badge Text</label>
+                <input
+                  type="text"
+                  value={noticeForm.badge}
+                  onChange={e => setNoticeForm({ ...noticeForm, badge: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-gray-300 font-bold block mb-1">Notice Message</label>
+                <textarea
+                  rows={3}
+                  value={noticeForm.message}
+                  onChange={e => setNoticeForm({ ...noticeForm, message: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-cyan-400 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setNoticeModalOpen(false)}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 text-gray-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black shadow-md cursor-pointer"
+                >
+                  Post Notice
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
