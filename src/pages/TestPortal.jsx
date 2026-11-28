@@ -7,7 +7,8 @@ import {
   Zap, Maximize2, Minimize2, CheckSquare,
   Camera, CameraOff, Mic, MicOff, Volume2, ShieldAlert, Check, RefreshCw,
   UserCheck, Activity, Video, Radio, Calculator, Crown, Brain, ArrowUpRight,
-  Upload, Send, FileSpreadsheet, Sliders
+  Upload, Send, FileSpreadsheet, Sliders,
+  Calendar, ArrowRight, MoreVertical, LayoutGrid, FilePlus, Folder, BookmarkCheck
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import katex from 'katex';
@@ -89,6 +90,26 @@ export default function TestPortal({ user, setActiveTab }) {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [resultSolutionFilter, setResultSolutionFilter] = useState('all'); // 'all' | 'correct' | 'incorrect' | 'unanswered'
   const [catalogSearch, setCatalogSearch] = useState('');
+  const [cardLayoutMode, setCardLayoutMode] = useState('grid'); // 'grid' | 'list'
+  const [bookmarkedIds, setBookmarkedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('lumixora_test_bookmarks') || '[]');
+    } catch (_) {
+      return [];
+    }
+  });
+  const [activeCardMenuId, setActiveCardMenuId] = useState(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+  const toggleBookmark = (testId) => {
+    setBookmarkedIds(prev => {
+      const next = prev.includes(testId) ? prev.filter(id => id !== testId) : [...prev, testId];
+      try {
+        localStorage.setItem('lumixora_test_bookmarks', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  };
 
   // ──  CBT ADVANCED ACCESSIBILITY & TOOLS ──
   const [showCalculator, setShowCalculator] = useState(false);
@@ -3607,88 +3628,140 @@ If there is a compilation or runtime error, set "error" to true and put the erro
 
     return (
     <div className="space-y-6 animate-fade-in relative">
-      {/* ── 🌌 LINEAR / VERCEL ATMOSPHERIC MICRO-DOT MESH & SPECULAR BEAM ── */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-6xl h-80 bg-[radial-gradient(ellipse_80%_40%_at_50%_-10%,rgba(56,189,248,0.12),transparent)] pointer-events-none -z-10" />
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none -z-10 opacity-70" />
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-wide mb-1 flex items-center gap-2">
-            Test Portal <Target className="inline w-6 h-6 text-brand-teal" />
-          </h2>
-          <p className="text-sm text-gray-400 font-medium">Take quizzes, coding assessments, and timeline assignments in a secure environment.</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {isFounder && (
-            <>
-              <button 
-                onClick={handleRestoreDefaultTests}
-                disabled={isSyncingTests}
-                className="bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                title="Restore default pre-loaded test database"
-              >
-                <RotateCcw className={`w-3.5 h-3.5 ${isSyncingTests ? 'animate-spin' : ''}`} />
-                <span>{isSyncingTests ? 'Syncing...' : 'Sync Default Tests'}</span>
-              </button>
+      {/* ── 🌟 LUMIXORA TEST PORTAL HERO BANNER (MATCHING SPEC) ── */}
+      <div className="relative rounded-3xl overflow-hidden border border-[#E2E4F0] dark:border-white/10 bg-gradient-to-r from-[#F0F2FA] via-[#F8F9FF] to-[#EDE7F6] dark:from-[#11162b] dark:via-[#161c36] dark:to-[#1a1738] p-6 sm:p-8 md:p-10 shadow-xl shadow-purple-900/5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          {/* Left Text & Actions */}
+          <div className="md:col-span-7 lg:col-span-6 relative z-10 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-100/90 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-700/50 text-[#3B2C68] dark:text-purple-300 text-xs font-black shadow-xs">
+              <Target className="w-3.5 h-3.5 text-[#5B21B6] dark:text-purple-400" />
+              <span>Assessment Hub</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1E1B4B] dark:text-white tracking-tight leading-none">
+              Test Portal
+            </h1>
+
+            <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm max-w-md leading-relaxed font-medium">
+              Take quizzes, coding assessments, and timeline assignments in a secure environment.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2 flex-wrap">
               <button
-                onClick={() => setLiveWarRoomExam({ id: activeTest?.id || 'live_exam', title: 'Campus Examination Session' })}
-                className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs font-black transition-colors cursor-pointer shadow-sm animate-pulse"
-                title="Launch Live Invigilation Multi-Camera Grid"
+                onClick={() => {
+                  const firstTest = availableTests[0] || tests[0];
+                  if (firstTest) {
+                    if (firstTest.category === 'assignment') {
+                      setActiveAssignmentModal(firstTest);
+                    } else {
+                      handleOpenTestOnboarding(firstTest);
+                    }
+                  }
+                }}
+                className="px-6 py-2.5 rounded-full bg-[#3F3356] hover:bg-[#2F2542] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#3F3356]/25 transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
               >
-                <Radio className="w-4 h-4 text-red-400" />
-                Live Invigilation Room
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Start a Test</span>
               </button>
-              <button 
-                onClick={() => setActiveTab && setActiveTab('founder-portal')}
-                className="bg-brand-teal hover:opacity-90 text-black px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-opacity cursor-pointer shadow-sm"
+
+              <button
+                onClick={() => setShowScheduleModal(true)}
+                className="px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-gray-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white border border-gray-200 dark:border-white/15 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
               >
-                <Target className="w-4 h-4" />
-                Post Test
+                <Calendar className="w-4 h-4 text-[#5B21B6] dark:text-purple-400" />
+                <span>View Schedule</span>
               </button>
-            </>
-          )}
-          {/* ✨ Faculty & Founder AI Rapid Creator & Batch Importer */}
-          <button
-            type="button"
-            onClick={() => setShowAiTestGeneratorModal(true)}
-            className="bg-gradient-to-r from-purple-600/30 via-indigo-600/20 to-brand-teal/20 hover:from-purple-600/50 hover:to-brand-teal/30 border border-purple-500/40 text-purple-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-sm"
-            title="Generate test with Lumina AI"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>AI Rapid Test Creator</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowBatchImportModal(true)}
-            className="bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 px-3.5 py-2 rounded-xl flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer"
-            title="Import question bank from CSV or JSON"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Batch Import Bank</span>
-          </button>
-          <button 
-            onClick={() => setView('leaderboard')}
-            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer"
-          >
-            <Trophy className="w-4 h-4 text-brand-pink" />
-            Leaderboard
-          </button>
+            </div>
+          </div>
+
+          {/* Right Desk & Laptop Artwork with Elegant Swoop Mask */}
+          <div className="md:col-span-5 lg:col-span-6 flex items-center justify-end relative">
+            <div className="relative w-full max-w-[480px] h-[180px] sm:h-[200px] md:h-[220px] rounded-2xl overflow-hidden flex items-center justify-end">
+              <img
+                src="/test_portal_desk_clean.png"
+                alt="Test Workspace & Code Terminal"
+                className="w-full h-full object-cover object-right pointer-events-none select-none"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── 🏆 CAMPUS HALL OF FAME HIGHLIGHT RIBBON ── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#090c14]/90 border border-white/[0.08] hover:border-white/[0.18] flex flex-wrap items-center justify-between gap-4 shadow-xl shadow-black/40 backdrop-blur-xl transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+      {/* ── 🧰 QUICK ACTION TOOLS BAR ── */}
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-1 custom-scrollbar">
+        {isFounder && (
+          <button 
+            onClick={handleRestoreDefaultTests}
+            disabled={isSyncingTests}
+            className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all disabled:opacity-50"
+            title="Restore default pre-loaded test database"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 text-amber-500 ${isSyncingTests ? 'animate-spin' : ''}`} />
+            <span>{isSyncingTests ? 'Syncing...' : 'Sync Default Tests'}</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => setLiveWarRoomExam({ id: activeTest?.id || 'live_exam', title: 'Campus Examination Session' })}
+          className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
+          title="Launch Live Invigilation Multi-Camera Grid"
+        >
+          <Video className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+          <span>Live Invigilation</span>
+        </button>
+
+        {isFounder && (
+          <button 
+            onClick={() => setActiveTab && setActiveTab('founder-portal')}
+            className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
+          >
+            <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span>Post Test</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setShowAiTestGeneratorModal(true)}
+          className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
+          title="Generate test with Lumina AI"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+          <span>AI Rapid Test</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowBatchImportModal(true)}
+          className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
+          title="Import question bank from CSV or JSON"
+        >
+          <Upload className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+          <span>Batch Import</span>
+        </button>
+
+        <button 
+          onClick={() => setView('leaderboard')}
+          className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
+        >
+          <Trophy className="w-3.5 h-3.5 text-amber-500" />
+          <span>Leaderboard</span>
+        </button>
+      </div>
+
+      {/* ── 🏆 CAMPUS EXAM BENCHMARK LIVE RIBBON ── */}
+      <div className="p-3.5 sm:px-6 rounded-2xl bg-gradient-to-r from-[#EAE8F8] via-[#F2F0FC] to-[#EAE8F8] dark:from-[#151a30] dark:via-[#1c2340] dark:to-[#151a30] border border-purple-200/80 dark:border-purple-900/40 flex flex-wrap items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-400 border border-amber-400/30 flex items-center justify-center font-bold shadow-sm">
-            <Crown className="w-5 h-5 text-amber-400" />
+          <div className="w-9 h-9 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-base shadow-xs shrink-0">
+            🏆
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal text-[10px] font-mono font-bold uppercase tracking-wider">
-                Campus Exam Benchmark
+              <span className="text-[10px] font-black text-purple-700 dark:text-purple-300 tracking-wider uppercase">
+                Campus Exam Benchmark • Updated Live
               </span>
-              <span className="text-[11px] text-gray-400 font-mono hidden sm:inline">Updated Live</span>
             </div>
-            <h4 className="text-sm sm:text-base font-bold text-white font-sora mt-0.5">
+            <h4 className="text-xs sm:text-sm md:text-base font-extrabold text-[#1E1B4B] dark:text-white leading-tight">
               TCS NQT Tier-1 & Gate Sprints Live • 98.4% Top Campus Percentile Standard
             </h4>
           </div>
@@ -3697,253 +3770,381 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         <button
           type="button"
           onClick={() => setView('leaderboard')}
-          className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+          className="px-4 py-2 rounded-full bg-white/90 hover:bg-white dark:bg-white/10 dark:hover:bg-white/20 text-[#3B2C68] dark:text-purple-200 border border-purple-200/80 dark:border-purple-700/50 text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
         >
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span>View Campus Hall of Fame →</span>
+          <span>View Campus Hall of Fame</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* ── 🎛️ LINEAR-STYLE SEGMENTED CATEGORY CONTROLLER ── */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#090b12] border border-white/[0.08] w-fit overflow-x-auto max-w-full shadow-inner custom-scrollbar">
-        <button
-          onClick={() => setTestTabFilter('all')}
-          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' + (
-            testTabFilter === 'all'
-              ? 'bg-white/10 text-white border border-white/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)] font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-          )}
-        >
-          All Assessments ({tests.length})
-        </button>
-        <button
-          onClick={() => setTestTabFilter('coding')}
-          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
-            testTabFilter === 'coding'
-              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_0_0_rgba(56,189,248,0.2)] font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-          )}
-        >
-          <Code className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Coding Sprints ({codingCount})</span>
-        </button>
-        <button
-          onClick={() => setTestTabFilter('quiz')}
-          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
-            testTabFilter === 'quiz'
-              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.2)] font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-          )}
-        >
-          <List className="w-3.5 h-3.5 text-emerald-400" />
-          <span>MCQ Quizzes ({quizCount})</span>
-        </button>
-        <button
-          onClick={() => setTestTabFilter('assignment')}
-          className={'px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ' + (
-            testTabFilter === 'assignment'
-              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[inset_0_1px_0_0_rgba(168,85,247,0.25)] font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-          )}
-        >
-          <FileText className="w-3.5 h-3.5 text-purple-400" />
-          <span>Project Assignments ({assignCount})</span>
-        </button>
+      {/* ── 🎛️ CATEGORY FILTER TABS & LAYOUT SWITCHER ── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 custom-scrollbar">
+          <button
+            onClick={() => setTestTabFilter('all')}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              testTabFilter === 'all'
+                ? 'bg-[#3F3356] text-white shadow-sm font-black'
+                : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>All Assessments ({tests.length})</span>
+          </button>
+
+          <button
+            onClick={() => setTestTabFilter('coding')}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              testTabFilter === 'coding'
+                ? 'bg-[#3F3356] text-white shadow-sm font-black'
+                : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5" />
+            <span>Coding Sprints ({codingCount})</span>
+          </button>
+
+          <button
+            onClick={() => setTestTabFilter('quiz')}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              testTabFilter === 'quiz'
+                ? 'bg-[#3F3356] text-white shadow-sm font-black'
+                : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
+            }`}
+          >
+            <List className="w-3.5 h-3.5" />
+            <span>MCQ Quizzes ({quizCount})</span>
+          </button>
+
+          <button
+            onClick={() => setTestTabFilter('assignment')}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              testTabFilter === 'assignment'
+                ? 'bg-[#3F3356] text-white shadow-sm font-black'
+                : 'bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Project Assignments ({assignCount})</span>
+          </button>
+        </div>
+
+        {/* View Mode Switcher (Grid vs List) */}
+        <div className="flex items-center gap-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-full p-1 shadow-xs shrink-0">
+          <button
+            onClick={() => setCardLayoutMode('grid')}
+            className={`p-1.5 rounded-full transition-all cursor-pointer ${
+              cardLayoutMode === 'grid'
+                ? 'bg-purple-100 dark:bg-purple-900/60 text-[#3B2C68] dark:text-purple-200 font-bold'
+                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+            }`}
+            title="Grid View"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCardLayoutMode('list')}
+            className={`p-1.5 rounded-full transition-all cursor-pointer ${
+              cardLayoutMode === 'list'
+                ? 'bg-purple-100 dark:bg-purple-900/60 text-[#3B2C68] dark:text-purple-200 font-bold'
+                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+            }`}
+            title="List View"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* ── 📚 ASSESSMENT CARDS (GRID OR LIST VIEW) ── */}
+      <div className={cardLayoutMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "space-y-4"}>
         {loadingTests ? (
-          <div className="col-span-full py-12 text-center flex flex-col items-center justify-center text-brand-teal">
-            <div className="w-8 h-8 border-4 border-brand-teal border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-xs font-bold tracking-wide">Fetching Active Tests...</p>
+          <div className="col-span-full py-12 text-center flex flex-col items-center justify-center text-[#5B21B6]">
+            <div className="w-8 h-8 border-4 border-[#5B21B6] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-xs font-bold tracking-wide">Fetching Active Assessments...</p>
           </div>
         ) : availableTests.length === 0 ? (
-          <div className="col-span-full py-12 text-center glass-panel rounded-3xl border border-white/5 border-dashed space-y-3">
-            <Target className="w-12 h-12 text-gray-500 mx-auto opacity-50" />
-            <p className="text-sm text-gray-300 font-medium">No tests found for this category.</p>
+          <div className="col-span-full py-12 text-center bg-white dark:bg-white/5 rounded-3xl border border-gray-200 dark:border-white/10 border-dashed space-y-3 p-8">
+            <Target className="w-12 h-12 text-gray-400 mx-auto opacity-50" />
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">No assessments found for this category.</p>
             {isFounder && (
               <button 
                 onClick={handleRestoreDefaultTests}
-                className="px-4 py-2 rounded-xl bg-brand-teal text-black text-xs font-bold hover:opacity-90 transition-opacity"
+                className="px-4 py-2 rounded-full bg-[#3F3356] text-white text-xs font-bold hover:bg-[#2F2542] transition-colors cursor-pointer"
               >
                 Load Default Assessment Suite
               </button>
             )}
           </div>
         ) : (
-          availableTests.map(test => {
+          availableTests.map((test) => {
             const isAssignment = test.category === 'assignment';
             const isFuture = test.scheduledTime && Date.now() < new Date(test.scheduledTime).getTime();
             const currentUserName = user?.name?.split(' ')[0] || 'Anonymous';
             const hasAttempted = leaderboard.some(entry => entry.testId === test.id && entry.user === currentUserName);
+            const isBookmarked = bookmarkedIds.includes(test.id);
+
+            // Determine 3D artwork for this card
+            const titleLower = (test.title || '').toLowerCase();
+            const artworkSrc = (titleLower.includes('sql') || titleLower.includes('data') || titleLower.includes('db'))
+              ? '/card_3d_database.png'
+              : (test.type === 'coding' || titleLower.includes('cache') || titleLower.includes('lru') || titleLower.includes('algorithm'))
+              ? '/card_3d_code.png'
+              : '/card_3d_browser.png';
+
             return (
-            <div key={test.id} className={'p-6 rounded-2xl border flex flex-col group transition-all duration-300 relative overflow-hidden ' + (
-              isAssignment 
-                ? 'bg-[#0d0f1a]/85 hover:bg-[#111424]/90 border-purple-500/25 hover:border-purple-400/40 shadow-xl shadow-purple-950/20 shadow-[inset_0_1px_0_0_rgba(168,85,247,0.15)]' 
-                : 'bg-[#0a0d16]/85 hover:bg-[#0f1322]/90 border-white/[0.08] hover:border-cyan-500/30 shadow-xl shadow-black/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
-            ) + ' hover:-translate-y-1'}>
-              {/* Subtle top specular corner glow */}
-              <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/5 group-hover:bg-cyan-500/10 rounded-full blur-2xl transition-all pointer-events-none" />
-              
-              <div className="flex items-start justify-between mb-4 gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border ${
-                    isAssignment ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-white/5 border-white/10 text-brand-teal'
-                  }`}>
-                    {isAssignment ? <FileText className="w-5 h-5" /> : test.type === 'coding' ? <Code className="w-5 h-5 text-brand-blue" /> : <List className="w-5 h-5" />}
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide border ${
-                    isAssignment ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-brand-teal/15 text-brand-teal border-brand-teal/30'
-                  }`}>
-                    {isAssignment ? 'Assignment' : 'Test'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {editingTestId === test.id ? (
-                    <div className="flex items-center gap-1">
-                      <input type="number" value={editingTestVals.duration} onChange={e => setEditingTestVals({...editingTestVals, duration: e.target.value})} className="w-12 text-[10px] font-bold text-center bg-white/10 px-1 py-1 rounded-md text-white border border-white/20 outline-none" />
-                      <span className="text-[10px] text-gray-400 font-bold">MIN</span>
-                      <button onClick={() => saveTest(test.id)} className="p-1.5 bg-green-500/20 text-green-500 hover:bg-green-500/30 rounded" title="Save">
-                        <Save className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => setEditingTestId(null)} className="p-1.5 bg-white/5 text-gray-400 hover:text-white rounded" title="Cancel">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="text-[10px] font-bold tracking-wide bg-white/10 px-2.5 py-1 rounded-full text-gray-300">
-                        {test.duration} MIN
+              <div 
+                key={test.id} 
+                className="rounded-2xl bg-white dark:bg-[#101424] border border-purple-100/90 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 shadow-sm hover:shadow-xl hover:shadow-purple-900/5 transition-all p-5 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-0.5"
+              >
+                {/* Top Row: Meta Badges + Bookmark + 3-Dots */}
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                        isAssignment
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                          : test.type === 'coding'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      }`}>
+                        {isAssignment ? 'ASSIGNMENT' : test.type === 'coding' ? 'CODING SPRINT' : 'QUIZ'}
                       </span>
-                      {isFounder && (
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => { setEditingTestId(test.id); setEditingTestVals({ title: test.title, duration: test.duration }); }} className="p-1.5 icon-3d-blue hover:bg-brand-blue/20 rounded" title="Edit Assessment">
-                            <Edit2 className="w-3.5 h-3.5 text-brand-blue" />
-                          </button>
-                          <button onClick={() => deleteTest(test.id)} className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded" title="Delete Assessment">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+
+                      <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-[10px] font-bold flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-gray-500" />
+                        <span>{test.duration || 60} min</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBookmark(test.id);
+                        }}
+                        className="p-1 rounded-md text-gray-400 hover:text-purple-600 transition-colors cursor-pointer"
+                        title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Assessment'}
+                      >
+                        {isBookmarked ? (
+                          <BookmarkCheck className="w-4 h-4 text-purple-600 fill-purple-600" />
+                        ) : (
+                          <Bookmark className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveCardMenuId(activeCardMenuId === test.id ? null : test.id);
+                          }}
+                          className="p-1 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {activeCardMenuId === test.id && (
+                          <div className="absolute right-0 top-7 w-40 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-xl py-1.5 z-30 text-xs font-semibold animate-fadeIn">
+                            {isFounder && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingTestId(test.id);
+                                    setEditingTestVals({ title: test.title, duration: test.duration });
+                                    setActiveCardMenuId(null);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center gap-2"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5 text-blue-500" /> Edit Assessment
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    deleteTest(test.id);
+                                    setActiveCardMenuId(null);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(test.id);
+                                addToast('Test ID copied to clipboard', 'info');
+                                setActiveCardMenuId(null);
+                              }}
+                              className="w-full px-3 py-1.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 flex items-center gap-2"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-purple-500" /> Copy Test ID
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Title & 3D Illustration Row */}
+                  <div className="flex items-start justify-between gap-3 my-3">
+                    <div className="flex-1 min-w-0">
+                      {editingTestId === test.id ? (
+                        <input
+                          type="text"
+                          value={editingTestVals.title}
+                          onChange={e => setEditingTestVals({ ...editingTestVals, title: e.target.value })}
+                          className="text-sm font-bold text-gray-900 dark:text-white mb-2 bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-md px-2 py-1 w-full outline-none"
+                        />
+                      ) : (
+                        <h3 className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white leading-snug line-clamp-2 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
+                          {test.title}
+                        </h3>
                       )}
-                    </>
-                  )}
+                      <p className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-1">
+                        {test.type === 'quiz' ? 'Multiple choice questions' : test.type === 'coding' ? 'Programming challenge' : 'Mixed assessment'}
+                      </p>
+                      {test.scheduledTime && (
+                        <span className="inline-block mt-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                          {isAssignment ? 'Due: ' : 'Starts: '}{new Date(test.scheduledTime).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 3D Isometric Artwork Badge */}
+                    <div className="w-20 h-20 shrink-0 flex items-center justify-center p-1 rounded-xl bg-purple-50/50 dark:bg-white/[0.02]">
+                      <img
+                        src={artworkSrc}
+                        alt="3D Topic Illustration"
+                        className="w-full h-full object-contain pointer-events-none select-none drop-shadow-sm group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Row: Chips + Round Action Button */}
+                <div className="pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between gap-2 mt-auto">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 flex items-center gap-1">
+                      {isTestCameraRequired(test) ? (
+                        <><Camera className="w-3 h-3 text-emerald-500" /> Proctored</>
+                      ) : (
+                        <><Folder className="w-3 h-3 text-purple-500" /> Open CBT (No Camera)</>
+                      )}
+                    </span>
+
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 flex items-center gap-1">
+                      <Target className="w-3 h-3 text-amber-500" />
+                      <span>{test.questions?.length || 1} Question{test.questions?.length === 1 ? '' : 's'}</span>
+                    </span>
+                  </div>
+
+                  {/* Purple Round Action Button with Arrow */}
+                  <button
+                    onClick={() => {
+                      if (isAssignment) {
+                        setActiveAssignmentModal(test);
+                        setAssignmentSubmissionForm(prev => ({
+                          ...prev,
+                          codeAnswer: test.starterCode || test.questions?.[0]?.starterCode || '// Write your solution here',
+                          studentNotes: ''
+                        }));
+                      } else if (!isFuture && !hasAttempted) {
+                        handleOpenTestOnboarding(test);
+                      }
+                    }}
+                    disabled={!isAssignment && (isFuture || hasAttempted)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-xs ${
+                      hasAttempted
+                        ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                        : isFuture
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-purple-100 hover:bg-[#3F3356] text-[#3F3356] hover:text-white group-hover:scale-110'
+                    }`}
+                    title={isAssignment ? 'Open Assignment Workspace' : hasAttempted ? 'Completed' : 'Start Assessment'}
+                  >
+                    {hasAttempted ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <ArrowRight className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
-            
-            {editingTestId === test.id ? (
-              <input type="text" value={editingTestVals.title} onChange={e => setEditingTestVals({...editingTestVals, title: e.target.value})} className="text-lg font-bold text-white mb-2 bg-white/5 border border-white/20 rounded px-2 py-1 w-full z-10" />
-            ) : (
-              <h3 className="text-lg font-bold text-white mb-2">{test.title}</h3>
-            )}
-            <p className="text-xs text-gray-400 mb-4 flex-1">
-              {test.type === 'quiz' ? 'Multiple choice questions' : test.type === 'coding' ? 'Programming challenge' : 'Mixed assessment'}
-              {test.scheduledTime && (
-                <span className="block mt-2 font-bold text-yellow-500">
-                  {isAssignment ? 'Due: ' : 'Starts: '}{new Date(test.scheduledTime).toLocaleString()}
-                </span>
-              )}
-            </p>
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-              {isTestCameraRequired(test) ? (
-                <span className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-[#008037]/20 text-emerald-300 border border-[#008037]/40 flex items-center gap-1.5 shadow-sm">
-                  <Camera className="w-3 h-3 text-[#00c957]" /> AI Webcam Monitored
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-[#003875]/40 text-cyan-300 border border-[#003875]/60 flex items-center gap-1.5 shadow-sm">
-                  <CameraOff className="w-3 h-3 text-cyan-400" /> Open CBT (No Camera)
-                </span>
-              )}
-              <span className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-white/5 text-gray-300 border border-white/10 flex items-center gap-1">
-                <Target className="w-3 h-3 text-amber-400" /> {test.questions?.length || 10} Questions
-              </span>
-            </div>
-            
-            {/* Dynamic Readiness Gauge Meter */}
-            <div className="space-y-1.5 py-3 border-t border-b border-white/5 my-3">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-gray-400 flex items-center gap-1 text-[11px]">
-                  <Activity className="w-3.5 h-3.5 text-brand-teal" /> Scholar Readiness:
-                </span>
-                <span className="text-brand-teal font-black text-[11px]">
-                  {hasAttempted ? '100% Completed' : (test.duration > 35 ? '92% Prepared' : '88% Prepared')}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-teal via-cyan-400 to-blue-500 transition-all duration-500"
-                  style={{ width: hasAttempted ? '100%' : (test.duration > 35 ? '92%' : '88%') }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 pt-0.5">
-                <span>Target: Tier-1 Placement</span>
-                <span className="text-amber-400/90 font-bold">⚠️ -0.25 Trap Penalty</span>
-              </div>
-            </div>
-
-                        {/* Assignment Status Badge */}
-            {isAssignment && (
-              <div className="mb-3">
-                {assignmentSubmissions[test.id] ? (
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
-                    <span className="text-emerald-300 font-bold flex items-center gap-1.5 font-mono">
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                      {assignmentSubmissions[test.id].grade ? ('Graded (' + assignmentSubmissions[test.id].grade + '/100)') : 'In Review (Submitted)'}
-                    </span>
-                    <span className="text-[10px] font-mono text-emerald-400/80">Rubric Verified</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs">
-                    <span className="text-purple-300 font-bold flex items-center gap-1.5 font-mono">
-                      <Clock className="w-3.5 h-3.5 text-purple-400" /> Due in 2 Days
-                    </span>
-                    <span className="text-[10px] font-mono text-purple-400/80">4-Tier Rubric</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <button 
-              onClick={() => {
-                if (isAssignment) {
-                  setActiveAssignmentModal(test);
-                  setAssignmentSubmissionForm(prev => ({
-                    ...prev,
-                    codeAnswer: test.starterCode || test.questions?.[0]?.starterCode || '// Write your solution here',
-                    studentNotes: ''
-                  }));
-                } else if (!isFuture && !hasAttempted) {
-                  handleOpenTestOnboarding(test);
-                }
-              }}
-              disabled={!isAssignment && (isFuture || hasAttempted)}
-              className={'w-full py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ' + (
-                isAssignment
-                  ? (assignmentSubmissions[test.id] ? 'bg-emerald-600/25 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/35' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 shadow-purple-500/25')
-                  : (hasAttempted ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-white/10' :
-                     isFuture ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-white/10' : 
-                     'bg-[#008037] text-white hover:bg-[#006e2e] shadow-[#008037]/30')
-              )}
-            >
-              {isAssignment ? (
-                assignmentSubmissions[test.id] ? (
-                  <><CheckCircle className="w-4 h-4 text-emerald-400" /> View Assignment Submission</>
-                ) : (
-                  <><FileText className="w-4 h-4 text-white" /> Open Assignment Workspace</>
-                )
-              ) : hasAttempted ? (
-                 <><CheckCircle className="w-4 h-4 text-emerald-400" /> Already Attempted</>
-              ) : isFuture ? (
-                 'Upcoming Assessment'
-              ) : (
-                 <><Play className="w-4 h-4 fill-current text-white" /> Start Assessment</>
-              )}
-            </button>
-          </div>
-          );
-        })
+            );
+          })
         )}
       </div>
+
+      {/* ── 📅 VIEW SCHEDULE MODAL ── */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
+          <div className="max-w-xl w-full bg-white dark:bg-[#0D1222] border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-gray-900 dark:text-white">Assessment Timetable & Schedule</h3>
+                  <p className="text-xs text-gray-500">Upcoming proctored sprints and assignment due dates</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+              {availableTests.map((t, idx) => (
+                <div key={t.id || idx} className="p-3.5 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300">
+                        {t.category === 'assignment' ? 'Assignment' : 'Live Test'}
+                      </span>
+                      <span className="text-xs font-bold text-gray-900 dark:text-white truncate">{t.title}</span>
+                    </div>
+                    <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-2">
+                      <span>⏱ {t.duration || 60} mins</span>
+                      <span>•</span>
+                      <span>{t.questions?.length || 10} Questions</span>
+                      <span>•</span>
+                      <span className="text-purple-600 font-semibold">{t.targetBranch || 'All Branches'}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowScheduleModal(false);
+                      if (t.category === 'assignment') {
+                        setActiveAssignmentModal(t);
+                      } else {
+                        handleOpenTestOnboarding(t);
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-full bg-[#3F3356] hover:bg-[#2F2542] text-white text-xs font-bold shrink-0 cursor-pointer"
+                  >
+                    Enter
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-3 border-t border-gray-100 dark:border-white/10 flex justify-end">
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="px-4 py-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                Close Timetable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     {/* ── PRE-EXAM CBT & AI PROCTORING ONBOARDING LAUNCHPAD MODAL ── */}
       {onboardingTestModal && (
         <div className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn overflow-y-auto">
