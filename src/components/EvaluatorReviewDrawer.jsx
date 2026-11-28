@@ -37,6 +37,34 @@ export default function EvaluatorReviewDrawer({
   const [selectedDeliverableId, setSelectedDeliverableId] = useState(deliverable?.id || '');
   const [reviewStatus, setReviewStatus] = useState('approved'); // 'approved' | 'revisions' | 'rejected'
   const [reviewScore, setReviewScore] = useState(95);
+
+  // 4-Pillar Rubric Breakdown State (0-30, 0-30, 0-20, 0-20 = 100 max)
+  const [rubricScores, setRubricScores] = useState({
+    rigor: 28,      // out of 30
+    evidence: 29,   // out of 30
+    docs: 19,       // out of 20
+    velocity: 19    // out of 20
+  });
+
+  const handleRubricChange = (key, val) => {
+    const num = Number(val);
+    const updated = { ...rubricScores, [key]: num };
+    setRubricScores(updated);
+    const total = updated.rigor + updated.evidence + updated.docs + updated.velocity;
+    setReviewScore(total);
+    if (total >= 70) {
+      setReviewStatus('approved');
+    } else {
+      setReviewStatus('revisions');
+    }
+  };
+
+  const applyPreset = (presetScore, status, feedbackText, rRigor, rEvidence, rDocs, rVel) => {
+    setReviewScore(presetScore);
+    setReviewStatus(status);
+    setRubricScores({ rigor: rRigor, evidence: rEvidence, docs: rDocs, velocity: rVel });
+    if (feedbackText) setLeadFeedback(feedbackText);
+  };
   const [leadFeedback, setLeadFeedback] = useState('');
   const [leadSignatory, setLeadSignatory] = useState(role?.leadName?.split('&')[0]?.trim() || 'Shaik Sowban');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
@@ -100,6 +128,7 @@ export default function EvaluatorReviewDrawer({
       notes: submission?.notes || '',
       score: `${reviewScore}/100`,
       numericScore: Number(reviewScore),
+      rubricScores: rubricScores,
       status: reviewStatus,
       submittedAt: submission?.submittedAt || new Date().toISOString().split('T')[0],
       reviewedAt: new Date().toISOString().split('T')[0],
@@ -397,26 +426,106 @@ export default function EvaluatorReviewDrawer({
               </div>
             </div>
 
-            {/* 2. Score Slider + Presets */}
-            <div className="space-y-2">
+            {/* 2. Score & 4-Pillar Standard Rubric */}
+            <div className="space-y-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Evaluator Score (0–100)</span>
-                </label>
-                <span className="text-base font-black text-amber-400 font-mono bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/30">
-                  {reviewScore} / 100
-                </span>
+                <div>
+                  <label className="text-xs font-bold text-gray-200 flex items-center gap-1.5">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    <span>Founder 4-Pillar Evaluation Rubric</span>
+                  </label>
+                  <p className="text-[10px] text-gray-400">Sum of technical rigor, artifact proof, documentation, and delivery speed.</p>
+                </div>
+                <div className="text-right">
+                  <span className={`text-base font-black font-mono px-3 py-1 rounded-xl border ${
+                    reviewScore >= 90 ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' :
+                    reviewScore >= 70 ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40' :
+                    'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                  }`}>
+                    {reviewScore} / 100
+                  </span>
+                  <span className="block text-[9px] font-mono text-gray-400 mt-0.5">
+                    {reviewScore >= 70 ? 'PASS (ACCREDITED)' : 'REVISION NEEDED'}
+                  </span>
+                </div>
               </div>
 
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={reviewScore}
-                onChange={e => setReviewScore(Number(e.target.value))}
-                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-400"
-              />
+              {/* Rubric Breakdown Grid */}
+              <div className="grid grid-cols-2 gap-2.5 pt-1 text-xs">
+                <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-gray-300 font-semibold">1. Technical Rigor</span>
+                    <span className="font-mono font-bold text-cyan-300">{rubricScores.rigor}/30</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="30" value={rubricScores.rigor}
+                    onChange={e => handleRubricChange('rigor', e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                  />
+                </div>
+
+                <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-gray-300 font-semibold">2. Proof & Artifacts</span>
+                    <span className="font-mono font-bold text-emerald-300">{rubricScores.evidence}/30</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="30" value={rubricScores.evidence}
+                    onChange={e => handleRubricChange('evidence', e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                  />
+                </div>
+
+                <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-gray-300 font-semibold">3. Documentation</span>
+                    <span className="font-mono font-bold text-purple-300">{rubricScores.docs}/20</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="20" value={rubricScores.docs}
+                    onChange={e => handleRubricChange('docs', e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-400"
+                  />
+                </div>
+
+                <div className="p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-gray-300 font-semibold">4. Velocity & Polish</span>
+                    <span className="font-mono font-bold text-pink-300">{rubricScores.velocity}/20</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="20" value={rubricScores.velocity}
+                    onChange={e => handleRubricChange('velocity', e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-pink-400"
+                  />
+                </div>
+              </div>
+
+              {/* 1-Click Evaluation Presets */}
+              <div className="flex items-center gap-1.5 pt-1 flex-wrap">
+                <span className="text-[10px] text-gray-400 font-mono font-bold uppercase mr-1">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(96, 'approved', 'Exceptional boundary testing and architectural clarity. All edge cases verified.', 29, 29, 19, 19)}
+                  className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold cursor-pointer transition-all"
+                >
+                  Elite Distinction (96)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(85, 'approved', 'Solid deliverable meeting production specifications with clean test evidence.', 25, 26, 17, 17)}
+                  className="px-2 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold cursor-pointer transition-all"
+                >
+                  Standard Pass (85)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(60, 'revisions', 'Good initial direction, but lacks reproduction steps or public Drive/GitHub link.', 18, 16, 14, 12)}
+                  className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold cursor-pointer transition-all"
+                >
+                  Request Revision (60)
+                </button>
+              </div>
 
               {/* Quick Presets */}
               <div className="flex items-center gap-1.5 pt-1">

@@ -16,15 +16,57 @@ export default function NexusSubmissionStudio({
   initialTask = null
 }) {
   const [selectedTaskId, setSelectedTaskId] = useState(initialTask?.id || '');
-  const [formData, setFormData] = useState({
-    title: initialTask?.title || '',
-    driveUrl: '',
-    githubUrl: '',
-    pdfUrl: '',
-    loomUrl: '',
-    notes: '',
-    hours: 15
+  const [formData, setFormData] = useState(() => {
+    try {
+      const draftKey = `lumixora_submission_draft_${session?.id || 'intern'}`;
+      const saved = localStorage.getItem(draftKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            title: initialTask?.title || parsed.title || '',
+            driveUrl: parsed.driveUrl || '',
+            githubUrl: parsed.githubUrl || '',
+            pdfUrl: parsed.pdfUrl || '',
+            loomUrl: parsed.loomUrl || '',
+            notes: parsed.notes || '',
+            hours: parsed.hours || 15
+          };
+        }
+      }
+    } catch (_) {}
+    return {
+      title: initialTask?.title || '',
+      driveUrl: '',
+      githubUrl: '',
+      pdfUrl: '',
+      loomUrl: '',
+      notes: '',
+      hours: 15
+    };
   });
+
+  // URL Auto-normalizer
+  const normalizeUrl = (val) => {
+    if (!val) return '';
+    let trimmed = val.trim();
+    if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  };
+
+  // Auto-save draft on any change
+  const updateField = (field, val) => {
+    setFormData(prev => {
+      const next = { ...prev, [field]: val };
+      try {
+        const draftKey = `lumixora_submission_draft_${session?.id || 'intern'}`;
+        localStorage.setItem(draftKey, JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  };
 
   const [aiAuditing, setAiAuditing] = useState(false);
   const [aiAuditReport, setAiAuditReport] = useState(null);
@@ -141,6 +183,12 @@ export default function NexusSubmissionStudio({
       });
     } catch (_) {}
 
+    // Clear saved draft on successful submission
+    try {
+      const draftKey = `lumixora_submission_draft_${session?.id || 'intern'}`;
+      localStorage.removeItem(draftKey);
+    } catch (_) {}
+
     setSubmitSuccess(true);
     setTimeout(() => setSubmitSuccess(false), 4000);
   };
@@ -225,30 +273,47 @@ export default function NexusSubmissionStudio({
             {/* Links Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="text-slate-300 font-bold block mb-1.5 flex items-center gap-1.5">
-                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Google Drive Archive / Folder URL</span>
+                <label className="text-slate-300 font-bold block mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Google Drive Archive / Folder URL</span>
+                  </span>
+                  {formData.driveUrl && formData.driveUrl.includes('drive.google.com') && (
+                    <span className="text-[10px] text-cyan-300 font-mono">✓ Drive Link Detected</span>
+                  )}
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://drive.google.com/..."
                   value={formData.driveUrl}
-                  onChange={e => setFormData({ ...formData, driveUrl: e.target.value })}
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-cyan-400 transition-all"
+                  onChange={e => updateField('driveUrl', e.target.value)}
+                  onBlur={e => updateField('driveUrl', normalizeUrl(e.target.value))}
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-cyan-400 transition-all text-xs"
                 />
+                {formData.driveUrl && (
+                  <p className="text-[10px] text-amber-300/80 mt-1">
+                    Tip: Ensure access is set to <strong>"Anyone with the link can view"</strong> so Founder Shaik Sowban can grade.
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1.5 flex items-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5 text-purple-400" />
-                  <span>GitHub Repository / PR URL</span>
+                <label className="text-slate-300 font-bold block mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5 text-purple-400" />
+                    <span>GitHub Repository / PR URL</span>
+                  </span>
+                  {formData.githubUrl && formData.githubUrl.includes('github.com') && (
+                    <span className="text-[10px] text-purple-300 font-mono">✓ GitHub Link Detected</span>
+                  )}
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://github.com/..."
                   value={formData.githubUrl}
-                  onChange={e => setFormData({ ...formData, githubUrl: e.target.value })}
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-purple-400 transition-all"
+                  onChange={e => updateField('githubUrl', e.target.value)}
+                  onBlur={e => updateField('githubUrl', normalizeUrl(e.target.value))}
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-purple-400 transition-all text-xs"
                 />
               </div>
 
@@ -258,11 +323,12 @@ export default function NexusSubmissionStudio({
                   <span>Public PDF / Document Report URL</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://... / report.pdf"
                   value={formData.pdfUrl}
-                  onChange={e => setFormData({ ...formData, pdfUrl: e.target.value })}
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-emerald-400 transition-all"
+                  onChange={e => updateField('pdfUrl', e.target.value)}
+                  onBlur={e => updateField('pdfUrl', normalizeUrl(e.target.value))}
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-emerald-400 transition-all text-xs"
                 />
               </div>
 
@@ -272,11 +338,12 @@ export default function NexusSubmissionStudio({
                   <span>Loom / YouTube Demo Video URL</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://loom.com/share/..."
                   value={formData.loomUrl}
-                  onChange={e => setFormData({ ...formData, loomUrl: e.target.value })}
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-pink-400 transition-all"
+                  onChange={e => updateField('loomUrl', e.target.value)}
+                  onBlur={e => updateField('loomUrl', normalizeUrl(e.target.value))}
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none focus:border-pink-400 transition-all text-xs"
                 />
               </div>
             </div>
@@ -290,7 +357,7 @@ export default function NexusSubmissionStudio({
                 rows={3}
                 placeholder="Detail your approach, edge cases handled, deliverables generated, and key findings for reviewer evaluation..."
                 value={formData.notes}
-                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                onChange={e => updateField('notes', e.target.value)}
                 className="w-full bg-white/[0.05] border border-white/15 rounded-xl p-3 text-white outline-none focus:border-cyan-400 transition-all resize-none"
               />
             </div>

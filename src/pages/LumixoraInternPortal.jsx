@@ -2268,6 +2268,43 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
                     </div>
                   )}
                 </div>
+
+                {/* 6-Sprint Cohort Stepper */}
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <span className="text-[10px] font-mono font-bold uppercase text-slate-400 block tracking-wider">
+                    6-WEEK SPRINT MILESTONE PROGRESSION (2 APPROVED DELIVERABLES / WEEK)
+                  </span>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+                    {[
+                      { week: 'W01', label: 'Week 01', minTasks: 2 },
+                      { week: 'W02', label: 'Week 02', minTasks: 4 },
+                      { week: 'W03', label: 'Week 03', minTasks: 6 },
+                      { week: 'W04', label: 'Week 04', minTasks: 8 },
+                      { week: 'W05', label: 'Week 05', minTasks: 10 },
+                      { week: 'W06', label: 'Week 06', minTasks: 12 }
+                    ].map((step, idx) => {
+                      const isComplete = approvedTasksCount >= step.minTasks;
+                      const isCurrent = approvedTasksCount >= (step.minTasks - 2) && approvedTasksCount < step.minTasks;
+                      return (
+                        <div
+                          key={step.week}
+                          className={`p-2 rounded-xl border text-[11px] font-mono transition-all ${
+                            isComplete
+                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                              : isCurrent
+                              ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                              : 'bg-white/[0.02] border-white/5 text-slate-500'
+                          }`}
+                        >
+                          <span className="font-bold block text-xs">{step.week}</span>
+                          <span className="text-[9px] block">
+                            {isComplete ? 'PASSED ✓' : `${Math.min(approvedTasksCount, step.minTasks)}/${step.minTasks}`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {/* Navigation Actions */}
@@ -2879,12 +2916,20 @@ export default function LumixoraInternPortal({ user, setActiveTab, onBackHome, f
         role={activeRole}
         allInterns={REAL_SELECTED_INTERNS}
         onSaveEvaluation={(updatedSub, evaluatedIntern) => {
-          if (evaluatedIntern.id === session.id) {
+          const currentId = session?.id || currentInternId;
+          const targetId = evaluatedIntern?.id || evaluatedIntern?.refId;
+          if (!targetId || targetId === currentId || evaluatedIntern?.email === session?.email) {
             setSubmissions(prev => {
-              const updated = [...prev.filter(s => s.deliverableId !== updatedSub.deliverableId), updatedSub];
+              const updated = [...prev.filter(s => s.deliverableId !== updatedSub.deliverableId && s.id !== updatedSub.id), updatedSub];
               return updated;
             });
           }
+          try {
+            const saved = localStorage.getItem(`lumixora_intern_submissions_${currentId}`);
+            if (saved) {
+              setSubmissions(JSON.parse(saved));
+            }
+          } catch (_) {}
         }}
       />
 
