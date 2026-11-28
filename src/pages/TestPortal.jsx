@@ -3702,7 +3702,10 @@ If there is a compilation or runtime error, set "error" to true and put the erro
         )}
 
         <button
-          onClick={() => setLiveWarRoomExam({ id: activeTest?.id || 'live_exam', title: 'Campus Examination Session' })}
+          onClick={() => {
+            const cur = activeTest || (tests && tests.length > 0 ? tests[0] : null) || DEFAULT_TESTS[0];
+            setLiveWarRoomExam(cur || { id: 'live_exam', title: 'Data Structures & Algorithms (DSA) Sprint' });
+          }}
           className="px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-purple-100 dark:border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 text-gray-700 dark:text-gray-200 hover:text-purple-900 text-xs font-bold shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer transition-all"
           title="Launch Live Invigilation Multi-Camera Grid"
         >
@@ -5880,6 +5883,10 @@ Explanation: All four Coffman conditions must hold simultaneously for a deadlock
         <ExamProctorWarRoom
           testId={liveWarRoomExam.id}
           testTitle={liveWarRoomExam.title}
+          test={liveWarRoomExam}
+          availableTests={tests && tests.length > 0 ? tests : DEFAULT_TESTS}
+          submissions={submissions}
+          currentUser={user}
           onClose={() => setLiveWarRoomExam(null)}
         />
       )}
