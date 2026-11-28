@@ -101,7 +101,12 @@ class ErrorBoundary extends React.Component {
               } catch (e) {
                 console.error(e);
               }
-              window.location.href = '/?refresh=' + Date.now();
+              // If stuck on an old immutable preview hash deployment, redirect to live production
+              if (window.location.hostname.endsWith('.lumixora.pages.dev') && window.location.hostname !== 'lumixora.pages.dev') {
+                window.location.href = 'https://lumixora.in/' + window.location.hash;
+              } else {
+                window.location.href = '/?refresh=' + Date.now() + window.location.hash;
+              }
             }}
             style={{ marginTop: '2rem', padding: '0.75rem 1.5rem', background: '#3b82f6', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
