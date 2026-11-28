@@ -5885,7 +5885,7 @@ Explanation: All four Coffman conditions must hold simultaneously for a deadlock
           testTitle={liveWarRoomExam.title}
           test={liveWarRoomExam}
           availableTests={tests && tests.length > 0 ? tests : DEFAULT_TESTS}
-          submissions={submissions}
+          submissions={typeof assignmentSubmissions !== 'undefined' ? assignmentSubmissions : DEFAULT_SUBMISSIONS}
           currentUser={user}
           onClose={() => setLiveWarRoomExam(null)}
         />
