@@ -3,156 +3,21 @@ import {
   Video, Shield, AlertTriangle, Users, Volume2, Search, CheckCircle, CheckCircle2,
   Send, X, Maximize2, Minimize2, RefreshCw, Radio, Eye, Flag, UserX, BellRing,
   Smartphone, Monitor, Activity, Sparkles, Power, Sliders, LayoutGrid, Camera,
-  ChevronDown, Clock, Calendar, Check
+  ChevronDown, Clock, Calendar, Check, Play, UserCheck, VideoOff
 } from 'lucide-react';
 import { ExamProctorBridge } from '../services/examProctorService';
 
-// Real enrolled candidate cohort mapped to real student profiles in Lumixora & campus directory
-const INITIAL_CANDIDATE_ROSTER = [
-  { 
-    id: 'C001', 
-    name: 'Shaik Mohammad', 
-    roll: '229X1A0501', 
-    dept: 'CSE', 
-    email: 'shaik@lumixora.in', 
-    frame: '/candidates/c001.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 99, 
-    faceStatus: 'Centered', 
-    currentQuestion: 14, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 22
-  },
-  { 
-    id: 'C002', 
-    name: 'Ananya Sharma', 
-    roll: '229X1A0502', 
-    dept: 'CSM', 
-    email: 'ananya.s@lumixora.in', 
-    frame: '/candidates/c002.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 98, 
-    faceStatus: 'Centered', 
-    currentQuestion: 16, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 18
-  },
-  { 
-    id: 'C003', 
-    name: 'Rohan Verma', 
-    roll: '229X1A0503', 
-    dept: 'CSE', 
-    email: 'rohan.v@lumixora.in', 
-    frame: '/candidates/c003.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 97, 
-    faceStatus: 'Centered', 
-    currentQuestion: 12, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 25
-  },
-  { 
-    id: 'C004', 
-    name: 'Meghana S', 
-    roll: '229X1A0504', 
-    dept: 'ECE', 
-    email: 'meghana.s@lumixora.in', 
-    frame: '/candidates/c004.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 99, 
-    faceStatus: 'Centered', 
-    currentQuestion: 18, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 19
-  },
-  { 
-    id: 'C005', 
-    name: 'Karthik Rao', 
-    roll: '229X1A0505', 
-    dept: 'CSE', 
-    email: 'karthik.r@lumixora.in', 
-    frame: '/candidates/c005.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 96, 
-    faceStatus: 'Centered', 
-    currentQuestion: 10, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 21
-  },
-  { 
-    id: 'C006', 
-    name: 'Sneha Kulkarni', 
-    roll: '229X1A0506', 
-    dept: 'IT', 
-    email: 'sneha.k@lumixora.in', 
-    frame: '/candidates/c006.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 98, 
-    faceStatus: 'Centered', 
-    currentQuestion: 15, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 24
-  },
-  { 
-    id: 'C007', 
-    name: 'Keshava Reddy', 
-    roll: '229X1A0507', 
-    dept: 'CSE', 
-    email: 'keshava.r@lumixora.in', 
-    frame: '/candidates/c007.jpg', 
-    status: 'live', 
-    warnings: 1, 
-    trustScore: 89, 
-    faceStatus: 'Gaze Shift (8s)', 
-    currentQuestion: 11, 
-    totalQuestions: 30,
-    tabSwitches: 1,
-    audioDb: 35
-  },
-  { 
-    id: 'C008', 
-    name: 'Divya Nair', 
-    roll: '229X1A0508', 
-    dept: 'CSM', 
-    email: 'divya.n@lumixora.in', 
-    frame: '/candidates/c008.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 99, 
-    faceStatus: 'Centered', 
-    currentQuestion: 19, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 17
-  },
-  { 
-    id: 'C009', 
-    name: 'Aditya Gupta', 
-    roll: '229X1A0509', 
-    dept: 'CSE', 
-    email: 'aditya.g@lumixora.in', 
-    frame: '/candidates/c009.jpg', 
-    status: 'live', 
-    warnings: 0, 
-    trustScore: 97, 
-    faceStatus: 'Centered', 
-    currentQuestion: 13, 
-    totalQuestions: 30,
-    tabSwitches: 0,
-    audioDb: 20
-  }
+// Optional demo feeds (ONLY used when user explicitly enables simulation mode)
+const DEMO_FEEDS = [
+  { id: 'C001', name: 'Shaik Mohammad', roll: '229X1A0501', dept: 'CSE', email: 'shaik@lumixora.in', frame: '/candidates/c001.jpg', status: 'live', warnings: 0, trustScore: 99, faceStatus: 'Centered', currentQuestion: 14, totalQuestions: 30 },
+  { id: 'C002', name: 'Ananya Sharma', roll: '229X1A0502', dept: 'CSM', email: 'ananya.s@lumixora.in', frame: '/candidates/c002.jpg', status: 'live', warnings: 0, trustScore: 98, faceStatus: 'Centered', currentQuestion: 16, totalQuestions: 30 },
+  { id: 'C003', name: 'Rohan Verma', roll: '229X1A0503', dept: 'CSE', email: 'rohan.v@lumixora.in', frame: '/candidates/c003.jpg', status: 'live', warnings: 0, trustScore: 97, faceStatus: 'Centered', currentQuestion: 12, totalQuestions: 30 },
+  { id: 'C004', name: 'Meghana S', roll: '229X1A0504', dept: 'ECE', email: 'meghana.s@lumixora.in', frame: '/candidates/c004.jpg', status: 'live', warnings: 0, trustScore: 99, faceStatus: 'Centered', currentQuestion: 18, totalQuestions: 30 },
+  { id: 'C005', name: 'Karthik Rao', roll: '229X1A0505', dept: 'CSE', email: 'karthik.r@lumixora.in', frame: '/candidates/c005.jpg', status: 'live', warnings: 0, trustScore: 96, faceStatus: 'Centered', currentQuestion: 10, totalQuestions: 30 },
+  { id: 'C006', name: 'Sneha Kulkarni', roll: '229X1A0506', dept: 'IT', email: 'sneha.k@lumixora.in', frame: '/candidates/c006.jpg', status: 'live', warnings: 0, trustScore: 98, faceStatus: 'Centered', currentQuestion: 15, totalQuestions: 30 },
+  { id: 'C007', name: 'Keshava Reddy', roll: '229X1A0507', dept: 'CSE', email: 'keshava.r@lumixora.in', frame: '/candidates/c007.jpg', status: 'live', warnings: 1, trustScore: 89, faceStatus: 'Gaze Shift (8s)', currentQuestion: 11, totalQuestions: 30 },
+  { id: 'C008', name: 'Divya Nair', roll: '229X1A0508', dept: 'CSM', email: 'divya.n@lumixora.in', frame: '/candidates/c008.jpg', status: 'live', warnings: 0, trustScore: 99, faceStatus: 'Centered', currentQuestion: 19, totalQuestions: 30 },
+  { id: 'C009', name: 'Aditya Gupta', roll: '229X1A0509', dept: 'CSE', email: 'aditya.g@lumixora.in', frame: '/candidates/c009.jpg', status: 'live', warnings: 0, trustScore: 97, faceStatus: 'Centered', currentQuestion: 13, totalQuestions: 30 }
 ];
 
 export default function ExamProctorWarRoom({ 
@@ -175,20 +40,24 @@ export default function ExamProctorWarRoom({
   const [sendingAction, setSendingAction] = useState(false);
   const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
   const [activityLogs, setActivityLogs] = useState([]);
+  const [enableSimulation, setEnableSimulation] = useState(false); // STRICTLY FALSE BY DEFAULT FOR REAL DATA
+  const [localCamActive, setLocalCamActive] = useState(false);
+  const [localCamError, setLocalCamError] = useState(null);
+  const localVideoRef = useRef(null);
   const warRoomRef = useRef(null);
 
-  // Determine current active exam information
+  // Active exam details from real tests catalog
   const activeExam = useMemo(() => {
     if (availableTests && availableTests.length > 0) {
       const match = availableTests.find(t => t.id === selectedTestId);
       if (match) return match;
     }
     return test || {
-      id: testId || 'dsa_sprint',
-      title: testTitle || 'Data Structures & Algorithms (DSA) Sprint',
+      id: testId || 'live_exam',
+      title: testTitle || 'Campus Examination Assessment',
       duration: 90,
       questions: new Array(30).fill(null),
-      targetBranch: 'CSE & CSM'
+      targetBranch: 'All Departments'
     };
   }, [availableTests, selectedTestId, test, testId, testTitle]);
 
@@ -214,38 +83,30 @@ export default function ExamProctorWarRoom({
     };
   }, [activeExam]);
 
-  // Initial Activity Log populated with real start time
+  // Real Activity Log initialized on mount (NO fake gaze warnings!)
   useEffect(() => {
     const nowStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     setActivityLogs([
       {
-        id: 'evt-1',
+        id: 'init-1',
         time: nowStr,
         type: 'start',
-        title: 'Session Started',
-        description: `Live invigilation active for ${activeExam.title}`,
+        title: 'Session Initialized',
+        description: `Monitoring channel active for: ${activeExam.title}`,
         status: 'normal'
       },
       {
-        id: 'evt-2',
-        time: nowStr,
-        type: 'warning',
-        title: 'Candidate C007 – Gaze Warning',
-        description: 'Looked away from screen (8 seconds)',
-        status: 'warning'
-      },
-      {
-        id: 'evt-3',
+        id: 'init-2',
         time: nowStr,
         type: 'check',
-        title: 'All Checks Normal',
-        description: 'Biometric verification active across 9 nodes',
+        title: 'AI Proctor Engines Armed',
+        description: 'WebRTC video stream listener ready for candidate check-ins',
         status: 'normal'
       }
     ]);
   }, [activeExam]);
 
-  // Connect to live proctor channel
+  // Connect to live proctor channel via Supabase / WebRTC
   useEffect(() => {
     const session = ExamProctorBridge.joinFacultyWarRoom(
       selectedTestId,
@@ -259,18 +120,39 @@ export default function ExamProctorWarRoom({
           }
         }));
 
-        // Log suspicious alert if flagged
+        // Log real student frame arrival
+        setActivityLogs(prev => {
+          const exists = prev.some(l => l.email === payload.email && l.type === 'joined');
+          if (!exists) {
+            return [
+              {
+                id: `join-${Date.now()}`,
+                email: payload.email,
+                time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                type: 'joined',
+                title: `Student Connected: ${payload.name || payload.email}`,
+                description: `Roll: ${payload.roll || 'N/A'} • Trust Score: ${payload.trustScore ?? 100}%`,
+                status: 'normal'
+              },
+              ...prev
+            ];
+          }
+          return prev;
+        });
+
+        // Log real infractions when flagged
         if (payload.warnings > 0 || (payload.trustScore && payload.trustScore < 90)) {
           setActivityLogs(prev => [
             {
               id: `alert-${Date.now()}`,
+              email: payload.email,
               time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
               type: 'warning',
               title: `${payload.name || payload.email} – Flagged`,
               description: payload.faceStatus || 'Suspicious behavior detected',
               status: 'warning'
             },
-            ...prev.slice(0, 19)
+            ...prev.slice(0, 24)
           ]);
         }
       },
@@ -305,26 +187,79 @@ export default function ExamProctorWarRoom({
     };
   }, [selectedTestId]);
 
-  // Combined candidates: blend real connected feeds with initial roster
+  // Turn on local examiner test camera stream
+  const handleToggleLocalCamera = async () => {
+    if (localCamActive) {
+      if (localVideoRef.current?.srcObject) {
+        localVideoRef.current.srcObject.getTracks().forEach(t => t.stop());
+      }
+      setLocalCamActive(false);
+      return;
+    }
+
+    try {
+      setLocalCamError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      setLocalCamActive(true);
+      
+      const nowStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      setActivityLogs(prev => [
+        {
+          id: `local-cam-${Date.now()}`,
+          time: nowStr,
+          type: 'start',
+          title: 'Examiner Preview Camera Connected',
+          description: 'Local video stream successfully mapped to Slot C001',
+          status: 'normal'
+        },
+        ...prev
+      ]);
+    } catch (err) {
+      console.warn("Camera access error:", err);
+      setLocalCamError('Webcam unavailable or permission declined.');
+    }
+  };
+
+  // Combine ONLY real candidates (plus optional local preview camera)
   const allCandidates = useMemo(() => {
-    const realList = Object.values(liveCandidates);
-    const map = {};
-    INITIAL_CANDIDATE_ROSTER.forEach(c => { map[c.id] = { ...c }; });
+    const list = Object.values(liveCandidates);
 
-    // Overlay real live incoming stream
-    realList.forEach((r, idx) => {
-      const key = r.id || `C00${idx + 1}`;
-      map[key] = {
-        ...(map[key] || {}),
-        ...r,
-        frame: r.frame || map[key]?.frame || '/candidates/c001.jpg',
-        name: r.name || map[key]?.name || 'Scholar',
-        roll: r.roll || map[key]?.roll || '229X1A0501'
+    // If examiner turned on their own camera to test the war room
+    if (localCamActive) {
+      const localSlot = {
+        id: 'C001',
+        name: currentUser?.name || currentUser?.displayName || 'Faculty Examiner (You)',
+        roll: currentUser?.roll || currentUser?.rollNumber || 'STAFF-01',
+        dept: currentUser?.department || 'Invigilator',
+        email: currentUser?.email || 'proctor@lumixora.in',
+        isLocalVideo: true,
+        status: 'live',
+        warnings: 0,
+        trustScore: 100,
+        faceStatus: 'Centered (Live)',
+        currentQuestion: 1,
+        totalQuestions: activeExam.questions?.length || 30
       };
-    });
+      return [localSlot, ...list.filter(c => c.email !== localSlot.email)];
+    }
 
-    return Object.values(map);
-  }, [liveCandidates]);
+    // If simulation mode was explicitly turned on by user
+    if (enableSimulation) {
+      const map = {};
+      DEMO_FEEDS.forEach(c => { map[c.id] = { ...c }; });
+      list.forEach((r, idx) => {
+        const key = r.id || `C00${idx + 1}`;
+        map[key] = { ...(map[key] || {}), ...r };
+      });
+      return Object.values(map);
+    }
+
+    // PURE REAL DATA: Only return candidates actually connected right now!
+    return list;
+  }, [liveCandidates, localCamActive, enableSimulation, currentUser, activeExam]);
 
   // Filtered candidate list based on active tab and search
   const displayedCandidates = useMemo(() => {
@@ -340,55 +275,64 @@ export default function ExamProctorWarRoom({
     });
   }, [allCandidates, searchQuery, activeTab]);
 
-  // Real KPI statistics computed dynamically
+  // REAL KPI Statistics (No hardcoded 142 or fake violations!)
   const stats = useMemo(() => {
-    const total = 142; // Enrolled campus cohort size
     const online = allCandidates.filter(c => c.status === 'live').length;
     const flagged = allCandidates.filter(c => c.warnings > 0 || c.trustScore < 90).length;
-    const avgScore = allCandidates.reduce((acc, c) => acc + (c.trustScore || 100), 0) / allCandidates.length;
-    const integrity = `${avgScore.toFixed(1)}%`;
-    return { total, online, flagged, integrity };
-  }, [allCandidates]);
+    
+    let integrity = '100.0%';
+    if (allCandidates.length > 0) {
+      const avg = allCandidates.reduce((acc, c) => acc + (c.trustScore ?? 100), 0) / allCandidates.length;
+      integrity = `${avg.toFixed(1)}%`;
+    }
+    
+    // Registered candidates from actual exam object or submissions
+    const registered = activeExam.registeredCandidates || activeExam.candidateCount || (submissions ? Object.keys(submissions).length : 0);
+    
+    return { online, flagged, integrity, registered };
+  }, [allCandidates, activeExam, submissions]);
 
-  // Dynamic AI checks status
+  // Dynamic AI checks evaluated against real candidates
   const aiChecks = useMemo(() => {
-    const hasAbsentFace = allCandidates.some(c => c.faceStatus === 'Absent');
-    const hasMultipleFaces = allCandidates.some(c => c.faceStatus === 'Multiple Faces');
-    const hasGazeWarning = allCandidates.some(c => c.faceStatus && c.faceStatus.includes('Gaze'));
-    const hasTabSwitch = allCandidates.some(c => c.tabSwitches > 0);
-    const hasAudioSpike = allCandidates.some(c => c.audioDb > 40);
+    if (allCandidates.length === 0) {
+      return [
+        { name: 'Face Presence', ok: true, statusText: 'Awaiting Feeds', icon: Eye },
+        { name: 'Multiple Faces', ok: true, statusText: 'Armed & Ready', icon: Users },
+        { name: 'Screen Focus', ok: true, statusText: 'Telemetry Active', icon: Monitor },
+        { name: 'Prohibited Devices', ok: true, statusText: 'Armed & Ready', icon: Smartphone },
+        { name: 'Suspicious Activity', ok: true, statusText: 'Armed & Ready', icon: Activity }
+      ];
+    }
+
+    const hasAbsent = allCandidates.some(c => c.faceStatus === 'Absent');
+    const hasMultiple = allCandidates.some(c => c.faceStatus === 'Multiple Faces');
+    const hasGaze = allCandidates.some(c => c.faceStatus && c.faceStatus.includes('Gaze'));
+    const hasTab = allCandidates.some(c => c.tabSwitches > 0);
+    const hasAudio = allCandidates.some(c => c.audioDb > 45);
 
     return [
-      { name: 'Face Presence', ok: !hasAbsentFace, icon: Eye },
-      { name: 'Multiple Faces', ok: !hasMultipleFaces, icon: Users },
-      { name: 'Screen Focus', ok: !hasTabSwitch && !hasGazeWarning, icon: Monitor },
-      { name: 'Prohibited Devices', ok: true, icon: Smartphone },
-      { name: 'Suspicious Activity', ok: !hasAudioSpike, icon: Activity }
+      { name: 'Face Presence', ok: !hasAbsent, statusText: hasAbsent ? 'Face Absent' : 'Verified', icon: Eye },
+      { name: 'Multiple Faces', ok: !hasMultiple, statusText: hasMultiple ? 'Multiple Detected' : 'Verified', icon: Users },
+      { name: 'Screen Focus', ok: !hasTab && !hasGaze, statusText: hasGaze ? 'Gaze Deviation' : 'Tracking Focus', icon: Monitor },
+      { name: 'Prohibited Devices', ok: true, statusText: 'Secure', icon: Smartphone },
+      { name: 'Suspicious Activity', ok: !hasAudio, statusText: hasAudio ? 'Audio Spike' : 'Normal', icon: Activity }
     ];
   }, [allCandidates]);
 
   const handleSendIntervention = async (action, customMsg = null) => {
     if (!selectedCandidate || !warRoomRef.current) return;
     setSendingAction(true);
-    const message = customMsg || warningMessage || 'Proctor has flagged your activity. Please focus on the screen.';
+    const message = customMsg || warningMessage || 'Proctor alert: Please maintain focus on the exam screen.';
     try {
       await warRoomRef.current.sendIntervention(selectedCandidate.email, action, message);
       
-      // Update candidate locally
-      allCandidates.forEach(c => {
-        if (c.id === selectedCandidate.id || c.email === selectedCandidate.email) {
-          if (action === 'warning') c.warnings = (c.warnings || 0) + 1;
-        }
-      });
-
-      // Append to live activity log
       setActivityLogs(prev => [
         {
           id: `int-${Date.now()}`,
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
           type: 'directive',
-          title: `Intervention Sent: ${selectedCandidate.id} (${selectedCandidate.name})`,
-          description: action === 'force_submit' ? 'Automated test termination enforced' : message,
+          title: `Intervention Sent to ${selectedCandidate.name || selectedCandidate.id}`,
+          description: action === 'force_submit' ? 'Enforced automated submission' : message,
           status: action === 'force_submit' ? 'danger' : 'warning'
         },
         ...prev
@@ -405,18 +349,18 @@ export default function ExamProctorWarRoom({
   return (
     <div className="fixed inset-0 z-[110] bg-[#FAF9F6] dark:bg-[#0B0F19] flex flex-col overflow-y-auto text-slate-900 dark:text-white font-sans animate-fadeIn">
       
-      {/* ── 🌟 PURE SVG SILKY GOLDEN WAVE RIBBON (Zero Raster Ghost Artifacts) ── */}
+      {/* ── 🌟 PURE SVG SILKY GOLDEN WAVE RIBBON (Zero Ghost Text) ── */}
       <div className="absolute top-0 right-1/4 w-[520px] h-32 pointer-events-none opacity-40 overflow-hidden -z-0">
         <svg viewBox="0 0 520 120" fill="none" className="w-full h-full" preserveAspectRatio="none">
-          <path d="M0,70 C140,15 240,115 370,45 C440,-5 490,85 520,55 L520,0 L0,0 Z" fill="url(#goldenWaveGradient)" opacity="0.4" />
-          <path d="M30,85 C170,30 270,120 400,40 C460,-10 500,70 540,50" stroke="url(#goldenLineGradient)" strokeWidth="3.5" opacity="0.65" />
+          <path d="M0,70 C140,15 240,115 370,45 C440,-5 490,85 520,55 L520,0 L0,0 Z" fill="url(#pureGoldWave)" opacity="0.4" />
+          <path d="M30,85 C170,30 270,120 400,40 C460,-10 500,70 540,50" stroke="url(#pureGoldStroke)" strokeWidth="3.5" opacity="0.65" />
           <defs>
-            <linearGradient id="goldenWaveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="pureGoldWave" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#D97706" stopOpacity="0.3" />
               <stop offset="45%" stopColor="#F59E0B" stopOpacity="0.5" />
               <stop offset="100%" stopColor="#FEF3C7" stopOpacity="0.05" />
             </linearGradient>
-            <linearGradient id="goldenLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="pureGoldStroke" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#F59E0B" stopOpacity="0" />
               <stop offset="50%" stopColor="#FBBF24" stopOpacity="0.85" />
               <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
@@ -455,7 +399,7 @@ export default function ExamProctorWarRoom({
             {/* Real Meta Information Chips Row */}
             <div className="flex items-center gap-2 flex-wrap pt-1">
               
-              {/* Test Title with Dropdown Selector for Faculty */}
+              {/* Active Exam Selector */}
               <div className="relative">
                 <button
                   onClick={() => setShowTestDropdown(!showTestDropdown)}
@@ -472,7 +416,7 @@ export default function ExamProctorWarRoom({
                     <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                       Select Assessment to Monitor
                     </div>
-                    {availableTests.slice(0, 8).map(t => (
+                    {availableTests.slice(0, 10).map(t => (
                       <button
                         key={t.id}
                         onClick={() => {
@@ -505,10 +449,10 @@ export default function ExamProctorWarRoom({
                 <span>{liveDateTime.timeWindow}</span>
               </span>
 
-              {/* Real Total Candidates */}
+              {/* Real Target Candidates */}
               <span className="px-3.5 py-1.5 rounded-full bg-white dark:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-2xs flex items-center gap-2">
                 <Users className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                <span>{stats.total} Candidates</span>
+                <span>{stats.registered > 0 ? `${stats.registered} Enrolled` : `${activeExam.targetBranch || 'Campus'}`}</span>
               </span>
             </div>
           </div>
@@ -519,7 +463,7 @@ export default function ExamProctorWarRoom({
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Session in Progress</span>
+                <span>{stats.online > 0 ? `Live: ${stats.online} Stream${stats.online > 1 ? 's' : ''}` : 'Listening for Candidates'}</span>
               </span>
 
               <button
@@ -539,21 +483,23 @@ export default function ExamProctorWarRoom({
               </button>
             </div>
 
-            {/* 3 KPI Metric Cards */}
+            {/* 3 KPI Metric Cards (100% REAL DATA) */}
             <div className="grid grid-cols-3 gap-3 w-full lg:w-auto">
               
-              {/* Card 1: Online Candidates (Dark Navy) */}
+              {/* Card 1: Online Candidates (Real Count) */}
               <div className="rounded-2xl bg-[#1E2538] text-white p-3.5 px-4 sm:px-5 flex items-center gap-3 shadow-md min-w-[140px] sm:min-w-[160px]">
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black font-mono leading-none">{stats.total}</div>
+                  <div className="text-2xl font-black font-mono leading-none">
+                    {stats.online < 10 ? `0${stats.online}` : stats.online}
+                  </div>
                   <div className="text-[11px] text-slate-300 font-medium mt-1">Online Candidates</div>
                 </div>
               </div>
 
-              {/* Card 2: Violations Flagged (White Card, Red Alert) */}
+              {/* Card 2: Violations Flagged (Real Count) */}
               <div className="rounded-2xl bg-white dark:bg-slate-900 border border-red-100 dark:border-red-900/30 p-3.5 px-4 sm:px-5 flex items-center gap-3 shadow-xs min-w-[140px] sm:min-w-[160px]">
                 <div className="w-9 h-9 rounded-full bg-red-50 dark:bg-red-950/60 text-red-600 flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-4 h-4 text-red-600" />
@@ -566,7 +512,7 @@ export default function ExamProctorWarRoom({
                 </div>
               </div>
 
-              {/* Card 3: Session Integrity (White Card, Green Shield) */}
+              {/* Card 3: Session Integrity (Real Calculated Percentage) */}
               <div className="rounded-2xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/30 p-3.5 px-4 sm:px-5 flex items-center gap-3 shadow-xs min-w-[140px] sm:min-w-[160px]">
                 <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
                   <Shield className="w-4 h-4 text-emerald-600" />
@@ -587,10 +533,10 @@ export default function ExamProctorWarRoom({
           {/* ── LEFT SECTION (70% WIDTH): DARK VIDEO MATRIX CONTAINER ── */}
           <div className="lg:col-span-8 xl:col-span-8 rounded-3xl bg-[#181E29] p-4 sm:p-5 shadow-2xl border border-slate-800 text-white flex flex-col space-y-4">
             
-            {/* Top Toolbar: Tabs on Left, Zoom Slider & Fullscreen on Right */}
+            {/* Top Toolbar: Tabs, Local Camera Test Button & Simulation Switch */}
             <div className="flex items-center justify-between gap-3 pb-2 border-b border-white/10 flex-wrap">
               {/* Left Tabs */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setActiveTab('live')}
                   className={`px-4 py-1.5 rounded-full text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -600,7 +546,7 @@ export default function ExamProctorWarRoom({
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Live Grid</span>
+                  <span>Live Grid ({allCandidates.length})</span>
                 </button>
 
                 <button
@@ -615,20 +561,36 @@ export default function ExamProctorWarRoom({
                   <span>Flagged ({stats.flagged})</span>
                 </button>
 
+                {/* Local Camera Test Button for Examiner */}
                 <button
-                  onClick={() => setActiveTab('snapshots')}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'snapshots'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'bg-white/10 text-slate-300 hover:text-white'
+                  onClick={handleToggleLocalCamera}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                    localCamActive
+                      ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm animate-pulse'
+                      : 'bg-white/10 text-purple-300 border-purple-500/30 hover:bg-white/15'
                   }`}
+                  title="Turn on local webcam to verify examiner camera slot"
                 >
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>Snapshots</span>
+                  {localCamActive ? <Video className="w-3.5 h-3.5" /> : <Camera className="w-3.5 h-3.5" />}
+                  <span>{localCamActive ? 'Camera Live (You)' : 'Test My Camera'}</span>
+                </button>
+
+                {/* Simulation Mode Toggle (Explicitly labeled) */}
+                <button
+                  onClick={() => setEnableSimulation(!enableSimulation)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer border ${
+                    enableSimulation 
+                      ? 'bg-amber-500 text-white border-amber-400' 
+                      : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
+                  }`}
+                  title="Toggle demo simulation feeds"
+                >
+                  <span>Simulation:</span>
+                  <span className="uppercase font-black">{enableSimulation ? 'ON' : 'OFF'}</span>
                 </button>
               </div>
 
-              {/* Right Grid Controls */}
+              {/* Right Grid Zoom Controls */}
               <div className="flex items-center gap-3">
                 <LayoutGrid className="w-4 h-4 text-slate-400" />
                 <input
@@ -658,48 +620,93 @@ export default function ExamProctorWarRoom({
               </div>
             </div>
 
-            {/* Camera Feeds Matrix */}
-            <div className={`grid gap-3.5 transition-all ${
-              gridCols === 2 ? 'grid-cols-1 sm:grid-cols-2' :
-              gridCols === 4 ? 'grid-cols-2 sm:grid-cols-4' :
-              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
-            }`}>
-              {displayedCandidates.map((cand) => (
-                <div
-                  key={cand.id}
-                  onClick={() => setSelectedCandidate(cand)}
-                  className="group relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-white/5 hover:border-purple-400/80 transition-all cursor-pointer shadow-md"
-                >
-                  {/* Candidate Camera Stream */}
-                  <img
-                    src={cand.frame}
-                    alt={cand.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-
-                  {/* Candidate ID Bottom-Left Pill */}
-                  <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md flex items-center gap-1.5 text-[11px] font-bold text-white font-mono border border-white/10 shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{cand.id}</span>
-                  </div>
-
-                  {/* Warning Indicator if Flagged */}
-                  {cand.warnings > 0 && (
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
-                      <AlertTriangle className="w-3 h-3" />
-                      <span>Flagged</span>
-                    </div>
-                  )}
-
-                  {/* Hover Overlay with Student Details */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center p-3 text-center pointer-events-none">
-                    <span className="text-xs font-bold text-white">{cand.name}</span>
-                    <span className="text-[10px] font-mono text-slate-300 mt-0.5">{cand.roll} • {cand.dept || 'CSE'}</span>
-                    <span className="text-[10px] font-bold text-emerald-400 mt-1">Trust Score: {cand.trustScore}%</span>
-                  </div>
+            {/* Video Matrix or Standby State */}
+            {displayedCandidates.length === 0 ? (
+              <div className="py-20 px-6 flex flex-col items-center justify-center text-center space-y-4 rounded-2xl bg-black/30 border border-white/5">
+                <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                  <Radio className="w-8 h-8 animate-pulse text-purple-400" />
                 </div>
-              ))}
-            </div>
+                <div className="space-y-1.5 max-w-md">
+                  <h3 className="text-lg font-bold text-white">Live Proctoring Standby</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Zero students are currently streaming. Once a candidate starts this assessment with webcam verification, their live video and biometrics will display here instantly.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={handleToggleLocalCamera}
+                    className="px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg flex items-center gap-2 cursor-pointer transition-all"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Connect Examiner Camera (Slot C001)</span>
+                  </button>
+                  <button
+                    onClick={() => setEnableSimulation(true)}
+                    className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Load Sample Roster
+                  </button>
+                </div>
+                {localCamError && (
+                  <p className="text-xs text-red-400 font-medium">{localCamError}</p>
+                )}
+              </div>
+            ) : (
+              <div className={`grid gap-3.5 transition-all ${
+                gridCols === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+                gridCols === 4 ? 'grid-cols-2 sm:grid-cols-4' :
+                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+              }`}>
+                {displayedCandidates.map((cand) => (
+                  <div
+                    key={cand.id}
+                    onClick={() => setSelectedCandidate(cand)}
+                    className="group relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-900 border border-white/5 hover:border-purple-400/80 transition-all cursor-pointer shadow-md"
+                  >
+                    {/* Live Stream or Feed */}
+                    {cand.isLocalVideo ? (
+                      <video
+                        ref={localVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <img
+                        src={cand.frame}
+                        alt={cand.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+
+                    {/* Candidate ID Bottom-Left Pill */}
+                    <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md flex items-center gap-1.5 text-[11px] font-bold text-white font-mono border border-white/10 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>{cand.id}</span>
+                      <span className="text-[10px] text-slate-300 font-sans font-normal truncate max-w-[80px]">
+                        • {cand.name.split(' ')[0]}
+                      </span>
+                    </div>
+
+                    {/* Warning Indicator if Flagged */}
+                    {cand.warnings > 0 && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span>Flagged</span>
+                      </div>
+                    )}
+
+                    {/* Hover Overlay with Student Details */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center p-3 text-center pointer-events-none">
+                      <span className="text-xs font-bold text-white">{cand.name}</span>
+                      <span className="text-[10px] font-mono text-slate-300 mt-0.5">{cand.roll} • {cand.dept || 'CSE'}</span>
+                      <span className="text-[10px] font-bold text-emerald-400 mt-1">Trust Score: {cand.trustScore}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── RIGHT SECTION (30% WIDTH): AI MONITORING & LIVE ACTIVITY ── */}
@@ -713,11 +720,11 @@ export default function ExamProctorWarRoom({
                   <span>AI Monitoring</span>
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 text-[11px] font-bold">
-                  Active
+                  {stats.online > 0 ? 'Active' : 'Standby'}
                 </span>
               </div>
 
-              {/* 5 AI Integrity Checks (Evaluated against real feed) */}
+              {/* 5 AI Integrity Checks (Real Live Telemetry) */}
               <div className="space-y-3 pt-1">
                 {aiChecks.map((check, idx) => {
                   const Icon = check.icon;
@@ -728,10 +735,13 @@ export default function ExamProctorWarRoom({
                         <span>{check.name}</span>
                       </span>
                       {check.ok ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-slate-400 font-medium">{check.statusText}</span>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        </div>
                       ) : (
                         <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                          Alert
+                          {check.statusText}
                         </span>
                       )}
                     </div>
@@ -740,7 +750,7 @@ export default function ExamProctorWarRoom({
               </div>
             </div>
 
-            {/* 2. Live Activity Timeline Feed Card */}
+            {/* 2. Live Activity Timeline Feed Card (Real Live Logs) */}
             <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 p-5 sm:p-6 shadow-sm space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-white/5">
                 <Radio className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -797,8 +807,12 @@ export default function ExamProctorWarRoom({
 
             {/* Candidate Header */}
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-purple-500/40 shrink-0">
-                <img src={selectedCandidate.frame} alt="" className="w-full h-full object-cover" />
+              <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-purple-500/40 shrink-0 bg-slate-800">
+                {selectedCandidate.isLocalVideo ? (
+                  <video autoPlay playsInline muted className="w-full h-full object-cover" />
+                ) : (
+                  <img src={selectedCandidate.frame} alt="" className="w-full h-full object-cover" />
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -891,7 +905,7 @@ export default function ExamProctorWarRoom({
             <div>
               <h3 className="text-lg font-black text-slate-900 dark:text-white">End Invigilation Session?</h3>
               <p className="text-xs text-slate-500 mt-1">
-                This will conclude live proctoring for {stats.total} candidates and save the session integrity audit report.
+                Conclude proctoring session and save telemetry log.
               </p>
             </div>
             <div className="flex gap-2 pt-2">
