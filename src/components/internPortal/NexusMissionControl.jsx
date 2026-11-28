@@ -37,9 +37,9 @@ export default function NexusMissionControl({
       pollQuestion: 'Founder Shaik Sowban is scheduling the official Batch 01 orientation. Vote for your preferred time:',
       pollStatus: 'Poll is open',
       pollOptions: [
-        { id: 'sat_6pm', label: 'Saturday · 6:00 PM IST', baseVotes: 14 },
-        { id: 'sun_11am', label: 'Sunday · 11:00 AM IST', baseVotes: 22 },
-        { id: 'sun_5pm', label: 'Sunday · 5:00 PM IST', baseVotes: 12 }
+        { id: 'sat_6pm', label: 'Saturday · 6:00 PM IST', baseVotes: 0 },
+        { id: 'sun_11am', label: 'Sunday · 11:00 AM IST', baseVotes: 0 },
+        { id: 'sun_5pm', label: 'Sunday · 5:00 PM IST', baseVotes: 0 }
       ]
     };
   });
@@ -88,7 +88,7 @@ export default function NexusMissionControl({
     return {
       badge: 'Founder Notice · Nov 2026',
       author: 'From Shaik Sowban',
-      message: '"Batch 01 tasks are live! Select your two weekly missions, complete deliverables with production rigor, and earn verified contribution credit towards your Letter of Recommendation."'
+      message: '"Welcome Batch 01 Cohort! Orientation scheduling is open. Review your department workspace and use the official deliverable template to prepare your sprint work."'
     };
   });
 

@@ -73,14 +73,55 @@ export default function NexusSubmissionStudio({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  // Department task options
+  // Department task options (Real Founder-assigned tasks or open deliverable)
   const defaultTaskOptions = [
-    { id: 't1', title: `${activeRole?.shortTitle} Week 01 - Primary Deliverable` },
-    { id: 't2', title: `${activeRole?.shortTitle} Week 01 - Secondary Deliverable` },
-    { id: 't3', title: `${activeRole?.shortTitle} Week 01 - Capstone Sprint` }
+    { id: 'open_sprint_deliverable', title: `Open / Self-Initiated ${activeRole?.shortTitle || 'Track'} Deliverable` }
   ];
 
-  const availableTasks = allottedTasks.length > 0 ? allottedTasks : defaultTaskOptions;
+  const availableTasks = allottedTasks.length > 0
+    ? [...allottedTasks, ...defaultTaskOptions]
+    : defaultTaskOptions;
+
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
+
+  const officialTemplateText = `# LUMIXORA ENGINEERING & INNOVATION WORKPLACE
+## Official Sprint Deliverable Report
+---
+**Project**: Lumixora (A Product of Vyomra)
+**Track**: ${activeRole?.title || 'Engineering Track'}
+**Mission / Deliverable**: ${formData.title || 'Weekly Sprint Deliverable'}
+**Author**: ${session?.name || 'Intern Scholar'} (ID: ${session?.id || 'LMX-B01'})
+**Date**: ${new Date().toLocaleDateString('en-GB')}
+**Status**: Ready for Founder Evaluation (Shaik Sowban)
+
+---
+
+### 1. Executive Summary & Objective
+<!-- Brief 2-3 sentence overview of what was accomplished, why it matters, and core outcomes -->
+- Summary: 
+
+### 2. Objectives & Methodology
+- Scope Covered: 
+- Tools / Frameworks Employed: 
+
+### 3. Deliverable Core Artifacts & Proof Links
+- Primary Deliverable (Google Drive / GitHub / Figma): [Paste Link with Anyone with Link Can View]
+- Demonstration / Walkthrough (Loom / Video): [Optional Walkthrough Link]
+- Additional Notes / Supporting Spreadsheets: 
+
+### 4. Findings, Test Cases & Impact Metrics
+| Scope / Feature | Observed Behavior | Severity / Impact | Status |
+| :--- | :--- | :--- | :--- |
+| Feature 01 | Verified as expected | Standard | PASSED |
+
+### 5. Identified Bottlenecks & Recommendations
+1. 
+2. 
+
+### 6. Intern Authenticity Attestation
+- Estimated Hours Invested: ${formData.hours || 15} Hours
+- Authenticity Attestation: I confirm all work herein represents verified, original engineering and analytical output for Lumixora.
+`;
 
   useEffect(() => {
     if (initialTask) {
@@ -250,6 +291,29 @@ export default function NexusSubmissionStudio({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {/* Standard Deliverable Template Pill */}
+            <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div>
+                  <span className="text-white font-bold block">Need the submission format?</span>
+                  <span className="text-[11px] text-slate-400">Use the official standardized Lumixora deliverable scaffold.</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(officialTemplateText);
+                  setCopiedTemplate(true);
+                  setTimeout(() => setCopiedTemplate(false), 2500);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0 transition-all"
+              >
+                {copiedTemplate ? <Check className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                <span>{copiedTemplate ? 'Copied Scaffold!' : 'Copy Template'}</span>
+              </button>
+            </div>
+
             {/* Task Selection */}
             <div>
               <label className="text-slate-300 font-bold block mb-1.5">Target Weekly Mission</label>

@@ -38,11 +38,11 @@ export default function NexusMeetingsAndPolls({
     setEditRoomUrlModal(false);
   };
 
-  // 2. Real Cohort Availability Poll State
+  // 2. Real Cohort Availability Poll State (Real votes start at 0)
   const defaultPollSlots = [
-    { id: 'sat_6pm', day: 'Saturday', date: '29 Nov 2026', time: '6:00 PM – 7:00 PM IST', lead: 'Shaik Sowban', baseVotes: 14 },
-    { id: 'sun_11am', day: 'Sunday', date: '30 Nov 2026', time: '11:00 AM – 12:00 PM IST', lead: 'Shaik Sowban', baseVotes: 22 },
-    { id: 'sun_5pm', day: 'Sunday', date: '30 Nov 2026', time: '5:00 PM – 6:00 PM IST', lead: 'Shaik Sowban', baseVotes: 12 }
+    { id: 'sat_6pm', day: 'Saturday', date: '29 Nov 2026', time: '6:00 PM – 7:00 PM IST', lead: 'Shaik Sowban', baseVotes: 0 },
+    { id: 'sun_11am', day: 'Sunday', date: '30 Nov 2026', time: '11:00 AM – 12:00 PM IST', lead: 'Shaik Sowban', baseVotes: 0 },
+    { id: 'sun_5pm', day: 'Sunday', date: '30 Nov 2026', time: '5:00 PM – 6:00 PM IST', lead: 'Shaik Sowban', baseVotes: 0 }
   ];
 
   const [pollSlots, setPollSlots] = useState(() => {
@@ -244,27 +244,8 @@ export default function NexusMeetingsAndPolls({
     } catch (_) {}
   };
 
-  // 4. Past Recordings State
-  const defaultRecordings = [
-    {
-      id: 'rec-1',
-      title: 'Batch 01 Kickoff & Founder Keynote Session',
-      duration: 'Scheduled Nov 30',
-      date: 'Nov 30, 2026',
-      speaker: 'Shaik Sowban (Founder)',
-      link: '',
-      status: 'Upcoming Live Session'
-    },
-    {
-      id: 'rec-2',
-      title: 'Department Sprint Standards & Milestone Rubric Walkthrough',
-      duration: 'Scheduled Dec 02',
-      date: 'Dec 02, 2026',
-      speaker: 'Technical Lead',
-      link: '',
-      status: 'Scheduled'
-    }
-  ];
+  // 4. Past Recordings State (Starts empty until sessions are recorded)
+  const defaultRecordings = [];
 
   const [recordings, setRecordings] = useState(() => {
     try {
